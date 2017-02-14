@@ -1,0 +1,424 @@
+{
+    "Loader": {
+        "Title": "Form",
+        "SelectForm": {
+            "Default": "Default",
+            "Published": "Published",
+            "Perso": "Custom"
+        },
+        "InfoBulle": {
+            "Default": {
+                "Publish": "Publish the default form",
+                "Reset": "Reset the default form",
+                "Button": "Generated form",
+                "Button_gtf": "FME generated form"
+            },
+            "Published": {
+                "Button": "Used form",
+                "Button_gtf": "Used form"
+            },
+            "Perso": {
+                "Save": "Save the custom form and resources",
+                "Reload": "Reload files from server",
+                "Publish": "Publish the custom form",
+                "Reset": "Replace the custom form by the default form",
+                "Button": "Modification used form"
+            }
+        },
+        "Form": {
+            "Title": "Title",
+            "TitlePlaceholder": "Form title",
+            "SuggestedFields": "Suggested fields",
+            "SelectSize": {
+                "Label": "Input height :",
+                "Size": [
+                    "Large",
+                    "Medium",
+                    "Small",
+                    "Extra Small",
+                    "Extra Extra Small"
+                ]
+            },
+            "SelectForm": {
+                "Label": "Form :"
+            },
+            "Width": "Width :"
+        },
+        "Confirmation": {
+            "Yes": "Yes",
+            "No": "No",
+            "Confirm": "OK",
+            "Cancel": "Cancel",
+            "SaveAndChange": "Save your work",
+            "Abandon": "Abandon",
+            "Lose": "You will lose any unsaved work",
+            "Save": "You will overwrite a file on the server"
+        },
+        "Notify": {
+            "GetJson": "Json file loading",
+            "GetJson_Error": "Error on JSON loading (Json) : ",
+            "CreateJson_Error": "Erreur on JSON creation (Json) : ",
+            "SaveData": "Data saved on the server",
+            "SaveData_Error": "Backup failed : ",
+            "Validation_Error": "The form isn't valid, change the name in the definition",
+            "ProblemId": "ID problem, try again or contact an admin",
+            "Reset": "Was reset",
+            "Reset_Error": "Error while resetting : ",
+            "Publish": " Has been published",
+            "PublishAndSave": " Has been published and saved",
+            "Publish_Error": "Error while publishing : ",
+            "no_form": "Any form found on the server",
+            "generate_form": "Any form found on the server, try to generate one ?"
+        }
+    },
+    "Element": {
+        "Title": "Definition",
+        "Select_Type": {
+            "title": "Label - Title",
+            "subtitle": "Label - Subtitle",
+            "label": "Label",
+            "checkbox": "Checkbox",
+            "radio": "Radio Button",
+            "textarea": "Text Editable - Multiline",
+            "select": "Drop List",
+            "list": "List",
+            "double_select": "List (double)",
+            "upload": "Local file",
+            "date": "Date",
+            "datetime": "Date Time",
+            "tinymce": "Text Editable - TinyMce",
+            "codemirror": "Text Editable - CodeMirror",
+            "hidden": "Hidden field",
+            "text": "Text Editable - 1 line",
+            "password": "Text Editable - Password",
+            "email": "Text Editable - Mail",
+            "url": "Text Editable - URL",
+            "integer": "Integer",
+            "float": "Float",
+            "button": "Interface - Button",
+            "color_picker": "Color",
+            "slider": "Slider",
+            "hr": "Interface - Separator",
+            "map_osm": "OSM Map",
+            "map_bing": "Bing Map",
+            "map_vmap": "vMap map",
+            "image": "Image (File)",
+            "imageurl": "Image - URL",
+            "image_wsdata": "Image - Business object",
+            "file_wsdata": "Document - Business object",
+            "link": "Link (File)",
+            "linkurl": "Link",
+            "string": "Texte Displayable - 1 line (NI)",
+            "multistring": "Texte Displayable - Multiline (NI)",
+            "treeview": "File on the server(NI)"
+        },
+        "Component": {
+            "General": {
+                "Label": "Label",
+                "Class": "Class",
+                "Name": "Attribute",
+                "Name_GTF": "Parameter",
+                "Width": "Width :",
+                "Height": "Height :",
+                "Required": "Required",
+                "displayOnly": "Display only",
+                "DefaultValue": "Default value",
+                "Value": "Value"
+            },
+            "Button": {
+                "Type": "Button type",
+                "Event": "Event"
+            },
+            "Title": {
+                "Placeholder": "Title text"
+            },
+            "SubTitle": {
+                "Label_PH": "Subtitle text",
+                "Class_PH": "Subtitle class name"
+            },
+            "Label": {
+                "Label_PH": "Label text",
+                "Name_PH": "Label name"
+            },
+            "CheckBox": {
+                "Label_PH": "Text of this Checkbox",
+                "Name_PH": "Checkbox name",
+                "Default": "Checked by default"
+            },
+            "Radio": {
+                "Label_PH": "Text of this radio button",
+                "Name_PH": "Radio name",
+                "Default": "Checked by default",
+                "Disabled": "Disabled by default"
+            },
+            "TextArea": {
+                "Label_PH": "Text Area label",
+                "Name_PH": "Text Area name"
+            },
+            "Select": {
+                "Undefined": "Undefined",
+                "Wait_For_Parent": "Wait for parent",
+                "Filter_equality": "Filter equality",
+                "Filter_attr": "Filter attribute",
+                "BusinessObject_Request_undefined": "Business object request not defined",
+                "BusinessObject_undefined": "Business object not defined",
+                "BusinessObject": "Business object",
+                "BusinessObject_Request": "Business object request",
+                "WebService_undefined": "Web Service undefined",
+                "AttrHelp": "Attributes list use ine the request bounded by char |",
+                "FilterHelp": "Expression like Where locator. The syntax is limited at a simple compare (=) for security",
+                "Ressource_undefined": "Ressource undefined",
+                "Cancel": "Cancel the operation ?",
+                "NoDataReturned": "No data returned",
+                "WebServiceUndefined": "WebService undefined",
+                "RessourceUndefined": "Ressource undefined",
+                "Saved": "Saved",
+                "Add": "Add",
+                "Edit": "Edit",
+                "Default": "Default",
+                "Delete": "Delete",
+                "Datasource_Delete": "Delete the datasource ?",
+                "Datasource_Delete_Used": "The datasource you want to remove is used by one of the elements above:",
+                "Datasource_Exists": "Datasource already exists",
+                "Save": "Validate",
+                "Result": "Preview",
+                "Name": "Name",
+                "Content": "Content",
+                "Content_description": "label|key with backspace",
+                "Description": "Description",
+                "Parameters": "Parameters",
+                "Database": "Database",
+                "Schema": "Schema",
+                "Filter": "Filter",
+                "Table": "Table",
+                "Column": "Column",
+                "Server": "Hostname of server",
+                "Port": "Port",
+                "SGBD": "SGBD",
+                "Login": "Login",
+                "Password": "Password",
+                "Table_List": "Tables",
+                "Table_List_error": "Any table avaliable",
+                "Schema_List": "Schemas",
+                "Schema_List_error": "Any schema avaliable",
+                "Column_List": "Columns",
+                "Label_PH": "Selected label",
+                "Name_PH": "Selected name",
+                "Select": "Entering options",
+                "Select_Type": "Type",
+                "Select_Business_Object": "Business object",
+                "Select_Text": "Text",
+                "Datasource": "Datasource",
+                "Datasources": "Datasources",
+                "DatasourceManagement": "?",
+                "DatasourceManagementTitle": "Use datasource manager (bottom right button) to add or edit datasource",
+                "Select_Webservice": "Vitis web service",
+                "Select_Table_Values": " Local table values",
+                "Select_External_Database": "External database",
+                "Webservice_Class": "API",
+                "Webservice": "Web Service",
+                "Ressource": "Ressource",
+                "Webservice_Id": "Key",
+                "Webservice_Id_PH": "Used key",
+                "Webservice_Label": "Value",
+                "Webservice_Label_PH": "Visible value",
+                "Webservice_Database": "Database",
+                "Webservice_Database_PH": "Database name",
+                "Webservice_Schema": "Schema",
+                "Webservice_Schema_PH": "Schema name",
+                "Webservice_Table": "Table",
+                "Webservice_Table_PH": "Table name",
+                "Options": "Field options",
+                "Multiple": "Multiple selection",
+                "Advanced": "Advanced params",
+                "Cascade": "Cascade",
+                "Child": "Child",
+                "Parents": "Parents",
+                "Parameter": "Filter"
+            },
+            "Double_Select": {
+                "Size": "Number of lines :",
+                "From": "Left selector",
+                "To": "Right selector"
+            },
+            "Date": {
+                "Label_PH": "Label",
+                "Name_PH": "Name"
+            },
+            "Upload": {
+                "Label_PH": "Upload label",
+                "Name_PH": "Upload name",
+                "Ext": "Extensions"
+            },
+            "TinyMce": {
+                "Label_PH": "Component label text",
+                "Name_PH": "Component name",
+                "Row": "Lines",
+                "Row_PH": "Number of lines for this component"
+            },
+            "CodeMirror": {
+                "Label_PH": "Component label text"
+            },
+            "ColorPicker": {
+                "Label_PH": "Color Picker label",
+                "Name_PH": "Color Picker name"
+            },
+            "Hidden": {
+                "Name_PH": "Input name"
+            },
+            "Slider": {
+                "Label_PH": "Component label",
+                "Name_PH": "Component name",
+                "Minimum": "Min",
+                "Minimum_PH": "Component minimum range",
+                "Maximum": "Max",
+                "Maximum_PH": "Component maximum range",
+                "Precision": "Prec.",
+                "Precision_PH": "Accuracy of returned value"
+            },
+            "Text": {
+                "Label_PH": "Input label",
+                "Name_PH": "Input name",
+                "Pattern": "Pattern",
+                "Pattern_PH": "Regular expression used as pattern"
+            },
+            "Password": {
+                "Label_PH": "Input label",
+                "Name_PH": "Input name",
+                "Pattern": "Pattern",
+                "Pattern_PH": "Regular expression used as pattern"
+            },
+            "URL": {
+                "Label_PH": "Input label",
+                "Name_PH": "Input name",
+                "Pattern": "Pattern",
+                "Pattern_PH": "Regular expression used as pattern"
+            },
+            "Map": {
+                "Label_PH": "Field label",
+                "Name_PH": "Field name",
+                "Projection": "Proj.",
+                "Select_center": "Map center mode :",
+                "Extent": "Extent",
+                "CZ": "Center and zoom",
+                "Center_Label": "Map center coords. :",
+                "Latitude": "Lat.",
+                "Longitude": "Lon.",
+                "Zoom": "Scale :",
+                "Extent_label": "Extent",
+                "LonMin": "XMin",
+                "LonMax": "XMax",
+                "LatMin": "YMin",
+                "LatMax": "YMax",
+                "Culture": "Lang.",
+                "Key": "Key",
+                "BingMap": "Map",
+                "ZoomButton": "Zoom button",
+                "MousePosition": "Mouse position",
+                "ScaleLine": "Scale",
+                "CurrentProjection": "Map projection",
+                "FullScreen": "Full screen",
+                "MultiGeom": "Multiple geometries",
+                "RemoveAll": "Remove all",
+                "RemoveOne": "Remove one",
+                "Modify": "Edit",
+                "DrawPoint": "Draw point",
+                "DrawLine": "Draw line",
+                "DrawPolygon": "Draw polygon",
+                "Select": "Simple selection tool",
+                "Notify": {
+                    "OutRange": "Your values are outside of the map"
+                }
+            },
+            "Number": {
+                "Label_PH": "Input label",
+                "Name_PH": "Input name",
+                "Minimum": "Minimum",
+                "Minimum_PH": "Component minimum range",
+                "Maximum": "Maximum",
+                "Maximum_PH": "Component maximum range"
+            },
+            "Image": {
+                "Width": "Maximum width of picture :",
+                "Height": "Maximum height of picture :",
+                "Alias": "Alias",
+                "Alias_PH": "Vitis Alias Name",
+                "Folder": "Folder",
+                "Folder_PH": "Relative Path to Concat With Pictures"
+            },
+            "Link": {
+                "Alias": "Alias",
+                "Alias_PH": "Vitis Alias Name",
+                "Folder": "Folder",
+                "Folder_PH": "Relative Path to Concat With Document",
+                "Target": "Target",
+                "Target_PH": "Target to open document",
+                "Text": "Text",
+                "Text_PH": "Text to display or empty",
+                "TargetOptions": {
+                    "NewTab": "In a new tab"
+                }
+            }
+        },
+        "SameNameWarning": "Two elements can't have the same name"
+    },
+    "Visualizer": {
+        "FormMode": "Preview",
+        "Componant": {
+            "Map": {
+                "RemoveAll": "Remove all geometries",
+                "RemoveOne": "Click on geometry to remove it",
+                "Modify": "Edit a geometry",
+                "Point": "Add a point type geometry",
+                "Line": "Add a line type geometry",
+                "Polygon": "Add a polygon type geometry",
+                "Cancel": "Come back to map simple interactions",
+                "ZoomIn": "Zoom in",
+                "ZoomOut": "Zoom out",
+                "ZoomExtent": "Zoom on the original view"
+            }
+        },
+        "JsonMode": "JSON Output",
+        "JsMode": "Javascript Edit",
+        "CssMode": "CSS Edit",
+        "SaveJSON": "Save JSON form",
+        "LoadDatasourcesValues": "Reload the datasources data",
+        "LoadDefaultJavascript": "Load a default javascript file from server"
+    },
+    "DevTools": {
+        "Title": "Development tools",
+        "JS": "Attach a JS file",
+        "CSS": "Attach a CSS file"
+    },
+    "FormTools": {
+        "Title": "Form attributs",
+        "Title_GTF": "Published parameters",
+        "Row": "Line",
+        "InfoBulle": {
+            "Up": "Move the selected element to the top",
+            "Down": "Move the selected element to the bottom",
+            "Add": "Add an empty line",
+            "AddElement": "Add a published parameter",
+            "Delete": "Delete an element or an empty line"
+        },
+        "Buttons": {
+            "Show_Lines": "View / modify lines",
+            "Manage_datasources": "Manage data sources"
+        },
+        "Confirmation": {
+            "Confirm": "OK",
+            "Cancel": "Cancel",
+            "Add": "The element you are going to add may not be planned on your form",
+            "Remove": "The element you are going to remove may be essential to your form"
+        },
+        "Notify": {
+            "Converter_Error": "Problem with Json input",
+            "Error_ElOnRow": "You can't move a line in a published parameter",
+            "Moved": "Element moved",
+            "Forgotten": "Select a node",
+            "Add": "Line added",
+            "Multiple_elements": "You cannot remove a line witch contains more than one element",
+            "Remove": "Element deleted"
+        }
+    }
+}

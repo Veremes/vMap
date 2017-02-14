@@ -1,0 +1,440 @@
+<form name="{{oFormDefinition[sFormDefinitionName].name}}" 
+      ng-submit="sendForm()" 
+      id="{{oFormDefinition[sFormDefinitionName].name}}" 
+      style="margin: 0px 15px" 
+      autocomplete="{{(oFormDefinition[sFormDefinitionName].autocomplete === true) ? 'on' : 'off'}}">
+    <div ng-repeat="row in :refresh:oFormDefinition[sFormDefinitionName].rows track by $index"  
+         ng-class="{'selected-in-tree': row.selected, 'hover-in-tree': row.hovered}" 
+         class="row form-row {{row.class}}"
+         data-app-form-row-ng-repeat="">
+        <div ng-if="field.visible !== false" ng-repeat="field in :refresh:row.fields track by $index"
+             class="form-group form-group-{{oFormDefinition[sFormDefinitionName].input_size}} col-xs-{{:refresh:field.nb_cols}} col-sm-{{:refresh:field.nb_cols}} col-md-{{:refresh:field.nb_cols}} col-lg-{{:refresh:field.nb_cols}}"
+             data-app-form-field-ng-repeat="">
+            <div ng-class="{'selected-in-tree': field.selected, 'hover-in-tree': field.hovered}">
+                <div ng-switch on="field.type" ng-class="getValidationCssClass(field.name)">
+                    <!-- Titre -->
+                    <div ng-switch-when="title">
+                        <div class="control-label form-title" ng-class="field.class" data-translate="{{:refresh:field.label}}"></div>
+                    </div>
+                    <!-- Sous-titre -->
+                    <div ng-switch-when="subtitle">
+                        <div ng-class="field.class" data-translate="{{:refresh:field.label}}"></div>
+                    </div>
+                    <!-- Label -->
+                    <div ng-switch-when="label">
+                        <label for="{{:refresh:field.id}}" id="{{:refresh:field.id}}_label" class="control-label" data-translate="{{:refresh:field.label}}"></label>
+                        <p class="form-control-static form-label form-label-field no-padding" name="{{:refresh:field.name}}" id="{{:refresh:field.id}}" ng-bind="oFormValues[sFormDefinitionName][field.name]"></p>
+                    </div>
+                    <!-- Checkbox -->
+                    <div ng-switch-when="checkbox" class="checkbox checkbox-margin" style="padding-left: 20px">
+                        <input data-app-form-field-specific-params="" ng-model="oFormValues[sFormDefinitionName][field.name]" ng-change="ctrl.toTest(oFormValues[sFormDefinitionName])" type="checkbox" name="{{:refresh:field.name}}" id="{{:refresh:field.id}}">
+                        <label for="{{:refresh:field.id}}" id="{{:refresh:field.id}}_label" class="control-label" data-translate="{{:refresh:field.label}}"></label>
+                    </div>
+                    <!-- Radio -->
+                    <div ng-switch-when="radio" ng-class="(field.inline) ? 'form-inline formreader-radio-inline' : noop">
+                        <label ng-if=":refresh:field.label" for="{{:refresh:field.id}}" id="{{:refresh:field.id}}_label" class="control-label" data-translate="{{:refresh:field.label}}"></label>
+                        <div class="row">
+                            <div ng-repeat="choice in :refresh:field.options.choices" class="radio col-" style="float: left;margin: 10px 15px;">
+                                <input ng-if="field.disabled"  type="radio" name="{{:refresh:field.name}}" id="radio_{{:refresh:field.id}}_{{$index}}" ng-model="oFormValues[sFormDefinitionName][field.name]" ng-value="choice.value" disabled>
+                                <input ng-if="!field.disabled"  type="radio" name="{{:refresh:field.name}}" id="radio_{{:refresh:field.id}}_{{$index}}" ng-model="oFormValues[sFormDefinitionName][field.name]" ng-value="choice.value">
+                                <label for="radio_{{:refresh:field.id}}_{{$index}}" class="control-label" data-translate="{{choice.label}}"></label>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Textarea -->
+                    <span ng-switch-when="textarea">
+                        <label for="{{:refresh:field.id}}" id="{{:refresh:field.id}}_label" class="control-label" data-translate="{{:refresh:field.label}}"></label>
+                        <textarea ng-model="oFormValues[sFormDefinitionName][field.name]" 
+                                  name="{{:refresh:field.name}}" id="{{:refresh:field.id}}" class="form-control" rows="{{:refresh:field.nb_rows}}" 
+                                  ng-attr-rows="{{:refresh:field.size}}"
+                                  ng-required="field.required" 
+                                  ng-pattern="field.pattern" 
+                                  ng-disabled="field.disabled"></textarea>
+                    </span>  
+                    <!-- Select -->
+                    <span ng-switch-when="select">
+                        <label for="{{:refresh:field.id}}" id="{{:refresh:field.id}}_label" class="control-label" ng-class="field.class_label" data-translate="{{:refresh:field.label}}"></label>
+                        <select ng-if="!field.multiple" 
+                                data-app-form-field-specific-params="" 
+                                ng-model="oFormValues[sFormDefinitionName][field.name].selectedOption"
+                                ng-options="option.label for option in oFormValues[sFormDefinitionName][field.name].options track by option.value" 
+                                name="{{:refresh:field.name}}" 
+                                id="{{:refresh:field.id}}" 
+                                class="form-control" 
+                                ng-class="field.class"
+                                ng-required="field.required">
+                            <!--<option ng-show="!ctrl.valueIsPresent(field, oFormValues[sFormDefinitionName][field.name])" value=""></option>-->
+                        </select>
+                        <div style="height:0px">
+                            <input style="opacity:0;height:0px" type="text" name="{{:refresh:field.name}}" ng-value="oFormValues[sFormDefinitionName][field.name].selectedOption.value" ng-required="field.required">
+                        </div>
+
+                        <!--À supprimer-->
+                        <select ng-if="field.multiple" 
+                                id="{{:refresh:field.id}}" 
+                                name="{{:refresh:field.name}}" 
+                                class="form-control" 
+                                data-app-form-field-specific-params="" 
+                                ng-model="oFormValues[sFormDefinitionName][field.name].selectedOption"
+                                ng-options="option.label for option in oFormValues[sFormDefinitionName][field.name].options track by option.value" 
+                                ng-required="field.required" 
+                                ng-class="field.class"
+                                multiple>
+                        </select>                    
+                    </span>  
+                    <!-- List -->
+                    <span ng-switch-when="list">
+                        <label for="{{:refresh:field.id}}" id="{{:refresh:field.id}}_label" class="control-label" ng-class="field.class_label" data-translate="{{:refresh:field.label}}"></label>                        
+                        <select ng-attr-id="{{:refresh:field.id}}" 
+                                ng-attr-name="{{:refresh:field.name}}" 
+                                ng-attr-size="{{:refresh:field.size}}"
+                                class="form-control" 
+                                data-app-form-field-specific-params="" 
+                                ng-model="oFormValues[sFormDefinitionName][field.name].selectedOption"
+                                ng-options="option.label for option in oFormValues[sFormDefinitionName][field.name].options track by option.value" 
+                                ng-required="field.required" 
+                                ng-class="field.class"
+                                multiple></select>                    
+                    </span>  
+                    <!-- Select double -->
+                    <div ng-switch-when="double_select" class="double-select">
+                        <label for="{{:refresh:field.id}}" id="{{:refresh:field.id}}_label" class="control-label" data-translate="{{:refresh:field.label}}"></label>
+                        <div class="row vertical-align">
+                            <!-- Select (éléments non sélectionnés) -->
+                            <div class="col-xs-6">
+                                <div class="row text-center">
+                                    <label for="{{:refresh:field.id}}_from" id="{{:refresh:field.id}}_label_from" class="control-label" data-translate="{{:refresh:field.label_from}}"></label>
+                                </div>
+                                <div class="row">
+                                    <div class="col-xs-12">
+                                        <select data-app-form-field-specific-params="" id="{{:refresh:field.id}}_from" ng-model="oFormValues[sFormDefinitionName][field.name_from].selectedOption" ng-options="option.label for option in oFormValues[sFormDefinitionName][field.name_from].options track by option.value" name="{{:refresh:field.name_from}}" multiple size="{{:refresh:field.size}}" class="form-control" ng-required="field.required" ng-disabled="field.disabled"></select>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Boutons de transfert -->
+                            <div class="btn-group-vertical double-select-buttons" role="group">
+                                <button type="button" id="{{sFormDefinitionName + '_from_' + field.name_from + '_to_' + field.name_to}}" class="btn btn-sm btn-primary" aria-label="Left Align" ng-click="switchSelectedOptions(sFormDefinitionName, field, field.name_from, field.name_to)" ng-disabled="field.disabled">
+                                    <span class="glyphicon glyphicon-triangle-right"></span>
+                                </button>
+                                <button type="button" id="{{sFormDefinitionName + '_from_' + field.name_to + '_to_' + field.name_from}}" class="btn btn-sm btn-primary" aria-label="Left Align"  ng-click="switchSelectedOptions(sFormDefinitionName, field, field.name_to, field.name_from)" ng-disabled="field.disabled">
+                                    <span class="glyphicon glyphicon-triangle-left"></span>
+                                </button>     
+                            </div>
+                            <!-- Select (éléments sélectionnés) -->
+                            <div class="col-xs-6">
+                                <div class="row text-center">
+                                    <label for="{{:refresh:field.id}}" id="{{:refresh:field.id}}_label_to" class="control-label" data-translate="{{:refresh:field.label_to}}"></label>
+                                </div>
+                                <div class="row">
+                                    <div class="col-xs-12">
+                                        <select data-app-form-field-specific-params="" id="{{:refresh:field.id}}" ng-model="oFormValues[sFormDefinitionName][field.name_to].selectedOption" 
+                                                ng-options="option2.label for option2 in oFormValues[sFormDefinitionName][field.name_to].options track by option2.value" name="{{:refresh:field.name_to}}" multiple size="{{:refresh:field.size}}" class="form-control" ng-required="field.required" ng-disabled="field.disabled"></select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Date -->
+                    <span ng-switch-when="date">
+                        <label for="{{:refresh:field.id}}" id="{{:refresh:field.id}}_label" class="control-label" data-translate="{{:refresh:field.label}}"></label>
+                        <input data-app-form-field-specific-params="" ng-model="oFormValues[sFormDefinitionName][field.name]" type="text" name="{{:refresh:field.name}}" id="{{:refresh:field.id}}" class="form-control" ng-required="field.required">
+                    </span>  
+                    <!-- Upload -->
+                    <span ng-switch-when="upload">
+                        <label for="{{:refresh:field.id}}" id="{{:refresh:field.id}}_label" class="control-label" data-translate="{{:refresh:field.label}}"></label>
+                        <input ng-if="!field.multiple" data-app-form-field-specific-params="" type="file" id="{{:refresh:field.id}}" name="{{:refresh:field.name}}" class="form-control" ng-required="field.required">
+                        <input ng-if="field.multiple" data-app-form-field-specific-params="" type="file" id="{{:refresh:field.id}}" name="{{:refresh:field.name}}" class="form-control" ng-required="field.required" multiple>
+                        <!--<input ng-model="oFormValues[sFormDefinitionName][field.name]" type="hidden" name="{{:refresh:field.name}}">-->
+                    </span>
+                    <!-- TinyMCE -->
+                    <span ng-switch-when="tinymce">
+                        <label for="{{:refresh:field.id}}" id="{{:refresh:field.id}}_label" class="control-label" data-translate="{{:refresh:field.label}}"></label>
+                        <input id="{{:refresh:field.id}}" type="hidden" name="{{:refresh:field.name}}" ng-value="oFormValues[sFormDefinitionName][field.name]">
+                        <textarea data-ui-tinymce="field.tinymceOptions" ng-model="oFormValues[sFormDefinitionName][field.name]" name="{{:refresh:field.name}}" class="form-control" rows="{{:refresh:field.nb_rows}}"></textarea>
+                    </span>  
+                    <!-- CodeMirror -->
+                    <span ng-switch-when="codemirror">
+                        <label for="{{:refresh:field.id}}" id="{{:refresh:field.id}}_label" class="control-label" data-translate="{{:refresh:field.label}}"></label>
+                        <textarea data-app-form-field-specific-params="" data-ui-codemirror="{ onLoad : codemirrorLoaded }" data-ui-codemirror-opts="field.codemirrorOptions" ng-model="oFormValues[sFormDefinitionName][field.name]"></textarea>
+                    </span>  
+                    <!-- Hidden -->
+                    <div ng-switch-when="hidden">
+                        <input type="hidden" name="{{:refresh:field.name}}" id="{{:refresh:field.id}}" ng-value="oFormValues[sFormDefinitionName][field.name]">
+                    </div>
+                    <!-- Slider -->
+                    <div ng-switch-when="slider">
+                        <label for="{{:refresh:field.id}}_slider" class="control-label" data-translate="{{:refresh:field.label}}"></label>
+                        <input type="hidden" name="{{:refresh:field.name}}" id="{{:refresh:field.id}}" ng-value="oFormValues[sFormDefinitionName][field.name]" 
+                               >
+                        <input data-app-form-field-specific-params="" type="text" name="{{:refresh:field.name}}" id="{{:refresh:field.id}}">
+                    </div>
+                    <!-- Tags -->
+                    <div ng-switch-when="editable_double_select">
+                        <label for="{{:refresh:field.id}}" id="{{:refresh:field.id}}_label" class="control-label" data-translate="{{:refresh:field.label}}"></label>
+                        <div class="row">
+                            <!-- Tags non sélectionnés -->
+                            <div class="col-xs-6">
+                                <div class="row">
+                                    <div class="col-xs-12 control-label text-center" data-translate="{{:refresh:field.label_from}}"></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-xs-12 bootstrap-tagsinput-container">
+                                        <input ng-model="oFormValues[sFormDefinitionName][field.name_available_tags]" 
+                                               type="{{:refresh:field.type}}" name="{{:refresh:field.name_available_tags}}" id="{{:refresh:field.id_available_tags}}" class="form-control" data-role="tagsinput">
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Tags sélectionnés -->
+                            <div class="col-xs-6">
+                                <div class="row">
+                                    <div class="col-xs-12 control-label text-center" data-translate="{{:refresh:field.label_to}}"></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-xs-12 bootstrap-tagsinput-container">
+                                        <input ng-model="oFormValues[sFormDefinitionName][field.name]" type="{{:refresh:field.type}}" name="{{:refresh:field.name}}" id="{{:refresh:field.id}}" class="form-control" data-role="tagsinput">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Map Bing -->
+                    <div ng-switch-when="map_bing">
+                        <label for="{{:refresh:field.id}}" id="{{:refresh:field.id}}_label" class="control-label" data-translate="{{:refresh:field.label}}"></label>
+                        <div ng-style="field.style">
+                            <div data-app-form-field-specific-params="" id="{{:refresh:field.id}}_map" class="form-map"></div>
+                        </div>
+                        <input type="text" name="{{:refresh:field.name}}" id="{{:refresh:field.id}}" 
+                               style="position: absolute;opacity: 0;bottom: 0px;"
+                               ng-value="oFormValues[sFormDefinitionName][field.name]" 
+
+                               ng-required="field.required">
+                    </div> 
+                    <!-- Map OSM -->
+                    <div ng-switch-when="map_osm">
+                        <label for="{{:refresh:field.id}}" id="{{:refresh:field.id}}_label" class="control-label" data-translate="{{:refresh:field.label}}"></label>
+                        <div ng-style="field.style">
+                            <div data-app-form-field-specific-params="" id="{{:refresh:field.id}}_map" class="form-map"></div>
+                        </div>
+                        <input type="text" name="{{:refresh:field.name}}" id="{{:refresh:field.id}}" 
+                               style="position: absolute;opacity: 0;bottom: 0px;"
+                               ng-value="oFormValues[sFormDefinitionName][field.name]" 
+
+                               ng-required="field.required">
+                    </div>  
+                    <!-- Map Vmap -->
+                    <div ng-switch-when="map_vmap">
+                        <label for="{{:refresh:field.id}}" id="{{:refresh:field.id}}_label" class="control-label" data-translate="{{:refresh:field.label}}"></label>
+                        <div ng-style="field.style">
+                            <div class="row form-map-container">
+                                <!--Sélecteur de couches-->
+                                <div ng-class="{'col-xs-3' : Map.bLayersTreeOpen, 'hidden' : !Map.bLayersTreeOpen}" class="form-map-layertree">                                  
+                                    <div ng-repeat="service in Map.aTree">
+                                        <span class="font-12">{{service.service}}</span>
+                                        <ul class="form-map-layertree-ul">
+                                            <li ng-repeat="layer in service.layers" class="margin-3">
+                                                <div class="list-group-item">
+                                                    <span class="font-11">{{layer.layer.values.name}}</span>                                                    
+                                                    <!-- Checkbox visible -->
+                                                    <div class="checkbox checkbox-info inline-checkbox">
+                                                        <input id="{{layer.$$hashKey}}_visible_order_checkbox" 
+                                                               type="checkbox" 
+                                                               style="cursor:pointer; position: absolute" 
+                                                               title="Definit si la couche est visible"
+                                                               ng-checked="layer.layer.values.visible === true" 
+                                                               ng-click="layer.layer.setVisible(!layer.layer.values.visible)">
+                                                        <label for="{{layer.$$hashKey}}_visible_order_checkbox" style="cursor:pointer" title="Definit si la couche est visible"></label>
+                                                    </div> 
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <!--Carte-->
+                                <div ng-class="{'col-xs-9' : Map.bLayersTreeOpen}" style="height:100%" class="padding-sides-0">
+                                    <div data-app-form-field-specific-params="" id="{{:refresh:field.id}}_map" class="form-map"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="text" name="{{:refresh:field.name}}" id="{{:refresh:field.id}}" 
+                               style="position: absolute;opacity: 0;bottom: 0px;"
+                               ng-value="oFormValues[sFormDefinitionName][field.name]" 
+                               ng-required="field.required">
+                    </div> 
+                    <!--ColorPicker-->
+                    <div ng-switch-when="color_picker">
+                        <label for="{{:refresh:field.id}}" id="{{:refresh:field.id}}_label" class="control-label" data-translate="{{:refresh:field.label}}"></label>
+                        <input data-app-form-field-specific-params="" 
+                               type="text" 
+                               id="{{:refresh:field.id}}" 
+                               class="form-control" 
+                               ng-value="oFormValues[sFormDefinitionName][field.name]" 
+
+                               ng-required="field.required"/>
+                    </div>
+                    <!-- HR -->
+                    <div ng-switch-when="hr">
+                        <hr>
+                    </div>
+                    <!-- image -->
+                    <div ng-switch-when="image">
+                        <label for="{{:refresh:field.id}}" id="{{:refresh:field.id}}_label" class="control-label" data-translate="{{:refresh:field.label}}"></label>
+                        <img data-app-form-field-specific-params="" ng-click="openViewer()" id="{{:refresh:field.id}}" ng-src="{{oProperties.web_server_name}}/{{oProperties[field.alias]}}/{{:refresh:field.folder}}/{{oFormValues[sFormDefinitionName][field.name]}}" alt="image"  class="img-responsive" style="max-width:{{:refresh:field.width}}; max-height: {{:refresh:field.style.height}}"/>
+                    </div>
+                    <!-- image url -->
+                    <div ng-switch-when="imageurl">
+                        <label for="{{:refresh:field.id}}" id="{{:refresh:field.id}}_label" class="control-label" data-translate="{{:refresh:field.label}}"></label>
+                        <img data-app-form-field-specific-params="" ng-click="openViewer()" id="{{:refresh:field.id}}" ng-src="{{oFormValues[sFormDefinitionName][field.name]}}" alt="image"  class="img-responsive"/>
+                    </div>
+                    <!-- image ws_data -->
+                    <div ng-switch-when="image_wsdata">
+                        <label for="{{:refresh:field.id}}" id="{{:refresh:field.id}}_label" class="control-label" data-translate="{{:refresh:field.label}}"></label>
+                        <!--Si l'image n'existe pas-->
+                        <div ng-show="!oFormValues[sFormDefinitionName][field.name].length > 0">
+                            <input ng-if="!field.multiple" data-app-form-field-specific-params="" type="file" id="{{:refresh:field.id}}" name="{{:refresh:field.name}}" class="form-control" ng-required="field.required">
+                            <input ng-if="field.multiple" data-app-form-field-specific-params="" type="file" id="{{:refresh:field.id}}" name="{{:refresh:field.name}}" class="form-control" ng-required="field.required" multiple>
+                        </div>
+                        <!--Si l'image existe-->
+                        <div ng-show="oFormValues[sFormDefinitionName][field.name].length > 0">
+                            <img id="{{:refresh:field.id}}_img" ng-src="{{oFormValues[sFormDefinitionName][field.name]}}" alt="image" class="img-responsive" width="100%"/>                        
+                            <div ng-if="!field.displayOnly">
+                                <div style="float: left; width:95%">
+                                    <input ng-if="!field.multiple" data-app-form-field-specific-params="" type="file" id="{{:refresh:field.id}}" name="{{:refresh:field.name}}" class="form-control" ng-required="field.required">
+                                    <input ng-if="field.multiple" data-app-form-field-specific-params="" type="file" id="{{:refresh:field.id}}" name="{{:refresh:field.name}}" class="form-control" ng-required="field.required" multiple>
+                                </div>
+                                <div style="float: right; width:5%">
+                                    <a ng-href="{{oFormValues[sFormDefinitionName][field.name]}}" download class="btn btn-xs btn-success"><span class="glyphicon glyphicon-download"></span></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Boutons -->
+                    <div ng-switch-when="button">
+                        <span ng-repeat="button in field.buttons track by $index" ng-class="field.class">
+                            <!-- Bouton avec libellé -->
+                            <button ng-if="button.label" data-app-button="" type="{{button.type}}" ng-click="button.event ? executeButtonEvent($event, button.event) : noop" data-translate="{{button.label}}" name="{{button.name}}" id="{{button.id ? button.id : sFormDefinitionName + '_' + button.name}}" class="btn" ng-class="button.class"></button>
+                            <!-- Bouton bootstrap -->
+                            <button ng-if="button.glyphicon" data-app-button="" type="{{button.type}}" ng-click="button.event ? executeButtonEvent($event, button.event) : noop" name="{{button.name}}" id="{{button.id ? button.id : sFormDefinitionName + '_' + button.name}}" class="btn" ng-class="button.class">
+                                <span class="glyphicon glyphicon-{{button.glyphicon}}"></span>
+                            </button>
+                        </span>
+                    </div>
+                    <span ng-switch-when="password">
+                        <!-- Text -->
+                        <label for="{{:refresh:field.id}}" id="{{:refresh:field.id}}_label" class="control-label" data-translate="{{:refresh:field.label}}"></label>
+                        <input data-app-form-field-specific-params="" 
+                               ng-model="oFormValues[sFormDefinitionName][field.name]" 
+                               type="password" 
+                               name="{{:refresh:field.name}}" 
+                               id="{{:refresh:field.id}}" 
+                               class="form-control" 
+                               ng-required="field.required" 
+                               ng-disabled="field.disabled" 
+                               ng-pattern="field.pattern">
+                    </span>
+                    <!-- Onglets -->
+                    <div ng-switch-when="tab">
+                        <ul class="nav nav-{{(field.tab_type == 'pills') ? 'pills' : 'tabs'}}" role="tablist">
+                            <li ng-repeat="tab in :refresh:field.tabs track by $index" role="presentation" class="{{($index == 0) ? 'active' : noop}}"><a href="#{{:refresh:sFormDefinitionName + '_' + tab.name + '_tab'}}" aria-controls="{{:refresh:sFormDefinitionName + '_' + tab.name + '_tab'}}" role="tab" data-toggle="{{(field.tab_type == 'pills') ? 'pill' : 'tab'}}" data-translate="{{:refresh:tab.label}}"></a></li>                    
+                        </ul>    
+                    </div>
+                    <!-- Link -->
+                    <div ng-switch-when="link">
+                        <label for="{{:refresh:field.id}}" id="{{:refresh:field.id}}_label" class="control-label row no-bs-row-margin" data-translate="{{:refresh:field.label}}"></label>
+                        <a id="{{:refresh:field.id}}" name="{{:refresh:field.name}}" ng-href="{{oProperties.web_server_name}}/{{oProperties[field.alias]}}/{{:refresh:field.folder}}/{{oFormValues[sFormDefinitionName][field.name]}}" target="{{field.target}}" class="row no-bs-row-margin">{{oFormValues[sFormDefinitionName][field.name]}}</a>
+                    </div>
+                    <!-- Link URL -->
+                    <div ng-switch-when="linkurl">
+                        <label for="{{:refresh:field.id}}" id="{{:refresh:field.id}}_label" class="control-label row no-bs-row-margin" data-translate="{{:refresh:field.label}}"></label>
+                        <a data-app-form-field-specific-params id="{{:refresh:field.id}}" name="{{:refresh:field.name}}" ng-href="{{oFormValues[sFormDefinitionName][field.name]}}" target="{{isStringNotEmpty(field.target) ? field.target : '_blank'}}" class="row no-bs-row-margin">{{isStringNotEmpty(field.text) ? field.text : oFormValues[sFormDefinitionName][field.name]}}</a>
+                    </div>
+                    <!-- File WS_Data -->
+                    <div ng-switch-when="file_wsdata">
+                        <label for="{{:refresh:field.id}}" id="{{:refresh:field.id}}_label" class="control-label" data-translate="{{:refresh:field.label}}"></label>
+                        <div>
+                            <a ng-href="{{oFormValues[sFormDefinitionName][field.name]}}" download>{{oFormValues[sFormDefinitionName][field.name].substr(oFormValues[sFormDefinitionName][field.name].lastIndexOf('/')+1)}}</a>
+                        </div>
+                        <div ng-if="!field.displayOnly">
+                            <input ng-if="!field.multiple" data-app-form-field-specific-params="" type="file" id="{{:refresh:field.id}}" name="{{:refresh:field.name}}" class="form-control" ng-required="field.required">
+                            <input ng-if="field.multiple" data-app-form-field-specific-params="" type="file" id="{{:refresh:field.id}}" name="{{:refresh:field.name}}" class="form-control" ng-required="field.required" multiple>
+                        </div>
+                    </div>
+                    <!-- UI Grid -->
+                    <div ng-switch-when="ui_grid">
+                        <label for="{{:refresh:field.id}}" id="{{:refresh:field.id}}_label" class="control-label row no-bs-row-margin" data-translate="{{:refresh:field.label}}"></label>
+                        <!-- Header -->
+                        <div ng-show="::gridOptions.appHeader" id="{{:refresh:field.id}}_grid_header" class="col-xs-12 ui-grid-form-field-header no_bs_padding">
+                            <!-- Titre de l'onglet -->
+                            <div ng-if="::gridOptions.appHeaderTitleBar" class="row">
+                                <div class="col-xs-12 ui-grid-form-field-header-title">
+                                    <div class="row">
+                                        <div class="col-xs-5 no_bs_padding" data-translate="{{::gridOptions.appGridTitle}}"></div>
+                                        <div class="col-xs-7  text-right no_bs_padding">
+                                            <button ng-repeat="action in gridOptions.appActions" type="button" name="{{::action.name}}" id="{{::action.name + '_ui_grid_add'}}" class="btn btn-primary btn-xs" ng-click="$root.$eval(action.event)" style="margin-left: 10px;" data-translate="{{::action.label}}"></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Liste ui-grid -->
+                        <div id="{{:refresh:field.id}}_grid" class="ui-grid-form-field">
+                            <div id="{{:refresh:field.id}}_grid_data" class="col-xs-12 no_bs_padding ui-grid-form-field-data" data-ui-grid="gridOptions" data-ui-grid-selection="" data-ui-grid-pagination="" data-ui-grid-move-columns="" data-ui-grid-resize-columns="" data-ui-grid-draggable-rows=""></div>                    
+                        </div>
+                    </div>
+                    <!-- Default -->
+                    <span ng-switch-default>
+                        <!-- Text -->
+                        <span ng-if="isFormTextElement(field.type)">
+                            <label for="{{:refresh:field.id}}" id="{{:refresh:field.id}}_label" class="control-label" data-translate="{{:refresh:field.label}}"></label>
+                            <!--Others-->
+                            <input ng-if="(field.type !== 'integer' && field.type !== 'float' && field.type !== 'number' && field.type !== 'url' && field.type !== 'email')" 
+                                   data-app-form-field-specific-params="" ng-model="oFormValues[sFormDefinitionName][field.name]" 
+                                   type="text" 
+                                   name="{{:refresh:field.name}}" 
+                                   id="{{:refresh:field.id}}" 
+                                   class="form-control {{:refresh:field.class}}" 
+                                   ng-required="field.required" 
+                                   ng-disabled="field.disabled" 
+                                   ng-pattern="field.pattern">
+                            <!--Number, Integer, Float-->
+                            <input ng-if="(field.type === 'integer' || field.type === 'float' || field.type === 'number')" 
+                                   data-app-form-field-specific-params="" 
+                                   ng-model="oFormValues[sFormDefinitionName][field.name]" 
+                                   ng-init="numberUpdate()" 
+                                   type="text" 
+                                   name="{{:refresh:field.name}}" 
+                                   id="{{:refresh:field.id}}" 
+                                   class="form-control" 
+                                   ng-required="field.required" 
+                                   ng-disabled="field.disabled" 
+                                   ng-change="numberUpdate()">
+                            <!--URL-->
+                            <input ng-if="field.type === 'url'" 
+                                   data-app-form-field-specific-params="" 
+                                   ng-model="oFormValues[sFormDefinitionName][field.name]"
+
+                                   type="text" 
+                                   name="{{:refresh:field.name}}" 
+                                   id="{{:refresh:field.id}}" 
+                                   class="form-control" 
+                                   ng-required="field.required" 
+                                   ng-disabled="field.disabled" 
+                                   ng-pattern="field.pattern">
+                            <!--Email-->
+                            <input ng-if="field.type === 'email'" 
+                                   data-app-form-field-specific-params="" 
+                                   ng-model="oFormValues[sFormDefinitionName][field.name]" 
+
+                                   type="text" 
+                                   name="{{:refresh:field.name}}" 
+                                   id="{{:refresh:field.id}}" 
+                                   class="form-control" 
+                                   ng-required="field.required" 
+                                   ng-disabled="field.disabled" 
+                                   ng-pattern="field.pattern">
+                        </span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

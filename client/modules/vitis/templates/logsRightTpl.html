@@ -1,0 +1,16 @@
+<div data-app-logs="" class="row no-bs-row-margin logs-content">
+        <div id="logs-content-container" class="col-xs-12 logs-content-container">
+                <div class="row no-bs-row-margin">
+                        <div class="col-xs-12 no-bs-col-padding logs-content-log-path">{{sLogPath}}
+                                <button type="button" id="btn_delete_log_file" class="btn btn-xs btn-primary logs-delete-file" aria-label="Left Align" ng-click="deleteLogFile(aSelectedLogFile)">
+                                        <span class="glyphicon glyphicon-trash"></span>
+                                </button>                        
+                        </div>
+                </div>
+                <div class="row no-bs-row-margin">
+                        <div class="col-xs-12 no-bs-col-padding logs-content-textarea-container">
+                                <textarea ng-bind="sLogContent"  readonly="readonly"></textarea>
+                        </div>
+                </div>
+        </div>
+</div>

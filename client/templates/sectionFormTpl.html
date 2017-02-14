@@ -1,0 +1,22 @@
+<div data-app-section-form="" class="row section-form">
+    <!-- Menu des sections -->
+    <div class="col-xs-2_5 section-form-edit-first">
+        <!-- Titre -->
+        <nav class="sections-container">
+            <div class="section-form-section-title">
+                {{oSectionForm[sSelectedObjectName].title}}
+            </div>
+            <!-- Sections -->
+            <div data-app-section-form-menu="" 
+                 ng-repeat="section in ::oSectionForm[sSelectedObjectName].sections track by $index" 
+                 ng-click="selectSection($index, oSectionForm[sSelectedObjectName].sections[$index])">
+                {{section.label}} <span class="icon-keyboard_arrow_right section-keyboard_arrow_right"></span>
+            </div>
+        </nav>
+    </div>
+    <!-- Conteneur des sections -->
+    <div class="col-xs-9_5 section-form-edit-second">
+        <!-- Objests de l'application -->
+        <div data-app-section-form-section="" ng-repeat="section in ::oSectionForm[sSelectedObjectName].sections track by $index" id="container_section_{{::sSelectedObjectName + '_' + section.name}}" class="container-section"></div>
+    </div>
+</div>

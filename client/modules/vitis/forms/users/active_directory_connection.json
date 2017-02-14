@@ -1,0 +1,79 @@
+{
+    "search":{
+        "name":"active_directory_connection_form",
+        "title":"",
+        "input_size":"xs",
+        "event":"loadImportForm()",
+        "nb_cols":12,
+        "rows":[
+            {
+                "fields":[
+                    {
+                        "type":"select",
+                        "name":"domain",
+                        "label":"FORM_DOMAIN_ACTIVE_DIRECTORY_CONNECTION",
+                        "web_service":{
+                            "ressource_id":"vitis/domains",
+                            "id_key":"domain_id",
+                            "label_key":"domain",
+                            "callback": "selectFirstOption('domain')",
+                            "parameters":{
+                                    "order_by":"domain"
+                            }
+                        },
+                        "nb_cols":8,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"text",
+                        "name":"login",
+                        "label":"FORM_LOGIN_ACTIVE_DIRECTORY_CONNECTION",
+                        "required": true,
+                        "nb_cols":5
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"password",
+                        "name":"password",
+                        "label":"FORM_PASSWORD_ACTIVE_DIRECTORY_CONNECTION",
+                        "required": true,
+                        "nb_cols":5
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"button",
+                        "class":"btn-ungroup btn-group-sm import-user-ad-connect-btn",
+                        "nb_cols":12,
+                        "buttons":[
+                            {
+                                "type":"submit",
+                                "name":"form_submit",
+                                "label":"FORM_CONNECTION_ACTIVE_DIRECTORY_CONNECTION",
+                                "class":"btn-primary"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "update":{
+            
+    },
+    "insert":{
+
+    },
+    "display":{
+            
+    }
+}

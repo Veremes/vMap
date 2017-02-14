@@ -1,0 +1,87 @@
+<!-- Gestion de la carte en cours -->
+
+
+<h3>Carte en cours: </h3>
+
+<hr>
+
+<!-- Vue -->
+<br>
+<div class="input-group">
+    <span class="input-group-addon" id="sizing-addon2">Projection:</span>
+    <label type="text" class="form-control" value="{{ctrl.view.projection}}" aria-describedby="sizing-addon2" style="cursor:default !important;" readonly>{{ctrl.view.projection}}</label>
+</div>
+<br>
+<div class="row">
+    <div class="col-md-3">
+        <div class="input-group">
+            <span class="input-group-addon" id="sizing-addon2">Zoom:</span>
+            <label type="text" class="form-control" value="{{ctrl.view.zoom}}" aria-describedby="sizing-addon2" style="cursor:default !important;" readonly>{{ctrl.view.zoom}}</label>
+        </div>
+    </div>
+    <div class="col-md-9">
+        <div class="input-group">
+            <span class="input-group-addon" id="sizing-addon2">Centre:</span>
+            <label type="text" class="form-control" value="{{ctrl.view.center}}" aria-describedby="sizing-addon2" style="cursor:default !important;" readonly>{{ctrl.view.center}}</label>
+        </div>
+    </div>
+</div>
+<br>
+<div class="input-group">
+    <span class="input-group-addon" id="sizing-addon2">Etendue</span>
+    <label type="text" class="form-control font-12" value="{{ctrl.view.extent}}" aria-describedby="sizing-addon2" style="cursor:default !important;" readonly>{{ctrl.view.extent}}</label>
+</div>
+
+<br>
+<br>
+
+<!-- Liste des services & couches -->
+<div ng-repeat="service in ctrl.oLayersTree.children">
+
+    <div ng-if="service.children" class="tree my-map-tree white">
+        <ul style="padding-left: 0px">
+            <li>
+                <!-- service -->
+                <span>
+                    <div class="tree-father-collapse-btn" data-toggle="collapse" data-target="#tree_element_{{$id}}">
+                        {{service.name}}
+                    </div>
+                </span>
+                <ul id="tree_element_{{$id}}" class="collapse in">
+                    <!-- liste des couches -->
+                    <li ng-repeat="layer in service.children">
+                        <div class="list-group-item auto-height" style="margin-right: 30px">
+                            <div class="row">
+                                <div class="col-md-10" style="padding-right: 0px">
+                                    <div class="layer-name layer-name-tree">{{layer.name}}</div>
+                                    <div class="checkbox checkbox-info inline-checkbox">
+                                        <input ng-model="layer.olLayer.getVisible()" ng-model-options="{getterSetter: true}" type="checkbox" style="cursor:default; position: absolute" title="Definit si la couche est visible">
+                                        <label for="" style="cursor:default" title="Definit si la couche est visible"></label>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <button class="btn btn-xs btn-warning glyphicon glyphicon glyphicon-trash right" aria-hidden="true" data-toggle="tooltip" title="Supprime la couche de la carte" ng-click="ctrl.removeLayer(layer.olLayer)"></button>
+                                </div>
+                            </div>						
+                        </div>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<br>
+<div style="display: inline-block; width: 100%">
+
+    <div ng-if="ctrl.isIE">
+        <a id="exportMapButtonIe" class="btn btn-warning left" ng-click="ctrl.downloadBlob()">Télécharger ie</a>
+    </div>
+    <div ng-if="!ctrl.isIE">
+        <!-- le href est défini dans nsVmap.nsMapManager.nsMapModal.MyMap.mymapController.reloadMapFile -->
+        <a id="exportMapButton" class="btn btn-warning left" href="" download="map.json">Télécharger</a>
+    </div>
+
+
+</div>
+<button id="btn-reload-myMap" style="display: none" ng-click="ctrl.reloadTree()">Reload map</button>

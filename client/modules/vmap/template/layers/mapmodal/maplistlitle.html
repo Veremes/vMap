@@ -1,0 +1,65 @@
+<!-- Liste des cartes utilisables -->
+<div>
+    <!--Champ de recherche-->
+    <div style="width: 100%; height: 30px;">
+
+        <select class="form-control minus left margin-5 margin-sides-10" style="width: 200px" ng-model="filterTheme">
+            <option value="">Tous</option>
+            <option ng-repeat="theme in themes track by $index" ng-value="theme">{{theme}}</option>
+        </select>
+
+        <input class="form-control input-sm right margin-sides-10 margin-5" 
+               type="text" 
+               placeholder="Rechercher" 
+               style="width: 200px;"
+               ng-model="filter">
+    </div>
+
+
+    <!--Liste des cartes-->
+    <div class="map-list-litle-panel-list">
+        <div ng-repeat="(theme, maps) in mapsByThemes" class="margin-sides-5 row">
+
+            <div ng-init="collapsedThemes[theme] = false">                    
+                <span class="arrow-collapse pointer" 
+                      ng-class="{'icon-keyboard_arrow_right': (collapsedThemes[theme] === true), 'icon-keyboard_arrow_down': (collapsedThemes[theme] !== true)}"
+                      ng-click="collapsedThemes[theme] = !collapsedThemes[theme]"></span>
+                <span class="pointer"
+                      ng-click="collapsedThemes[theme] = !collapsedThemes[theme]">{{theme === 'null' ? 'Autres' : theme}}</span>
+            </div>
+            <hr style="margin: 3px 15px">
+
+            <div id="maplistlitle_{{$index}}_maps" ng-show="collapsedThemes[theme] !== true">
+                <div ng-repeat="map in maps| orderBy: 'name'">
+                    <div ng-if="($index + 1) % 4 === 0" class="row">
+                        <div url="{{map.url}}"
+                             title="{{map.description}}"
+                             class="col-md-3 margin-10 pointer opacity-hover underline-hover maplist-map" 
+                             style="text-align: center; font-size: 12px;"
+                             onclick="oVmap.getMapManager().loadMap(this)"
+                             data-dismiss="modal">
+
+                            <div onclick="$('#maplistlitle-container').removeClass('open')" ng-class="{'border-black': map.used === true}">			
+                                <div class="img-map" style="background-image: url('{{map.thumbnail}}')"></div>
+                                {{map.name}}
+                            </div>
+                        </div>
+                    </div>
+                    <div ng-if="($index + 1) % 4 !== 0" 
+                         url="{{map.url}}"
+                         title="{{map.description}}"
+                         class="col-md-3 margin-10 pointer opacity-hover underline-hover maplist-map" 
+                         style="text-align: center; font-size: 12px;"
+                         onclick="oVmap.getMapManager().loadMap(this)"
+                         data-dismiss="modal">
+
+                        <div onclick="$('#maplistlitle-container').removeClass('open')" ng-class="{'border-black': map.used === true}">			
+                            <div class="img-map" style="background-image: url('{{map.thumbnail}}')"></div>
+                            {{map.name}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

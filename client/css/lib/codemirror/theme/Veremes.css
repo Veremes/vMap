@@ -1,0 +1,35 @@
+/* 
+    Created on : 20 janv. 2016, 14:20:16
+    Author     : a_borghi
+*/
+
+.cm-s-Veremes.CodeMirror { background: #FBF1FA !important; color: #000000 !important; } 
+.cm-s-Veremes div.CodeMirror-selected { background: rgba(66, 145, 202, 0.55); } 
+.cm-s-Veremes .CodeMirror-line::selection, .cm-s-Veremes .CodeMirror-line > span::selection, .cm-s-Veremes .CodeMirror-line > span > span::selection { background: #FB0000; }
+.cm-s-Veremes .CodeMirror-line::-moz-selection, .cm-s-Veremes .CodeMirror-line > span::-moz-selection, .cm-s-Veremes .CodeMirror-line > span > span::-moz-selection { background: #FB0000; }
+.cm-s-Veremes .CodeMirror-gutters { background: #6d1a67; border-right: 2px solid #6d1a67; } 
+.cm-s-Veremes .CodeMirror-guttermarker { color: #FB0000; }
+.cm-s-Veremes .CodeMirror-guttermarker-subtle { color: #FB0000; }
+.cm-s-Veremes .CodeMirror-linenumber { color: #FFFFFF; } 
+.cm-s-Veremes .CodeMirror-cursor { border-left: 1px solid #000000; } 
+
+.cm-s-Veremes .cm-keyword { color: #6d1a67; font-weight: bold; } 
+.cm-s-Veremes span.cm-atom { color: #C79F26; }  
+.cm-s-Veremes span.cm-number { color: #DC00BF; } 
+.cm-s-Veremes span.cm-def { color: #2BAF2A; }   
+.cm-s-Veremes span.cm-variable { color: #0093FF; }  
+.cm-s-Veremes span.cm-variable-2 { color: #116F1E; }  
+.cm-s-Veremes span.cm-variable-3 { color: #9A7F19; }
+.cm-s-Veremes span.cm-property { color: #001DFB; } 
+.cm-s-Veremes span.cm-operator { color: #000000; } 
+.cm-s-Veremes span.cm-comment { color: #0F0F0F; } 
+.cm-s-Veremes span.cm-string { color: #3F6DD8; } 
+.cm-s-Veremes span.cm-meta { color: #001DFB; }
+.cm-s-Veremes span.cm-qualifier { color: #9819A7; }
+.cm-s-Veremes span.cm-builtin { color: #40D9DA; }
+.cm-s-Veremes span.cm-bracket { color: #FB0000; }
+.cm-s-Veremes span.cm-tag { color: #635252; }
+.cm-s-Veremes span.cm-attribute { color: #FB0000; }
+.cm-s-Veremes span.cm-error { color: #FB0000; }
+
+.cm-s-Veremes .CodeMirror-activeline-background { background: #FB0000; } 

@@ -1,0 +1,497 @@
+// Formulaires
+form .form-inline {
+    margin-bottom: 15px;
+}
+
+form .form-inline .form-group {
+    //padding-right: 5px;
+}
+
+form select[multiple] {
+    height: auto !important;
+}
+
+form .btn-group {
+    display: table;
+}        
+
+.form-label {
+    padding-top: 0;
+}
+
+.double-select-buttons {
+    padding-top: 25px;
+}
+
+// Titre.
+.form-title {
+    color: @font-color-purple;
+    font-size: 16px !important;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+// Sous-titre.
+.form-subtitle {
+    padding-top: 2px;
+    font-weight: bold;
+}
+.form-subtitle-inline {
+    margin-top:7px
+}
+
+// Titre de section.
+.form-section-title {
+    padding: 7px 10px;
+    margin-top: 7px;
+    color: @font-color-purple;
+    font-size: 16px !important;
+    border-top: 1px solid black;
+    border-bottom: 1px solid black;
+}
+
+.form-validation-alert {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    display: none;
+    z-index: 999;
+}
+
+// Label
+.form-label-field {
+    display: table;
+    height: auto !important;
+    line-height: 1 !important;
+    margin-bottom: 0.5em;        
+}
+
+// Bootstrap
+// Pas de marge entre les lignes
+.form-group-no-margin, .form-group-no-margin .form-group, .form-group-no-margin .radio, .form-group-no-margin .checkbox {
+    margin-top: 1px;
+    margin-bottom: 1px;
+}
+
+.form-group-no-margin-top, .form-group-no-margin-top .form-group, .form-group-no-margin-top .radio, .form-group-no-margin-top .checkbox {
+    margin-top: 1px;
+}
+
+.form-group-no-margin-bottom, .form-group-no-margin-bottom .form-group, .form-group-no-margin-bottom .radio, .form-group-no-margin-bottom .checkbox {
+    margin-bottom: 1px;
+}
+
+// Champs de formulaire "xs" (n'existe pas dans BS3').
+.form-group-xs {
+    margin-bottom: 10px;
+}
+
+.form-group-xs .form-control {
+    height: 25px;
+    padding: 4px 5px;
+    font-size: 12px;
+    line-height: 1.5;
+    border-radius: 3px;
+}
+select.form-group-xs .form-control {
+    height: 25px;
+    line-height: 25px;
+}
+select.form-control {
+    padding: 2px !important;
+}
+
+textarea.form-group-xs .form-control,
+select[multiple].form-group-xs .form-control {
+    height: auto;
+}
+
+.form-group-xs .form-control-static {
+    height: 30px;
+    min-height: 0;
+    padding: 5px 10px;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.form-group-xs .control-label {
+    font-size: 12px;
+    line-height: 1.65;
+}
+
+@media (min-width: 768px) {
+    .form-horizontal .form-group-xs .control-label {
+        padding-top: 6px;
+    }
+}
+//
+// Champs de formulaire "xxs".
+.form-group-xxs {
+    margin-bottom: 7px;
+}
+
+.form-group-xxs .form-control {
+    height: 22px;
+    padding: 2px 5px;
+    font-size: 11px;
+    line-height: 1.5;
+    border-radius: 3px;
+}
+
+select.form-group-xxs .form-control {
+    height: 22px;
+    line-height: 22px;
+}
+
+select.form-control {
+    padding: 2px !important;
+}
+
+textarea.form-group-xxs .form-control,
+select[multiple].form-group-xxs .form-control {
+    height: auto;
+}
+
+.form-group-xxs .form-control-static {
+    height: 30px;
+    min-height: 0;
+    padding: 5px 10px;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.form-group-xxs .control-label {
+    font-size: 11px;
+    line-height: 1.65;
+}
+
+.form-group-xxs label {
+    margin-bottom: 2px;
+}
+.input-xs, .input-group-xs > .form-control, .input-group-xs > .input-group-addon, .input-group-xs > .input-group-btn > .btn {
+    height: 22px;
+    padding: 0px 10px;
+    font-size: 12px;
+    line-height: 1.5;
+    border-radius: 3px;
+    margin: 0px;
+}
+
+@media (min-width: 768px) {
+    .form-horizontal .form-group-xxs .control-label {
+        padding-top: 6px;
+    }
+}
+//
+// Plugin bootstrap-fileinput.
+.input-file-lg > .input-group-btn > .btn {
+    border-radius: 3px;
+    font-size: 16px;
+    height: 46px;
+    line-height: 1.65;
+    padding: 9px 10px;
+}
+
+.input-file-sm > .input-group-btn > .btn {
+    border-radius: 3px;
+    font-size: 12px;
+    height: 30px;
+    line-height: 1.5;
+    padding: 5px 10px;
+}
+
+.input-file-xs > .input-group-btn > .btn {
+    border-radius: 3px;
+    font-size: 12px;
+    height: 25px;
+    line-height: 1;
+    padding: 4px 10px;
+}
+
+.input-file-xxs > .input-group-btn > .btn {
+    border-radius: 3px;
+    font-size: 11px;
+    height: 22px;
+    line-height: 1;
+    padding: 3px 10px;
+}
+
+//
+// Bouton noir (n'existe pas dans BS3').
+.btn-inverse {
+    color: #ffffff;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+    background-color: #363636;
+    *background-color: #222222;
+    background-image: -moz-linear-gradient(top, #444444, #222222);
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#444444), to(#222222));
+    background-image: -webkit-linear-gradient(top, #444444, #222222);
+    background-image: -o-linear-gradient(top, #444444, #222222);
+    background-image: linear-gradient(to bottom, #444444, #222222);
+    background-repeat: repeat-x;
+    border-color: #222222 #222222 #000000;
+    border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff444444', endColorstr='#ff222222', GradientType=0);
+    filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, .2);
+    -webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, .15), 0 1px 1px rgba(0, 0, 0, .075);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .15), 0 1px 1px rgba(0, 0, 0, .075);
+}
+
+.btn-inverse:hover,
+.btn-inverse:focus,
+.btn-inverse:active,
+.btn-inverse.active,
+.btn-inverse.disabled,
+.btn-inverse[disabled] {
+    color: #ffffff;
+    background-color: #222222;
+    *background-color: #151515;
+    -webkit-box-shadow: inset 0 3px 5px rgba(0, 0, 0, .125);
+    box-shadow: inset 0 3px 5px rgba(0, 0, 0, .125);
+}
+
+.btn-inverse:active,
+.btn-inverse.active {
+    background-color: #080808 \9;
+}
+
+.btn-inverse.active {
+    color: rgba(255, 255, 255, 0.75);
+}
+//
+// Boutons non groupés
+.btn-ungroup > .btn {
+    margin: 0 3px;
+}
+
+.btn-ungroup > .btn:first-child {
+    margin: 0;
+}
+//
+textarea.form-control {
+    height: auto !important;
+}
+
+// Marge des labels.
+.form-label-no-bottom-margin * {
+    margin-bottom: 0;
+}
+//
+.form-radio-no-top-margin > .radio {
+    margin-top: 0;
+}
+
+// Slider
+.slider.slider-horizontal {
+    width: 100%;
+}
+
+// Alignement vertical entre champs de form.
+.form-field-inline > div {
+    display: inline-block;
+    float: none;
+    vertical-align: bottom;
+}
+
+// Element contenant le tooltip d'infos pour un champ de formulaire.
+.form-field-label-tooltip {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    margin: 0 5px;
+    vertical-align: text-bottom;
+    background: url(../images/i.png) 0 0 no-repeat;
+}
+//
+form .checkbox {
+    padding-left: 3px;
+}
+
+
+.form-map{
+    position: relative;
+    display: block;
+    height: 100%;
+    width: 100%;
+};
+.form-map-Group-btn-interact{
+    position: absolute;
+    z-index: 20;
+    right: 8px;
+    top : 8px;
+}
+.form-map-Group-btn-zoom{
+    position: absolute;
+    z-index: 120;
+    left: 8px;
+    top : 8px;
+}
+.form-map-container{
+    height:100%;
+    margin-right: 0px;
+    margin-left: 0px;
+}
+.form-map-layertree{
+    height: 100%;
+    overflow: auto;
+    border: 1px solid #ccc;
+    border-radius: 4px 0px 0px 4px;
+    padding-top: 8px;
+}
+.form-map-layertree-ul{
+    list-style-type: none;
+    padding: 0px 0px 0px 25px;
+    margin-bottom: 6px;
+}
+
+.ol-current-projection-studio{
+    position: absolute;
+    z-index: 20;
+    //background:rgba(218, 94, 209, 0.58);
+    color: #ffffff;
+    border-radius: 4px;
+    left: ~"calc(50% - 42px)";
+    top: 8px;
+    padding-right: 5px;
+    padding-left: 5px;
+}
+
+.vertical-align {
+    display: flex;
+    align-items: center;
+}
+
+// Tags (tagsinput).
+.tag {
+    cursor: pointer;
+}
+
+//
+.hide-form-field {
+    display: none;
+}
+
+// Fond blanc pour les vignettes.
+.file-input .file-preview {
+    background-color: #ffffff;
+}
+
+//
+.no-bs-col-padding-field-2 > div:nth-child(2) {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.form-field-inline-right-button .form-group {
+    padding-right: 0;
+}
+
+// Liste ui-grid dans un champ de formulaire.
+.ui-grid-form-field {
+    width: 100%;
+    height: 100%;
+    //    border-left: 1px solid #ccc;
+}
+.ui-grid-form-field-data {
+    height: auto;
+    //width: calc(100% - 2px);
+    font-size: 12px;
+    background-color: #fff;
+}
+// ui-grid : header
+.ui-grid-form-field-header, .ui-grid-form-field-footer {
+    padding: 0 7px;
+    border-image: none;
+    -moz-border-bottom-colors: none;
+    -moz-border-left-colors: none;
+    -moz-border-right-colors: none;
+    -moz-border-top-colors: none;
+}        
+
+.ui-grid-form-field-header {
+    font-family: arial;
+    font-size: 14px;
+}
+.ui-grid-form-field-header-title {
+    min-height: 32px;
+    line-height: 32px;
+    padding: 0 7px;
+    font-weight: bold;
+    color: @application-darken-color-theme;
+    background: rgba(0, 0, 0, 0) url(@ui-grid-bg-image) repeat-x scroll center top;
+    border-left: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+}
+// Formulaire de recherche.
+.ui-grid-form-field-header-search {
+    min-height: 32px;
+    line-height: 32px;
+    padding-left: 7px;
+    color: @application-darken-color-theme;
+    background: rgba(0, 0, 0, 0) linear-gradient(to bottom, #ededed 0%, #f8f8f8 100%) repeat scroll 0 0;
+    border-bottom: 1px solid #e3e3e3;
+}
+
+.ui-grid-form-field-header-search-button-arrow-icon{
+    font-size: 22px;
+    top: 5px !important;
+    left: -3px;
+}
+.ui-grid-form-field-header-search-button-filter-icon{
+    font-size: 19px;
+    top: 3px !important;
+    left: -3px;
+}
+
+.ui-grid-form-field-header-search-button {
+    cursor: pointer;
+}
+
+.ui-grid-form-field-header-search-form {
+    display: none; 
+    padding: 10px 0px;
+    color: #000000;
+    background-color: #f8f8f8;
+}
+//
+.ui-grid-form-field-header .row {
+    margin: 0 -2px 0 0;
+}
+
+// ui-grid : footer
+.ui-grid-form-field-footer {
+    min-height: 32px;
+    line-height: 32px;
+    background: rgba(0, 0, 0, 0) url(@ui-grid-bg-image) repeat-x scroll 0 -1px;
+    border-color: -moz-use-text-color #ccc #ccc;
+}
+.ui-grid-form-field-footer button {
+    margin: 0 2px;
+}
+
+// Conteneur du plugin "bootstrap-tagsinput".
+.bootstrap-tagsinput-container .bootstrap-tagsinput {
+    width: 100%;
+}
+
+// Liste de boutons radio sur une ligne.
+.radio-list .form-group {
+    margin-bottom: 0;
+}
+
+// Radio + label horizontaux.
+.formreader-radio-inline {
+    margin-bottom: 1px !important;
+}
+.formreader-radio-inline > label {
+    float: left;
+    margin-top: 14px;
+}
+.formreader-radio-inline > div {
+    float: right;
+}
+.formreader-radio-inline .radio {
+    margin: 12px 15px 8px 15px !important;
+}

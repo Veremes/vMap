@@ -1,0 +1,16 @@
+<div id="vmap-basicselect-tool"></div>
+<li role="presentation" style="position: inherit" class="basic-tools-dropdown">
+    <a class="basic-tools-element pointer"
+       id="basic-tools-dropdown-basicselect-btn" 
+       ng-show="ctrl.aBusinessObjectsList.length > 0"
+       ng-class="{ 'active2':  ctrl.currentAction === ''}"
+       style="margin-top: -2px"
+       title="Sélection simple"
+       onclick="oVmap.getMap().removeActionsAndTooltips();oVmap.getToolsManager().getBasicTools().toggleOutTools();">
+        <select id="location-search-api-select"
+                ng-model="ctrl.sSelectedBo"
+                ng-options="value.bo_id as value.bo_title for (key, value) in ctrl.oQueryableBOs">
+        </select>
+        <span class="icon-info" aria-hidden="true"></span>
+    </a>
+</li>

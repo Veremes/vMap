@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- VAS -->
+<installer>
+	<dependenciesCollection>
+		<dependency>
+			<name>vcredist</name>
+			<nature>extern-pre</nature>
+			<location>\\roussillon\Ressources\vitis\vcredist-11</location>
+		</dependency>
+	</dependenciesCollection>
+</installer>

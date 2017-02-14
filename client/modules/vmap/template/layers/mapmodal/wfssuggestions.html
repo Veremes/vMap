@@ -1,0 +1,51 @@
+<!-- Liste des cartes utilisables -->
+
+
+<h3>Ajouter une couche WFS: </h3>
+<hr>
+
+<div>
+	<div class="row">
+	    <div class="col-md-3">
+			<select id="select-wfs-service" class="form-control">
+			  <option value="">Service</option>
+			  <option ng-repeat="node in ctrl.catalog.services.wfs" value="{{node.url}}">{{node.name}}</option>
+			</select>
+	    </div>
+	    <div class="col-md-9">
+	    	<input type="text" id="getCapabilities-url-field" class="form-control" placeholder="Service url" aria-describedby="sizing-addon1">
+		</div>
+	</div>
+	<br>
+	<button type="button" class="btn btn-success right" ng-click="ctrl.getCapabilities()">Utiliser</button>
+</div>
+
+<br><br>
+<div id="wfs-log-message"></div>
+<br>
+
+<div id="load-img" style="display: none; text-align: center"><img src="images/ajax-load-big.gif"></div>
+<div id="wfs-suggestions-list" style="display: none">
+	<table class="table table-striped">
+		<thead>
+		  <tr>
+		    <th>Title</th>
+		    <th>Name</th>
+		    <th></th>
+		  </tr>
+		</thead>
+		<tbody>
+
+		  <tr ng-repeat="node in ctrl.aLayers">
+		    <td class="WFSSuggestionsTitle">{{node.Title}}</td>
+		    <td class="WFSSuggestionsName">{{node.Name}}</td>
+		    <!-- Si la projeciton est bonne -->
+		    <td ng-if="node.isProjectionCompatible" class="WFSSuggestionsButton"><button type="button" class="btn btn-info" layerName="{{node.Name}}" layerTitle="{{node.Title}}" serviceTitle="{{ctrl.aLayers.serviceTitle}}" queryable="{{node.queryable}}" isProjectionCompatible="true" onclick="oVmap.getMapManager().addWFSLayerFromHTML(this)">Ajouter</button></td>
+		    <!-- Sinon -->
+		    <td ng-if="!node.isProjectionCompatible" class="WFSSuggestionsButton"><button type="button" class="btn btn-danger" layerName="{{node.Name}}" layerTitle="{{node.Title}}" serviceTitle="{{ctrl.aLayers.serviceTitle}}" queryable="{{node.queryable}}" isProjectionCompatible="false" onclick="oVmap.getMapManager().addWFSLayerFromHTML(this)">Ajouter</button></td>
+		  </tr>
+		</tbody>
+	</table>
+</div>
+<div id="log-message"></div>
+<button id="btn-reload-wfs" style="display: none" ng-click="ctrl.reload()">Reload map</button>

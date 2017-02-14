@@ -1,0 +1,76 @@
+{
+    "search": {
+        "name": "login_form",
+        "input_size": "xs",
+        "event": "sendLoginForm()",
+        "rows": [
+            {
+                "fields": [
+                    {
+                        "type": "select",
+                        "name": "domain",
+                        "label": "FORM_LOGIN_DOMAIN",
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "user_login",
+                        "id": "login_form_user_login",
+                        "label": "FORM_LOGIN_USER",
+                        "autofocus": true,
+                        "required": true,
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "password",
+                        "name": "user_password",
+                        "id": "login_form_user_password",
+                        "label": "FORM_LOGIN_PASSWORD",
+                        "required": true,
+                        "autocomplete": true,
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "class": "form-inline login-remember-me",
+                "fields": [
+                    {
+                        "type": "checkbox",
+                        "name": "remember_me",
+                        "id": "remember_me",
+                        "value": true,
+                        "label": "FORM_LOGIN_REMEMBER_ME",
+                        "default_value": true,
+                        "nb_cols": 8
+                    },
+                    {
+                        "type": "button",
+                        "class": "btn-group btn-group-sm login-connect-btn",
+                        "nb_cols": 4,
+                        "buttons": [
+                            {
+                                "type": "submit",
+                                "name": "name",
+                                "label": "FORM_LOGIN_CONNECT",
+                                "class": "btn-primary"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+
+    },
+    "update": {},
+    "insert": {},
+    "display": {}
+}

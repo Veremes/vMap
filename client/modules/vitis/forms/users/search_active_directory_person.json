@@ -1,0 +1,82 @@
+{
+    "search":{
+        "name":"active_directory_users_search_form",
+        "title":"",
+        "input_size":"xs",
+        "event":"searchAdTree('person')",
+        "nb_cols":12,
+        "rows":[
+            {
+                "fields":[
+                    {
+                        "type":"text",
+                        "name":"search_account",
+                        "label":"FORM_ACCOUNT_ACTIVE_DIRECTORY_USERS_USER",
+                        "tooltip": {
+                                "title":"",
+                                "content":"FORM_ACCOUNT_INFO_ACTIVE_DIRECTORY_USERS_USER",
+                                "container": "body"
+                        },
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"text",
+                        "name":"search_groups",
+                        "label":"FORM_GROUP_ACTIVE_DIRECTORY_USERS_USER",
+                        "tooltip": {
+                                "title":"",
+                                "content":"FORM_GROUP_INFO_ACTIVE_DIRECTORY_USERS_USER",
+                                "container": "body"
+                        },
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"text",
+                        "name":"search_department",
+                        "label":"FORM_DEPARTMENT_ACTIVE_DIRECTORY_USERS_USER",
+                        "tooltip": {
+                                "title":"",
+                                "content":"FORM_DEPARTMENT_INFO_ACTIVE_DIRECTORY_USERS_USER",
+                                "container": "body"
+                        },
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"button",
+                        "class":"btn-ungroup btn-group-sm",
+                        "nb_cols":12,
+                        "buttons":[
+                            {
+                                "type":"submit",
+                                "name":"form_submit",
+                                "label":"FORM_SEARCH_BTN_ACTIVE_DIRECTORY_USERS_USER",
+                                "class":"btn-primary"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "update":{
+            
+    },
+    "insert":{
+
+    },
+    "display":{
+            
+    }
+}

@@ -1,0 +1,142 @@
+{
+    "search": {
+
+    },
+    "update": {
+        "name": "vitis_user_update_form",
+        "title": "",
+        "input_size": "xs",
+        "beforeEvent": "preventUserPasswordChanged(true)",
+        "event": "sendSimpleForm()",
+        "afterEvent": "disconnectUserPasswordChanged()",
+        "nb_cols": 8,
+        "rows": [
+            {
+                "fields": [
+                    {
+                        "type": "title",
+                        "name": "informations_title",
+                        "label": "FORM_INFORMATIONS_USER_USER",
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "login",
+                        "label": "FORM_LOGIN_USER_USER",
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "name",
+                        "label": "FORM_NAME_USER_USER",
+                        "required": true,
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "email",
+                        "name": "email",
+                        "label": "FORM_EMAIL_USER_USER",
+                        "required": false,
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "company",
+                        "label": "FORM_AGENCY_USER_USER",
+                        "required": false,
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "department",
+                        "label": "FORM_DEPARTMENT_USER_USER",
+                        "required": false,
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "title",
+                        "name": "new_password_title",
+                        "label": "FORM_NEW_PASSWORD_USER_USER",
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "password",
+                        "name": "password",
+                        "label": "FORM_USER_PASSWORD_USER_USER",
+                        "required": false,
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "password",
+                        "name": "password_confirm",
+                        "label": "FORM_USER_CONFIRM_PASSWORD_USER_USER",
+                        "required": false,
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "hidden",
+                        "name": "login",
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "button",
+                        "class": "btn-ungroup btn-group-sm",
+                        "nb_cols": 12,
+                        "buttons": [
+                            {
+                                "type": "submit",
+                                "name": "form_submit",
+                                "label": "FORM_UPDATE",
+                                "class": "btn-primary"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "insert": {
+
+    },
+    "display": {}
+}

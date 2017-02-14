@@ -1,0 +1,4 @@
+<?php
+	header('Content-type: '.$aValues['output'].'; charset='.$properties["page_encoding"]);
+	echo $sMessage;
+?>

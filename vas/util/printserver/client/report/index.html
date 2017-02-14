@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>Report for printing</title>
+        <link rel="stylesheet" href="../lib/bootstrap/css/bootstrap.css" type="text/css">
+        <script src="../lib/jquery/jquery-1.11.3.min.js"></script>
+        <script src="../lib/angular/angular.min.js"></script>
+        <script src="../lib/bootstrap/js/bootstrap.min.js"></script>
+        <style>
+            body{
+                margin: 0px;
+                -webkit-print-color-adjust: exact;
+            }
+            .list-group-item {
+                padding-top: 1px;
+                padding-bottom: 2px;
+                padding-left: 8px;
+                padding-right: 0px;
+                border-width: 0px;
+                border-top-right-radius: 0px !important;
+                border-top-left-radius: 0px !important;
+                border-bottom-right-radius: 0px !important;
+                border-bottom-left-radius: 0px !important;
+            }
+        </style>
+    </head>
+    <body>
+        <!--Application Angular printReport-->
+        <div ng-app="ngPrintReport" ng-controller="printCtrl">
+            <div id="print_report"></div>
+        </div>
+        <div id="download-area"></div>
+        <script src="../utils/utils.js"></script>
+        <script src="../utils/http.js"></script>
+        <script src="../utils/properties.js"></script>
+        <script src="report.js"></script>
+        <script src="index.js"></script>
+    </body>
+</html>

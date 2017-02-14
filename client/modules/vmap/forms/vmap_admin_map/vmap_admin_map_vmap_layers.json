@@ -1,0 +1,675 @@
+{
+    "search":{
+        "name":"vmap_layer_search_form",
+        "title":"",
+        "input_size":"xxs",
+        "nb_cols":12,
+        "rows":[
+            {
+                "fields":[
+                    {
+                        "type":"text",
+                        "name":"name",
+                        "label":"FORM_NAME_VMAP_MAP_LAYER",
+                        "nb_cols":4
+                    },
+                    {
+                        "type":"select",
+                        "name":"layertheme_id",
+                        "label":"FORM_THEME_VMAP_MAP_LAYER",
+                        "nb_cols":4,
+                        "web_service":{
+                            "ressource_id":"vmap/layerthemes",
+                            "id_key":"layertheme_id",
+                            "label_key":"name"
+                        }
+                    },
+                    {
+                        "type":"select",
+                        "name":"service_id",
+                        "label":"FORM_SERVICE_VMAP_MAP_LAYER",
+                        "nb_cols":4,
+                        "web_service":{
+                            "ressource_id":"vmap/services",
+                            "id_key":"service_id",
+                            "label_key":"name"
+                        }
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"select",
+                        "name":"crs_list",
+                        "label":"FORM_COORDINATE_SYSTEM_VMAP_MAP_LAYER",
+                        "nb_cols":4,
+                        "web_service":{
+                            "ressource_id":"vmap/crss",
+                            "id_key":"crs_id",
+                            "label_key":"name",
+                            "callback": "concatSelectAttributes('crs_list', ' : ')"
+                        }
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"button",
+                        "class":"btn-ungroup btn-group-xs",
+                        "nb_cols":12,
+                        "buttons":[
+                            {
+                                "type":"button",
+                                "name":"search",
+                                "label":"FORM_SEARCH_BUTTON",
+                                "class":"btn-primary",
+                                "event":"setGridFilter()"
+                            },
+                            {
+                                "type":"reset",
+                                "name":"reset",
+                                "label":"FORM_RESET_BUTTON",
+                                "class":"btn-primary",
+                                "event":"resetGridFilter()"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "update":{
+        "name":"vmap_layer_update_form",
+        "title":"FORM_TITLE_VMAP_MAP_LAYER",
+        "input_size":"xs",
+        "initEvent":"initVmapLayerForm()",
+        "event":"sendSimpleForm()",
+        "afterEvent":"showStudioIfLayerIsFiltered()",
+        "nb_cols":9,
+        "rows":[
+            {
+                "fields":[
+                    {
+                        "type":"label",
+                        "name":"layer_id",
+                        "label":"FORM_LAYER_ID_VMAP_MAP_LAYER",
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"label",
+                        "name":"service_name",
+                        "label":"FORM_SERVICE_VMAP_MAP_LAYER",
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"text",
+                        "name":"name",
+                        "label":"FORM_NAME_VMAP_MAP_LAYER",
+                        "required":true,
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"textarea",
+                        "name":"description",
+                        "label":"FORM_DESCRIPTION_VMAP_MAP_LAYER",
+                        "size":8,
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"select",
+                        "name":"layertheme_id",
+                        "label":"FORM_THEME_VMAP_MAP_LAYER",
+                        "nb_cols":6,
+                        "web_service":{
+                            "ressource_id":"vmap/layerthemes",
+                            "id_key":"layertheme_id",
+                            "label_key":"name"
+                        }
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"ui_grid",
+                        "name":"layer_list",
+                        "options": {
+                            "enableRowSelection": true,
+                            "enableSelectAll": true,
+                            "enablePagination": false,
+                            "enablePaginationControls": false,
+                            "enableColumnMenus": false,
+                            "enableColumnResizing": false,
+                            "appHeader": true,
+                            "appHeaderTitleBar": true,
+                            "appGridTitle": "TITLE_GRID_LAYER_LAYERS_VMAP_MAP_LAYER",
+                            "appEnableDragAndDrop": true,
+                            "appDragAndDropEvent": {
+                                "rowFinishDrag": "updateLayerLayersSorting"
+                            },
+                            "columnDefs": [
+                                {
+                                    "name": "FORM_NAME_VMAP_MAP_LAYER_WMS_LAYERS",
+                                    "displayName": "FORM_NAME_VMAP_MAP_LAYER_WMS_LAYERS",
+                                    "field": "name",
+                                    "enableSorting": true,
+                                    "type": "string",
+                                    "enableColumnMoving": true,
+                                    "enableColumnResizing": true,
+                                    "headerCellClass": "vmap_map_layers_name"
+                                }
+                            ],
+                            "appActions": [
+                                {
+                                    "label": "FORM_BTN_ADD_LAYER_LIST_VMAP_MAP_LAYER",
+                                    "name": "add_layers_to_layer_btn",
+                                    "event": "showAddLayersToLayerModalWindow()"
+                                },
+                                {
+                                    "label": "FORM_BTN_REMOVE_LAYER_LIST_VMAP_MAP_LAYER",
+                                    "name": "add_layers_to_layer_btn",
+                                    "event": "removeLayersOfLayer()"
+                                }
+                            ],
+                            "data": [
+                            ]
+                        },
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"double_select",
+                        "name":"crs_list",
+                        "name_from":"available_crs_list",
+                        "name_to":"crs_list",
+                        "label":"FORM_CRS_LIST_VMAP_MAP_LAYER",
+                        "label_from":"FORM_AVAILABLE_CRS_LIST_VMAP_MAP_LAYER",
+                        "label_to":"FORM_LAYER_CRS_LIST_VMAP_MAP_LAYER",
+                        "web_service":{
+                            "ressource_id":"vmap/crss",
+                            "id_key":"crs_id",
+                            "label_key":"name",
+                            "callback": "concatSelectAttributes('available_crs_list|crs_list', ' : ')"
+                        },
+                        "tooltip": {
+                            "title": "",
+                            "content": "FORM_CRS_LIST_VMAP_MAP_LAYER_TOOLTIP",
+                            "container": "body",
+                            "html": true
+                        },
+                        "size":"6",
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"select",
+                        "name":"bo_id",
+                        "label":"FORM_BUSINESS_OBJECT_VMAP_MAP_LAYER",
+                        "nb_cols":6,
+                        "web_service":{
+                            "ressource_id":"vmap/businessobjects",
+                            "id_key":"business_object_id",
+                            "label_key":"business_object_id"
+                        }
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "radio",
+                        "name": "is_dynamic",
+                        "label": "FORM_DYNAMIC_VMAP_MAP_LAYER",
+                        "nb_cols": 6,
+                        "options": {
+                            "choices": [
+                                {
+                                    "label": "Oui",
+                                    "value": true
+                                },
+                                {
+                                    "label": "Non",
+                                    "value": false
+                                }
+                            ]
+                        },
+                        "default_value": false
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "radio",
+                        "name": "is_filtered",
+                        "label": "FORM_FILTERED_VMAP_MAP_LAYER",
+                        "nb_cols": 6,
+                        "options": {
+                            "choices": [
+                                {
+                                    "label": "Oui",
+                                    "value": true
+                                },
+                                {
+                                    "label": "Non",
+                                    "value": false
+                                }
+                            ]
+                        },
+                        "default_value": false
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"button",
+                        "class":"btn-ungroup btn-group-sm",
+                        "nb_cols":12,
+                        "buttons":[
+                            {
+                                "type":"submit",
+                                "name":"form_submit",
+                                "label":"FORM_UPDATE",
+                                "class":"btn-primary"
+                            },
+                            {
+                                "type":"button",
+                                "name":"return_list",
+                                "label":"FORM_RETURN_LIST",
+                                "class":"btn-primary",
+                                "event":"setMode(\"search\")"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "insert":{
+        "name":"vmap_layer_insert_form",
+        "title":"FORM_TITLE_VMAP_MAP_LAYER",
+        "input_size":"xs",
+        "initEvent":"initVmapLayerForm()",
+        "event":"sendSimpleForm()",
+        "afterEvent":"editSectionForm()",
+        "nb_cols":9,
+        "rows":[
+            {
+                "fields":[
+                    {
+                        "type":"select",
+                        "name":"service_id",
+                        "label":"FORM_SERVICE_VMAP_MAP_LAYER",
+                        "nb_cols":6,
+                        "required":true,
+                        "web_service":{
+                            "ressource_id":"vmap/services",
+                            "id_key":"service_id",
+                            "label_key":"name"
+                        },
+                        "options":["|"]
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"text",
+                        "name":"name",
+                        "label":"FORM_NAME_VMAP_MAP_LAYER",
+                        "required":true,
+                        "visible": false,
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"textarea",
+                        "name":"description",
+                        "label":"FORM_DESCRIPTION_VMAP_MAP_LAYER",
+                        "size":8,
+                        "visible": false,
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"select",
+                        "name":"layertheme_id",
+                        "label":"FORM_THEME_VMAP_MAP_LAYER",
+                        "nb_cols":6,
+                        "web_service":{
+                            "ressource_id":"vmap/layerthemes",
+                            "id_key":"layertheme_id",
+                            "label_key":"name"
+                        },
+                        "visible": false
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"ui_grid",
+                        "name":"layer_list",
+                        "options": {
+                            "enableRowSelection": true,
+                            "enableSelectAll": true,
+                            "enablePagination": false,
+                            "enablePaginationControls": false,
+                            "enableColumnMenus": false,
+                            "enableColumnResizing": false,
+                            "appHeader": true,
+                            "appHeaderTitleBar": true,
+                            "appGridTitle": "TITLE_GRID_LAYER_LAYERS_VMAP_MAP_LAYER",
+                            "appEnableDragAndDrop": true,
+                            "appDragAndDropEvent": {
+                                "rowFinishDrag": "updateLayerLayersSorting"
+                            },
+                            "columnDefs": [
+                                {
+                                    "name": "FORM_NAME_VMAP_MAP_LAYER_WMS_LAYERS",
+                                    "displayName": "FORM_NAME_VMAP_MAP_LAYER_WMS_LAYERS",
+                                    "field": "name",
+                                    "enableSorting": true,
+                                    "type": "string",
+                                    "enableColumnMoving": true,
+                                    "enableColumnResizing": true,
+                                    "headerCellClass": "vmap_map_layers_name"
+                                }
+                            ],
+                            "appActions": [
+                                {
+                                    "label": "FORM_BTN_ADD_LAYER_LIST_VMAP_MAP_LAYER",
+                                    "name": "add_layers_to_layer_btn",
+                                    "event": "showAddLayersToLayerModalWindow()"
+                                },
+                                {
+                                    "label": "FORM_BTN_REMOVE_LAYER_LIST_VMAP_MAP_LAYER",
+                                    "name": "add_layers_to_layer_btn",
+                                    "event": "removeLayersOfLayer()"
+                                }
+                            ],
+                            "data": [
+                            ]
+                        },
+                        "visible": false,
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"double_select",
+                        "name":"crs_list",
+                        "name_from":"available_crs_list",
+                        "name_to":"crs_list",
+                        "label":"FORM_CRS_LIST_VMAP_MAP_LAYER",
+                        "label_from":"FORM_AVAILABLE_CRS_LIST_VMAP_MAP_LAYER",
+                        "label_to":"FORM_LAYER_CRS_LIST_VMAP_MAP_LAYER",
+                        "visible": false,
+                        "web_service":{
+                            "ressource_id":"vmap/crss",
+                            "id_key":"crs_id",
+                            "label_key":"name",
+                            "callback": "concatSelectAttributes('available_crs_list|crs_list', ' : ')"
+                        },
+                        "tooltip": {
+                            "title": "",
+                            "content": "FORM_CRS_LIST_VMAP_MAP_LAYER_TOOLTIP",
+                            "container": "body",
+                            "html": true
+                        },
+                        "size":"6",
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"select",
+                        "name":"bo_id",
+                        "label":"FORM_BUSINESS_OBJECT_VMAP_MAP_LAYER",
+                        "nb_cols":6,
+                        "web_service":{
+                            "ressource_id":"vmap/businessobjects",
+                            "id_key":"business_object_id",
+                            "label_key":"business_object_id"
+                        },
+                        "visible": false
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "radio",
+                        "name": "is_dynamic",
+                        "label": "FORM_DYNAMIC_VMAP_MAP_LAYER",
+                        "nb_cols": 6,
+                        "options": {
+                            "choices": [
+                                {
+                                    "label": "Oui",
+                                    "value": true
+                                },
+                                {
+                                    "label": "Non",
+                                    "value": false
+                                }
+                            ]
+                        },
+                        "visible": false,
+                        "default_value": false
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "radio",
+                        "name": "is_filtered",
+                        "label": "FORM_FILTERED_VMAP_MAP_LAYER",
+                        "nb_cols": 6,
+                        "options": {
+                            "choices": [
+                                {
+                                    "label": "Oui",
+                                    "value": true
+                                },
+                                {
+                                    "label": "Non",
+                                    "value": false
+                                }
+                            ]
+                        },
+                        "default_value": false,
+                        "visible": false
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"button",
+                        "class":"btn-ungroup btn-group-sm",
+                        "nb_cols":12,
+                        "buttons":[
+                            {
+                                "type":"submit",
+                                "name":"form_submit",
+                                "label":"FORM_CREATE",
+                                "class":"btn-primary"
+                            },
+                            {
+                                "type":"button",
+                                "name":"return_list",
+                                "label":"FORM_RETURN_LIST",
+                                "class":"btn-primary",
+                                "event":"setMode(\"search\")"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "display":{
+        "name":"vmap_layer_display_form",
+        "title":"FORM_TITLE_VMAP_MAP_LAYER",
+        "input_size":"xs",
+        "initEvent":"initVmapLayerForm()",
+        "nb_cols":9,
+        "rows":[
+            {
+                "fields":[
+                    {
+                        "type":"label",
+                        "name":"layer_id",
+                        "label":"FORM_LAYER_ID_VMAP_MAP_LAYER",
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"label",
+                        "name":"service_name",
+                        "label":"FORM_SERVICE_VMAP_MAP_LAYER",
+                        "nb_cols":6
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"label",
+                        "name":"name",
+                        "label":"FORM_NAME_VMAP_MAP_LAYER",
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"label",
+                        "name":"description",
+                        "label":"FORM_DESCRIPTION_VMAP_MAP_LAYER",
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"label",
+                        "name":"theme_name",
+                        "label":"FORM_THEME_VMAP_MAP_LAYER",
+                        "nb_cols":6
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"label",
+                        "name":"layer_list",
+                        "label":"TITLE_GRID_LAYER_LAYERS_VMAP_MAP_LAYER",
+                        "nb_cols":6
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"label",
+                        "name":"crs_list_label",
+                        "label":"FORM_LAYER_CRS_LIST_VMAP_MAP_LAYER",
+                        "nb_cols":6
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"label",
+                        "name":"business_object_id",
+                        "label":"FORM_BUSINESS_OBJECT_VMAP_MAP_LAYER",
+                        "nb_cols":6
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"label",
+                        "name":"is_dynamic",
+                        "label":"FORM_DYNAMIC_VMAP_MAP_LAYER",
+                        "nb_cols":6
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"label",
+                        "name":"is_filtered",
+                        "label":"FORM_FILTERED_VMAP_MAP_LAYER",
+                        "nb_cols":6
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"button",
+                        "class":"btn-ungroup btn-group-sm",
+                        "nb_cols":12,
+                        "buttons":[
+                            {
+                                "type":"button",
+                                "name":"return_list",
+                                "label":"FORM_RETURN_LIST",
+                                "class":"btn-primary",
+                                "event":"setMode(\"search\")"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}

@@ -1,0 +1,482 @@
+{
+    "search": {
+        "name": "vmap_map_search_form",
+        "title": "",
+        "input_size": "xxs",
+        "nb_cols": 12,
+        "rows": [
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "name",
+                        "label": "FORM_NAME_VMAP_MAP_SERVICE",
+                        "nb_cols": 4
+                    },
+                    {
+                        "type": "select",
+                        "name": "service_type_id",
+                        "label": "FORM_TYPE_VMAP_MAP_SERVICE",
+                        "nb_cols": 4,
+                        "web_service": {
+                            "ressource_id": "vmap/servicetypes",
+                            "id_key": "service_type_id",
+                            "label_key": "service_type_id"
+                        }
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "button",
+                        "class": "btn-ungroup btn-group-xs",
+                        "nb_cols": 12,
+                        "buttons": [
+                            {
+                                "type": "button",
+                                "name": "search",
+                                "label": "FORM_SEARCH_BUTTON",
+                                "class": "btn-primary",
+                                "event": "setGridFilter()"
+                            },
+                            {
+                                "type": "reset",
+                                "name": "reset",
+                                "label": "FORM_RESET_BUTTON",
+                                "class": "btn-primary",
+                                "event": "resetGridFilter()"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "update": {
+        "name": "vmap_map_update_form",
+        "title": "FORM_TITLE_VMAP_MAP_SERVICE",
+        "input_size": "xs",
+        "initEvent": "initVmapServiceForm()",
+        "event": "sendSimpleForm()",
+        "nb_cols": 6,
+        "rows": [
+            {
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "service_id",
+                        "label": "FORM_SERVICE_ID_VMAP_MAP_SERVICE",
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "service_type_id",
+                        "label": "FORM_TYPE_VMAP_MAP_SERVICE",
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "name",
+                        "label": "FORM_NAME_VMAP_MAP_SERVICE",
+                        "required": true,
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "textarea",
+                        "name": "description",
+                        "label": "FORM_DESCRIPTION_VMAP_MAP_SERVICE",
+                        "size": 8,
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "image_wsdata",
+                        "name": "thumbnail",
+                        "label": "FORM_THUMBNAIL_VMAP_MAP_SERVICE",
+                        "visible": false,
+                        "nb_cols": 6
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "url",
+                        "name": "url",
+                        "label": "FORM_URL_VMAP_MAP_SERVICE",
+                        "required": true,
+                        "visible": false,
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "key",
+                        "label": "FORM_KEY_VMAP_MAP_SERVICE",
+                        "visible": false,
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "service_type_version",
+                        "label": "FORM_SERVICE_TYPE_VERSION_VMAP_MAP_SERVICE",
+                        "visible": false,
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "lang",
+                        "label": "FORM_LANG_VMAP_MAP_SERVICE",
+                        "visible": false,
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "imagery",
+                        "label": "FORM_IMAGERY_VMAP_MAP_SERVICE",
+                        "visible": false,
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "button",
+                        "class": "btn-ungroup btn-group-sm",
+                        "nb_cols": 12,
+                        "buttons": [
+                            {
+                                "type": "submit",
+                                "name": "form_submit",
+                                "label": "FORM_UPDATE",
+                                "class": "btn-primary"
+                            },
+                            {
+                                "type": "button",
+                                "name": "return_list",
+                                "label": "FORM_RETURN_LIST",
+                                "class": "btn-primary",
+                                "event": "setMode(\"search\")"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "insert": {
+        "name": "vmap_map_insert_form",
+        "title": "FORM_TITLE_VMAP_MAP_SERVICE",
+        "input_size": "xs",
+        "initEvent": "initVmapServiceForm()",
+        "event": "sendSimpleForm()",
+        "afterEvent": "editSectionForm()",
+        "nb_cols": 6,
+        "rows": [
+            {
+                "fields": [
+                    {
+                        "type": "select",
+                        "name": "service_type_id",
+                        "label": "FORM_TYPE_VMAP_MAP_SERVICE",
+                        "nb_cols": 6,
+                        "web_service": {
+                            "ressource_id": "vmap/servicetypes",
+                            "id_key": "service_type_id",
+                            "label_key": "service_type_id"
+                        },
+                        "tooltip": {
+                            "title": "",
+                            "content": "FORM_TYPE_VMAP_MAP_SERVICE_DESCRIPTION",
+                            "container": "body",
+                            "html": true
+                        },
+                        "required": true,
+                        "options": ["|"]
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "name",
+                        "label": "FORM_NAME_VMAP_MAP_SERVICE",
+                        "required": true,
+                        "visible": false,
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "textarea",
+                        "name": "description",
+                        "label": "FORM_DESCRIPTION_VMAP_MAP_SERVICE",
+                        "size": 8,
+                        "visible": false,
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "tooltip": {
+                            "title": "",
+                            "content": "FORM_THUMBNAIL_VMAP_MAP_SERVICE_TOOLTIP",
+                            "container": "body"
+                        },
+                        "type": "image_wsdata",
+                        "name": "thumbnail",
+                        "label": "FORM_THUMBNAIL_VMAP_MAP_SERVICE",
+                        "visible": false,
+                        "nb_cols": 6
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "url",
+                        "name": "url",
+                        "label": "FORM_URL_VMAP_MAP_SERVICE",
+                        "required": true,
+                        "visible": false,
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "key",
+                        "label": "FORM_KEY_VMAP_MAP_SERVICE",
+                        "visible": false,
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "service_type_version",
+                        "label": "FORM_SERVICE_TYPE_VERSION_VMAP_MAP_SERVICE",
+                        "visible": false,
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "lang",
+                        "label": "FORM_LANG_VMAP_MAP_SERVICE",
+                        "visible": false,
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "imagery",
+                        "label": "FORM_IMAGERY_VMAP_MAP_SERVICE",
+                        "visible": false,
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "button",
+                        "class": "btn-ungroup btn-group-sm",
+                        "nb_cols": 12,
+                        "buttons": [
+                            {
+                                "type": "submit",
+                                "name": "form_submit",
+                                "label": "FORM_CREATE",
+                                "class": "btn-primary"
+                            },
+                            {
+                                "type": "button",
+                                "name": "return_list",
+                                "label": "FORM_RETURN_LIST",
+                                "class": "btn-primary",
+                                "event": "setMode(\"search\")"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "display": {
+        "name": "vmap_map_display_form",
+        "title": "FORM_TITLE_VMAP_MAP_SERVICE",
+        "input_size": "xs",
+        "initEvent": "initVmapServiceForm()",
+        "nb_cols": 6,
+        "rows": [
+            {
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "service_id",
+                        "label": "FORM_SERVICE_ID_VMAP_MAP_SERVICE",
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "service_type_id",
+                        "label": "FORM_TYPE_VMAP_MAP_SERVICE",
+                        "nb_cols": 6
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "name",
+                        "label": "FORM_NAME_VMAP_MAP_SERVICE",
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "description",
+                        "label": "FORM_DESCRIPTION_VMAP_MAP_SERVICE",
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "image_wsdata",
+                        "name": "thumbnail",
+                        "label": "FORM_THUMBNAIL_VMAP_MAP_SERVICE",
+                        "displayOnly": true,
+                        "visible": false,
+                        "nb_cols": 6
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "url",
+                        "label": "FORM_URL_VMAP_MAP_SERVICE",
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "key",
+                        "label": "FORM_KEY_VMAP_MAP_SERVICE",
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "service_type_version",
+                        "label": "FORM_SERVICE_TYPE_VERSION_VMAP_MAP_SERVICE",
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "lang",
+                        "label": "FORM_LANG_VMAP_MAP_SERVICE",
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "imagery",
+                        "label": "FORM_IMAGERY_VMAP_MAP_SERVICE",
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "button",
+                        "class": "btn-ungroup btn-group-sm",
+                        "nb_cols": 12,
+                        "buttons": [
+                            {
+                                "type": "button",
+                                "name": "return_list",
+                                "label": "FORM_RETURN_LIST",
+                                "class": "btn-primary",
+                                "event": "setMode(\"search\")"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}

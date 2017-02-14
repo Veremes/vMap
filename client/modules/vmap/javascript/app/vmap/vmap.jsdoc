@@ -1,0 +1,25 @@
+/**
+* @author: Armand Bahi
+* This file allow namespaces on the jsdoc
+*/
+
+
+
+/**
+* @namespace nsVmap
+*/
+
+/**
+* Objet which contains the layers tools (on the left band)
+* @namespace nsVmap.nsMapManager
+*/
+
+/**
+* Objet which contains the layers tools modal
+* @namespace nsVmap.nsMapManager.nsMapModal
+*/
+
+/**
+* Objet which contains the map tools (on the right band)
+* @namespace nsVmap.nsToolsManager
+*/

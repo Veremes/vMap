@@ -1,0 +1,7 @@
+<dl ng-repeat="oRows in ::oCredits track by $index" class="dl-horizontal">
+    <dt data-translate="{{::oRows.label}}"></dt>
+    <dd ng-repeat="oRow in ::oRows.rows track by $index" ng-switch on="::oRow.type">
+        <span ng-switch-when="text" data-translate="{{::oRow.value}}" data-translate-values="translationData"></span>
+        <a ng-switch-when="link" href="{{oRow.url | translate}}" target='_new' data-translate="{{::oRow.value}}" data-translate-values="translationData"></a>
+    </dd>
+</dl>

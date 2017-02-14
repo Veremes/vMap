@@ -1,0 +1,199 @@
+<!-- Module dessin -->
+<div class="module-title list-group-item lighen">MODULE DESSIN</div>
+
+
+<div id="draw-tools" style="margin-bottom: 10px">
+
+
+    <div class="checkbox checkbox-success hidden">
+        <input id="draw-anotations" type="checkbox" style="cursor:pointer" ng-click="ctrl.showHideAnotations()" checked>
+        <label for="draw-anotations" style="cursor:pointer">Afficher / Cacher les étiquettes</label>
+    </div>
+
+    <ul class="list-menu font-14">
+        <li class="basic-tools-dropdown-btn">
+            <a id="draw-point-button"
+               class="btn-draw"
+               ng-class="{'active': ctrl.currentAction === 'draw-drawPoint'}"
+               ng-click="ctrl.drawPoint(ctrl.currentAction === 'draw-drawPoint')">
+                <span class="icon-line"></span>
+                <span class="margin-sides-10">Point</span>
+            </a>
+        </li>
+        <li class="basic-tools-dropdown-btn">
+            <a id="draw-line-button"
+               class="btn-draw"
+               ng-class="{'active': ctrl.currentAction === 'draw-drawLineString'}"
+               ng-click="ctrl.drawLine(ctrl.currentAction === 'draw-drawLineString')">
+                <span class="icon-line"></span>
+                <span class="margin-sides-10">Ligne</span>
+            </a>
+        </li>
+        <li class="basic-tools-dropdown-btn">
+            <a id="draw-polygon-button"
+               class="btn-draw"
+               ng-class="{'active': ctrl.currentAction === 'draw-drawPolygon'}"
+               ng-click="ctrl.drawPolygon(ctrl.currentAction === 'draw-drawPolygon')">
+                <span class="icon-polygon"></span>
+                <span class="margin-sides-10">Polygone</span>
+            </a>
+        </li>
+        <li class="basic-tools-dropdown-btn">
+            <a id="draw-circle-button"
+               class="btn-draw"
+               ng-class="{'active': ctrl.currentAction === 'draw-drawCircle'}"
+               ng-click="ctrl.drawCircle(ctrl.currentAction === 'draw-drawCircle')">
+                <span class="icon-circle"></span>
+                <span class="margin-sides-10">Cercle</span>
+            </a>
+        </li>
+    </ul>
+
+    <div class="hr-gray margin-5"></div>
+
+    <div class="btn-group-vertical btn-draw-group" role="group" aria-label="...">
+
+        <button type="button" 
+                id="draw-modify-button" 
+                class="btn btn-default btn-draw" 
+                ng-class="{'active': ctrl.currentAction === 'draw-modifyFeature'}"
+                ng-click="ctrl.modifyFeature(ctrl.currentAction === 'draw-modifyFeature')">
+            <span class="glyphicon glyphicon-edit"></span><span class="margin-sides-10">Modifier un dessin</span>
+        </button>
+        <button type="button" 
+                id="draw-editInfos-button" 
+                class="btn btn-default btn-draw" 
+                ng-class="{'active': ctrl.currentAction === 'draw-editInfosFeature'}"
+                ng-click="ctrl.editInfosClick(ctrl.currentAction === 'draw-editInfosFeature')">
+            <span class="glyphicon glyphicon-pencil"></span><span class="margin-sides-10">Editer les informations</span>
+        </button>
+        <button type="button" 
+                id="draw-dell-button" 
+                class="btn btn-default btn-draw"
+                ng-class="{'active': ctrl.currentAction === 'draw-deleteFeature'}"
+                ng-click="ctrl.deleteFeature(ctrl.currentAction === 'draw-deleteFeature')">
+            <span class="glyphicon glyphicon-trash"></span><span class="margin-sides-10">Supprimer un dessin</span>
+        </button>
+
+        <!-- <button type="button" id="draw-dellAll-button" class="btn btn-default btn-draw" ng-click="ctrl.deleteAllFeatures()">Supprimer tous les dessins</button> -->
+
+        <div class="hr-gray"></div>
+
+        <button type="button" id="draw-display-features-button" class="btn btn-success btn-draw" ng-click="ctrl.displayFeaturesList()" onclick="oVmap.getMap().removeActionsAndTooltips()">
+            <span class="icon-format_list_bulleted left" style="font-size: 20px;"></span>
+            <span class="right" style="margin: 1px 0px;">VOIR LA LISTE DES DESSINS</span>
+        </button>
+
+    </div>
+
+
+    <!-- Modal View the feature-->
+    <div class="modal fade" id="feature-description-modal" role="dialog">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <button type="button" class="btn btn-primary btn-sm" ng-click="ctrl.displayFeaturesList()">Voir la liste</button>
+
+                </div>
+                <!-- modal-body modal-body-big -->
+                <div class="modal-body modal-body-big" style="height:auto">
+
+                    <!-- Element bootstrap-table plugin (http://bootstrap-table.wenzhixin.net.cn/examples)  -->
+                    <table 	id="draw-feature-description-table" 
+                            class="font-14 draw-table-list">
+                    </table>
+
+                </div>
+                <!-- /.modal-body -->
+                <div class="modal-footer" ng-if="ctrl.sketches.length !== 0">
+                    <button type="button" class="btn btn-primary right margin-sides-5" data-dismiss="modal" ng-click="ctrl.zoomToFeature(ctrl.selectedFeature)">Zoom</button>
+                    <button type="button" class="btn btn-info right margin-sides-5" data-dismiss="modal" ng-click="ctrl.editFeatureInfos(ctrl.selectedFeature)">Modifier</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Modal Edit the feature-->
+    <div class="modal fade" id="feature-edit-modal" role="dialog" data-keyboard="false" data-backdrop="static">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <!-- Header ne s'affiche que si les champs obligatoires ont été donnés à la feature -->
+                <div id="draw-edit-modal-header" class="modal-header" ng-class="{'hidden': ctrl.selectedFeature.get('infoValues') == undefined}">
+                    <button type="button" class="close" data-dismiss="modal" ng-click="ctrl.setInfosToFeature(ctrl.selectedFeature)">&times;</button>
+                    <button type="button" class="btn btn-primary btn-sm" ng-click="ctrl.displayFeaturesList()">Voir la liste</button>
+                </div>
+                <div class="modal-body modal-body-big font-12" style="height:auto">
+
+                    <form name="drawForm" ng-submit="ctrl.updateFeatureInfos(ctrl.selectedFeature, ctrl.fields_)">
+
+                        <div ng-repeat="field in ctrl.fields_">
+                            <div class="input-group-sm">
+                                <b>{{field.name}}</b>
+
+                                <div ng-switch="field.type">
+                                    <div ng-switch-when="color">
+
+                                        <div class="input-group">
+                                            <span class="input-group-addon color-span"></span>
+                                            <span class="input-group-addon color-span2"></span>
+                                            <input type="text" id="print-{{field.id}}-input" class="form-control input-sm colorpicker"/>
+                                        </div>
+
+                                    </div>
+                                    <div ng-switch-when="boolean">
+
+                                        <input id="print-{{field.id}}-input" class="bootstrap-toggle" type="checkbox" checked data-toggle="toggle" data-size="mini" data-width="60" data-onstyle="info" data-on="Oui" data-off="Non">
+
+                                    </div>
+                                    <div ng-switch-default>
+                                        <input type="{{field.type}}" id="print-{{field.id}}-input" class="form-control input-sm" ng-required="{{field.required}}"/>
+                                    </div>
+                                </div>
+
+                            </div>  
+                        </div>
+                        <button type="submit" type="button" class="btn btn-primary save-form-btn">Enregistrer</button>
+                        <button type="button" class="btn btn-info save-form-btn margin-sides-10" data-dismiss="modal" ng-click="ctrl.calcelEditFeature(ctrl.selectedFeature)">Annuler</button>
+                    </form>
+                </div>
+                <!-- /.modal-body modal-body-big -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Features list -->
+    <div class="modal fade" id="draw-features-list-modal" role="dialog">
+        <div class="modal-dialog modal-lg">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" id="modal-display-draw-close" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Dessins</h4>
+                </div>
+                <div id="draw-table-list-body" class="modal-body modal-body-big" style="height:82%">
+                    <div ng-if="ctrl.sketchesLenght == 0">
+                        <b>Aucun dessin à afficher</b>
+                    </div>
+
+                    <!-- Element bootstrap-table plugin (http://bootstrap-table.wenzhixin.net.cn/examples)  -->
+                    <table 	id="draw-features-list-table" 
+                            class="font-14 draw-table-list">
+                    </table>
+
+                    <!-- /.modal-body -->
+                </div>
+                <div class="modal-footer" ng-if="ctrl.sketchesLenght != 0">
+                    <button class="btn btn-primary left" data-dismiss="modal" ng-click="ctrl.removeSelectedFeatures()">Supprimer la selection</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="hidden">
+        <input id="geodesic" type="checkbox" style="cursor:pointer" checked>use geodesic draws
+    </div>
+</div>

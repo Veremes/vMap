@@ -1,0 +1,968 @@
+#! <?xml version="1.0" encoding="utf-8" ?>
+#! <WORKSPACE
+#    
+#    
+#    Ligne de commande pour exécuter le projet :
+#    
+#    
+#    "C:\Program Files (x86)\FME2015_1.2.1\fme.exe" C:\Users\m_espada\Documents\NetBeansProjects\vitis\e2e\resource\metadata2.fmw
+#          --Source_ "E:\data\shp\dpt\DPT.SHP"
+#          --DestDataset_MAPINFO "E:\margot\gtf\2016\metadata"
+#    
+#    
+#! LAST_SAVE_DATE="2016-06-15T10:02:24"
+#! BEGIN_TCL=""
+#! MAX_LOG_FEATURES="200"
+#! LAST_SAVE_BUILD="FME(R) 2015.1.2.1 (20150924 - Build 15539 - WIN32)"
+#! FME_REPROJECTION_ENGINE="FME"
+#! END_PYTHON=""
+#! DESTINATION="NONE"
+#! LEGAL_TERMS_CONDITIONS="&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Conditions d&apos;utilisation modifiées &lt;/p&gt;&#10;"
+#! DESTINATION_ROUTING_FILE=""
+#! FME_SERVER_SERVICES=""
+#! HISTORY=""
+#! SHOW_INFO_NODES="true"
+#! ZOOM_SCALE="100"
+#! REQUIREMENTS_KEYWORD="none"
+#! USAGE="&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Utilisation modifiée &lt;/p&gt;&#10;"
+#! REQUIREMENTS="&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Pre requis modifiés &lt;/p&gt;&#10;"
+#! LOG_FILE=""
+#! LOG_MAX_PRECISION="Yes"
+#! SOURCE_ROUTING_FILE=""
+#! FME_GEOMETRY_HANDLING="Enhanced"
+#! WORKSPACE_VERSION="1"
+#! FME_DOCUMENT_GUID="385dbf51-ccc7-48b5-a8a3-65c044eac691"
+#! REDIRECT_TERMINATORS="NONE"
+#! SOURCE="NONE"
+#! END_TCL=""
+#! FME_BUILD_NUM="15539"
+#! BEGIN_PYTHON=""
+#! ATTR_TYPE_ENCODING="SDF"
+#! VIEW_POSITION="-276.003 0"
+#! SHOW_ANNOTATIONS="true"
+#! DOC_EXTENTS="2222 1e-05"
+#! DESCRIPTION="&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Description modifiée &lt;/p&gt;&#10;&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&#10;    &lt;br/&gt;&#10;&lt;/p&gt;&#10;"
+#! FME_IMPLICIT_CSMAP_REPROJECTION_MODE="Auto"
+#! MULTI_WRITER_DATASET_ORDER="BY_ID"
+#! DOC_TOP_LEFT="54.9995 -230"
+#! FME_DOCUMENT_PRIORGUID="148a5076-a9d1-4af1-a863-723c854bb511,c2b41567-dfb6-40ad-bbf6-821ff3a3735e,95599775-540c-48bb-84e2-9a3859829a9e,62e52f56-dac5-4b38-bce3-faef76eef850,6f0e5c14-fd54-447d-bf97-722f4b1f8e46,feadd1a1-e6a3-4916-af96-c2bad77733ac"
+#! PASSWORD=""
+#! TITLE="métadonnées"
+#! CATEGORY="Nouvelle catégorie2"
+#! LOG_MAX_RECORDED_FEATURES="200"
+#! IGNORE_READER_FAILURE="No"
+#! FME_STROKE_MAX_DEVIATION="0"
+#! WARN_INVALID_XFORM_PARAM="Yes"
+#! >
+#! <DATASETS>
+#! <DATASET
+#! IS_SOURCE="true"
+#! ROLE="READER"
+#! FORMAT="SHAPE"
+#! DATASET="$(Source_)"
+#! KEYWORD="SHAPE_1"
+#! MULTI_GEOM_ALLOWED="false"
+#! ATTR_MAX_LENGTH="60"
+#! ATTR_CASE="ANY"
+#! ALLOWED_FEAT_TYPES=""
+#! WRITE_DEFS="true"
+#! DEFLINE_TEMPLATE="SHAPE_GEOMETRY {FME_GEN_GEOMETRY}"
+#! DEFLINE_ATTRS="true"
+#! EXPOSABLE_ATTRS="fme_geometry fme_char(50) fme_primary_axis number(31,15) multi_reader_type char(50) fme_start_angle number(31,15) shape_geometry_error{} char(254) fme_text_size number(31,15) fme_type char(50) fme_sweep_angle number(31,15) multi_reader_keyword char(50) fme_color char(50) fme_feature_type char(50) fme_dataset char(50) fme_text_string char(50) fme_rotation number(31,15) fme_fill_color char(50) multi_reader_full_id number(11,0) multi_reader_id number(11,0) fme_basename char(50) shape_measures char(254) fme_secondary_axis number(31,15)"
+#! DEFLINE_PARMS=""
+#! ATTR_INDEX_TYPES="INDEX"
+#! ATTR_NAME_INVALID_CHARS=""
+#! SUPPORTS_FEATURE_TYPE_FANOUT="true"
+#! ENABLED="true"
+#! DYNAMIC_FEATURE_TYPES_LIST_ON_MERGE="true"
+#! DATASET_TYPE="FILEDIR"
+#! GENERATE_FME_BUILD_NUM="15539"
+#! COORDSYS=""
+#! MIN_FEATURES=""
+#! MAX_FEATURES_PER_FEATURE_TYPE=""
+#! FEATURE_TYPES=""
+#! MAX_FEATURES=""
+#! START_FEATURE=""
+#! >
+#! <METAFILE_PARAMETER
+#! NAME="READER_DATASET_HINT"
+#! VALUE="Select the Esri Shape file(s)"
+#! />
+#! <METAFILE_PARAMETER
+#! NAME="WRITER_DATASET_HINT"
+#! VALUE="Specify a folder for the Esri Shape file"
+#! />
+#! <METAFILE_PARAMETER
+#! NAME="ADVANCED_PARMS"
+#! VALUE="SHAPE_IN_SEARCH_ENVELOPE_MINX SHAPE_IN_SEARCH_ENVELOPE_MINY SHAPE_IN_SEARCH_ENVELOPE_MAXX SHAPE_IN_SEARCH_ENVELOPE_MAXY SHAPE_IN_CLIP_TO_ENVELOPE SEARCH_ENVELOPE_COORDINATE_SYSTEM SHAPE_IN_SEARCH_ENVELOPE_COORDINATE_SYSTEM"
+#! />
+#! <METAFILE_PARAMETER
+#! NAME="DATASET_NAME"
+#! VALUE="shp file"
+#! />
+#! <METAFILE_PARAMETER
+#! NAME="FEATURE_TYPE_DEFAULT_NAME"
+#! VALUE="File1"
+#! />
+#! <METAFILE_PARAMETER
+#! NAME="FEATURE_TYPE_NAME"
+#! VALUE="Shape File"
+#! />
+#! </DATASET>
+#! <DATASET
+#! IS_SOURCE="false"
+#! ROLE="WRITER"
+#! FORMAT="MAPINFO"
+#! DATASET="$(DestDataset_MAPINFO)"
+#! KEYWORD="MAPINFO_1"
+#! MULTI_GEOM_ALLOWED="true"
+#! ATTR_MAX_LENGTH="31"
+#! ATTR_CASE="ANYFIRSTNONNUMERIC"
+#! ALLOWED_FEAT_TYPES=""
+#! WRITE_DEFS="true"
+#! DEFLINE_TEMPLATE=""
+#! DEFLINE_ATTRS="true"
+#! EXPOSABLE_ATTRS="mapinfo_text_fontstyle_italic char(10) mapinfo_text_width float mapinfo_rounding_height float fme_text_string char(50) mapinfo_text_height float mapinfo_brush_background integer mapinfo_type char(25) fme_rotation float mapinfo_text_fontstyle_underline char(10) mapinfo_rounding float mapinfo_symbol_font char(50) mapinfo_text_spacing smallint mapinfo_primary_axis float mapinfo_text_fontstyle_inverse char(10) mapinfo_symbol_size integer mapinfo_text_fontstyle_strikeout char(10) mapinfo_text_fontsize float mapinfo_text_fontstyle_opaque char(10) fme_color char(50) fme_geometry fme_char(50) mapinfo_text_fontbgcolor integer mapinfo_text_line_pen_color integer mapinfo_symbol_angle float mapinfo_symbol_file_name char(255) fme_type char(50) mapinfo_brush_pattern smallint mapinfo_text_fontname char(50) mapinfo_center_xcoord float mapinfo_text_fontfgcolor integer mapinfo_text_justification char(30) mapinfo_pen_width smallint mapinfo_sweep_angle float mapinfo_text_fontstyle_expanded char(10) mapinfo_secondary_axis float mapinfo_text_line_end_x float mapinfo_text_line_end_y float mapinfo_text_fontstyle smallint mapinfo_center_ycoord float fme_sweep_angle float fme_secondary_axis float mapinfo_text_line_pen_pattern integer fme_text_size float mapinfo_text_linetype integer mapinfo_text_fontstyle_allcaps char(10) fme_dataset char(50) mapinfo_text_fontstyle_halo char(10) mapinfo_text_fontstyle_blink char(10) mapinfo_rotation float fme_basename char(50) mapinfo_symbol_color integer mapinfo_smooth logical fme_start_angle float mapinfo_text_line_pen_width integer mapinfo_symbol_shape integer mapinfo_start_angle float fme_feature_type char(50) mapinfo_symbol_style smallint mapinfo_text_fontstyle_bold char(10) mapinfo_centroid_x float mapinfo_centroid_y float mapinfo_text_fontstyle_shadow char(10) fme_primary_axis float fme_fill_color char(50) mapinfo_pen_color integer mapinfo_brush_transparent logical mapinfo_text_string char(255) mapinfo_brush_foreground integer mapinfo_text_fontstyle_outline char(10) mapinfo_pen_pattern smallint"
+#! DEFLINE_PARMS=""
+#! ATTR_INDEX_TYPES="indexed"
+#! ATTR_NAME_INVALID_CHARS="\\/&quot;:?*&lt;&gt;|[]= %~!@$&amp;#()^&apos;+-.,`;"
+#! SUPPORTS_FEATURE_TYPE_FANOUT="true"
+#! ENABLED="true"
+#! DYNAMIC_FEATURE_TYPES_LIST_ON_MERGE="true"
+#! DATASET_TYPE="FILEDIR"
+#! GENERATE_FME_BUILD_NUM="15539"
+#! COORDSYS=""
+#! FANOUT_ID_ATTR=""
+#! FANOUT_DIRECTORY=""
+#! FANOUT_SUFFIX=""
+#! FANOUT="No"
+#! FANOUT_PREFIX=""
+#! >
+#! <METAFILE_PARAMETER
+#! NAME="READER_DATASET_HINT"
+#! VALUE="Select the MAPINFO files"
+#! />
+#! <METAFILE_PARAMETER
+#! NAME="WRITER_DATASET_HINT"
+#! VALUE="Specify a folder for the MAPINFO file"
+#! />
+#! <METAFILE_PARAMETER
+#! NAME="ADVANCED_PARMS"
+#! VALUE="NULL_IN_SEARCH_ENVELOPE_MINX NULL_IN_SEARCH_ENVELOPE_MINY NULL_IN_SEARCH_ENVELOPE_MAXX NULL_IN_SEARCH_ENVELOPE_MAXY NULL_IN_CLIP_TO_ENVELOPE SEARCH_ENVELOPE_COORDINATE_SYSTEM VERSION"
+#! />
+#! <METAFILE_PARAMETER
+#! NAME="DATASET_NAME"
+#! VALUE="tab file"
+#! />
+#! <METAFILE_PARAMETER
+#! NAME="FEATURE_TYPE_DEFAULT_NAME"
+#! VALUE="Table1"
+#! />
+#! <METAFILE_PARAMETER
+#! NAME="FEATURE_TYPE_NAME"
+#! VALUE="Table"
+#! />
+#! </DATASET>
+#! </DATASETS>
+#! <DATA_TYPES>
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="char(width)"
+#! FME_TYPE="fme_varchar(width)"
+#! FORMAT="SHAPE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="char(width)"
+#! FME_TYPE="fme_char(width)"
+#! FORMAT="SHAPE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="char(254)"
+#! FME_TYPE="fme_buffer"
+#! FORMAT="SHAPE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="char(20)"
+#! FME_TYPE="fme_datetime"
+#! FORMAT="SHAPE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="char(12)"
+#! FME_TYPE="fme_time"
+#! FORMAT="SHAPE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="char(1)"
+#! FME_TYPE="fme_char(width)"
+#! FORMAT="SHAPE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="date"
+#! FME_TYPE="fme_date"
+#! FORMAT="SHAPE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="number(31,15)"
+#! FME_TYPE="fme_real64"
+#! FORMAT="SHAPE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="number(15,7)"
+#! FME_TYPE="fme_real32"
+#! FORMAT="SHAPE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="number(11,0)"
+#! FME_TYPE="fme_int32"
+#! FORMAT="SHAPE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="number(11,0)"
+#! FME_TYPE="fme_uint32"
+#! FORMAT="SHAPE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="number(20,0)"
+#! FME_TYPE="fme_int64"
+#! FORMAT="SHAPE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="number(20,0)"
+#! FME_TYPE="fme_uint64"
+#! FORMAT="SHAPE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="logical"
+#! FME_TYPE="fme_boolean"
+#! FORMAT="SHAPE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="number(6,0)"
+#! FME_TYPE="fme_int16"
+#! FORMAT="SHAPE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="number(6,0)"
+#! FME_TYPE="fme_uint16"
+#! FORMAT="SHAPE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="number(4,0)"
+#! FME_TYPE="fme_uint8"
+#! FORMAT="SHAPE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="number(width,decimal)"
+#! FME_TYPE="fme_decimal(width,decimal)"
+#! FORMAT="SHAPE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="char(width)"
+#! FME_TYPE="fme_varchar(width)"
+#! FORMAT="MAPINFO"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="char(width)"
+#! FME_TYPE="fme_char(width)"
+#! FORMAT="MAPINFO"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="char(254)"
+#! FME_TYPE="fme_buffer"
+#! FORMAT="MAPINFO"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="char(1)"
+#! FME_TYPE="fme_char(width)"
+#! FORMAT="MAPINFO"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="datetime"
+#! FME_TYPE="fme_datetime"
+#! FORMAT="MAPINFO"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="time"
+#! FME_TYPE="fme_time"
+#! FORMAT="MAPINFO"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="date"
+#! FME_TYPE="fme_date"
+#! FORMAT="MAPINFO"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="decimal(width,decimal)"
+#! FME_TYPE="fme_decimal(width,decimal)"
+#! FORMAT="MAPINFO"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="float"
+#! FME_TYPE="fme_real64"
+#! FORMAT="MAPINFO"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="float"
+#! FME_TYPE="fme_real32"
+#! FORMAT="MAPINFO"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="integer"
+#! FME_TYPE="fme_int32"
+#! FORMAT="MAPINFO"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="decimal(11,0)"
+#! FME_TYPE="fme_uint32"
+#! FORMAT="MAPINFO"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="decimal(20,0)"
+#! FME_TYPE="fme_int64"
+#! FORMAT="MAPINFO"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="decimal(20,0)"
+#! FME_TYPE="fme_uint64"
+#! FORMAT="MAPINFO"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="logical"
+#! FME_TYPE="fme_boolean"
+#! FORMAT="MAPINFO"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="smallint"
+#! FME_TYPE="fme_int16"
+#! FORMAT="MAPINFO"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="integer"
+#! FME_TYPE="fme_uint16"
+#! FORMAT="MAPINFO"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="smallint"
+#! FME_TYPE="fme_uint8"
+#! FORMAT="MAPINFO"
+#! />
+#! </DATA_TYPES>
+#! <GEOM_TYPES>
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_pointz"
+#! FME_TYPE="fme_point"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_pointm"
+#! FME_TYPE="fme_point"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_point"
+#! FME_TYPE="fme_point"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_multipointz"
+#! FME_TYPE="fme_point"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_multipointm"
+#! FME_TYPE="fme_point"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_multipoint"
+#! FME_TYPE="fme_point"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_polylinez"
+#! FME_TYPE="fme_line"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_polylinem"
+#! FME_TYPE="fme_line"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_polyline"
+#! FME_TYPE="fme_line"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_polygonz"
+#! FME_TYPE="fme_area"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_polygonm"
+#! FME_TYPE="fme_area"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_polygon"
+#! FME_TYPE="fme_area"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_pointz"
+#! FME_TYPE="fme_text"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_polygonz"
+#! FME_TYPE="fme_ellipse"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_polylinez"
+#! FME_TYPE="fme_arc"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_multipatch"
+#! FME_TYPE="fme_surface"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_multipatch"
+#! FME_TYPE="fme_solid"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_polygonz"
+#! FME_TYPE="fme_rectangle"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_polygonz"
+#! FME_TYPE="fme_rounded_rectangle"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_null"
+#! FME_TYPE="fme_no_geom"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_polygonz"
+#! FME_TYPE="fme_raster"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_polygonz"
+#! FME_TYPE="fme_point_cloud"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_null"
+#! FME_TYPE="fme_collection"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="mapinfo_point"
+#! FME_TYPE="fme_point"
+#! FORMAT="MAPINFO"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="mapinfo_custom_point"
+#! FME_TYPE="fme_point"
+#! FORMAT="MAPINFO"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="mapinfo_font_point"
+#! FME_TYPE="fme_point"
+#! FORMAT="MAPINFO"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="mapinfo_polyline"
+#! FME_TYPE="fme_line"
+#! FORMAT="MAPINFO"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="mapinfo_region"
+#! FME_TYPE="fme_area"
+#! FORMAT="MAPINFO"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="mapinfo_text"
+#! FME_TYPE="fme_text"
+#! FORMAT="MAPINFO"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="mapinfo_ellipse"
+#! FME_TYPE="fme_ellipse"
+#! FORMAT="MAPINFO"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="mapinfo_arc"
+#! FME_TYPE="fme_arc"
+#! FORMAT="MAPINFO"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="mapinfo_rectangle"
+#! FME_TYPE="fme_rectangle"
+#! FORMAT="MAPINFO"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="mapinfo_rounded_rectangle"
+#! FME_TYPE="fme_rounded_rectangle"
+#! FORMAT="MAPINFO"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="mapinfo_raster"
+#! FME_TYPE="fme_raster"
+#! FORMAT="MAPINFO"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="mapinfo_none"
+#! FME_TYPE="fme_no_geom"
+#! FORMAT="MAPINFO"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="mapinfo_collection"
+#! FME_TYPE="fme_collection"
+#! FORMAT="MAPINFO"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="mapinfo_polyline"
+#! FME_TYPE="fme_surface"
+#! FORMAT="MAPINFO"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="mapinfo_polyline"
+#! FME_TYPE="fme_solid"
+#! FORMAT="MAPINFO"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="mapinfo_region"
+#! FME_TYPE="fme_point_cloud"
+#! FORMAT="MAPINFO"
+#! />
+#! </GEOM_TYPES>
+#! <FEATURE_TYPES>
+#! <FEATURE_TYPE
+#! IS_SOURCE="false"
+#! NODE_NAME="Table2"
+#! FEATURE_TYPE_NAME="@Value(fme_feature_type)"
+#! FEATURE_TYPE_NAME_QUALIFIER=""
+#! IS_EDITABLE="true"
+#! IDENTIFIER="2"
+#! FEAT_GEOMTYPE="All"
+#! POSITION="2277 -230"
+#! BOUNDING_RECT="2277 -230 -1 -1"
+#! ORDER="5e+014"
+#! COLLAPSED="false"
+#! KEYWORD="MAPINFO_1"
+#! PARMS_EDITED="true"
+#! ENABLED="true"
+#! SCHEMA_ATTRIBUTE_SOURCE="2"
+#! DYNAMIC_SCHEMA="true"
+#! DYNAMIC_SCHEMA_SOURCES="SCHEMA_FROM_FIRST_FEATURE SHAPE_1"
+#! DYNAMIC_SCHEMA_FEATURE_TYPE="AUTOMATIC"
+#! DYNAMIC_SCHEMA_FEATURE_TYPE_NAME="@Value(fme_feature_type)"
+#! DYNAMIC_SCHEMA_DEFINITION="AUTOMATIC"
+#! DYNAMIC_SCHEMA_DEFINITION_NAME=""
+#! DYNAMIC_SCHEMA_GEOMETRY="FIXED"
+#! DYNAMIC_SCHEMA_GEOMETRY_NAME="&lt;Unused&gt;"
+#! DYNAMIC_SCHEMA_ATTRIBUTES_TO_REMOVE=""
+#! >
+#! </FEATURE_TYPE>
+#! <FEATURE_TYPE
+#! IS_SOURCE="true"
+#! NODE_NAME="dpt2"
+#! FEATURE_TYPE_NAME=""
+#! FEATURE_TYPE_NAME_QUALIFIER=""
+#! IS_EDITABLE="false"
+#! IDENTIFIER="3"
+#! FEAT_GEOMTYPE="shape_polygon"
+#! POSITION="54.9995 -230"
+#! BOUNDING_RECT="54.9995 -230 -1 -1"
+#! ORDER="5e+014"
+#! COLLAPSED="false"
+#! KEYWORD="SHAPE_1"
+#! PARMS_EDITED="true"
+#! ENABLED="true"
+#! HIDDEN_USER_ATTRS="NB_COMM NOM_REG NOM_DEP POP_DEP SURF_KM2 NUM_REG NUM_DEP"
+#! MERGE_FILTER="*"
+#! MERGE_FILTER_TYPE="FILTER_TYPE_GLOB"
+#! MERGE_FILTER_CASE_SENSITIVE="false"
+#! DYNAMIC_SCHEMA="true"
+#! >
+#! <FEAT_ATTRIBUTE ATTR_NAME="NUM_DEP" ATTR_TYPE="char(2)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="NB_COMM" ATTR_TYPE="number(5,0)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="NOM_DEP" ATTR_TYPE="char(30)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="POP_DEP" ATTR_TYPE="number(16,0)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="SURF_KM2" ATTR_TYPE="number(16,2)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="NUM_REG" ATTR_TYPE="number(3,0)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="NOM_REG" ATTR_TYPE="char(50)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! </FEATURE_TYPE>
+#! </FEATURE_TYPES>
+#! <FMESERVER>
+#! </FMESERVER>
+#! <GLOBAL_PARAMETERS>
+#! <GLOBAL_PARAMETER
+#! GUI_LINE="GUI OPTIONAL FILENAME_MUSTEXIST Source_ shape|*.shp|zip|*.* Fichier source shape :"
+#! DEFAULT_VALUE="E:\data\shp\dpt\DPT.SHP"
+#! IS_STAND_ALONE="true"
+#! />
+#! <GLOBAL_PARAMETER
+#! GUI_LINE="GUI DIRNAME DestDataset_MAPINFO Dossier destination MapInfo :"
+#! DEFAULT_VALUE="E:\margot\gtf\2016\metadata"
+#! IS_STAND_ALONE="false"
+#! />
+#! </GLOBAL_PARAMETERS>
+#! <COMMENTS>
+#! </COMMENTS>
+#! <CONSTANTS>
+#! </CONSTANTS>
+#! <BOOKMARKS>
+#! </BOOKMARKS>
+#! <TRANSFORMERS>
+#! </TRANSFORMERS>
+#! <FEAT_LINKS>
+#! <FEAT_LINK
+#! IDENTIFIER="4"
+#! SOURCE_NODE="3"
+#! TARGET_NODE="2"
+#! SOURCE_PORT_DESC="-1"
+#! TARGET_PORT_DESC="-1"
+#! ENABLED="true"
+#! EXTRA_POINTS=""
+#! />
+#! </FEAT_LINKS>
+#! <BREAKPOINTS>
+#! </BREAKPOINTS>
+#! <ATTR_LINKS>
+#! </ATTR_LINKS>
+#! <SUBDOCUMENTS>
+#! </SUBDOCUMENTS>
+#! <LOOKUP_TABLES>
+#! </LOOKUP_TABLES>
+#! </WORKSPACE>
+#! 
+GUI IGNORE SourceDataset_SHAPE_1,SHAPE_IN_SIMPLE_DONUT_GEOMETRY_SHAPE_1,SHAPE_IN_ENCODING_SHAPE_1,SHAPE_IN_EXPOSE_ATTRS_GROUP_SHAPE_1,SHAPE_IN_SEARCH_ENVELOPE_MINX_SHAPE_1,SHAPE_IN_SEARCH_ENVELOPE_MINY_SHAPE_1,SHAPE_IN_SEARCH_ENVELOPE_MAXX_SHAPE_1,SHAPE_IN_SEARCH_ENVELOPE_MAXY_SHAPE_1,SHAPE_IN_CLIP_TO_ENVELOPE_SHAPE_1,SHAPE_IN_NETWORK_AUTHENTICATION_SHAPE_1,SHAPE_IN_SEARCH_ENVELOPE_COORDINATE_SYSTEM_SHAPE_1,_MEASURES_AS_Z_SHAPE_1,SHAPE_IN_DISSOLVE_HOLES_SHAPE_1,SHAPE_IN_REPORT_BAD_GEOMETRY_SHAPE_1,SHAPE_IN_TRIM_PRECEDING_SPACES_SHAPE_1,DestDataset_MAPINFO_1,MAPINFO_OUT_VERSION_MAPINFO_1,MAPINFO_OUT__WRITE_REGION_CENTROIDS_MAPINFO_1,MAPINFO_OUT_TWO_POINT_LINE_AS_POLYLINE_MAPINFO_1,MAPINFO_OUT__STROKE_ARCS_MAPINFO_1,MAPINFO_OUT__COORDSYS_STATEMENT_MAPINFO_1,MAPINFO_OUT__MIF_MINX_MAPINFO_1,MAPINFO_OUT__MIF_MINY_MAPINFO_1,MAPINFO_OUT__MIF_MAXX_MAPINFO_1,MAPINFO_OUT__MIF_MAXY_MAPINFO_1
+DEFAULT_MACRO Source_ E:\data\shp\dpt\DPT.SHP
+GUI OPTIONAL FILENAME_EXISTING Source_ shape|*.shp|zip|*.* Fichier source shape :
+DEFAULT_MACRO DestDataset_MAPINFO E:\margot\gtf\2016\metadata
+GUI DIRNAME DestDataset_MAPINFO Dossier destination MapInfo :
+INCLUDE [ if {{$(DestDataset_MAPINFO)} == {}} { puts_real {Parameter 'DestDataset_MAPINFO' must be given a value.}; exit 1; }; ]
+#! START_HEADER
+#! START_WB_HEADER
+READER_TYPE SHAPE
+READER_KEYWORD SHAPE_1
+READER_GEN_DIRECTIVES _MERGE_SCHEMAS,YES,SHAPE_EXPOSE_FORMAT_ATTRS,,EXPOSE_ATTRS_GROUP,,CLIP_TO_ENVELOPE,NO,ENCODING,,USE_SEARCH_ENVELOPE,NO,SEARCH_ENVELOPE_MINX,0,SEARCH_ENVELOPE_MAXX,0,SEARCH_ENVELOPE_MINY,0,SEARCH_ENVELOPE_MAXY,0,UPPER_CASE_ATTR_NAMES,No,SIMPLE_DONUT_GEOMETRY,simple
+WRITER_TYPE MULTI_WRITER
+MULTI_WRITER_DATASET_ORDER BY_ID
+MULTI_WRITER_FIRST_WRITER_ID 0
+MULTI_WRITER_TYPE{0} MAPINFO
+MULTI_WRITER_KEYWORD{0} MAPINFO_1
+#! END_WB_HEADER
+#! START_WB_HEADER
+MACRO WB_KEYWORD "SHAPE_1"
+#! END_WB_HEADER
+#! START_SOURCE_HEADER SHAPE SHAPE_1
+# ============================================================================
+# The following GUI line prompts for the source shape files
+# The dataset this mapping file was generated from was:
+#! END_SOURCE_HEADER
+#! START_WB_HEADER
+DEFAULT_MACRO SourceDataset
+INCLUDE [ if {{$(SourceDataset)} != ""} {                        \
+ puts {DEFAULT_MACRO SourceDataset_SHAPE_1 $(SourceDataset)}     \
+ } ]
+#! END_WB_HEADER
+#! START_SOURCE_HEADER SHAPE SHAPE_1
+DEFAULT_MACRO SourceDataset_SHAPE_1 $(Source_)
+GUI MULTIFILE SourceDataset_SHAPE_1 Shape_Files(*.shp)|*.shp|Compressed_Shape_Files(*.shz)|*.shz|All_Files(*)|* Source Esri Shape File(s):
+# =====================================================================
+# Provide some control over what attributes have the user-selected
+# encoding applied. Normally all attributes are updated after being
+# read, but the following lines exclude from this treatment all
+# attributes whose names start with fme_ or shape_.
+SHAPE_1_UNENCODED_ATTR_PREFIX fme_ shape_
+# ============================================================================
+# Determines whether the attribute names should be uppercased, or whether they
+# should stay as specified in the shape file. Once the mapping file/workspace
+# has been generated, the value for this keyword should not be changed.
+DEFAULT_MACRO SHAPE_IN_UPPER_CASE_ATTR_NAMES_SHAPE_1 No
+SHAPE_1_UPPER_CASE_ATTR_NAMES "$(SHAPE_IN_UPPER_CASE_ATTR_NAMES_SHAPE_1)"
+# ============================================================================
+# Option to use simple donut geometry creation, which is faster than the
+# original creation method, but less meticulous at detecting and correcting
+# geometric anomalies (i.e.holeswithinholes)
+DEFAULT_MACRO SHAPE_IN_SIMPLE_DONUT_GEOMETRY_SHAPE_1 simple
+SHAPE_1_SIMPLE_DONUT_GEOMETRY "$(SHAPE_IN_SIMPLE_DONUT_GEOMETRY_SHAPE_1)"
+GUI LOOKUP_CHOICE SHAPE_IN_SIMPLE_DONUT_GEOMETRY_SHAPE_1 "Orientation Only",simple%"Orientation and Spatial Relationship",complex Donut Geometry Detection
+# ============================================================================
+# The following keyword allows the user to choose what encoding to
+# use for reading the shape file, overrides dbf file LDID or .cpg
+# file if present.
+DEFAULT_MACRO SHAPE_IN_ENCODING_SHAPE_1 
+SHAPE_1_ENCODING "$(SHAPE_IN_ENCODING_SHAPE_1)"
+GUI OPTIONAL ENCODING SHAPE_IN_ENCODING_SHAPE_1 ANSI%SYSTEM%BIG5%EUC%HKBIG5%ISO%OEM%SJIS%UTF-8%CP437%CP708%CP720%CP737%CP775%CP850%CP852%CP855%CP857%CP860%CP861%CP862%CP863%CP864%CP865%CP866%CP869%CP874%CP932%CP936%CP950%CP1250%CP1251%CP1252%CP1253%CP1254%CP1255%CP1256%CP1257%CP1258%ISO8859-1%ISO8859-2%ISO8859-3%ISO8859-4%ISO8859-5%ISO8859-6%ISO8859-7%ISO8859-8%ISO8859-9%ISO-8859-11%ISO8859-13%ISO8859-15%WINDOWS-874 Character Encoding:
+#Note: Using the search envelope requires the shape index files (.sbnand.sbx)
+DEFAULT_MACRO SHAPE_IN_EXPOSE_ATTRS_GROUP_SHAPE_1 
+SHAPE_1_EXPOSE_ATTRS_GROUP "$(SHAPE_IN_EXPOSE_ATTRS_GROUP_SHAPE_1)"
+GUI DISCLOSUREGROUP SHAPE_IN_EXPOSE_ATTRS_GROUP_SHAPE_1 SHAPE_EXPOSE_FORMAT_ATTRS Schema Attributes
+# Include this file in source setting section to add native search envelope processing
+# Zero as a default means we don't do any search -- this makes workbench happier
+# ===========================================================================
+DEFAULT_MACRO SHAPE_IN_SEARCH_ENVELOPE_MINX_SHAPE_1 0
+SHAPE_1_SEARCH_ENVELOPE "$(SHAPE_IN_SEARCH_ENVELOPE_MINX_SHAPE_1)"
+GUI OPTIONAL FLOAT SHAPE_IN_SEARCH_ENVELOPE_MINX_SHAPE_1 Minimum X:
+# ===========================================================================
+DEFAULT_MACRO SHAPE_IN_SEARCH_ENVELOPE_MINY_SHAPE_1 0
+SHAPE_1_SEARCH_ENVELOPE "$(SHAPE_IN_SEARCH_ENVELOPE_MINY_SHAPE_1)"
+GUI OPTIONAL FLOAT SHAPE_IN_SEARCH_ENVELOPE_MINY_SHAPE_1 Minimum Y:
+# ===========================================================================
+DEFAULT_MACRO SHAPE_IN_SEARCH_ENVELOPE_MAXX_SHAPE_1 0
+SHAPE_1_SEARCH_ENVELOPE "$(SHAPE_IN_SEARCH_ENVELOPE_MAXX_SHAPE_1)"
+GUI OPTIONAL FLOAT SHAPE_IN_SEARCH_ENVELOPE_MAXX_SHAPE_1 Maximum X:
+# ===========================================================================
+DEFAULT_MACRO SHAPE_IN_SEARCH_ENVELOPE_MAXY_SHAPE_1 0
+SHAPE_1_SEARCH_ENVELOPE "$(SHAPE_IN_SEARCH_ENVELOPE_MAXY_SHAPE_1)"
+GUI OPTIONAL FLOAT SHAPE_IN_SEARCH_ENVELOPE_MAXY_SHAPE_1 Maximum Y:
+# ===========================================================================
+DEFAULT_MACRO SHAPE_IN_CLIP_TO_ENVELOPE_SHAPE_1 NO
+SHAPE_1_CLIP_TO_ENVELOPE "$(SHAPE_IN_CLIP_TO_ENVELOPE_SHAPE_1)"
+GUI OPTIONAL CHECKBOX SHAPE_IN_CLIP_TO_ENVELOPE_SHAPE_1 YES%NO Clip to Search Envelope
+# ===========================================================================
+DEFAULT_MACRO SHAPE_IN_NETWORK_AUTHENTICATION_SHAPE_1 
+SHAPE_1_NETWORK_AUTHENTICATION "$(SHAPE_IN_NETWORK_AUTHENTICATION_SHAPE_1)"
+GUI OPTIONAL AUTHENTICATOR SHAPE_IN_NETWORK_AUTHENTICATION_SHAPE_1 CONTAINER%GROUP%CONTAINER_TITLE%"Network Authentication"%PROMPT_TYPE%NETWORK Network Authentication
+# ============================================================================
+# Search Envelope Coordinate System
+# BUG18999: Re-adding directive to allow specification of a search envelope
+# in a coordinate system other than what the data is in. Note that this
+# depends on the source coordinate system being set as well.
+DEFAULT_MACRO SHAPE_IN_SEARCH_ENVELOPE_COORDINATE_SYSTEM_SHAPE_1 
+GUI OPTIONAL COORDSYS SHAPE_IN_SEARCH_ENVELOPE_COORDINATE_SYSTEM_SHAPE_1 Search Envelope Coordinate System:
+SHAPE_1_SEARCH_ENVELOPE_COORDINATE_SYSTEM "$(SHAPE_IN_SEARCH_ENVELOPE_COORDINATE_SYSTEM_SHAPE_1)"
+# ============================================================================
+# The following GUI line sets whether measure values in the shape files should
+# be treated as elevations.
+DEFAULT_MACRO _MEASURES_AS_Z_SHAPE_1 no
+GUI CHOICE _MEASURES_AS_Z_SHAPE_1 yes%no Treat Measures as Elevation:
+SHAPE_1_MEASURES_AS_Z $(_MEASURES_AS_Z_SHAPE_1)
+# ============================================================================
+# The following keyword sets whether the reader dissolves holes in donuts.
+DEFAULT_MACRO SHAPE_IN_DISSOLVE_HOLES_SHAPE_1 no
+GUI CHOICE SHAPE_IN_DISSOLVE_HOLES_SHAPE_1 yes%no Dissolve Adjacent Holes:
+SHAPE_1_DISSOLVE_HOLES $(SHAPE_IN_DISSOLVE_HOLES_SHAPE_1)
+# ============================================================================
+# The following keyword sets whether bad geometry should be reported via
+# the shape_geometry_error{} list attribute.
+DEFAULT_MACRO SHAPE_IN_REPORT_BAD_GEOMETRY_SHAPE_1 no
+GUI CHOICE SHAPE_IN_REPORT_BAD_GEOMETRY_SHAPE_1 yes%no Report Geometry Anomalies:
+SHAPE_1_REPORT_BAD_GEOMETRY $(SHAPE_IN_REPORT_BAD_GEOMETRY_SHAPE_1)
+DEFAULT_MACRO SHAPE_IN_TRIM_PRECEDING_SPACES_SHAPE_1 YES
+GUI CHOICE SHAPE_IN_TRIM_PRECEDING_SPACES_SHAPE_1 yes%no Trim Preceding Spaces:
+SHAPE_1_TRIM_PRECEDING_SPACES $(SHAPE_IN_TRIM_PRECEDING_SPACES_SHAPE_1)
+SHAPE_1_DATASET "$(SourceDataset_SHAPE_1)"
+#! END_SOURCE_HEADER
+#! START_WB_HEADER
+MACRO WB_KEYWORD "MAPINFO_1"
+#! END_WB_HEADER
+#! START_DEST_HEADER MAPINFO MAPINFO_1
+# ============================================================================
+# The following GUI line prompts for a folder to be used as the
+# the destination for the Mapinfo TAB files.
+# The user input is stored in a macro, which is then used to define
+# the dataset to be written.
+#! END_DEST_HEADER
+#! START_WB_HEADER
+DEFAULT_MACRO DestDataset
+INCLUDE [ if {"$(DestDataset)" != ""} {                          \
+ puts {DEFAULT_MACRO DestDataset_MAPINFO_1 $(DestDataset)}         \
+ } ]
+#! END_WB_HEADER
+#! START_DEST_HEADER MAPINFO MAPINFO_1
+DEFAULT_MACRO DestDataset_MAPINFO_1 $(DestDataset_MAPINFO)
+GUI DIRNAME DestDataset_MAPINFO_1 Destination MapInfo Folder:
+# ============================================================================
+# By default, we'll NOT try to use any bounding box information that can be
+# read from the source data when the output coordinate system is unknown
+DEFAULT_MACRO _USE_SOURCE_BOUNDING_BOX_MAPINFO_1 no
+MAPINFO_1_USE_SOURCE_BOUNDING_BOX $(_USE_SOURCE_BOUNDING_BOX_MAPINFO_1)
+# ============================================================================
+# Specify the charset name to be used in the TAB file header. NOTE: This name
+# is just written out in the header and has no affect on the TAB file contents
+#
+# This is now for backward compatibility of MITAB. The MITAB writer now put
+# the MapInfo charset of the original encoding. Otherwise, it's default (Neutral)
+# PR#22004 [PL]
+#DEFAULT_MACRO MAPINFO_OUT_CHARSET Neutral
+#DEFAULT_MACRO MAPINFO_OUT_CHARSET
+#
+#MAPINFO_CHARSET $(MAPINFO_OUT_CHARSET_MAPINFO_1)
+# ============================================================================
+# Include the mapinfo macro package -- sets up a number of macros for
+# mapinfo colors and linestyles
+INCLUDE "$(FME_HOME)/metafile/mapinfoMacros.fmi"
+MAPINFO_1_PLUGIN_MAX_CHANNELS 100
+DEFAULT_MACRO MAPINFO_OUT_VERSION_MAPINFO_1 900
+MAPINFO_1_VERSION "$(MAPINFO_OUT_VERSION_MAPINFO_1)"
+GUI CHOICE MAPINFO_OUT_VERSION_MAPINFO_1 300%450%900%950%1000%1050%1100%1150 File Version:
+DEFAULT_MACRO MAPINFO_OUT__WRITE_REGION_CENTROIDS_MAPINFO_1 no
+MAPINFO_1__WRITE_REGION_CENTROIDS "$(MAPINFO_OUT__WRITE_REGION_CENTROIDS_MAPINFO_1)"
+GUI CHOICE MAPINFO_OUT__WRITE_REGION_CENTROIDS_MAPINFO_1 yes%no Generate and Write Region Centroids:
+DEFAULT_MACRO MAPINFO_OUT_TWO_POINT_LINE_AS_POLYLINE_MAPINFO_1 no
+MAPINFO_1_TWO_POINT_LINE_AS_POLYLINE "$(MAPINFO_OUT_TWO_POINT_LINE_AS_POLYLINE_MAPINFO_1)"
+GUI OPTIONAL CHOICE MAPINFO_OUT_TWO_POINT_LINE_AS_POLYLINE_MAPINFO_1 yes%no Write 2 Point Line as Polyline:
+DEFAULT_MACRO MAPINFO_OUT__STROKE_ARCS_MAPINFO_1 no
+MAPINFO_1__STROKE_ARCS "$(MAPINFO_OUT__STROKE_ARCS_MAPINFO_1)"
+GUI OPTIONAL CHOICE MAPINFO_OUT__STROKE_ARCS_MAPINFO_1 yes%no Stroke Arcs into Polyline:
+# ============================================================================
+# The following lines override the default coordinate system for features. This
+# provides a mapinfo-specific coordinate system line to the writer.
+DEFAULT_MACRO MAPINFO_OUT__COORDSYS_STATEMENT_MAPINFO_1 
+MAPINFO_1__COORDSYS_STATEMENT "$(MAPINFO_OUT__COORDSYS_STATEMENT_MAPINFO_1)"
+GUI OPTIONAL TEXT MAPINFO_OUT__COORDSYS_STATEMENT_MAPINFO_1 Coordinate System Statement:
+# ============================================================================
+# The following lines provide a bounding area for the output files. Because
+# MapInfo has a limited precision available for coordinate storage, providing
+# a tight bounds on the storage can preserve accuracy.
+DEFAULT_MACRO MAPINFO_OUT__MIF_MINX_MAPINFO_1 
+MAPINFO_1__MIF_MINX "$(MAPINFO_OUT__MIF_MINX_MAPINFO_1)"
+DEFAULT_MACRO MAPINFO_OUT__MIF_MINY_MAPINFO_1 
+MAPINFO_1__MIF_MINY "$(MAPINFO_OUT__MIF_MINY_MAPINFO_1)"
+DEFAULT_MACRO MAPINFO_OUT__MIF_MAXX_MAPINFO_1 
+MAPINFO_1__MIF_MAXX "$(MAPINFO_OUT__MIF_MAXX_MAPINFO_1)"
+DEFAULT_MACRO MAPINFO_OUT__MIF_MAXY_MAPINFO_1 
+MAPINFO_1__MIF_MAXY "$(MAPINFO_OUT__MIF_MAXY_MAPINFO_1)"
+GUI OPTIONAL FLOAT MAPINFO_OUT__MIF_MINX_MAPINFO_1 Bounds Min X:
+GUI OPTIONAL FLOAT MAPINFO_OUT__MIF_MINY_MAPINFO_1 Bounds Min Y:
+GUI OPTIONAL FLOAT MAPINFO_OUT__MIF_MAXX_MAPINFO_1 Bounds Max X:
+GUI OPTIONAL FLOAT MAPINFO_OUT__MIF_MAXY_MAPINFO_1 Bounds Max Y:
+# ============================================================================
+# Opt in for destination dataset type vs format type validation
+DEFAULT_MACRO MAPINFO_OUT_DESTINATION_DATASETTYPE_VALIDATION_MAPINFO_1 Yes
+MAPINFO_1_DESTINATION_DATASETTYPE_VALIDATION "$(MAPINFO_OUT_DESTINATION_DATASETTYPE_VALIDATION_MAPINFO_1)"
+DEFAULT_MACRO MAPINFO_OUT_COORDINATE_SYSTEM_GRANULARITY_MAPINFO_1 FEATURE_TYPE
+MAPINFO_1_COORDINATE_SYSTEM_GRANULARITY "$(MAPINFO_OUT_COORDINATE_SYSTEM_GRANULARITY_MAPINFO_1)"
+MAPINFO_1_BOUNDS $(MAPINFO_OUT__MIF_MINX_MAPINFO_1) $(MAPINFO_OUT__MIF_MINY_MAPINFO_1) $(MAPINFO_OUT__MIF_MAXX_MAPINFO_1) $(MAPINFO_OUT__MIF_MAXY_MAPINFO_1)
+MAPINFO_1_DATASET "$(DestDataset_MAPINFO_1)"
+#! END_DEST_HEADER
+#! END_HEADER
+
+LOG_FILENAME "$(FME_MF_DIR)metadata2.log"
+LOG_APPEND NO
+LOG_MAX_FEATURES 200
+LOG_MAX_RECORDED_FEATURES 200
+LOG_MAX_PRECISION Yes
+FME_REPROJECTION_ENGINE FME
+FME_IMPLICIT_CSMAP_REPROJECTION_MODE Auto
+FME_GEOMETRY_HANDLING Enhanced
+FME_STROKE_MAX_DEVIATION 0
+MAPPING_FILE_ID m<u00e9>tadonn<u00e9>es
+LOG_TIMINGS YES
+LOG_FILTER_MASK -17
+DEFAULT_MACRO DATASET_KEYWORD_SHAPE_1 SHAPE_1
+DEFAULT_MACRO DATASET_KEYWORD_MAPINFO_1 MAPINFO_1
+# -------------------------------------------------------------------------
+
+SHAPE_1_READER_META_ATTRIBUTES fme_feature_type
+
+# -------------------------------------------------------------------------
+
+MULTI_READER_CONTINUE_ON_READER_FAILURE No
+
+# -------------------------------------------------------------------------
+
+MACRO WORKSPACE_NAME metadata2
+MACRO FME_VIEWER_APP fmedatainspector
+# -------------------------------------------------------------------------
+SHAPE_1_DEF dpt2   SHAPE_GEOMETRY               shape_polygon   NUM_DEP                      char(2)   NB_COMM                      number(5,0)   NOM_DEP                      char(30)   POP_DEP                      number(16,0)   SURF_KM2                     number(16,2)   NUM_REG                      number(3,0)   NOM_REG                      char(50)
+# -------------------------------------------------------------------------
+
+FACTORY_DEF * RoutingFactory   FACTORY_NAME "Router and Unexpected Input Remover"   INPUT FEATURE_TYPE *       @SupplyAttributes(multi_reader_keyword,SHAPE_1)    ROUTE SHAPE SHAPE_1::dpt2 TO FME_GENERIC ::dpt2 ALIAS_GEOMETRY    MERGE_INPUT Yes   OUTPUT ROUTED FEATURE_TYPE *
+SHAPE_1_MERGE_DEF SHAPE_1::dpt2 GLOB_NOCASE *
+DEFAULT_MACRO WB_CURRENT_CONTEXT
+# -------------------------------------------------------------------------
+
+FACTORY_DEF * RoutingFactory FACTORY_NAME "Destination Feature Type Routing Correlator"   INPUT FEATURE_TYPE *    ROUTE FME_GENERIC dpt2 TO MAPINFO __GO_TO_FINAL_OUTPUT_ROUTER__ multi_writer_id,0,<at>SupplyAttributes<openparen>ENCODED<comma>fme_template_feature_type<comma>Table2<closeparen>,<at>SupplyAttributes<openparen>ENCODED<comma>__wb_out_feat_type__<comma>Table2<closeparen>,<at>EvaluateExpression<openparen>ATTR_CREATE_EXPR<comma>__wb_out_feat_type__<comma><lt>at<gt>Value<lt>openparen<gt>fme_feature_type<lt>closeparen<gt><comma>Table2<closeparen> GEOMETRY   OUTPUT ROUTED FEATURE_TYPE * @FeatureType(ENCODED,@Value(__wb_out_feat_type__)) @RemoveAttributes(__wb_out_feat_type__)   OUTPUT NOT_ROUTED FEATURE_TYPE __nuke_me__ @Tcl2("FME_StatMessage 818059 [FME_GetAttribute fme_template_feature_type] 818060 818061 fme_warn")
+# -------------------------------------------------------------------------
+
+FACTORY_DEF * TeeFactory   FACTORY_NAME "Final Output Nuker"   INPUT FEATURE_TYPE __nuke_me__
+
+# -------------------------------------------------------------------------
+MAPINFO_1_DEF_TEMPLATE Table2   fme_schema_readers           SHAPE_1   fme_schema_feature_first     Yes

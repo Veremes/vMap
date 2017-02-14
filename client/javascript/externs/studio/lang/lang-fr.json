@@ -1,0 +1,436 @@
+{
+    "Loader": {
+        "Title": "Formulaire",
+        "SelectForm": {
+            "Default": "Défaut",
+            "Published": "Publié",
+            "Perso": "Perso"
+        },
+        "InfoBulle": {
+            "Default": {
+                "Publish": "Publier le formulaire par défaut",
+                "Reset": "Régénérer le formulaire par défaut",
+                "Button": "Afficher le formulaire par défaut",
+                "Button_gtf": "Afficher le formulaire par défaut"
+            },
+            "Published": {
+                "Button": "Afficher le formulaire par publié",
+                "Button_gtf": "Afficher le formulaire par publié"
+            },
+            "Perso": {
+                "Save": "Sauvegarder le formulaire personnalisé",
+                "Reload": "Recharger le formulaire personnalisé (abandonner les modifications)",
+                "Publish": "Sauvegarder et publier le formulaire personnalisé",
+                "Reset": "Remplacer le formulaire personnalisé par le formulaire par défaut",
+                "Button": "Afficher le formulaire par personnalisé",
+                "Button_gtf": "Afficher le formulaire par personnalisé"
+            }
+        },
+        "Form": {
+            "Title": "Titre",
+            "TitlePlaceholder": "Titre du formulaire",
+            "SuggestedFields": "Champs suggérés",
+            "SelectSize": {
+                "Label": "Largeur des éléments :",
+                "Size": [
+                    "Large",
+                    "Moyen",
+                    "Petit",
+                    "Très Petit",
+                    "Très Très Petit"
+                ]
+            },
+            "SelectForm": {
+                "Label": "Formulaire :"
+            },
+            "Width": "Largeur du formulaire :"
+        },
+        "Confirmation": {
+            "Yes": "Oui",
+            "No": "Non",
+            "Confirm": "OK",
+            "Cancel": "Annuler",
+            "SaveAndChange": "Sauvegarder votre travail",
+            "Abandon": "Abandonner",
+            "Lose": "Vous perdrez votre travail non sauvegardé",
+            "Save": "Vous allez écraser un fichier sur le serveur"
+        },
+        "Notify": {
+            "GetJson": "Chargement du fichier Json",
+            "GetJson_Error": "Erreur lors du chargement (Json) : ",
+            "CreateJson_Error": "Erreur lors de la création (Json) : ",
+            "SaveData": "Sauvegarde des données sur le serveur",
+            "SaveData_Error": "Sauvegarde échouée : ",
+            "Validation_Error": "Le formulaire n'est pas valide, corriger le nom dans la définition",
+            "ProblemId": "Problème d'ID, réessayer ou contacter un administrateur",
+            "Reset": " a été réinitialisé",
+            "Reset_Error": "Erreur lors de la réinitialisation : ",
+            "Publish": " a été publié",
+            "PublishAndSave": " a été publié et sauvegardé",
+            "Publish_Error": "Erreur lors de la publication : ",
+            "no_form": "Aucun formulaire n'a été trouvé sur le serveur",
+            "generate_form": "Aucun formulaire n'a été trouvé sur le serveur, voulez vous tenter d'en générer un ?"
+        }
+    },
+    "Element": {
+        "Title": "Définition",
+        "Select_Type": {
+            "title": "Label - Style Titre",
+            "subtitle": "Label - Style Sous-titre",
+            "label": "Label",
+            "checkbox": "Boîte à cocher",
+            "radio": "Bouton radio",
+            "textarea": "Texte en édition - Multiligne",
+            "select": "Liste déroulante",
+            "list": "Liste",
+            "double_select": "Liste (double)",
+            "upload": "Fichier local",
+            "date": "Date",
+            "datetime": "Date et heure",
+            "tinymce": "Texte en édition avec TyniMCE",
+            "codemirror": "Texte en édition avec CodeMirror",
+            "hidden": "Champ caché",
+            "text": "Texte en édition - 1 ligne",
+            "password": "Texte en édition - Mot de passe",
+            "email": "Texte en édition - Adresse eMail",
+            "url": "Texte en édition - URL",
+            "integer": "Entier",
+            "float": "Décimal",
+            "button": "Interface - Bouton",
+            "color_picker": "Couleur",
+            "slider": "Curseur",
+            "hr": "Interface - Ligne de Séparation",
+            "map_osm": "Carte OSM",
+            "map_bing": "Carte bing",
+            "map_vmap": "Carte vMap",
+            "image": "Image (Dossier)",
+            "imageurl": "Image - URL",
+            "image_wsdata": "Image - Objet métier",
+            "file_wsdata": "Document - Objet métier",
+            "link": "Lien (Document)",
+            "linkurl": "Lien",
+            "string": "Texte en lecture seule - 1 ligne (NI)",
+            "multistring": "Texte en lecture seule - Multiligne (NI)",
+            "treeview": "Fichier sur le serveur (NI)"
+        },
+        "Component": {
+            "General": {
+                "Label": "Libellé",
+                "Class": "Classe",
+                "Name": "Attribut",
+                "Name_GTF" : "Paramètre",
+                "Width": "Largeur :",
+                "Height": "Hauteur :",
+                "Required": "Requis",
+                "displayOnly": "Uniquement en consultation",
+                "DefaultValue": "Valeur par défaut",
+                "Value": "Valeur"
+            },
+            "Button": {
+                "Type": "Type de bouton",
+                "Event": "Événement"
+            },
+            "Title": {
+                "Placeholder": "Texte du titre"
+            },
+            "SubTitle": {
+                "Label_PH": "Texte du sous-titre",
+                "Class_PH": "Classe pour le sous-titre"
+            },
+            "Label": {
+                "Label_PH": "Texte de l'étiquette",
+                "Name_PH": "Nom de l'étiquette"
+            },
+            "CheckBox": {
+                "Label_PH": "Texte lié à cette case",
+                "Name_PH": "Nom de la case",
+                "Default": "Coché par défaut"
+            },
+            "Radio": {
+                "Label_PH": "Texte lié à cette case",
+                "Name_PH": "Nom de la case",
+                "Default": "Coché par défaut",
+                "Disabled": "Désactivé par défaut"
+            },
+            "TextArea": {
+                "Label_PH": "Texte lié à cette zone de texte",
+                "Name_PH": "Nom de la zone de texte"
+            },
+            "Select": {
+                "Undefined": "non défini",
+                "Wait_For_Parent": "Attendre la parent",
+                "Filter_equality": "Signe de comparaison",
+                "Filter_attr": "Attribut de filtrage",
+                "BusinessObject_Request_undefined": "Requête associée non définie",
+                "BusinessObject_undefined": "Object métier non défini",
+                "BusinessObject": "Objet métier",
+                "BusinessObject_Request": "Requête associée",
+                "WebService_undefined": "Service web non défini",
+                "AttrHelp": "Liste des attributs exploités dans la requête séparés par le caractère |",
+                "FilterHelp": "Expression de type Clause Where. La syntaxe est limitée à une comparaison simple (=) pour des raisons de sécurité",
+                "Ressource_undefined": "Ressource non définie",
+                "Cancel": "Annuler la requête ?",
+                "NoDataReturned": "Aucune donnée retournée",
+                "WebServiceUndefined": "Service web non renseigné",
+                "RessourceUndefined": "Ressource non renseignée",
+                "Saved": "Changements enregistrés avec succes",
+                "Add": "Ajouter",
+                "Edit": "Éditer",
+                "Default": "Défaut",
+                "Delete": "Supprimer",
+                "Datasource_Delete": "Supprimer la source de données ?",
+                "Datasource_Delete_Used": "La source de données que vous voulez supprimer est utilisée par un des éléments suivants:",
+                "Datasource_Exists": "Cet ID existe déjà",
+                "Datasource_NothingSelected": "Veuillez selectionner une source de donnée",
+                "Save": "Valider",
+                "Result": "Aperçu",
+                "Name": "Nom",
+                "Content": "Contenu",
+                "Content_description": "Libellé|clé avec retour à la ligne",
+                "Description": "Description",
+                "Parameters": "Paramètres",
+                "Database": "Base de données",
+                "Schema": "Schema",
+                "Table": "Table",
+                "Filter": "Filtre",
+                "Table": "Table",
+                "Column": "Column",
+                "Server": "Adresse du serveur",
+                "Port": "Port",
+                "SGBD": "SGBD",
+                "Login": "Login",
+                "Table_List": "Tables",
+                "Table_List_error": "Aucune table disponible",
+                "Schema_List": "Schemas",
+                "Schema_List_error": "Aucun schema disponible",
+                "Column_List": "Colonnes",
+                "Password": "Mot de passe",
+                "Label_PH": "Texte lié à ce champ",
+                "Name_PH": "Nom de ce champ",
+                "Select": "Saisie des options",
+                "Datasource": "source de données",
+                "Datasources": "Gestionnaire des sources de données",
+                "DatasourceManagement": "?",
+                "DatasourceManagementTitle": "Utilisez le gestionnaire de sources de données (bouton en bas à droite) pour ajouter ou modifier une source données",
+                "Select_Type": "Type de source",
+                "Select_Business_Object": "Objet métier",
+                "Select_Text": "Texte",
+                "Select_Webservice": "Service web Vitis",
+                "Select_Table_Values": "Valeurs d'une table locale",
+                "Select_External_Database": "Base de données externe",
+                "Webservice_Class": "API",
+                "Ressource": "Ressource",
+                "Webservice": "Service web",
+                "Webservice_Id": "Clé",
+                "Webservice_Id_PH": "Clé à utiliser",
+                "Webservice_Label": "Libellé",
+                "Webservice_Label_PH": "Libellé visible",
+                "Webservice_Database": "Base de données",
+                "Webservice_Database_PH": "Nom de la base de données",
+                "Webservice_Schema": "Schéma",
+                "Webservice_Schema_PH": "Nom du schéma",
+                "Webservice_Table": "Table",
+                "Webservice_Table_PH": "Nom de la table",
+                "Options": "Options du champ",
+                "Multiple": "Sélection multiple",
+                "Advanced": "Options avancées",
+                "Cascade": "Cascade",
+                "Child": "Enfant",
+                "Parents": "Parents",
+                "Parameter": "Filtre"
+            },
+            "Double_Select": {
+                "Size": "Nombre de lignes :",
+                "From": "Sélecteur de gauche",
+                "To": "Sélecteur de droite"
+            },
+            "Date": {
+                "Label_PH": "Texte du champ",
+                "Name_PH": "Nom du champ"
+            },
+            "Upload": {
+                "Label_PH": "Texte du champ",
+                "Name_PH": "Nom du champ",
+                "Ext": "Extensions",
+                "Advance": "Opt. avancées",
+                "ShowPreview":"Prévisualisation",
+                "ShowRemove":"Voir Bouton Suppression",
+                "ShowUpload":"Voir Bouton Upload",
+                "Formats":"Formats",
+                "Formats_PH":"ex: png|jpg|gif"
+            },
+            "TinyMce": {
+                "Label_PH": "Texte de l'étiquette du composant",
+                "Name_PH": "Nom du composant",
+                "Row": "Lignes",
+                "Row_PH": "Nombre de lignes pour ce composant"
+            },
+            "CodeMirror": {
+                "Label_PH": "Texte de l'étiquette du composant"
+            },
+            "ColorPicker": {
+                "Label_PH": "Texte de l'étiquette du champ",
+                "Name_PH": "Nom du champ"
+            },
+            "Hidden": {
+                "Name_PH": "Nom du champ"
+            },
+            "Slider": {
+                "Label_PH": "Texte de l'étiquette du composant",
+                "Name_PH": "Nom du composant",
+                "Minimum": "Min",
+                "Minimum_PH": "Minimum de la plage du composant",
+                "Maximum": "Max",
+                "Maximum_PH": "Maximum de la plage du composant",
+                "Precision": "Prec.",
+                "Precision_PH": "Précision de la valeur renvoyée"
+            },
+            "Text": {
+                "Label_PH": "Texte de l'étiquette du champ",
+                "Name_PH": "Nom du champ",
+                "Pattern": "Motif",
+                "Pattern_PH": "Expression régulière"
+            },
+            "Password": {
+                "Label_PH": "Texte de l'étiquette du champ",
+                "Name_PH": "Nom du champ",
+                "Pattern": "Motif",
+                "Pattern_PH": "Expression régulière"
+            },
+            "URL": {
+                "Label_PH": "Texte de l'étiquette du champ",
+                "Name_PH": "Nom du champ",
+                "Pattern": "Motif",
+                "Pattern_PH": "Expression régulière"
+            },
+            "Map": {
+                "Label_PH": "Étiquette du champ",
+                "Name_PH": "Nom du champ",
+                "Projection": "Proj.",
+                "Select_center": "Mode de centrage de la carte :",
+                "Extent": "Étendue",
+                "CZ": "Centre et zoom",
+                "Center_Label": "Coordonnées du centre de la carte :",
+                "Latitude": "Lat.",
+                "Longitude": "Lon.",
+                "Zoom": "Échelle :",
+                "Extent_label": "Étendue",
+                "LonMin": "XMin",
+                "LonMax": "XMax",
+                "LatMin": "YMin",
+                "LatMax": "YMax",
+                "Culture": "Lang.",
+                "Key": "Clef",
+                "BingMap": "Carte",
+                "ZoomButton": "Boutons de zoom",
+                "MousePosition": "Position de la souris",
+                "ScaleLine": "Échelle",
+                "CurrentProjection": "Projection de la carte",
+                "FullScreen": "Plein écran",
+                "MultiGeom": "Multiples géométries",
+                "RemoveAll": "Suppression générale",
+                "RemoveOne": "Suppression simple",
+                "Modify": "Édition",
+                "DrawPoint": "Dessiner un point",
+                "DrawLine": "Dessiner une ligne",
+                "DrawPolygon": "Dessiner un polygone",
+                "Select": "Outil de sélection simple",
+                "Notify": {
+                    "OutRange": "Vous entrez une valeur qui dépasse une limite de la carte"
+                }
+            },
+            "Number": {
+                "Label_PH": "Texte de l'étiquette du champ",
+                "Name_PH": "Nom du champ",
+                "Minimum": "Minimum",
+                "Minimum_PH": "Minimum de la plage de valeur du champ",
+                "Maximum": "Maximum",
+                "Maximum_PH": "Maximum de la plage de valeur du champ"
+            },
+            "Image":{
+                "Width" : "Largeur maximale de l'image :",
+                "Height" : "Hauteur maximale de l'image :",
+                "Alias" : "Alias",
+                "Alias_PH": "Nom de l'Alias Vitis",
+                "Folder" : "Dossier",
+                "Folder_PH": "Chemin relatif entre l'alias et l'image"
+            },
+            "Link":{
+                "Alias" : "Alias",
+                "Alias_PH": "Nom de l'Alias Vitis",
+                "Folder" : "Dossier",
+                "Folder_PH": "Chemin relatif entre l'alias et le document",
+                "Target" : "Cible",
+                "Target_PH" : "=_blank si vide",
+                "Text": "Texte",
+                "Text_PH": "=valeur si vide",
+                "TargetOptions" : {
+                    "NewTab" : "Dans un nouvel onglet"
+                }
+            }
+        },
+        "SameNameWarning": "Deux éléments ne peuvent avoir le même nom"
+    },
+    "Visualizer": {
+        "FormMode": "Prévisualisation",
+        "Componant": {
+            "Map": {
+                "RemoveAll": "Supprimer toutes les géométries",
+                "RemoveOne": "Cliquez sur une géométrie pour la supprimer",
+                "Modify": "Éditer une géométrie",
+                "Point": "Ajouter une géométrie de type point",
+                "Line": "Ajouter une géométrie de type ligne",
+                "Polygon": "Ajouter une géométrie de type polygone",
+                "Cancel": "Revenir aux interactions simples de la carte",
+                "ZoomIn": "Zoom avant sur la carte",
+                "ZoomOut": "Zoom arrière sur la carte",
+                "ZoomExtent": "Zoom sur la vue d'origine"
+            }
+        },
+        "Confirmation":{
+          "LoseJs": "Vous allez écraser le Javascript éxistant. Voulez-vous continuer ?"  
+        },
+        "JsonMode": "Formulaire JSON",
+        "JsMode": "Édition Javascript",
+        "CssMode": "Édition CSS",
+        "SaveJSON": "Sauvegarder et utiliser le formulaire JSON",
+        "LoadDatasourcesValues": "Recharger les sources de données",
+        "LoadDefaultJavascript": "Charge depuis le serveur un javascript par défaut"
+    },
+    "DevTools": {
+        "Title": "Outils de développement",
+        "JS": "Attacher un fichier JS",
+        "CSS": "Attacher un fichier CSS"
+    },
+    "FormTools": {
+        "Title": "Attributs du formulaire",
+        "Title_GTF": "Paramètres publiés",
+        "Row": "Ligne",
+        "InfoBulle": {
+            "Up": "Déplace l'élément sélectionné vers le haut",
+            "Down": "Déplace l'élément sélectionné vers le bas",
+            "Add": "Ajoute une ligne vide",
+            "AddElement": "Ajoute un paramètre publié",
+            "Delete": "Supprime un élément ou une ligne vide"
+        },
+        "Buttons": {
+            "Show_Lines": "Voir / modifier les lignes",
+            "Manage_datasources": "Sources de données"
+        },
+        "Confirmation": {
+            "Confirm": "OK",
+            "Cancel": "Annuler",
+            "Add": "Vous allez ajouter un élément peut-être non prévu dans votre projet formulaire",
+            "Remove": "Vous allez supprimer un élément qui est peut-être indispensable à votre formulaire"
+        },
+        "Notify": {
+            "Converter_Error": "Problème avec l'entrée Json",
+            "Error_ElOnRow": "Vous ne pouvez pas déplacer une ligne sur un paramètre publié",
+            "Moved": "Élément déplacé",
+            "Forgotten": "Sélectionnez un noeud",
+            "Add": "Élément ajouté",
+            "Multiple_elements": "Vous ne pouvez pas supprimer une ligne qui contient plusieurs éléments",
+            "Remove": "Élément supprimé"
+        }
+    }
+}

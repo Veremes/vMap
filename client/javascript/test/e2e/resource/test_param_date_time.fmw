@@ -1,0 +1,1058 @@
+#! <?xml version="1.0" encoding="utf-8" ?>
+#! <WORKSPACE
+#    
+#    
+#    Ligne de commande pour exécuter le projet :
+#    
+#    
+#    "C:\Program Files (x86)\FME2015_1.2.1\fme.exe" C:\Users\m_espada\Documents\NetBeansProjects\vitis\e2e\resource\test_param_date_time.fmw
+#          --date_time "20160325110700"
+#          --H_DestDataset_MITAB "E:\margot\gtf\2015\recette\date_time"
+#    
+#    
+#! REDIRECT_TERMINATORS="NONE"
+#! LAST_SAVE_DATE="2016-03-25T11:08:14"
+#! MULTI_WRITER_DATASET_ORDER="BY_ID"
+#! SHOW_ANNOTATIONS="true"
+#! DOC_EXTENTS="3065 481.002"
+#! END_TCL=""
+#! WARN_INVALID_XFORM_PARAM="Yes"
+#! LAST_SAVE_BUILD="FME(R) 2015.1.2.1 (20150924 - Build 15539 - WIN32)"
+#! LEGAL_TERMS_CONDITIONS="&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&#10;    &lt;br/&gt;&#10;&lt;/p&gt;&#10;"
+#! USAGE="&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Test de GTF Vitis angular &lt;/p&gt;&#10;"
+#! BEGIN_TCL=""
+#! SOURCE="NONE"
+#! FME_REPROJECTION_ENGINE="FME"
+#! SHOW_INFO_NODES="true"
+#! LOG_FILE=""
+#! FME_IMPLICIT_CSMAP_REPROJECTION_MODE="Auto"
+#! IGNORE_READER_FAILURE="No"
+#! ZOOM_SCALE="100"
+#! DESTINATION_ROUTING_FILE=""
+#! REQUIREMENTS="&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;RAS &lt;/p&gt;&#10;"
+#! FME_SERVER_SERVICES=""
+#! HISTORY=""
+#! MAX_LOG_FEATURES="200"
+#! LOG_MAX_PRECISION="Yes"
+#! WORKSPACE_VERSION="1"
+#! FME_STROKE_MAX_DEVIATION="0"
+#! SOURCE_ROUTING_FILE=""
+#! DESTINATION="NONE"
+#! VIEW_POSITION="0 567.006"
+#! LOG_MAX_RECORDED_FEATURES="200"
+#! BEGIN_PYTHON=""
+#! DESCRIPTION="&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Projet pour tester le paramètre publié de type Date Time &lt;/p&gt;&#10;"
+#! TITLE="Param date time"
+#! END_PYTHON=""
+#! FME_DOCUMENT_PRIORGUID="08110a3b-4628-4440-92d7-ea2afad4ff12,1eb43fc2-0c80-478c-aeef-1a06e0ecf6dc,dbdd0ec2-1c90-4b59-8c26-1dfadbd36e8b,b6c66a2c-5c68-4e74-9de1-512cd0d68bda,bd61f050-d99d-4879-930c-73993d72be88,bac33e9b-0959-4b3f-94b2-da6572ab9d14,50bf5b28-b450-45b8-ac55-2548f1a783a9,86520bde-0607-42ec-aca6-0d196beff511,8dbb3e7c-6201-4587-b17b-ef84f47bd11f,2d12a442-5523-4871-84cb-ff4016206da0,022e0588-b703-4ed6-8b64-668197cf32fc,ad184b71-f06d-4ed1-9f8b-fbdc7f0106d4"
+#! PASSWORD=""
+#! CATEGORY="Tests"
+#! FME_GEOMETRY_HANDLING="Enhanced"
+#! DOC_TOP_LEFT="100 -230"
+#! REQUIREMENTS_KEYWORD="none"
+#! ATTR_TYPE_ENCODING="SDF"
+#! FME_BUILD_NUM="15539"
+#! FME_DOCUMENT_GUID="69b73ee4-b507-47c1-83d2-07d7eccf2410"
+#! >
+#! <DATASETS>
+#! <DATASET
+#! IS_SOURCE="true"
+#! ROLE="READER"
+#! FORMAT="SHAPE"
+#! DATASET="$(FME_MF_DIR)depts.zip"
+#! KEYWORD="SHAPE_1"
+#! MULTI_GEOM_ALLOWED="false"
+#! ATTR_MAX_LENGTH="60"
+#! ATTR_CASE="ANY"
+#! ALLOWED_FEAT_TYPES=""
+#! WRITE_DEFS="true"
+#! DEFLINE_TEMPLATE="SHAPE_GEOMETRY {FME_GEN_GEOMETRY}"
+#! DEFLINE_ATTRS="true"
+#! EXPOSABLE_ATTRS="multi_reader_id number(11,0) fme_rotation number(31,15) fme_primary_axis number(31,15) shape_geometry_error{} char(254) fme_text_size number(31,15) multi_reader_keyword char(50) fme_type char(50) fme_fill_color char(50) fme_start_angle number(31,15) shape_measures char(254) fme_feature_type char(50) fme_basename char(50) fme_dataset char(50) fme_geometry fme_char(50) fme_color char(50) multi_reader_full_id number(11,0) fme_sweep_angle number(31,15) fme_text_string char(50) multi_reader_type char(50) fme_secondary_axis number(31,15)"
+#! DEFLINE_PARMS=""
+#! ATTR_INDEX_TYPES="INDEX"
+#! ATTR_NAME_INVALID_CHARS=""
+#! SUPPORTS_FEATURE_TYPE_FANOUT="true"
+#! ENABLED="true"
+#! DYNAMIC_FEATURE_TYPES_LIST_ON_MERGE="true"
+#! DATASET_TYPE="FILEDIR"
+#! GENERATE_FME_BUILD_NUM="15244"
+#! MAX_FEATURES_PER_FEATURE_TYPE=""
+#! FEATURE_TYPES=""
+#! MIN_FEATURES=""
+#! START_FEATURE=""
+#! COORDSYS=""
+#! MAX_FEATURES=""
+#! >
+#! <METAFILE_PARAMETER
+#! NAME="FEATURE_TYPE_NAME"
+#! VALUE="Shape File"
+#! />
+#! <METAFILE_PARAMETER
+#! NAME="WRITER_DATASET_HINT"
+#! VALUE="Specify a folder for the Esri Shape file"
+#! />
+#! <METAFILE_PARAMETER
+#! NAME="FEATURE_TYPE_DEFAULT_NAME"
+#! VALUE="File1"
+#! />
+#! <METAFILE_PARAMETER
+#! NAME="ADVANCED_PARMS"
+#! VALUE="SHAPE_IN_SEARCH_ENVELOPE_MINX SHAPE_IN_SEARCH_ENVELOPE_MINY SHAPE_IN_SEARCH_ENVELOPE_MAXX SHAPE_IN_SEARCH_ENVELOPE_MAXY SHAPE_IN_CLIP_TO_ENVELOPE SEARCH_ENVELOPE_COORDINATE_SYSTEM SHAPE_IN_SEARCH_ENVELOPE_COORDINATE_SYSTEM"
+#! />
+#! <METAFILE_PARAMETER
+#! NAME="READER_DATASET_HINT"
+#! VALUE="Select the Esri Shape file(s)"
+#! />
+#! <METAFILE_PARAMETER
+#! NAME="DATASET_NAME"
+#! VALUE="shp file"
+#! />
+#! </DATASET>
+#! <DATASET
+#! IS_SOURCE="false"
+#! ROLE="WRITER"
+#! FORMAT="MITAB"
+#! DATASET="$(H_DestDataset_MITAB)"
+#! KEYWORD="MITAB_1"
+#! MULTI_GEOM_ALLOWED="true"
+#! ATTR_MAX_LENGTH="31"
+#! ATTR_CASE="ANYFIRSTNONNUMERIC"
+#! ALLOWED_FEAT_TYPES=""
+#! WRITE_DEFS="true"
+#! DEFLINE_TEMPLATE=""
+#! DEFLINE_ATTRS="true"
+#! EXPOSABLE_ATTRS="mapinfo_text_fontstyle_italic char(10) mapinfo_sweep_angle float mapinfo_brush_foreground integer mapinfo_text_linetype integer mapinfo_symbol_color integer mapinfo_symbol_shape integer mapinfo_symbol_style smallint fme_start_angle float mapinfo_text_fontstyle_halo char(10) mapinfo_text_fontstyle_inverse char(10) mapinfo_rotation float mapinfo_brush_background integer mapinfo_text_fontstyle_opaque char(10) mapinfo_text_line_pen_width integer mapinfo_text_fontstyle_expanded char(10) mapinfo_text_fontstyle_bold char(10) fme_basename char(50) fme_primary_axis float mapinfo_start_angle float mapinfo_text_fontbgcolor integer mapinfo_pen_color integer fme_text_string char(50) fme_text_size float mapinfo_metadata{}.name char(255) fme_feature_type char(50) mapinfo_primary_axis float mapinfo_text_spacing smallint mapinfo_symbol_file_name char(255) fme_secondary_axis float fme_type char(50) mapinfo_text_justification char(30) mapinfo_text_string char(255) mapinfo_text_line_pen_pattern integer mapinfo_pen_pattern smallint mapinfo_text_fontfgcolor integer mapinfo_smooth logical mapinfo_rounding float mapinfo_text_line_end_x float mapinfo_text_line_end_y float mapinfo_text_height float fme_dataset char(50) mapinfo_secondary_axis float mapinfo_symbol_angle float mapinfo_text_fontsize float mapinfo_text_fontstyle smallint mapinfo_text_fontstyle_blink char(10) mapinfo_symbol_font char(50) mapinfo_metadata{}.value char(255) mapinfo_brush_pattern smallint mapinfo_text_fontstyle_underline char(10) mapinfo_text_fontstyle_allcaps char(10) mapinfo_brush_transparent logical fme_fill_color char(50) mapinfo_center_xcoord float mapinfo_text_fontstyle_strikeout char(10) mapinfo_text_line_pen_color integer mapinfo_type char(25) mapinfo_symbol_size integer fme_rotation float mapinfo_centroid_x float mapinfo_centroid_y float mapinfo_text_fontname char(50) fme_geometry fme_char(50) fme_sweep_angle float mapinfo_center_ycoord float mapinfo_text_width float mapinfo_pen_width smallint fme_color char(50) mapinfo_text_fontstyle_shadow char(10) mapinfo_text_fontstyle_outline char(10)"
+#! DEFLINE_PARMS=""
+#! ATTR_INDEX_TYPES="indexed"
+#! ATTR_NAME_INVALID_CHARS="\\/&quot;:?*&lt;&gt;|[]= %~!@$&amp;#()^&apos;+-.,`;"
+#! SUPPORTS_FEATURE_TYPE_FANOUT="true"
+#! ENABLED="true"
+#! DYNAMIC_FEATURE_TYPES_LIST_ON_MERGE="true"
+#! DATASET_TYPE="FILEDIR"
+#! GENERATE_FME_BUILD_NUM="15244"
+#! FANOUT_DIRECTORY=""
+#! COORDSYS=""
+#! FANOUT_SUFFIX=""
+#! FANOUT="No"
+#! FANOUT_PREFIX=""
+#! FANOUT_ID_ATTR=""
+#! >
+#! <METAFILE_PARAMETER
+#! NAME="FEATURE_TYPE_NAME"
+#! VALUE="Table"
+#! />
+#! <METAFILE_PARAMETER
+#! NAME="WRITER_DATASET_HINT"
+#! VALUE="Specify a folder for the MITAB file"
+#! />
+#! <METAFILE_PARAMETER
+#! NAME="FEATURE_TYPE_DEFAULT_NAME"
+#! VALUE="Table1"
+#! />
+#! <METAFILE_PARAMETER
+#! NAME="ADVANCED_PARMS"
+#! VALUE="MIF_IN_ENCODING NULL_IN_SEARCH_ENVELOPE_MINX NULL_IN_SEARCH_ENVELOPE_MINY NULL_IN_SEARCH_ENVELOPE_MAXX NULL_IN_SEARCH_ENVELOPE_MAXY NULL_IN_CLIP_TO_ENVELOPE SEARCH_ENVELOPE_COORDINATE_SYSTEM VERSION"
+#! />
+#! <METAFILE_PARAMETER
+#! NAME="READER_DATASET_HINT"
+#! VALUE="Select the MITAB files"
+#! />
+#! <METAFILE_PARAMETER
+#! NAME="DATASET_NAME"
+#! VALUE="tab file"
+#! />
+#! </DATASET>
+#! </DATASETS>
+#! <DATA_TYPES>
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="char(width)"
+#! FME_TYPE="fme_varchar(width)"
+#! FORMAT="SHAPE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="char(width)"
+#! FME_TYPE="fme_char(width)"
+#! FORMAT="SHAPE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="char(254)"
+#! FME_TYPE="fme_buffer"
+#! FORMAT="SHAPE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="char(20)"
+#! FME_TYPE="fme_datetime"
+#! FORMAT="SHAPE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="char(12)"
+#! FME_TYPE="fme_time"
+#! FORMAT="SHAPE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="char(1)"
+#! FME_TYPE="fme_char(width)"
+#! FORMAT="SHAPE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="date"
+#! FME_TYPE="fme_date"
+#! FORMAT="SHAPE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="number(31,15)"
+#! FME_TYPE="fme_real64"
+#! FORMAT="SHAPE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="number(15,7)"
+#! FME_TYPE="fme_real32"
+#! FORMAT="SHAPE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="number(11,0)"
+#! FME_TYPE="fme_int32"
+#! FORMAT="SHAPE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="number(11,0)"
+#! FME_TYPE="fme_uint32"
+#! FORMAT="SHAPE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="number(20,0)"
+#! FME_TYPE="fme_int64"
+#! FORMAT="SHAPE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="number(20,0)"
+#! FME_TYPE="fme_uint64"
+#! FORMAT="SHAPE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="logical"
+#! FME_TYPE="fme_boolean"
+#! FORMAT="SHAPE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="number(6,0)"
+#! FME_TYPE="fme_int16"
+#! FORMAT="SHAPE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="number(6,0)"
+#! FME_TYPE="fme_uint16"
+#! FORMAT="SHAPE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="number(4,0)"
+#! FME_TYPE="fme_uint8"
+#! FORMAT="SHAPE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="number(width,decimal)"
+#! FME_TYPE="fme_decimal(width,decimal)"
+#! FORMAT="SHAPE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="char(width)"
+#! FME_TYPE="fme_varchar(width)"
+#! FORMAT="MITAB"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="char(width)"
+#! FME_TYPE="fme_char(width)"
+#! FORMAT="MITAB"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="char(254)"
+#! FME_TYPE="fme_buffer"
+#! FORMAT="MITAB"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="char(1)"
+#! FME_TYPE="fme_char(width)"
+#! FORMAT="MITAB"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="datetime"
+#! FME_TYPE="fme_datetime"
+#! FORMAT="MITAB"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="time"
+#! FME_TYPE="fme_time"
+#! FORMAT="MITAB"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="date"
+#! FME_TYPE="fme_date"
+#! FORMAT="MITAB"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="decimal(width,decimal)"
+#! FME_TYPE="fme_decimal(width,decimal)"
+#! FORMAT="MITAB"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="float"
+#! FME_TYPE="fme_real64"
+#! FORMAT="MITAB"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="float"
+#! FME_TYPE="fme_real32"
+#! FORMAT="MITAB"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="integer"
+#! FME_TYPE="fme_int32"
+#! FORMAT="MITAB"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="decimal(11,0)"
+#! FME_TYPE="fme_uint32"
+#! FORMAT="MITAB"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="decimal(20,0)"
+#! FME_TYPE="fme_int64"
+#! FORMAT="MITAB"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="decimal(20,0)"
+#! FME_TYPE="fme_uint64"
+#! FORMAT="MITAB"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="logical"
+#! FME_TYPE="fme_boolean"
+#! FORMAT="MITAB"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="smallint"
+#! FME_TYPE="fme_int16"
+#! FORMAT="MITAB"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="integer"
+#! FME_TYPE="fme_uint16"
+#! FORMAT="MITAB"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="smallint"
+#! FME_TYPE="fme_uint8"
+#! FORMAT="MITAB"
+#! />
+#! </DATA_TYPES>
+#! <GEOM_TYPES>
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_pointz"
+#! FME_TYPE="fme_point"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_pointm"
+#! FME_TYPE="fme_point"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_point"
+#! FME_TYPE="fme_point"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_multipointz"
+#! FME_TYPE="fme_point"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_multipointm"
+#! FME_TYPE="fme_point"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_multipoint"
+#! FME_TYPE="fme_point"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_polylinez"
+#! FME_TYPE="fme_line"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_polylinem"
+#! FME_TYPE="fme_line"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_polyline"
+#! FME_TYPE="fme_line"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_polygonz"
+#! FME_TYPE="fme_area"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_polygonm"
+#! FME_TYPE="fme_area"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_polygon"
+#! FME_TYPE="fme_area"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_pointz"
+#! FME_TYPE="fme_text"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_polygonz"
+#! FME_TYPE="fme_ellipse"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_polylinez"
+#! FME_TYPE="fme_arc"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_multipatch"
+#! FME_TYPE="fme_surface"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_multipatch"
+#! FME_TYPE="fme_solid"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_polygonz"
+#! FME_TYPE="fme_rectangle"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_polygonz"
+#! FME_TYPE="fme_rounded_rectangle"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_null"
+#! FME_TYPE="fme_no_geom"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_polygonz"
+#! FME_TYPE="fme_raster"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_polygonz"
+#! FME_TYPE="fme_point_cloud"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="shape_null"
+#! FME_TYPE="fme_collection"
+#! FORMAT="SHAPE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="mapinfo_point"
+#! FME_TYPE="fme_point"
+#! FORMAT="MITAB"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="mapinfo_custom_point"
+#! FME_TYPE="fme_point"
+#! FORMAT="MITAB"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="mapinfo_font_point"
+#! FME_TYPE="fme_point"
+#! FORMAT="MITAB"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="mapinfo_polyline"
+#! FME_TYPE="fme_line"
+#! FORMAT="MITAB"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="mapinfo_region"
+#! FME_TYPE="fme_area"
+#! FORMAT="MITAB"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="mapinfo_text"
+#! FME_TYPE="fme_text"
+#! FORMAT="MITAB"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="mapinfo_ellipse"
+#! FME_TYPE="fme_ellipse"
+#! FORMAT="MITAB"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="mapinfo_arc"
+#! FME_TYPE="fme_arc"
+#! FORMAT="MITAB"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="mapinfo_rectangle"
+#! FME_TYPE="fme_rectangle"
+#! FORMAT="MITAB"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="mapinfo_rounded_rectangle"
+#! FME_TYPE="fme_rounded_rectangle"
+#! FORMAT="MITAB"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="mapinfo_raster"
+#! FME_TYPE="fme_raster"
+#! FORMAT="MITAB"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="mapinfo_none"
+#! FME_TYPE="fme_no_geom"
+#! FORMAT="MITAB"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="mapinfo_collection"
+#! FME_TYPE="fme_collection"
+#! FORMAT="MITAB"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="mapinfo_polyline"
+#! FME_TYPE="fme_surface"
+#! FORMAT="MITAB"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="mapinfo_polyline"
+#! FME_TYPE="fme_solid"
+#! FORMAT="MITAB"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="mapinfo_region"
+#! FME_TYPE="fme_point_cloud"
+#! FORMAT="MITAB"
+#! />
+#! </GEOM_TYPES>
+#! <FEATURE_TYPES>
+#! <FEATURE_TYPE
+#! IS_SOURCE="true"
+#! NODE_NAME="depts"
+#! FEATURE_TYPE_NAME=""
+#! FEATURE_TYPE_NAME_QUALIFIER=""
+#! IS_EDITABLE="false"
+#! IDENTIFIER="1"
+#! FEAT_GEOMTYPE="shape_polygon"
+#! POSITION="100 -230"
+#! BOUNDING_RECT="100 -230 -1 -1"
+#! ORDER="5e+014"
+#! COLLAPSED="false"
+#! KEYWORD="SHAPE_1"
+#! PARMS_EDITED="true"
+#! ENABLED="true"
+#! HIDDEN_USER_ATTRS=""
+#! MERGE_FILTER=""
+#! MERGE_FILTER_TYPE="FILTER_TYPE_GLOB"
+#! MERGE_FILTER_CASE_SENSITIVE="true"
+#! DYNAMIC_SCHEMA="false"
+#! >
+#! <FEAT_ATTRIBUTE ATTR_NAME="NUM_DEP" ATTR_TYPE="char(2)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="NB_COMM" ATTR_TYPE="number(5,0)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="NOM_DEP" ATTR_TYPE="char(30)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="POP_DEP" ATTR_TYPE="number(16,0)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="SURF_KM2" ATTR_TYPE="number(16,2)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="NUM_REG" ATTR_TYPE="number(3,0)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="NOM_REG" ATTR_TYPE="char(50)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="date" ATTR_TYPE="char(200)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! </FEATURE_TYPE>
+#! <FEATURE_TYPE
+#! IS_SOURCE="false"
+#! NODE_NAME="dept"
+#! FEATURE_TYPE_NAME=""
+#! FEATURE_TYPE_NAME_QUALIFIER=""
+#! IS_EDITABLE="true"
+#! IDENTIFIER="2"
+#! FEAT_GEOMTYPE="All"
+#! POSITION="3165 -28.9976"
+#! BOUNDING_RECT="3165 -28.9976 -1 -1"
+#! ORDER="5e+014"
+#! COLLAPSED="false"
+#! KEYWORD="MITAB_1"
+#! PARMS_EDITED="true"
+#! ENABLED="true"
+#! SCHEMA_ATTRIBUTE_SOURCE="1"
+#! >
+#! <FEAT_ATTRIBUTE ATTR_NAME="NUM_DEP" ATTR_TYPE="char(2)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="NB_COMM" ATTR_TYPE="float" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="NOM_DEP" ATTR_TYPE="char(30)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="POP_DEP" ATTR_TYPE="float" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="SURF_KM2" ATTR_TYPE="float" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="NUM_REG" ATTR_TYPE="float" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="NOM_REG" ATTR_TYPE="char(50)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="date" ATTR_TYPE="char(200)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! </FEATURE_TYPE>
+#! </FEATURE_TYPES>
+#! <FMESERVER>
+#! </FMESERVER>
+#! <GLOBAL_PARAMETERS>
+#! <GLOBAL_PARAMETER
+#! GUI_LINE="GUI OPTIONAL DATE_TIME_OR_ATTR date_time Sélectionner les depts dont la date de création est postérieure au:"
+#! DEFAULT_VALUE="20160325110700"
+#! IS_STAND_ALONE="true"
+#! />
+#! <GLOBAL_PARAMETER
+#! GUI_LINE="GUI DIRNAME H_DestDataset_MITAB Destination MapInfo Folder:"
+#! DEFAULT_VALUE="E:\margot\gtf\2015\recette\date_time"
+#! IS_STAND_ALONE="false"
+#! />
+#! </GLOBAL_PARAMETERS>
+#! <COMMENTS>
+#! </COMMENTS>
+#! <CONSTANTS>
+#! </CONSTANTS>
+#! <BOOKMARKS>
+#! </BOOKMARKS>
+#! <TRANSFORMERS>
+#! <TRANSFORMER
+#! IDENTIFIER="4"
+#! TYPE="Tester"
+#! VERSION="2"
+#! POSITION="1879.52 80.0012"
+#! BOUNDING_RECT="1879.52 80.0012 -1 -1"
+#! ORDER="5e+014"
+#! PARMS_EDITED="true"
+#! ENABLED="true"
+#! LAST_PARM_EDIT="15244"
+#! >
+#! <OUTPUT_FEAT NAME="PASSED"/>
+#! <FEAT_COLLAPSED COLLAPSED="0"/>
+#! <XFORM_ATTR ATTR_NAME="NUM_DEP" IS_USER_CREATED="false" FEAT_INDEX="0" />
+#! <XFORM_ATTR ATTR_NAME="NB_COMM" IS_USER_CREATED="false" FEAT_INDEX="0" />
+#! <XFORM_ATTR ATTR_NAME="NOM_DEP" IS_USER_CREATED="false" FEAT_INDEX="0" />
+#! <XFORM_ATTR ATTR_NAME="POP_DEP" IS_USER_CREATED="false" FEAT_INDEX="0" />
+#! <XFORM_ATTR ATTR_NAME="SURF_KM2" IS_USER_CREATED="false" FEAT_INDEX="0" />
+#! <XFORM_ATTR ATTR_NAME="NUM_REG" IS_USER_CREATED="false" FEAT_INDEX="0" />
+#! <XFORM_ATTR ATTR_NAME="NOM_REG" IS_USER_CREATED="false" FEAT_INDEX="0" />
+#! <XFORM_ATTR ATTR_NAME="date" IS_USER_CREATED="false" FEAT_INDEX="0" />
+#! <OUTPUT_FEAT NAME="FAILED"/>
+#! <FEAT_COLLAPSED COLLAPSED="1"/>
+#! <XFORM_ATTR ATTR_NAME="NUM_DEP" IS_USER_CREATED="false" FEAT_INDEX="1" />
+#! <XFORM_ATTR ATTR_NAME="NB_COMM" IS_USER_CREATED="false" FEAT_INDEX="1" />
+#! <XFORM_ATTR ATTR_NAME="NOM_DEP" IS_USER_CREATED="false" FEAT_INDEX="1" />
+#! <XFORM_ATTR ATTR_NAME="POP_DEP" IS_USER_CREATED="false" FEAT_INDEX="1" />
+#! <XFORM_ATTR ATTR_NAME="SURF_KM2" IS_USER_CREATED="false" FEAT_INDEX="1" />
+#! <XFORM_ATTR ATTR_NAME="NUM_REG" IS_USER_CREATED="false" FEAT_INDEX="1" />
+#! <XFORM_ATTR ATTR_NAME="NOM_REG" IS_USER_CREATED="false" FEAT_INDEX="1" />
+#! <XFORM_ATTR ATTR_NAME="date" IS_USER_CREATED="false" FEAT_INDEX="1" />
+#! <XFORM_PARM PARM_NAME="COMPOSITE_TEST" PARM_VALUE="&lt;Unused&gt;"/>
+#! <XFORM_PARM PARM_NAME="TEST_LIST" PARM_VALUE=""/>
+#! <XFORM_PARM PARM_NAME="BOOL_OP" PARM_VALUE="OR"/>
+#! <XFORM_PARM PARM_NAME="XFORMER_NAME" PARM_VALUE="Tester"/>
+#! <XFORM_PARM PARM_NAME="TEST_CLAUSE" PARM_VALUE="TEST &lt;at&gt;Value&lt;openparen&gt;date&lt;closeparen&gt; &gt; $(date_time)"/>
+#! <XFORM_PARM PARM_NAME="TEST_MODE" PARM_VALUE="Automatic"/>
+#! <XFORM_PARM PARM_NAME="TEST_DESCRIPTION" PARM_VALUE="&quot;&quot;"/>
+#! </TRANSFORMER>
+#! <TRANSFORMER
+#! IDENTIFIER="7"
+#! TYPE="DateFormatter"
+#! VERSION="4"
+#! POSITION="850.509 251.002"
+#! BOUNDING_RECT="850.509 251.002 -1 -1"
+#! ORDER="5e+014"
+#! PARMS_EDITED="true"
+#! ENABLED="true"
+#! LAST_PARM_EDIT="15244"
+#! >
+#! <OUTPUT_FEAT NAME="OUTPUT"/>
+#! <FEAT_COLLAPSED COLLAPSED="0"/>
+#! <XFORM_ATTR ATTR_NAME="NUM_DEP" IS_USER_CREATED="false" FEAT_INDEX="0" />
+#! <XFORM_ATTR ATTR_NAME="NB_COMM" IS_USER_CREATED="false" FEAT_INDEX="0" />
+#! <XFORM_ATTR ATTR_NAME="NOM_DEP" IS_USER_CREATED="false" FEAT_INDEX="0" />
+#! <XFORM_ATTR ATTR_NAME="POP_DEP" IS_USER_CREATED="false" FEAT_INDEX="0" />
+#! <XFORM_ATTR ATTR_NAME="SURF_KM2" IS_USER_CREATED="false" FEAT_INDEX="0" />
+#! <XFORM_ATTR ATTR_NAME="NUM_REG" IS_USER_CREATED="false" FEAT_INDEX="0" />
+#! <XFORM_ATTR ATTR_NAME="NOM_REG" IS_USER_CREATED="false" FEAT_INDEX="0" />
+#! <XFORM_ATTR ATTR_NAME="date" IS_USER_CREATED="false" FEAT_INDEX="0" />
+#! <XFORM_PARM PARM_NAME="FMT" PARM_VALUE="FME Date/Time (%Y%m%d%H%M%S)"/>
+#! <XFORM_PARM PARM_NAME="SRCFMT" PARM_VALUE="Unknown - Automatic Detection"/>
+#! <XFORM_PARM PARM_NAME="PARAMETERS_GROUP" PARM_VALUE=""/>
+#! <XFORM_PARM PARM_NAME="INVALID_DATE_VALUE" PARM_VALUE="_FME_NO_OP_"/>
+#! <XFORM_PARM PARM_NAME="TRANSFORMER_GROUP" PARM_VALUE=""/>
+#! <XFORM_PARM PARM_NAME="XFORMER_NAME" PARM_VALUE="DateFormatter"/>
+#! <XFORM_PARM PARM_NAME="DATE_ATTR" PARM_VALUE="date"/>
+#! </TRANSFORMER>
+#! </TRANSFORMERS>
+#! <FEAT_LINKS>
+#! <FEAT_LINK
+#! IDENTIFIER="6"
+#! SOURCE_NODE="4"
+#! TARGET_NODE="2"
+#! SOURCE_PORT_DESC="fo 0"
+#! TARGET_PORT_DESC="-1"
+#! ENABLED="true"
+#! EXTRA_POINTS=""
+#! />
+#! <FEAT_LINK
+#! IDENTIFIER="8"
+#! SOURCE_NODE="1"
+#! TARGET_NODE="7"
+#! SOURCE_PORT_DESC="-1"
+#! TARGET_PORT_DESC="fi 0"
+#! ENABLED="true"
+#! EXTRA_POINTS=""
+#! />
+#! <FEAT_LINK
+#! IDENTIFIER="9"
+#! SOURCE_NODE="7"
+#! TARGET_NODE="4"
+#! SOURCE_PORT_DESC="fo 0"
+#! TARGET_PORT_DESC="fi 0"
+#! ENABLED="true"
+#! EXTRA_POINTS=""
+#! />
+#! </FEAT_LINKS>
+#! <BREAKPOINTS>
+#! </BREAKPOINTS>
+#! <ATTR_LINKS>
+#! </ATTR_LINKS>
+#! <SUBDOCUMENTS>
+#! </SUBDOCUMENTS>
+#! <LOOKUP_TABLES>
+#! </LOOKUP_TABLES>
+#! </WORKSPACE>
+#! 
+GUI IGNORE SourceDataset_SHAPE_1,SHAPE_IN_ENCODING_SHAPE_1,SHAPE_IN_EXPOSE_ATTRS_GROUP_SHAPE_1,SHAPE_IN_SEARCH_ENVELOPE_MINX_SHAPE_1,SHAPE_IN_SEARCH_ENVELOPE_MINY_SHAPE_1,SHAPE_IN_SEARCH_ENVELOPE_MAXX_SHAPE_1,SHAPE_IN_SEARCH_ENVELOPE_MAXY_SHAPE_1,SHAPE_IN_CLIP_TO_ENVELOPE_SHAPE_1,SHAPE_IN_NETWORK_AUTHENTICATION_SHAPE_1,SHAPE_IN_SEARCH_ENVELOPE_COORDINATE_SYSTEM_SHAPE_1,_MEASURES_AS_Z_SHAPE_1,SHAPE_IN_DISSOLVE_HOLES_SHAPE_1,SHAPE_IN_REPORT_BAD_GEOMETRY_SHAPE_1,SHAPE_IN_TRIM_PRECEDING_SPACES_SHAPE_1,DestDataset_MITAB_1,MITAB_OUT_BUILD_OPTIMAL_SPATIAL_INDEX_MITAB_1,MITAB_OUT_ENCODING_MITAB_1,_COORDSYS_STATEMENT_MITAB_1,_MIF_MINX_MITAB_1,_MIF_MINY_MITAB_1,_MIF_MAXX_MITAB_1,_MIF_MAXY_MITAB_1,_WRITE_REGION_CENTROIDS_MITAB_1,TWO_POINT_LINE_AS_POLYLINE_MITAB_1,_STROKE_ARCS_MITAB_1,VERSION_MITAB_1
+DEFAULT_MACRO date_time 20160325110700
+GUI OPTIONAL DATE_TIME date_time Sélectionner les depts dont la date de création est postérieure au:
+DEFAULT_MACRO H_DestDataset_MITAB E:\margot\gtf\2015\recette\date_time
+GUI DIRNAME H_DestDataset_MITAB Destination MapInfo Folder:
+INCLUDE [ if {{$(H_DestDataset_MITAB)} == {}} { puts_real {Parameter 'H_DestDataset_MITAB' must be given a value.}; exit 1; }; ]
+#! START_HEADER
+#! START_WB_HEADER
+READER_TYPE SHAPE
+READER_KEYWORD SHAPE_1
+READER_GEN_DIRECTIVES CLIP_TO_ENVELOPE,NO,EXPOSE_ATTRS_GROUP,,ENCODING,,SEARCH_ENVELOPE_MINX,0,SEARCH_ENVELOPE_MAXX,0,SEARCH_ENVELOPE_MINY,0,SEARCH_ENVELOPE_MAXY,0,USE_SEARCH_ENVELOPE,NO,UPPER_CASE_ATTR_NAMES,No,SHAPE_EXPOSE_FORMAT_ATTRS,,_MERGE_SCHEMAS,YES
+WRITER_TYPE MULTI_WRITER
+MULTI_WRITER_DATASET_ORDER BY_ID
+MULTI_WRITER_FIRST_WRITER_ID 0
+MULTI_WRITER_TYPE{0} MITAB
+MULTI_WRITER_KEYWORD{0} MITAB_1
+#! END_WB_HEADER
+#! START_WB_HEADER
+MACRO WB_KEYWORD "SHAPE_1"
+#! END_WB_HEADER
+#! START_SOURCE_HEADER SHAPE SHAPE_1
+# ============================================================================
+# The following GUI line prompts for the source shape files
+# The dataset this mapping file was generated from was:
+#! END_SOURCE_HEADER
+#! START_WB_HEADER
+DEFAULT_MACRO SourceDataset
+INCLUDE [ if {{$(SourceDataset)} != ""} {                        \
+ puts {DEFAULT_MACRO SourceDataset_SHAPE_1 $(SourceDataset)}     \
+ } ]
+#! END_WB_HEADER
+#! START_SOURCE_HEADER SHAPE SHAPE_1
+DEFAULT_MACRO SourceDataset_SHAPE_1 $(FME_MF_DIR)depts.zip
+GUI MULTIFILE SourceDataset_SHAPE_1 Shape_Files(*.shp)|*.shp|Compressed_Shape_Files(*.shz)|*.shz|All_Files(*)|* Source Esri Shape File(s):
+# =====================================================================
+# Provide some control over what attributes have the user-selected
+# encoding applied. Normally all attributes are updated after being
+# read, but the following lines exclude from this treatment all
+# attributes whose names start with fme_ or shape_.
+SHAPE_1_UNENCODED_ATTR_PREFIX fme_ shape_
+# ============================================================================
+# Determines whether the attribute names should be uppercased, or whether they
+# should stay as specified in the shape file. Once the mapping file/workspace
+# has been generated, the value for this keyword should not be changed.
+DEFAULT_MACRO SHAPE_IN_UPPER_CASE_ATTR_NAMES_SHAPE_1 No
+SHAPE_1_UPPER_CASE_ATTR_NAMES "$(SHAPE_IN_UPPER_CASE_ATTR_NAMES_SHAPE_1)"
+# ============================================================================
+# The following keyword allows the user to choose what encoding to
+# use for reading the shape file, overrides dbf file LDID or .cpg
+# file if present.
+DEFAULT_MACRO SHAPE_IN_ENCODING_SHAPE_1 
+SHAPE_1_ENCODING "$(SHAPE_IN_ENCODING_SHAPE_1)"
+GUI OPTIONAL ENCODING SHAPE_IN_ENCODING_SHAPE_1 ANSI%BIG5%EUC%HKBIG5%ISO%OEM%SJIS%UTF-8%CP437%CP708%CP720%CP737%CP775%CP850%CP852%CP855%CP857%CP860%CP861%CP862%CP863%CP864%CP865%CP866%CP869%CP874%CP932%CP936%CP950%CP1250%CP1251%CP1252%CP1253%CP1254%CP1255%CP1256%CP1257%CP1258%ISO8859-1%ISO8859-2%ISO8859-3%ISO8859-4%ISO8859-5%ISO8859-6%ISO8859-7%ISO8859-8%ISO8859-9%ISO-8859-11%ISO8859-13%ISO8859-15%WINDOWS-874 Character Encoding:
+#Note: Using the search envelope requires the shape index files (.sbnand.sbx)
+DEFAULT_MACRO SHAPE_IN_EXPOSE_ATTRS_GROUP_SHAPE_1 
+SHAPE_1_EXPOSE_ATTRS_GROUP "$(SHAPE_IN_EXPOSE_ATTRS_GROUP_SHAPE_1)"
+GUI DISCLOSUREGROUP SHAPE_IN_EXPOSE_ATTRS_GROUP_SHAPE_1 SHAPE_EXPOSE_FORMAT_ATTRS Schema Attributes
+# Include this file in source setting section to add native search envelope processing
+# Zero as a default means we don't do any search -- this makes workbench happier
+# ===========================================================================
+DEFAULT_MACRO SHAPE_IN_SEARCH_ENVELOPE_MINX_SHAPE_1 0
+SHAPE_1_SEARCH_ENVELOPE "$(SHAPE_IN_SEARCH_ENVELOPE_MINX_SHAPE_1)"
+GUI OPTIONAL FLOAT SHAPE_IN_SEARCH_ENVELOPE_MINX_SHAPE_1 Minimum X:
+# ===========================================================================
+DEFAULT_MACRO SHAPE_IN_SEARCH_ENVELOPE_MINY_SHAPE_1 0
+SHAPE_1_SEARCH_ENVELOPE "$(SHAPE_IN_SEARCH_ENVELOPE_MINY_SHAPE_1)"
+GUI OPTIONAL FLOAT SHAPE_IN_SEARCH_ENVELOPE_MINY_SHAPE_1 Minimum Y:
+# ===========================================================================
+DEFAULT_MACRO SHAPE_IN_SEARCH_ENVELOPE_MAXX_SHAPE_1 0
+SHAPE_1_SEARCH_ENVELOPE "$(SHAPE_IN_SEARCH_ENVELOPE_MAXX_SHAPE_1)"
+GUI OPTIONAL FLOAT SHAPE_IN_SEARCH_ENVELOPE_MAXX_SHAPE_1 Maximum X:
+# ===========================================================================
+DEFAULT_MACRO SHAPE_IN_SEARCH_ENVELOPE_MAXY_SHAPE_1 0
+SHAPE_1_SEARCH_ENVELOPE "$(SHAPE_IN_SEARCH_ENVELOPE_MAXY_SHAPE_1)"
+GUI OPTIONAL FLOAT SHAPE_IN_SEARCH_ENVELOPE_MAXY_SHAPE_1 Maximum Y:
+# ===========================================================================
+DEFAULT_MACRO SHAPE_IN_CLIP_TO_ENVELOPE_SHAPE_1 NO
+SHAPE_1_CLIP_TO_ENVELOPE "$(SHAPE_IN_CLIP_TO_ENVELOPE_SHAPE_1)"
+GUI OPTIONAL CHECKBOX SHAPE_IN_CLIP_TO_ENVELOPE_SHAPE_1 YES%NO Clip to Search Envelope
+# ===========================================================================
+DEFAULT_MACRO SHAPE_IN_NETWORK_AUTHENTICATION_SHAPE_1 
+SHAPE_1_NETWORK_AUTHENTICATION "$(SHAPE_IN_NETWORK_AUTHENTICATION_SHAPE_1)"
+GUI OPTIONAL AUTHENTICATOR SHAPE_IN_NETWORK_AUTHENTICATION_SHAPE_1 CONTAINER%GROUP%CONTAINER_TITLE%"Network Authentication"%PROMPT_TYPE%NETWORK Network Authentication
+# ============================================================================
+# Search Envelope Coordinate System
+# BUG18999: Re-adding directive to allow specification of a search envelope
+# in a coordinate system other than what the data is in. Note that this
+# depends on the source coordinate system being set as well.
+DEFAULT_MACRO SHAPE_IN_SEARCH_ENVELOPE_COORDINATE_SYSTEM_SHAPE_1 
+GUI OPTIONAL COORDSYS SHAPE_IN_SEARCH_ENVELOPE_COORDINATE_SYSTEM_SHAPE_1 Search Envelope Coordinate System:
+SHAPE_1_SEARCH_ENVELOPE_COORDINATE_SYSTEM "$(SHAPE_IN_SEARCH_ENVELOPE_COORDINATE_SYSTEM_SHAPE_1)"
+# ============================================================================
+# The following GUI line sets whether measure values in the shape files should
+# be treated as elevations.
+DEFAULT_MACRO _MEASURES_AS_Z_SHAPE_1 no
+GUI CHOICE _MEASURES_AS_Z_SHAPE_1 yes%no Treat Measures as Elevation:
+SHAPE_1_MEASURES_AS_Z $(_MEASURES_AS_Z_SHAPE_1)
+# ============================================================================
+# The following keyword sets whether the reader dissolves holes in donuts.
+DEFAULT_MACRO SHAPE_IN_DISSOLVE_HOLES_SHAPE_1 no
+GUI CHOICE SHAPE_IN_DISSOLVE_HOLES_SHAPE_1 yes%no Dissolve Adjacent Holes:
+SHAPE_1_DISSOLVE_HOLES $(SHAPE_IN_DISSOLVE_HOLES_SHAPE_1)
+# ============================================================================
+# The following keyword sets whether bad geometry should be reported via
+# the shape_geometry_error{} list attribute.
+DEFAULT_MACRO SHAPE_IN_REPORT_BAD_GEOMETRY_SHAPE_1 no
+GUI CHOICE SHAPE_IN_REPORT_BAD_GEOMETRY_SHAPE_1 yes%no Report Geometry Anomalies:
+SHAPE_1_REPORT_BAD_GEOMETRY $(SHAPE_IN_REPORT_BAD_GEOMETRY_SHAPE_1)
+DEFAULT_MACRO SHAPE_IN_TRIM_PRECEDING_SPACES_SHAPE_1 YES
+GUI CHOICE SHAPE_IN_TRIM_PRECEDING_SPACES_SHAPE_1 yes%no Trim Preceding Spaces:
+SHAPE_1_TRIM_PRECEDING_SPACES $(SHAPE_IN_TRIM_PRECEDING_SPACES_SHAPE_1)
+SHAPE_1_DATASET "$(SourceDataset_SHAPE_1)"
+#! END_SOURCE_HEADER
+#! START_WB_HEADER
+MACRO WB_KEYWORD "MITAB_1"
+#! END_WB_HEADER
+#! START_DEST_HEADER MITAB MITAB_1
+# ============================================================================
+# The following GUI line prompts for a folder to be used as the
+# the destination for the Mapinfo TAB files.
+# The user input is stored in a macro, which is then used to define
+# the dataset to be written.
+#! END_DEST_HEADER
+#! START_WB_HEADER
+DEFAULT_MACRO DestDataset
+INCLUDE [ if {"$(DestDataset)" != ""} {                          \
+ puts {DEFAULT_MACRO DestDataset_MITAB_1 $(DestDataset)}         \
+ } ]
+#! END_WB_HEADER
+#! START_DEST_HEADER MITAB MITAB_1
+DEFAULT_MACRO DestDataset_MITAB_1 $(H_DestDataset_MITAB)
+GUI DIRNAME DestDataset_MITAB_1 Destination MapInfo Folder:
+# ============================================================================
+# By default, we'll NOT try to use any bounding box information that can be
+# read from the source data when the output coordinate system is unknown
+DEFAULT_MACRO _USE_SOURCE_BOUNDING_BOX_MITAB_1 no
+MITAB_1_USE_SOURCE_BOUNDING_BOX $(_USE_SOURCE_BOUNDING_BOX_MITAB_1)
+# ============================================================================
+# Specify the charset name to be used in the TAB file header. NOTE: This name
+# is just written out in the header and has no affect on the TAB file contents
+#
+# This is now for backward compatibility of MITAB. The MITAB writer now put
+# the MapInfo charset of the original encoding. Otherwise, it's default (Neutral)
+# PR#22004 [PL]
+#DEFAULT_MACRO MAPINFO_OUT_CHARSET Neutral
+#DEFAULT_MACRO MAPINFO_OUT_CHARSET
+#
+#MITAB_CHARSET $(MAPINFO_OUT_CHARSET_MITAB_1)
+# ============================================================================
+# Include the mapinfo macro package -- sets up a number of macros for
+# mapinfo colors and linestyles
+INCLUDE "$(FME_HOME)/metafile/mapinfoMacros.fmi"
+MITAB_1_COORDINATE_SYSTEM_GRANULARITY FEATURE_TYPE
+MITAB_1_PLUGIN_MAX_CHANNELS 100
+DEFAULT_MACRO MITAB_OUT_BUILD_OPTIMAL_SPATIAL_INDEX_MITAB_1 no
+MITAB_1_BUILD_OPTIMAL_SPATIAL_INDEX "$(MITAB_OUT_BUILD_OPTIMAL_SPATIAL_INDEX_MITAB_1)"
+GUI OPTIONAL CHOICE MITAB_OUT_BUILD_OPTIMAL_SPATIAL_INDEX_MITAB_1 yes%no Build Optimal Spatial Index:
+DEFAULT_MACRO MITAB_OUT_ENCODING_MITAB_1 
+MITAB_1_ENCODING "$(MITAB_OUT_ENCODING_MITAB_1)"
+GUI OPTIONAL STRING_OR_ENCODING MITAB_OUT_ENCODING_MITAB_1 SJIS%CP437%CP850%CP852%CP855%CP857%CP860%CP861%CP863%CP864%CP865%CP869%CP874%CP932%CP936%CP950%CP1250%CP1251%CP1252%CP1253%CP1254%CP1255%CP1256%ISO8859-1%ISO8859-2%ISO8859-3%ISO8859-4%ISO8859-5%ISO8859-6%ISO8859-7%ISO8859-8%ISO8859-9 Character Encoding:
+# ============================================================================
+# The following lines override the default coordinate system for features. This
+# provides a mapinfo-specific coordinate system line to the writer.
+DEFAULT_MACRO _COORDSYS_STATEMENT_MITAB_1 
+GUI OPTIONAL TEXT _COORDSYS_STATEMENT_MITAB_1 Coordinate System Statement:
+MITAB_1_COORDSYS_STATEMENT $(_COORDSYS_STATEMENT_MITAB_1)
+# ============================================================================
+# The following lines provide a bounding area for the output files. Because
+# MapInfo has a limited precision available for coordinate storage, providing
+# a tight bounds on the storage can preserve accuracy.
+DEFAULT_MACRO _MIF_MINX_MITAB_1 
+GUI OPTIONAL FLOAT _MIF_MINX_MITAB_1 Bounds Min X:
+DEFAULT_MACRO _MIF_MINY_MITAB_1 
+GUI OPTIONAL FLOAT _MIF_MINY_MITAB_1 Bounds Min Y:
+DEFAULT_MACRO _MIF_MAXX_MITAB_1 
+GUI OPTIONAL FLOAT _MIF_MAXX_MITAB_1 Bounds Max X:
+DEFAULT_MACRO _MIF_MAXY_MITAB_1 
+GUI OPTIONAL FLOAT _MIF_MAXY_MITAB_1 Bounds Max Y:
+MITAB_1_BOUNDS $(_MIF_MINX_MITAB_1) $(_MIF_MINY_MITAB_1) $(_MIF_MAXX_MITAB_1) $(_MIF_MAXY_MITAB_1)
+# ============================================================================
+# Specify whether we want to generate region centroids.
+DEFAULT_MACRO _WRITE_REGION_CENTROIDS_MITAB_1 no
+GUI CHOICE _WRITE_REGION_CENTROIDS_MITAB_1 yes%no Generate and Write Region Centroids:
+MITAB_1_WRITE_REGION_CENTROIDS $(_WRITE_REGION_CENTROIDS_MITAB_1)
+#=============================================================================
+# Specify whether 2 point lines will be output as line or polylines
+DEFAULT_MACRO TWO_POINT_LINE_AS_POLYLINE_MITAB_1 no
+GUI OPTIONAL CHOICE TWO_POINT_LINE_AS_POLYLINE_MITAB_1 yes%no Write 2 Point Line as Polyline:
+MITAB_1_TWO_POINT_LINE_AS_POLYLINE $(TWO_POINT_LINE_AS_POLYLINE_MITAB_1)
+#=============================================================================
+# Specify whether to stroke arcs or not.
+DEFAULT_MACRO _STROKE_ARCS_MITAB_1 no
+GUI OPTIONAL CHOICE _STROKE_ARCS_MITAB_1 yes%no Stroke Arcs into Polyline:
+MITAB_1_STROKE_ARCS $(_STROKE_ARCS_MITAB_1)
+DEFAULT_MACRO VERSION_MITAB_1 900
+GUI CHOICE VERSION_MITAB_1 300%450%900%950%1000%1050%1100%1150 File Version:
+MITAB_1_VERSION $(VERSION_MITAB_1)
+MITAB_1_DATASET "$(DestDataset_MITAB_1)"
+#! END_DEST_HEADER
+#! END_HEADER
+
+LOG_FILENAME "$(FME_MF_DIR)test_param_date_time.log"
+LOG_APPEND NO
+LOG_MAX_FEATURES 200
+LOG_MAX_RECORDED_FEATURES 200
+LOG_MAX_PRECISION Yes
+FME_REPROJECTION_ENGINE FME
+FME_IMPLICIT_CSMAP_REPROJECTION_MODE Auto
+FME_GEOMETRY_HANDLING Enhanced
+FME_STROKE_MAX_DEVIATION 0
+MAPPING_FILE_ID Param<space>date<space>time
+LOG_TIMINGS YES
+LOG_FILTER_MASK -17
+DEFAULT_MACRO DATASET_KEYWORD_SHAPE_1 SHAPE_1
+DEFAULT_MACRO DATASET_KEYWORD_MITAB_1 MITAB_1
+# -------------------------------------------------------------------------
+
+SHAPE_1_READER_META_ATTRIBUTES fme_feature_type
+
+# -------------------------------------------------------------------------
+
+MULTI_READER_CONTINUE_ON_READER_FAILURE No
+
+# -------------------------------------------------------------------------
+
+MACRO WORKSPACE_NAME test_param_date_time
+MACRO FME_VIEWER_APP fmedatainspector
+# -------------------------------------------------------------------------
+SHAPE_1_DEF depts   SHAPE_GEOMETRY               shape_polygon   NUM_DEP                      char(2)   NB_COMM                      number(5,0)   NOM_DEP                      char(30)   POP_DEP                      number(16,0)   SURF_KM2                     number(16,2)   NUM_REG                      number(3,0)   NOM_REG                      char(50)   date                         char(200)
+# -------------------------------------------------------------------------
+
+FACTORY_DEF * RoutingFactory   FACTORY_NAME "Router and Unexpected Input Remover"   INPUT FEATURE_TYPE *       @SupplyAttributes(multi_reader_keyword,SHAPE_1)    ROUTE SHAPE SHAPE_1::depts TO FME_GENERIC ::depts ALIAS_GEOMETRY    MERGE_INPUT Yes   OUTPUT ROUTED FEATURE_TYPE *
+SHAPE_1_MERGE_DEF SHAPE_1::depts EXACT depts
+DEFAULT_MACRO WB_CURRENT_CONTEXT
+# -------------------------------------------------------------------------
+
+Tcl2 proc DateFormatter_formatter {invalidValue} {       set dateFormat {FME Date/Time (%Y%m%d%H%M%S)};       if { [string compare $dateFormat {FME Date/Time (%Y%m%d%H%M%S)}] == 0 } {          set dateFormat {%Y%m%d%H%M%S};       } elseif { [string compare $dateFormat {FME Date (%Y%m%d)}] == 0} {          set dateFormat {%Y%m%d};       } elseif { [string compare $dateFormat {FME Time (%H%M%S)}] == 0} {          set dateFormat {%H%M%S};       } elseif { [string compare $dateFormat {ISO Date (%Y-%m-%d)}] == 0} {          set dateFormat {%Y-%m-%d};       } elseif { [string compare $dateFormat {ISO DateTime (%Y-%m-%dT%H:%M:%S)}] == 0} {          set dateFormat {%Y-%m-%dT%H:%M:%S};       } elseif { [string compare $dateFormat {ISO Time (%H:%M:%S)}] == 0} {          set dateFormat {%H:%M:%S};       } elseif { [string compare $dateFormat {Locale Date (%c)}] == 0} {          set dateFormat {%c};       };     set attrs [split {date} {,}];     foreach attr $attrs {        set date [string trim [FME_GetAttribute $attr]];        set srcfmt {};        if {{FME_AUTOMATIC} != {FME_AUTOMATIC}} {            set srcfmt {FME_AUTOMATIC};        } else {          set comment { In Automatic mode we ignore the millisecond part };          regexp {^[^.]*} $date date;        };        set dateLen [string length $date];        if {$dateLen > 0} {           if {[string length $srcfmt] == 0} {              set attrFull $attr;              append attrFull .full;              set fullDate [FME_GetAttribute $attrFull];              if { [string compare -length $dateLen $date $fullDate] == 0 } {                 set extra [string range $fullDate $dateLen end]000000;                 set date [string range \"$date$extra\" 0 13];                 set dateLen 14              };              if {($dateLen == 14) && [regexp {^[0-9]*$} $date]} {                 set srcfmt %Y%m%d%H%M%S;              };           };        };        set sourceFormatOpt {};        if {[string length $srcfmt] > 0} {           set sourceFormatOpt \"-format {$srcfmt}\";        };        set comment { Compute the output value and catch any errors };        set error [catch { set seconds [eval clock scan "{$date}" $sourceFormatOpt];                           set output [clock format $seconds -format $dateFormat];        }];        set comment { If there was error then we try again by removing digits after last decimal };        if { $error != 0 } {           set index [string last "." $date];           if { $index > 0 } {              set date [eval string range $date 0 [expr $index-1]];              set dateLen [string length $date];              set error [catch { set seconds [eval clock scan "{$date}" $sourceFormatOpt]; set output [clock format $seconds -format $dateFormat]; }];           };        };        if { $error == 0 } {           FME_SetAttribute $attr $output;        };        if { (0 == $dateLen) || ($error != 0) } {          if { $invalidValue == {FME_NULL_VALUE} } {             FME_SetAttributeNull $attr;          } elseif { $invalidValue != {_FME_NO_OP_} }  {             FME_SetAttribute $attr [FME_DecodeText $invalidValue];          };        };     }; }
+FACTORY_DEF * TeeFactory    FACTORY_NAME DateFormatter    INPUT  FEATURE_TYPE depts    OUTPUT FEATURE_TYPE DateFormatter_OUTPUT         @Tcl2("DateFormatter_formatter {_FME_NO_OP_}")
+
+# -------------------------------------------------------------------------
+
+FACTORY_DEF * TestFactory    FACTORY_NAME Tester    INPUT  FEATURE_TYPE DateFormatter_OUTPUT    TEST @EvaluateExpression(FDIV,STRING_ENCODED,<at>Value<openparen>date<closeparen>,Tester) > @EvaluateExpression(FDIV,STRING_ENCODED,$(date_time$encode),Tester) ENCODED    BOOLEAN_OPERATOR OR    OUTPUT PASSED FEATURE_TYPE Tester_PASSED
+# -------------------------------------------------------------------------
+
+FACTORY_DEF * RoutingFactory FACTORY_NAME "Destination Feature Type Routing Correlator"   INPUT FEATURE_TYPE *    ROUTE FME_GENERIC Tester_PASSED TO MITAB __GO_TO_FINAL_OUTPUT_ROUTER__ multi_writer_id,0,<at>SupplyAttributes<openparen>ENCODED<comma>__wb_out_feat_type__<comma>dept<closeparen> GEOMETRY   OUTPUT ROUTED FEATURE_TYPE * @FeatureType(ENCODED,@Value(__wb_out_feat_type__)) @RemoveAttributes(__wb_out_feat_type__)   OUTPUT NOT_ROUTED FEATURE_TYPE __nuke_me__ @Tcl2("FME_StatMessage 818059 [FME_GetAttribute fme_template_feature_type] 818060 818061 fme_warn")
+# -------------------------------------------------------------------------
+
+FACTORY_DEF * TeeFactory   FACTORY_NAME "Final Output Nuker"   INPUT FEATURE_TYPE __nuke_me__
+
+# -------------------------------------------------------------------------
+MITAB_1_DEF dept   NUM_DEP                      char(2)   NB_COMM                      float   NOM_DEP                      char(30)   POP_DEP                      float   SURF_KM2                     float   NUM_REG                      float   NOM_REG                      char(50)   date                         char(200)

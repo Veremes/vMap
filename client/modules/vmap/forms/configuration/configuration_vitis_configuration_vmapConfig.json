@@ -1,0 +1,344 @@
+{
+    "datasources": {
+        "datasource_1": {
+            "type": "object",
+            "dataType": "text",
+            "name": "avaliable_controls",
+            "description": "",
+            "options": [
+                "FORM_TOOLS_ATTRIBUTION_CONFIGURATION_CONFIGURATION_VMAP_CONFIG|Attribution",
+                "FORM_TOOLS_MOUSE_POSITION_CONFIGURATION_CONFIGURATION_VMAP_CONFIG|MousePosition",
+                "FORM_TOOLS_CURRENT_PROJECTION_CONFIGURATION_CONFIGURATION_VMAP_CONFIG|CurrentProjection",
+                "FORM_TOOLS_SCALE_CONFIGURATION_CONFIGURATION_VMAP_CONFIG|Scale",
+                "FORM_TOOLS_SCALE_LINE_CONFIGURATION_CONFIGURATION_VMAP_CONFIG|ScaleLine",
+                "FORM_TOOLS_OVERVIEW_MAP_CONFIGURATION_CONFIGURATION_VMAP_CONFIG|OverviewMap",
+                "FORM_TOOLS_ZOOM_CONFIGURATION_CONFIGURATION_VMAP_CONFIG|Zoom",
+                "FORM_TOOLS_ZOOM_SLIDER_CONFIGURATION_CONFIGURATION_VMAP_CONFIG|ZoomSlider",
+                "FORM_TOOLS_REFRESH_SOCKET_CONFIGURATION_CONFIGURATION_VMAP_CONFIG|RefreshSocket"
+            ]
+        }
+    },
+    "search": {},
+    "update": {
+        "name": "configuration_vmap_config_update_form",
+        "title": "",
+        "input_size": "xs",
+        "event": "updateProperties('vmap')",
+        "nb_cols": 7,
+        "rows": [
+            {
+                "fields": [
+                    {
+                        "type": "title",
+                        "label": "TITLE_PROPERTIES_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "fop_root_dir",
+                        "label": "FORM_FOP_DIRECTORY_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
+                        "required": false,
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "phantomjs_root_path",
+                        "label": "FORM_PHANTOM_DIRECTORY_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
+                        "required": false,
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "printserver_alias",
+                        "label": "FORM_PRINTSERVER_ALIAS_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
+                        "required": false,
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "api_veremap",
+                        "label": "FORM_VEREMAP_API_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
+                        "required": false,
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "title",
+                        "label": "TITLE_DISPLAY_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "vmap.wmsTilesWidth",
+                        "label": "FORM_TILES_WIDTH_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
+                        "nb_cols": 6
+                    },
+                    {
+                        "type": "text",
+                        "name": "vmap.wmsTilesHeight",
+                        "label": "FORM_TILES_HEIGHT_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
+                        "nb_cols": 6
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"codemirror",
+                        "name":"popup.style",
+                        "label":"FORM_POPUP_STYLE_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
+                        "nb_cols":12,
+                        "required":false,
+                        "codemirrorOptions":{
+                            "lineSeparator": "<return>",
+                            "runnable":true,
+                            "lineNumbers":true,
+                            "matchBrackets":true,
+                            "mode":"css",
+                            "indentUnit":4,
+                            "indentWithTabs":true,
+                            "enterMode":"keep",
+                            "tabMode":"shift",
+                            "appHeight":"20%"
+                        }
+                    }
+                ]
+            },
+            {
+                "class": "form-field-inline radio-list",
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "layers_collapsed_label",
+                        "label": "FORM_LAYERS_COLLAPSED_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
+                        "nb_cols": 8
+                    },
+                    {
+                        "type": "radio",
+                        "name": "vmap.layers_collapsed",
+                        "options": {
+                            "choices": [{
+                                    "label": "FORM_RADIO_TRUE_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
+                                    "value": true
+                                },
+                                {
+                                    "label": "FORM_RADIO_FALSE_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
+                                    "value": false
+                                }]
+                        },
+                        "default_value": false,
+                        "nb_cols": 4
+                    }
+                ]
+            },
+            {
+                "class": "form-field-inline radio-list",
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "layerstree_collapsed_label",
+                        "label": "FORM_LAYERSTREE_COLLAPSED_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
+                        "nb_cols": 8
+                    },
+                    {
+                        "type": "radio",
+                        "name": "vmap.layerstree_collapsed",
+                        "options": {
+                            "choices": [{
+                                    "label": "FORM_RADIO_TRUE_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
+                                    "value": true
+                                },
+                                {
+                                    "label": "FORM_RADIO_FALSE_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
+                                    "value": false
+                                }]
+                        },
+                        "default_value": false,
+                        "nb_cols": 4
+                    }
+                ]
+            },
+            {
+                "class": "form-field-inline radio-list",
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "layersorder_collapsed_label",
+                        "label": "FORM_LAYERSORDER_COLLAPSED_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
+                        "nb_cols": 8
+                    },
+                    {
+                        "type": "radio",
+                        "name": "vmap.layersorder_collapsed",
+                        "options": {
+                            "choices": [{
+                                    "label": "FORM_RADIO_TRUE_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
+                                    "value": true
+                                },
+                                {
+                                    "label": "FORM_RADIO_FALSE_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
+                                    "value": false
+                                }]
+                        },
+                        "default_value": true,
+                        "nb_cols": 4
+                    }
+                ]
+            },
+            {
+                "class": "form-field-inline radio-list",
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "legend_collapsed_label",
+                        "label": "FORM_LEGEND_COLLAPSED_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
+                        "nb_cols": 8
+                    },
+                    {
+                        "type": "radio",
+                        "name": "vmap.legend_collapsed",
+                        "options": {
+                            "choices": [{
+                                    "label": "FORM_RADIO_TRUE_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
+                                    "value": true
+                                },
+                                {
+                                    "label": "FORM_RADIO_FALSE_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
+                                    "value": false
+                                }]
+                        },
+                        "default_value": false,
+                        "nb_cols": 4
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "title",
+                        "label": "TITLE_TOOLS_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "double_select",
+                        "name": "controls.active_controls",
+                        "label_from": "FORM_AVALIABLE_TOOLS_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
+                        "label_to": "FORM_ACTIVE_TOOLS_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
+                        "required": false,
+                        "nb_cols": 12,
+                        "size": 10,
+                        "id": "Element_0_1_1",
+                        "name_to": "controls.active_controls",
+                        "name_from": "controls.active_control",
+                        "datasource": {
+                            "datasource_id": "datasource_1"
+                        },
+                        "id_from": "Element_0_1_1_from"
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "title",
+                        "label": "TITLE_SELECTION_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "selection.limit_popup",
+                        "label": "FORM_SELECTION_LIMIT_POPUP_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
+                        "required": true,
+                        "default_value": 1,
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "selection.limit_list",
+                        "label": "FORM_SELECTION_LIMIT_LIST_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
+                        "required": true,
+                        "default_value": 50,
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "selection.buffer",
+                        "label": "FORM_SELECTION_BUFFER_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
+                        "required": true,
+                        "default_value": 5,
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "selection.max_buffer",
+                        "label": "FORM_SELECTION_MAX_SCALE_BUFFER_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
+                        "required": true,
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "button",
+                        "class": "btn-ungroup btn-group-sm",
+                        "nb_cols": 12,
+                        "buttons": [
+                            {
+                                "type": "submit",
+                                "name": "form_submit",
+                                "label": "FORM_UPDATE",
+                                "class": "btn-primary"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "insert": {},
+    "display": {}
+}

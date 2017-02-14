@@ -1,0 +1,157 @@
+<?php
+session_start();
+require_once '../rest/conf/properties.inc';
+
+function returnOverview($sFolder, $parent) {
+    $aModules = array();
+    if (is_dir($sFolder)) {
+        $aFolder = scandir($sFolder);
+        foreach ($aFolder as $sFile) {
+            if ($sFile != "." && $sFile != "..") {
+                if (is_dir($sFolder . "/" . $sFile)) {
+                    $aReturn = returnOverview($sFolder . "/" . $sFile, $sFile);
+                    $aModules = array_merge($aModules, $aReturn);
+                } elseif ($sFile == "overview.phtml") {
+                    $aModules[$parent] = $sFolder . "/" . $sFile;
+                }
+            }
+        }
+    }
+    return $aModules;
+}
+
+$aOverview = returnOverview(__DIR__ . "/../rest/ws", "");
+?>
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Vitis API Rest</title>
+        <link href='css/reset.css' rel='stylesheet' type='text/css'/>
+        <link href='css/screen.css' rel='stylesheet' type='text/css'/>
+        <link href='css/style.css' rel='stylesheet' type='text/css'/>
+        <script src='javascript/jquery-1.8.0.min.js' type='text/javascript'></script>
+        <script src='javascript/jquery.slideto.min.js' type='text/javascript'></script>
+        <script src='javascript/jquery.wiggle.min.js' type='text/javascript'></script>
+        <script src='javascript/jquery.ba-bbq.min.js' type='text/javascript'></script>
+        <script src='javascript/handlebars-2.0.0.js' type='text/javascript'></script>
+        <script src='javascript/underscore-min.js' type='text/javascript'></script>
+        <script src='javascript/backbone-min.js' type='text/javascript'></script>
+        <script src='javascript/swagger-ui.min.js' type='text/javascript'></script>
+        <script src='javascript/highlight.7.3.pack.js' type='text/javascript'></script>
+        <script src='javascript/marked.js' type='text/javascript'></script>
+        <script src='javascript/swagger-oauth.js' type='text/javascript'></script>
+        <script type="text/javascript">
+            var sToken = "";
+            var sService = "overview";
+            var docAlias = "<?php echo $properties['doc_alias'] ?>";
+            var serviceAlias = "<?php echo $properties['service_alias'] ?>";
+            var serverName = "<?php echo $properties['web_server_name'] ?>";
+
+            function FinToken(code) {
+                var isJson = true;
+                try {
+                    json = $.parseJSON(code[0].outerText);
+                } catch (e) {
+                    isJson = false;
+                }
+                if (isJson){
+                    sToken = json.PrivateToken.token;
+                }   else {
+                    sToken = code[0].outerText.split('<token>')[1].split('</token>')[0];
+                }  
+                if (sToken != "") {
+                $("input[name='token']").each(function () {
+                    $(this).attr("value", sToken);
+                });
+            }
+            }
+
+            function LoadApi() {
+                console.log("LoadApi");
+                window.swaggerUi = new SwaggerUi({
+                    //specs:JSON.parse('<?php //echo json_encode($swagger); ?>'),
+                    url: serverName + "/" + docAlias + "/swagger.php?service=" + sService,
+                    generalBasePath: "../" + serviceAlias + "/" + sService,
+                    dom_id: sService + "_swagger-ui-container",
+                    supportedSubmitMethods: ['get', 'post', 'put', 'delete'],
+                    onComplete: function (swaggerApi, swaggerUi) {
+                        $('pre code').each(function (i, e) {
+                            hljs.highlightBlock(e)
+                        });
+                        if (sToken != "") {
+                            $("input[name='token']").each(function () {
+                                $(this).attr("value", sToken);
+                            });
+                        }
+                    },
+                    onFailure: function (data) {
+                        console.log("Unable to Load SwaggerUI");
+                    },
+                    docExpansion: "none"
+                });
+                window.swaggerUi.load();
+                LoadOverview();
+            }
+
+            function LoadOverview() {
+                $("#overview").hide();
+<?php
+foreach ($aOverview as $key => $value) {
+    echo '$("#' . $key . '").hide();';
+}
+?>
+                $("#" + sService).show();
+            }
+            $(document).ready(function () {
+                if (top.frames.length == 0) {
+                    $('#logo').show();
+                    $('#br').hide();
+                } else {
+                    sToken = sessionStorage["session_token"];
+                }
+            });
+            LoadOverview();
+        </script>
+    </head>
+
+    <body class="swagger-section">
+        <header style="height:50px;">
+            <br id="br">
+        </header>
+        <div>
+            <nav>
+                <a href="javascript:sService='overview';LoadOverview()" class="bouton8 gris">Overview</a><br><br>
+                <?php
+                foreach ($aOverview as $key => $value) {
+                    echo '<a href="javascript:sService=\'' . $key . '\';LoadApi();" class="bouton8 gris">' . $key . "</a><br><br>";
+                }
+                ?>
+            </nav>
+            <hr class="separation" />
+            <section>
+                <div id="overview" class="swagger-ui-wrap">
+                    <h1>Vitis API Rest</h1><br>
+                    <p>Vitis provides Developpers webservices so that they can access the main feature of the application. This service meets the highest standards of Restful web services (Representational state transfer) and operates the various methods of http: GET, PUT, POST, DELETE. Responses to requests from the Rest service are returned  in XML or JSON format.</p></br>
+                    <?php
+                    foreach ($aOverview as $key => $value) {
+                        include($value);
+                    }
+                    ?>
+                </div>
+                <?php
+                foreach ($aOverview as $key => $value) {
+                    echo " <div id=\"" . $key . "\" style=\"display: none;\"> "
+                    . "<div id=\"" . $key . "_overview\" class=\"swagger-ui-wrap\" >";
+                    include($value);
+                    echo "</div>"
+                    . "<div id=\"" . $key . "_swagger-ui-container\" class=\"swagger-ui-wrap\"></div>"
+                    . "</div>";
+                }
+                ?>
+
+            </section>
+        </div>
+    </body>
+</html>
+

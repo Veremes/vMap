@@ -1,0 +1,15 @@
+
+              +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+              +                                                                                   +
+              +                 VEREMES - Vitis Application Server (VAS) change log               +
+              +                                                                                   +
+              +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+|b21080|AMELIORATION|BETA	|   Généralisation du dossier conteneur de fichiers à objets métier ou vitis
+|b21001|AMELIORATION|BETA	|   Reprojection Auto des géométries en genericGet quand on spécifie aValues['result_srid']
+|b20074|BUG         |BETA	|   Correction d'un bug sur le changement de mot de passe d'un utilisateur qui n'a pas le rôle "vitis_admin".
+|b20027|BUG         |BETA	|   Suppression du paramètre "$(FME_MF_DIR)" à la création d'un projet FME.
+|b20008|BUG         |BETA	|   Web service Vitis/Logs : token valide et privilège "vitis_admin" obligatoires pour supprimes des fichiers de logs.
+|b20000|BUG         |BETA	|   Web service Vitis/Logs : suppression des fichiers avec l'extension ".log" et qui sont uniquement dans les répertoires de logs.
+|b19970|AMELIORATION|BETA	|   Protocole http ou https dans le paramètre "web_server_name" du fichier "properties_server.inc".

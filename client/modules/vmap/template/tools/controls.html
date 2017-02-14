@@ -1,0 +1,19 @@
+
+<i class="basic-tools-dropdown-title">Outils</i>
+
+<ul class="basic-tools-dropdown-menu">
+    <li role="separator" class="divider"></li>
+
+
+    <li ng-repeat="tool in ctrl.aAvaliableControls" 
+        ng-click="tool.active = !tool.active; ctrl.Controls.setToolActive(tool.id, tool.active);">
+        <a data-toggle="tooltip" data-placement="left"
+           title="{{::tool.description}}">
+            <div class="checkbox checkbox-info left margin-2">
+                <input id="{{::tool.id}}-tool" type="checkbox" ng-model="tool.active">
+                <label for="{{::tool.id}}-tool" class="unselectable">
+                    {{::tool.title}}
+                </label>
+            </div>
+        </a></li>
+</ul>

@@ -1,0 +1,608 @@
+{
+    "datasources": {
+        "use_strict": {
+            "type": "object",
+            "dataType": "text",
+            "name": "use_strict",
+            "description": "",
+            "options": [
+                "FORM_SEARCH_USE_STRICT_4|false",
+                "FORM_SEARCH_USE_STRICT_1|true",
+                "FORM_SEARCH_USE_STRICT_2|left",
+                "FORM_SEARCH_USE_STRICT_3|right"
+            ]
+        }
+    },
+    "search": {
+    },
+    "update": {
+        "name": "vitis_user_update_form",
+        "title": "Paramètres de l'objet métier",
+        "input_size": "xs",
+        "event": "sendSimpleForm()",
+        "afterEvent": "editSectionForm()",
+        "nb_cols": 6,
+        "rows": [{
+                "fields": [{
+                        "type": "label",
+                        "name": "business_object_id",
+                        "label": "FORM_BUSINESS_OBJET_ID_DEVELOPMENT_0",
+                        "nb_cols": 12,
+                        "id": "ééé_1_1"
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "text",
+                        "name": "title",
+                        "label": "FORM_TITLE_DEVELOPMENT_0",
+                        "required": true,
+                        "pattern": "",
+                        "nb_cols": 12,
+                        "id": "éé_2_1"
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "text",
+                        "name": "id_field",
+                        "label": "FORM_ID_FIELD_DEVELOPMENT_0",
+                        "required": true,
+                        "pattern": "",
+                        "nb_cols": 12,
+                        "id": "New_el_1_3_1",
+                        "tooltip": {
+                            "title": "",
+                            "content": "FORM_ID_FIELD_DEVELOPMENT_0_TOOLTIP",
+                            "container": "body"
+                        }
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "text",
+                        "name": "database",
+                        "label": "FORM_DATABASE_DEVELOPMENT_0",
+                        "required": true,
+                        "pattern": "",
+                        "nb_cols": 12,
+                        "id": "New_el_2_4_1"
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "text",
+                        "name": "schema",
+                        "label": "FORM_SCHEMA_DEVELOPMENT_0",
+                        "required": true,
+                        "pattern": "",
+                        "nb_cols": 12,
+                        "id": "New_el_3_5_1"
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "text",
+                        "name": "table",
+                        "label": "FORM_TABLE_DEVELOPMENT_0",
+                        "required": true,
+                        "pattern": "",
+                        "nb_cols": 12,
+                        "id": "New_el_4_6_1"
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "textarea",
+                        "name": "sql_summary",
+                        "label": "FORM_SQL_SUMMARY_DEVELOPMENT_0",
+                        "id": "New_el_6_8_1",
+                        "nb_cols": 12,
+                        "size": 5,
+                        "tooltip": {
+                            "title": "",
+                            "content": "FORM_SQL_SUMMARY_DEVELOPMENT_0_TOOLTIP",
+                            "container": "body"
+                        }
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "textarea",
+                        "name": "sql_list",
+                        "label": "FORM_SQL_LIST_DEVELOPMENT_0",
+                        "required": true,
+                        "nb_cols": 12,
+                        "size": 5,
+                        "id": "New_el_7_9_1",
+                        "tooltip": {
+                            "title": "",
+                            "content": "FORM_SQL_LIST_DEVELOPMENT_0_TOOLTIP",
+                            "container": "body"
+                        }
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "text",
+                        "name": "sorted_by",
+                        "label": "FORM_SORTED_BY_DEVELOPMENT_0",
+                        "required": false,
+                        "pattern": "",
+                        "nb_cols": 12,
+                        "id": "New_el_9_11_1"
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "text",
+                        "name": "geom_column",
+                        "label": "FORM_GEOM_COLUMN_DEVELOPMENT_0",
+                        "required": true,
+                        "pattern": "",
+                        "nb_cols": 12,
+                        "id": "New_el_10_12_1"
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "text",
+                        "name": "search_field",
+                        "label": "FORM_SEARCH_FIELD_0",
+                        "nb_cols": 12,
+                        "id": "New_el_11_13_1"
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "text",
+                        "name": "result_field",
+                        "label": "FORM_RESULT_FIELD_0",
+                        "nb_cols": 12,
+                        "id": "New_el_12_14_1"
+                    }]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "select",
+                        "name": "search_use_strict",
+                        "label": "FORM_SEARCH_USE_STRICT_0",
+                        "required": false,
+                        "nb_cols": 12,
+                        "id": "Element_0_2_1",
+                        "default_value": "false",
+                        "datasource": {
+                            "datasource_id": "use_strict"
+                        }
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type":"select",
+                        "name":"event_id",
+                        "label":"FORM_EVENT_VMAP_BUSINESS_OBJECT",
+                        "nb_cols":6,
+                        "web_service":{
+                            "ressource_id":"vmap/businessobjectevents",
+                            "id_key":"event_id",
+                            "label_key":"event_id"
+                        }
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"number",
+                        "name":"index",
+                        "label":"FORM_INDEX_VMAP_BUSINESS_OBJECT",
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "button",
+                        "class": "btn-ungroup btn-group-sm",
+                        "nb_cols": 12,
+                        "buttons": [
+                            {
+                                "type": "submit",
+                                "name": "form_submit",
+                                "label": "FORM_UPDATE",
+                                "class": "btn-primary"
+                            },
+                            {
+                                "type": "button",
+                                "name": "return_list",
+                                "label": "FORM_RETURN_LIST",
+                                "class": "btn-primary",
+                                "event": "setMode(\"development\")"
+                            }
+                        ]
+                    }
+                ]
+            }]
+    },
+    "insert": {
+        "name": "framework_v_user_insert_form",
+        "title": "Création Objet métier",
+        "input_size": "xs",
+        "event": "sendSimpleForm()",
+        "afterEvent": "editSectionForm()",
+        "nb_cols": 6,
+        "rows": [
+            {
+                "fields": [{
+                        "type": "text",
+                        "name": "business_object_id",
+                        "label": "FORM_BUSINESS_OBJET_ID_DEVELOPMENT_0",
+                        "required": true,
+                        "pattern": "^[A-Za-z0-9_]{1,32}$",
+                        "nb_cols": 12,
+                        "id": "ééé_1_1",
+                        "tooltip": {
+                            "title": "",
+                            "content": "FORM_BUSINESS_OBJET_ID_DEVELOPMENT_0_TOOLTIP",
+                            "container": "body"
+                        }
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "text",
+                        "name": "title",
+                        "label": "FORM_TITLE_DEVELOPMENT_0",
+                        "required": true,
+                        "pattern": "",
+                        "nb_cols": 12,
+                        "id": "éé_2_1"
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "text",
+                        "name": "id_field",
+                        "label": "FORM_ID_FIELD_DEVELOPMENT_0",
+                        "required": true,
+                        "pattern": "",
+                        "nb_cols": 12,
+                        "id": "New_el_1_3_1",
+                        "tooltip": {
+                            "title": "",
+                            "content": "FORM_ID_FIELD_DEVELOPMENT_0_TOOLTIP",
+                            "container": "body"
+                        }
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "text",
+                        "name": "database",
+                        "label": "FORM_DATABASE_DEVELOPMENT_0",
+                        "required": true,
+                        "pattern": "",
+                        "nb_cols": 12,
+                        "id": "New_el_2_4_1"
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "text",
+                        "name": "schema",
+                        "label": "FORM_SCHEMA_DEVELOPMENT_0",
+                        "required": true,
+                        "pattern": "",
+                        "nb_cols": 12,
+                        "id": "New_el_3_5_1"
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "text",
+                        "name": "table",
+                        "label": "FORM_TABLE_DEVELOPMENT_0",
+                        "required": true,
+                        "pattern": "",
+                        "nb_cols": 12,
+                        "id": "New_el_4_6_1"
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "textarea",
+                        "name": "sql_summary",
+                        "label": "FORM_SQL_SUMMARY_DEVELOPMENT_0",
+                        "id": "New_el_6_8_1",
+                        "nb_cols": 12,
+                        "size": 5,
+                        "tooltip": {
+                            "title": "",
+                            "content": "FORM_SQL_SUMMARY_DEVELOPMENT_0_TOOLTIP",
+                            "container": "body"
+                        }
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "textarea",
+                        "name": "sql_list",
+                        "label": "FORM_SQL_LIST_DEVELOPMENT_0",
+                        "required": true,
+                        "nb_cols": 12,
+                        "size": 5,
+                        "id": "New_el_7_9_1",
+                        "tooltip": {
+                            "title": "",
+                            "content": "FORM_SQL_LIST_DEVELOPMENT_0_TOOLTIP",
+                            "container": "body"
+                        }
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "text",
+                        "name": "sorted_by",
+                        "label": "FORM_SORTED_BY_DEVELOPMENT_0",
+                        "required": false,
+                        "pattern": "",
+                        "nb_cols": 12,
+                        "id": "New_el_9_11_1"
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "text",
+                        "name": "geom_column",
+                        "label": "FORM_GEOM_COLUMN_DEVELOPMENT_0",
+                        "required": true,
+                        "pattern": "",
+                        "nb_cols": 12,
+                        "id": "New_el_10_12_1"
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "text",
+                        "name": "search_field",
+                        "label": "FORM_SEARCH_FIELD_0",
+                        "nb_cols": 12,
+                        "id": "New_el_11_13_1"
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "text",
+                        "name": "result_field",
+                        "label": "FORM_RESULT_FIELD_0",
+                        "nb_cols": 12,
+                        "id": "New_el_12_14_1"
+                    }]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "select",
+                        "name": "search_use_strict",
+                        "label": "FORM_SEARCH_USE_STRICT_0",
+                        "required": false,
+                        "default_value": "false",
+                        "nb_cols": 12,
+                        "id": "Element_0_2_1",
+                        "datasource": {
+                            "datasource_id": "use_strict"
+                        }
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type":"select",
+                        "name":"event_id",
+                        "label":"FORM_EVENT_VMAP_BUSINESS_OBJECT",
+                        "nb_cols":6,
+                        "web_service":{
+                            "ressource_id":"vmap/businessobjectevents",
+                            "id_key":"event_id",
+                            "label_key":"event_id"
+                        }
+                    }]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"number",
+                        "name":"index",
+                        "label":"FORM_INDEX_VMAP_BUSINESS_OBJECT",
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "button",
+                        "class": "btn-ungroup btn-group-sm",
+                        "nb_cols": 12,
+                        "buttons": [
+                            {
+                                "type": "submit",
+                                "name": "form_submit",
+                                "label": "FORM_CREATE",
+                                "class": "btn-primary"
+                            },
+                            {
+                                "type": "button",
+                                "name": "return_list",
+                                "label": "FORM_RETURN_LIST",
+                                "class": "btn-primary",
+                                "event": "setMode(\"development\")"
+                            }
+                        ]
+                    }
+                ]
+            }]
+    },
+    "display": {
+        "name": "framework_v_user_display_form",
+        "title": "Paramètres de l'objet métier",
+        "input_size": "xs",
+        "nb_cols": 6,
+        "rows": [{
+                "fields": [{
+                        "type": "label",
+                        "name": "business_object_id",
+                        "label": "FORM_BUSINESS_OBJET_ID_DEVELOPMENT_0",
+                        "id": "ééé_1_1",
+                        "nb_cols": 12
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "label",
+                        "name": "title",
+                        "label": "FORM_TITLE_DEVELOPMENT_0",
+                        "id": "éé_2_1",
+                        "nb_cols": 12
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "label",
+                        "name": "id_field",
+                        "label": "FORM_ID_FIELD_DEVELOPMENT_0",
+                        "id": "New_el_1_3_1",
+                        "nb_cols": 12
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "label",
+                        "name": "database",
+                        "label": "FORM_DATABASE_DEVELOPMENT_0",
+                        "id": "New_el_2_4_1",
+                        "nb_cols": 12
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "label",
+                        "name": "schema",
+                        "label": "FORM_SCHEMA_DEVELOPMENT_0",
+                        "id": "New_el_3_5_1",
+                        "nb_cols": 12
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "label",
+                        "name": "table",
+                        "label": "FORM_TABLE_DEVELOPMENT_0",
+                        "id": "New_el_4_6_1",
+                        "nb_cols": 12
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "label",
+                        "name": "sql_summary",
+                        "label": "FORM_SQL_SUMMARY_DEVELOPMENT_0",
+                        "id": "New_el_6_8_1",
+                        "nb_cols": 12
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "label",
+                        "name": "sql_form",
+                        "label": "FORM_SQL_FORM_DEVELOPMENT_0",
+                        "id": "New_el_8_10_1",
+                        "nb_cols": 12
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "label",
+                        "name": "sorted_by",
+                        "label": "FORM_SORTED_BY_DEVELOPMENT_0",
+                        "id": "New_el_9_11_1",
+                        "nb_cols": 12
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "label",
+                        "name": "geom_column",
+                        "label": "FORM_GEOM_COLUMN_DEVELOPMENT_0",
+                        "id": "New_el_10_12_1",
+                        "nb_cols": 12
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "label",
+                        "name": "search_field",
+                        "label": "FORM_SEARCH_FIELD_0",
+                        "id": "New_el_11_13_1",
+                        "nb_cols": 12
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "label",
+                        "name": "result_field",
+                        "label": "FORM_RESULT_FIELD_0",
+                        "id": "New_el_12_14_1",
+                        "nb_cols": 12
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "label",
+                        "name": "search_use_strict",
+                        "label": "FORM_SEARCH_USE_STRICT_0",
+                        "id": "New_el_12_14_1",
+                        "nb_cols": 12
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "label",
+                        "name": "event_id",
+                        "label": "FORM_EVENT_VMAP_BUSINESS_OBJECT",
+                        "nb_cols": 12
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "label",
+                        "name": "indez",
+                        "label": "FORM_INDEX_VMAP_BUSINESS_OBJECT",
+                        "nb_cols": 12
+                    }]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "button",
+                        "class": "btn-ungroup btn-group-sm",
+                        "nb_cols": 12,
+                        "buttons": [
+                            {
+                                "type": "button",
+                                "name": "return_list",
+                                "label": "FORM_RETURN_LIST",
+                                "class": "btn-primary",
+                                "event": "setMode(\"development\")"
+                            }
+                        ]
+                    }
+                ]
+            }]
+    }
+}

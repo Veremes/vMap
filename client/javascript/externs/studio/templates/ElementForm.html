@@ -1,0 +1,1717 @@
+<div class="panel panel-veremes" id="InfosElement" ng-class="{ 'studio-panel-collapsed': $parent.aCollapsed[4], 'studio-panel-expanded': (!$parent.aCollapsed[4] && $parent.aCollapsed[0])}">
+    <!--Bandeau-->
+    <div class="panel-heading unselectable" ng-click="ctrl.resize()">{{::ctrl.text.Title}} 
+        <span id="Lock_Icon" class="fa"></span>
+        <span ng-if="collapsed" id="collapsed_icon" class="fa fa-angle-right fa-lg" style="float:right"></span>
+        <span ng-if="!collapsed" id="collapsed_icon" class="fa fa-angle-down fa-lg" style="float:right"></span>
+    </div>
+    <!--Formulaire-->
+    <div class="panel-body element-panel row-centered" ng-hide="collapsed">
+        <select id="select_element_to_add" 
+                class="form-control input-xs element-margin center-block" 
+                ng-disabled="locker" 
+                ng-model="model.type">
+            <option ng-repeat="type in Component_list| orderBy: 'alias'" value="{{type.value}}">{{type.alias}}</option>
+        </select>
+        <form name="ElementForm" class="element-margin form-group-xxs">
+            <div ng-switch on="model.type">
+                <!-- Titre -->
+                <div ng-switch-when="title">
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_label_label">{{::ctrl.text.Component.General.Label}}</span>
+                        <input ng-disabled="locker" ng-model="model.label" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Title.Placeholder}}" aria-describedby="Element_Form_label_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_class_label">{{::ctrl.text.Component.General.Class}}</span>
+                        <select ng-disabled="locker" ng-model="model.class" id="Element_Form_class_input" class="form-control" placeholder="{{::ctrl.text.Component.Title.Class_PH}}" aria-describedby="Element_Form_class_label">
+                            <option value=""></option>
+                            <option value="h1">H1</option>
+                            <option value="h2">H2</option>
+                            <option value="h3">H3</option>
+                            <option value="h4">H4</option>
+                            <option value="h5">H5</option>
+                            <option value="h6">H6</option>
+                        </select>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span ng-if="ctrl.applicationName !== 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name}}</span>
+                        <span ng-if="ctrl.applicationName === 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name_GTF}}</span>
+                        <input ng-disabled="locker" ng-model="model.name" id="Element_Form_name_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Title.Name_PH}}" aria-describedby="Element_Form_name_label" required>
+                    </div>
+                </div>
+                <!-- Sous-titre -->
+                <div ng-switch-when="subtitle">
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_label_label">{{::ctrl.text.Component.General.Label}}</span>
+                        <input ng-disabled="locker" ng-model="model.label" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.SubTitle.Label_PH}}" aria-describedby="Element_Form_label_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_class_label">{{::ctrl.text.Component.General.Class}}</span>
+                        <input ng-disabled="locker" ng-model="model.class" id="Element_Form_class_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.SubTitle.Class_PH}}" aria-describedby="Element_Form_class_label">
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span ng-if="ctrl.applicationName !== 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name}}</span>
+                        <span ng-if="ctrl.applicationName === 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name_GTF}}</span>
+                        <input ng-disabled="locker" ng-model="model.name" id="Element_Form_name_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.SubTitle.Name_PH}}" aria-describedby="Element_Form_name_label" required>
+                    </div>
+                </div>
+                <!-- HR -->
+                <div ng-switch-when="hr">
+                    <div class="input-group element-margin input-group-xs">
+                        <span ng-if="ctrl.applicationName !== 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name}}</span>
+                        <span ng-if="ctrl.applicationName === 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name_GTF}}</span>
+                        <input ng-disabled="locker" ng-model="model.name" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Title.Placeholder}}" aria-describedby="Element_Form_label_label" required>
+                    </div>
+                </div>
+                <!-- Label -->
+                <div ng-switch-when="label">
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_label_label">{{::ctrl.text.Component.General.Label}}</span>
+                        <input ng-disabled="locker" ng-model="model.label" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Label.Label_PH}}" aria-describedby="Element_Form_label_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span ng-if="ctrl.applicationName !== 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name}}</span>
+                        <span ng-if="ctrl.applicationName === 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name_GTF}}</span>
+                        <input ng-disabled="locker" ng-model="model.name" id="Element_Form_name_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Label.Name_PH}}" aria-describedby="Element_Form_name_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_value_label">{{::ctrl.text.Component.General.Value}}</span>
+                        <textarea ng-disabled="locker" ng-model="model.default_value" id="Element_Form_value_input" type="text" class="form-control" aria-describedby="Element_Form_value_label" rows="3"></textarea>
+                    </div>
+                    <div id="div_slider_Form">
+                        <label id="label_slider_Element_size" for="slider_Element_size">{{::ctrl.text.Component.General.Width}}</label>
+                        <input ng-disabled="locker" data-app-param-element id="slider_Element_size" data-slider-id='slider_Element_size' type="text" data-slider-min="0" data-slider-max="12" data-slider-step="1" data-slider-value="12" required>
+                    </div>
+                </div>
+                <!-- Checkbox -->
+                <div ng-switch-when="checkbox">
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_label_label">{{::ctrl.text.Component.General.Label}}</span>
+                        <input ng-disabled="locker" ng-model="model.label" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.CheckBox.Label_PH}}" aria-describedby="Element_Form_label_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span ng-if="ctrl.applicationName !== 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name}}</span>
+                        <span ng-if="ctrl.applicationName === 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name_GTF}}</span>
+                        <input ng-disabled="locker" ng-model="model.name" id="Element_Form_name_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.CheckBox.Name_PH}}" aria-describedby="Element_Form_name_label" required>
+                    </div>
+                    <div class="checkbox checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_checked_input" id="Element_Form_checked_input" ng-model="model.checked">
+                        <label  for="Element_Form_checked_input" id="Element_Form_checked_label" class="control-label">{{::ctrl.text.Component.CheckBox.Default}}</label>
+                    </div>
+                </div>
+                <!-- Radio -->
+                <div ng-switch-when="radio">
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_label_label">{{::ctrl.text.Component.General.Label}}</span>
+                        <input ng-disabled="locker" ng-model="model.label" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Radio.Label_PH}}" aria-describedby="Element_Form_label_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span ng-if="ctrl.applicationName !== 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name}}</span>
+                        <span ng-if="ctrl.applicationName === 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name_GTF}}</span>
+                        <input ng-disabled="locker" ng-model="model.name" id="Element_Form_name_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Radio.Name_PH}}" aria-describedby="Element_Form_name_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_value_label">{{::ctrl.text.Component.General.Value}}</span>
+                        <select ng-disabled="locker" 
+                                ng-model="model.default_value"
+                                ng-change="model.default_value = model.default_value === 'true' ? true : model.default_value === 'false' ? false : model.default_value"
+                                id="Element_Form_value_input" 
+                                type="text" 
+                                class="form-control" 
+                                aria-describedby="Element_Form_value_label"
+                                ng-options="choice.value as choice.label for choice in model.options.choices">
+                        </select>
+                    </div>
+                    <div class="checkbox checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_disabled_radio" id="Element_Form_disabled_radio" ng-model="model.disabled">
+                        <label  for="Element_Form_disabled_radio" id="Element_Form_disabled_label" class="control-label">{{::ctrl.text.Component.Radio.Disabled}}</label>
+                    </div>
+                    <div style="width: 100%;height: 43px;">
+                        <button ng-click="model.options.choices.push({label: 'option', value: ''})" style="float: right;" class="btn btn-primary btn-sm">
+                            <span class="glyphicon glyphicon-plus"></span> option
+                        </button>
+                    </div>
+                    <div ng-repeat="choise in model.options.choices">
+                        <label>option {{$index + 1}}:</label>
+                        <button class="icon-trash" style="float: right;" ng-click="model.options.choices.splice($index, 1)"></button>
+                        <div class="input-group element-margin input-group-xs">
+                            <span class="input-group-addon" id="Element_Form_label_option_{{$index}}_label">{{::ctrl.text.Component.General.Label}}</span>
+                            <input ng-disabled="locker" ng-model="choise.label" id="Element_Form_label_option_{{$index}}_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Radio.Label_PH}}" aria-describedby="Element_Form_label_option_{{$index}}_label" required>
+                        </div>
+                        <div class="input-group element-margin input-group-xs">
+                            <span class="input-group-addon" id="Element_Form_name_option_{{$index}}_label">{{::ctrl.text.Component.General.Name}}</span>
+                            <input ng-disabled="locker" 
+                                   ng-model="choise.value" 
+                                   ng-change="choise.value = choise.value === 'true' ? true : choise.value === 'false' ? false : choise.value"
+                                   id="Element_Form_name_option_{{$index}}_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Radio.Name_PH}}" aria-describedby="Element_Form_name_option_{{$index}}_label" required>
+                        </div>
+                    </div>
+                </div>
+                <!-- Textarea -->
+                <div ng-switch-when="textarea">
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_label_label">{{::ctrl.text.Component.General.Label}}</span>
+                        <input ng-disabled="locker" ng-model="model.label" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.TextArea.Label_PH}}" aria-describedby="Element_Form_label_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span ng-if="ctrl.applicationName !== 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name}}</span>
+                        <span ng-if="ctrl.applicationName === 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name_GTF}}</span>
+                        <input ng-disabled="locker" ng-model="model.name" id="Element_Form_name_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.TextArea.Name_PH}}" aria-describedby="Element_Form_name_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_value_label">{{::ctrl.text.Component.General.Value}}</span>
+                        <textarea ng-disabled="locker" ng-model="model.default_value" id="Element_Form_value_input" type="text" class="form-control" aria-describedby="Element_Form_value_label" rows="3"></textarea>
+                    </div>
+                    <div id="div_slider_Form">
+                        <label id="label_slider_row_size" for="slider_Element_Row">{{::ctrl.text.Component.Double_Select.Size}}</label>
+                        <input ng-disabled="locker" data-app-param-element id="slider_Element_Row" data-slider-id='slider_Element_Row' type="text" data-slider-min="0" data-slider-max="12" data-slider-step="1" data-slider-value="3" required>
+                    </div>
+                    <div id="div_slider_Form">
+                        <label id="label_slider_Element_size" for="slider_Element_size">{{::ctrl.text.Component.General.Width}}</label>
+                        <input ng-disabled="locker" data-app-param-element id="slider_Element_size" data-slider-id='slider_Element_size' type="text" data-slider-min="0" data-slider-max="12" data-slider-step="1" data-slider-value="6" required>
+                    </div>
+                    <div class="checkbox checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_required_input" id="Element_Form_required_input" ng-model="model.required">
+                        <label for="Element_Form_required_input" id="Element_Form_required_label" class="control-label">{{::ctrl.text.Component.General.Required}}</label>
+                    </div>
+                </div>
+                <!-- Select -->
+                <div ng-switch-when="select">
+                    <!--Etiquette/nom-->
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_label_label">{{::ctrl.text.Component.General.Label}}</span>
+                        <input ng-disabled="locker" ng-model="model.label" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Select.Label_PH}}" aria-describedby="Element_Form_label_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span ng-if="ctrl.applicationName !== 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name}}</span>
+                        <span ng-if="ctrl.applicationName === 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name_GTF}}</span>
+                        <input ng-disabled="locker" ng-model="model.name" id="Element_Form_name_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Select.Name_PH}}" aria-describedby="Element_Form_name_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_value_label">{{::ctrl.text.Component.Select.Default}}</span>
+                        <input ng-disabled="locker" ng-model="model.default_value" id="Element_Form_value_input" type="text" class="form-control" aria-describedby="Element_Form_value_label"></input>
+                    </div>
+                    <!--Source de donnees-->
+                    <label for="Element_Form_Datasource_Select" id="Element_Form_Datasource_label" class="control-label">{{::ctrl.text.Component.Select.Datasource}}</label>
+                    <div class="row">                        
+                        <div class="col-sm-8" ng-show="Utils.keys(datasources).length > 0">
+                            <select class="form-control element-margin"
+                                    ng-disabled="locker" 
+                                    ng-model="model.datasource.datasource_id"
+                                    ng-options="key as value.name for (key, value) in datasources">
+                            </select>
+                        </div>
+                        <div class="col-sm-4">
+                            <i data-app-helper-icon class="icon icon-info" data-text="{{::ctrl.text.Component.Select.DatasourceManagementTitle}}"></i>
+                        </div>
+                    </div>
+                    <!--Parametres-->
+                    <div ng-show="model.datasource.datasource_id.length > 0">
+                        <div ng-show="datasources[model.datasource.datasource_id].type === 'web_service' || (datasources[model.datasource.datasource_id].type === 'object' && datasources[model.datasource.datasource_id].options === 'undefined')">
+                            <div class="row">
+                                <div class="col-sm-10">
+                                    <!--Label-->
+                                    <div class="input-group element-margin input-group-xs">
+                                        <span class="input-group-addon" id="Element_Form_WS_Column_label">{{::ctrl.text.Component.Select.Webservice_Label}}</span>
+                                        <!--Si aWebServiceAttributs est complet-->
+                                        <select class="form-control element-margin"
+                                                ng-if="aWebServiceAttributs.length > 0"
+                                                ng-disabled="locker" 
+                                                ng-model="model.datasource.label_key"
+                                                ng-change="ctrl.updateDatasourceInfos(this)">
+                                            <option ng-repeat="attribute in aWebServiceAttributs" ng-value="attribute">{{attribute}}</option>
+                                        </select>
+                                        <!--Sinon-->
+                                        <input  id="Element_Form_WS_Label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Select.Webservice_Label_PH}}" aria-describedby="Element_Form_WS_Column_label"
+                                                ng-if="aWebServiceAttributs.length === 0"
+                                                ng-disabled="locker" 
+                                                ng-model="model.datasource.label_key" 
+                                                ng-change="ctrl.updateDatasourceInfos(this)">
+                                    </div>
+                                    <!--Key-->
+                                    <div class="input-group element-margin input-group-xs">
+                                        <span class="input-group-addon" id="Element_Form_WS_Column_label">{{::ctrl.text.Component.Select.Webservice_Id}}</span>
+                                        <!--Si aWebServiceAttributs est vide-->
+                                        <select class="form-control element-margin"
+                                                ng-if="aWebServiceAttributs.length > 0"
+                                                ng-disabled="locker" 
+                                                ng-model="model.datasource.id_key"
+                                                ng-change="ctrl.updateDatasourceInfos(this)">
+                                            <option ng-repeat="attribute in aWebServiceAttributs" ng-value="attribute">{{attribute}}</option>
+                                        </select>
+                                        <!--Sinon-->
+                                        <input id="Element_Form_WS_Id_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Select.Webservice_Id_PH}}" aria-describedby="Element_Form_WS_Column_label" 
+                                               ng-if="aWebServiceAttributs.length === 0"
+                                               ng-disabled="locker" 
+                                               ng-model="model.datasource.id_key" 
+                                               ng-change="ctrl.updateDatasourceInfos(this)">
+                                    </div>
+                                </div>
+                                <div class="col-sm-2 padding-sides-0" style="width:25px">
+                                    <br>
+                                    <button type="button" 
+                                            class="btn btn-info btn-sm form-control" 
+                                            ng-click="ctrl.updateWebServiceAttributs(datasources[model.datasource.datasource_id])"
+                                            ng-disabled="locker">
+                                        <span class="icon-refresh"></span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--Parametres avances Web service-->
+                        <div class="checkbox checkbox_margin" 
+                             ng-show="datasources[model.datasource.datasource_id].type === 'web_service'">
+                            <input type="checkbox" name="Element_Form_Advanced_input" id="Element_Form_Advanced_input" ng-model="advanced">
+                            <label for="Element_Form_Advanced_input" id="Element_Form_Advanced_label" class="control-label">{{::ctrl.text.Component.Select.Advanced}}</label>
+                        </div>
+                        <div ng-show="advanced">
+                            <!--attributs-->
+                            <div class="input-group element-margin input-group-xs">
+                                <span class="input-group-addon">attributs <i data-app-helper-icon class="icon icon-info" data-text="{{::ctrl.text.Component.Select.AttrHelp}}"></i> </span>
+                                <input type="text" class="form-control" aria-describedby="Element_Form_WS_Column_label"
+                                       ng-disabled="locker" 
+                                       ng-model="model.datasource.attributs"
+                                       required>
+                            </div>
+                            <!--distinct-->
+                            <div class="input-group element-margin input-group-xs">
+                                <span class="input-group-addon">distinct</span>
+                                <select class="form-control" aria-describedby="Element_Form_WS_Column_label"
+                                        ng-disabled="locker" 
+                                        ng-model="model.datasource.distinct"
+                                        required>
+                                    <option value="true" label="true">true</option>
+                                    <option value="false" label="false">false</option>
+                                </select>
+                            </div>
+                            <!--order_by-->
+                            <div class="input-group element-margin input-group-xs">
+                                <span class="input-group-addon">order_by</span>
+                                <input type="text" class="form-control" aria-describedby="Element_Form_WS_Column_label"
+                                       ng-disabled="locker" 
+                                       ng-model="model.datasource.order_by"
+                                       required>
+                            </div>
+                            <!--sort_order-->
+                            <div class="input-group element-margin input-group-xs">
+                                <span class="input-group-addon">sort_order</span>
+                                <select class="form-control" aria-describedby="Element_Form_WS_Column_label"
+                                        ng-disabled="locker" 
+                                        ng-model="model.datasource.sort_order"
+                                        required>
+                                    <option value="ASC" label="ASC">ASC</option>
+                                    <option value="DESC" label="DESC">DESC</option>
+                                </select>
+                            </div>
+                            <!--filter-->
+                            <div class="input-group element-margin input-group-xs">
+                                <span class="input-group-addon">filter <i data-app-helper-icon class="icon icon-info" data-text="{{::ctrl.text.Component.Select.FilterHelp}}"></i></span>
+                                <input type="text" class="form-control" aria-describedby="Element_Form_WS_Column_label"
+                                       ng-disabled="locker" 
+                                       ng-model="model.datasource.filter"
+                                       required>
+                            </div>
+                        </div>
+                    </div>
+                    <!--Options-->
+                    <div id="div_slider_Form">
+                        <label id="label_slider_Element_size" for="slider_Element_size">{{::ctrl.text.Component.General.Width}}</label>
+                        <input ng-disabled="locker" data-app-param-element id="slider_Element_size" data-slider-id='slider_Element_size' type="text" data-slider-min="0" data-slider-max="12" data-slider-step="1" data-slider-value="6" required>
+                    </div>
+                    <div class="checkbox checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_required_input" id="Element_Form_required_input" ng-model="model.required" ng-disabled="cascade">
+                        <label for="Element_Form_required_input" id="Element_Form_required_label" class="control-label">{{::ctrl.text.Component.General.Required}}</label>
+                    </div>
+                    <!--Cascade-->
+                    <div ng-show="datasources[model.datasource.datasource_id].type === 'web_service'">
+                        <div ng-show="model.datasource !== undefined" class="checkbox checkbox_margin">
+                            <input id="Element_Form_Parent_input" 
+                                   type="checkbox" 
+                                   name="Element_Form_Parent_input" 
+                                   ng-model="$parent.cascade" 
+                                   ng-change="ctrl.updateCascadeField()" 
+                                   ng-disabled="locker">
+                            <label for="Element_Form_Parent_input" id="Element_Form_Parent_label" class="control-label">{{::ctrl.text.Component.Select.Cascade}}</label>
+                        </div>
+                        <div ng-show="$parent.cascade" id="options_cascade_fields">
+                            <div class="input-group element-margin input-group-xs">
+                                <span class="input-group-addon" id="Element_Form_parents_label">{{::ctrl.text.Component.Select.Parents}}</span>
+                                <select id="Element_Form_parent_input" 
+                                        class="form-control element-margin"
+                                        ng-disabled="locker" 
+                                        ng-model="$parent.aParents" 
+                                        ng-change="ctrl.updateCascadeField()" 
+                                        ng-options="value for value in AllSelects track by value"
+                                        multiple></select>
+                            </div>
+                            <div ng-repeat="parent in aParents">
+                                <label class="control-label">{{parent}}: </label>
+                                <!--Filter attr-->
+                                <div class="input-group element-margin input-group-xs">
+                                    <span class="input-group-addon">{{::ctrl.text.Component.Select.Filter_attr}}</span>
+                                    <input  type="text" class="form-control element-margin" ng-model="model.datasource.parents[$index].filter_attr">
+                                </div>
+                                <!--Filter equality-->
+                                <div class="input-group element-margin input-group-xs">
+                                    <span class="input-group-addon">{{::ctrl.text.Component.Select.Filter_equality}}</span>
+                                    <input  type="text" class="form-control element-margin" ng-model="model.datasource.parents[$index].filter_equality">
+                                </div>
+                                <!--Wait for parent-->
+                                <div class="checkbox checkbox_margin">
+                                    <input type="checkbox" name="Element_Form_parent_wait_{{$index}}" id="Element_Form_parent_wait_{{$index}}" ng-model="model.datasource.parents[$index].wait_for_parent">
+                                    <label for="Element_Form_parent_wait_{{$index}}" id="Element_Form_parent_wait_label{{$index}}" class="control-label">{{::ctrl.text.Component.Select.Wait_For_Parent}}</label>
+                                </div>
+                            </div>    
+                        </div>
+                    </div>
+                </div>  
+                <!-- List -->
+                <div ng-switch-when="list">
+                    <!--Etiquette/nom-->
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_label_label">{{::ctrl.text.Component.General.Label}}</span>
+                        <input ng-disabled="locker" ng-model="model.label" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Select.Label_PH}}" aria-describedby="Element_Form_label_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span ng-if="ctrl.applicationName !== 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name}}</span>
+                        <span ng-if="ctrl.applicationName === 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name_GTF}}</span>
+                        <input ng-disabled="locker" ng-model="model.name" id="Element_Form_name_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Select.Name_PH}}" aria-describedby="Element_Form_name_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_value_label">{{::ctrl.text.Component.General.Value}}</span>
+                        <input ng-disabled="locker" ng-model="model.default_value" id="Element_Form_value_input" type="text" class="form-control" aria-describedby="Element_Form_value_label"></input>
+                    </div>
+                    <!--Source de donnees-->
+                    <label for="Element_Form_Datasource_Select" id="Element_Form_Datasource_label" class="control-label">{{::ctrl.text.Component.Select.Datasource}}</label>
+                    <div class="row">
+                        <div class="col-sm-8" ng-show="Utils.keys(datasources).length > 0">
+                            <select class="form-control element-margin"
+                                    ng-disabled="locker" 
+                                    ng-model="model.datasource.datasource_id"
+                                    ng-options="key as value.name for (key, value) in datasources">
+                            </select>
+                        </div>
+                        <div class="col-sm-4">
+                            <i data-app-helper-icon class="icon icon-info" data-text="{{::ctrl.text.Component.Select.DatasourceManagementTitle}}"></i>
+                        </div>
+                    </div>
+                    <!--Parametres-->
+                    <div ng-show="model.datasource.datasource_id.length > 0">
+                        <div ng-show="datasources[model.datasource.datasource_id].type === 'web_service' || (datasources[model.datasource.datasource_id].type === 'object' && datasources[model.datasource.datasource_id].options === 'undefined')">
+
+                            <div class="row">
+                                <div class="col-sm-10">
+                                    <!--Key-->
+                                    <div class="input-group element-margin input-group-xs">
+                                        <span class="input-group-addon" id="Element_Form_WS_Column_label">{{::ctrl.text.Component.Select.Webservice_Id}}</span>
+                                        <!--Si aWebServiceAttributs est vide-->
+                                        <select class="form-control element-margin"
+                                                ng-if="aWebServiceAttributs.length > 0"
+                                                ng-disabled="locker" 
+                                                ng-model="model.datasource.id_key"
+                                                ng-change="ctrl.updateDatasourceInfos(this)">
+                                            <option ng-repeat="attribute in aWebServiceAttributs" ng-value="attribute">{{attribute}}</option>
+                                        </select>
+                                        <!--Sinon-->
+                                        <input id="Element_Form_WS_Id_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Select.Webservice_Id_PH}}" aria-describedby="Element_Form_WS_Column_label" 
+                                               ng-if="aWebServiceAttributs.length === 0"
+                                               ng-disabled="locker" 
+                                               ng-model="model.datasource.id_key" 
+                                               ng-change="ctrl.updateDatasourceInfos(this)">
+                                    </div>
+                                    <!--Value-->
+                                    <div class="input-group element-margin input-group-xs">
+                                        <span class="input-group-addon" id="Element_Form_WS_Column_label">{{::ctrl.text.Component.Select.Webservice_Label}}</span>
+                                        <!--Si aWebServiceAttributs est complet-->
+                                        <select class="form-control element-margin"
+                                                ng-if="aWebServiceAttributs.length > 0"
+                                                ng-disabled="locker" 
+                                                ng-model="model.datasource.label_key"
+                                                ng-change="ctrl.updateDatasourceInfos(this)">
+                                            <option ng-repeat="attribute in aWebServiceAttributs" ng-value="attribute">{{attribute}}</option>
+                                        </select>
+                                        <!--Sinon-->
+                                        <input  id="Element_Form_WS_Label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Select.Webservice_Label_PH}}" aria-describedby="Element_Form_WS_Column_label"
+                                                ng-if="aWebServiceAttributs.length === 0"
+                                                ng-disabled="locker" 
+                                                ng-model="model.datasource.label_key" 
+                                                ng-change="ctrl.updateDatasourceInfos(this)">
+                                    </div>
+                                </div>
+                                <div class="col-sm-2 padding-sides-0" style="width:25px">
+                                    <br>
+                                    <button type="button" 
+                                            class="btn btn-info btn-sm form-control" 
+                                            ng-click="ctrl.updateWebServiceAttributs(datasources[model.datasource.datasource_id])"
+                                            ng-disabled="locker">
+                                        <span class="icon-refresh"></span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--Parametres avances Web service-->
+                        <div class="checkbox checkbox_margin" 
+                             ng-show="datasources[model.datasource.datasource_id].type === 'web_service'">
+                            <input type="checkbox" name="Element_Form_Advanced_input" id="Element_Form_Advanced_input" ng-model="advanced">
+                            <label for="Element_Form_Advanced_input" id="Element_Form_Advanced_label" class="control-label">{{::ctrl.text.Component.Select.Advanced}}</label>
+                        </div>
+                        <div ng-show="advanced">
+                            <!--attributs-->
+                            <div class="input-group element-margin input-group-xs">
+                                <span class="input-group-addon">attributs <i data-app-helper-icon class="icon icon-info" data-text="{{::ctrl.text.Component.Select.AttrHelp}}"></i></span>
+                                <input type="text" class="form-control" aria-describedby="Element_Form_WS_Column_label"
+                                       ng-disabled="locker" 
+                                       ng-model="model.datasource.attributs"
+                                       required>
+                            </div>
+                            <!--distinct-->
+                            <div class="input-group element-margin input-group-xs">
+                                <span class="input-group-addon">distinct</span>
+                                <select class="form-control" aria-describedby="Element_Form_WS_Column_label"
+                                        ng-disabled="locker" 
+                                        ng-model="model.datasource.distinct"
+                                        required>
+                                    <option value="true" label="true">true</option>
+                                    <option value="false" label="false">false</option>
+                                </select>
+                            </div>
+                            <!--order_by-->
+                            <div class="input-group element-margin input-group-xs">
+                                <span class="input-group-addon">order_by</span>
+                                <input type="text" class="form-control" aria-describedby="Element_Form_WS_Column_label"
+                                       ng-disabled="locker" 
+                                       ng-model="model.datasource.order_by"
+                                       required>
+                            </div>
+                            <!--sort_order-->
+                            <div class="input-group element-margin input-group-xs">
+                                <span class="input-group-addon">sort_order</span>
+                                <select class="form-control" aria-describedby="Element_Form_WS_Column_label"
+                                        ng-disabled="locker" 
+                                        ng-model="model.datasource.sort_order"
+                                        required>
+                                    <option value="ASC" label="ASC">ASC</option>
+                                    <option value="DESC" label="DESC">DESC</option>
+                                </select>
+                            </div>
+                            <!--filter-->
+                            <div class="input-group element-margin input-group-xs">
+                                <span class="input-group-addon">filter <i data-app-helper-icon class="icon icon-info" data-text="{{::ctrl.text.Component.Select.FilterHelp}}"></i></span>
+                                <input type="text" class="form-control" aria-describedby="Element_Form_WS_Column_label"
+                                       ng-disabled="locker" 
+                                       ng-model="model.datasource.filter"
+                                       required>
+                            </div>
+                        </div>
+                    </div>
+                    <!--Options-->
+                    <div id="div_slider_Form">
+                        <label id="label_slider_row_size" for="slider_Element_Row">{{::ctrl.text.Component.Double_Select.Size}}</label>
+                        <input ng-disabled="locker" data-app-param-element id="slider_Element_Row" data-slider-id='slider_Element_Row' type="text" data-slider-min="0" data-slider-max="12" data-slider-step="1" data-slider-value="3" required>
+                    </div>
+                    <div id="div_slider_Form">
+                        <label id="label_slider_Element_size" for="slider_Element_size">{{::ctrl.text.Component.General.Width}}</label>
+                        <input ng-disabled="locker" data-app-param-element id="slider_Element_size" data-slider-id='slider_Element_size' type="text" data-slider-min="0" data-slider-max="12" data-slider-step="1" data-slider-value="6" required>
+                    </div>
+                    <div class="checkbox checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_required_input" id="Element_Form_required_input" ng-model="model.required" ng-disabled="cascade">
+                        <label for="Element_Form_required_input" id="Element_Form_required_label" class="control-label">{{::ctrl.text.Component.General.Required}}</label>
+                    </div>
+                    <!--Cascade-->
+                    <div ng-show="datasources[model.datasource.datasource_id].type === 'web_service'">
+                        <div ng-show="model.datasource !== undefined" class="checkbox checkbox_margin">
+                            <input id="Element_Form_Parent_input" 
+                                   type="checkbox" 
+                                   name="Element_Form_Parent_input" 
+                                   ng-model="$parent.cascade" 
+                                   ng-change="ctrl.updateCascadeField()" 
+                                   ng-disabled="locker">
+                            <label for="Element_Form_Parent_input" id="Element_Form_Parent_label" class="control-label">{{::ctrl.text.Component.Select.Cascade}}</label>
+                        </div>
+                        <div ng-show="$parent.cascade" id="options_cascade_fields">
+                            <div class="input-group element-margin input-group-xs">
+                                <span class="input-group-addon" id="Element_Form_parents_label">{{::ctrl.text.Component.Select.Parents}}</span>
+                                <select id="Element_Form_parent_input" 
+                                        class="form-control element-margin"
+                                        ng-disabled="locker" 
+                                        ng-model="$parent.aParents" 
+                                        ng-change="ctrl.updateCascadeField()" 
+                                        ng-options="value for value in AllSelects track by value"
+                                        multiple></select>
+                            </div>
+                            <div ng-repeat="parent in aParents">
+                                <label class="control-label">{{parent}}: </label>
+                                <!--Filter attr-->
+                                <div class="input-group element-margin input-group-xs">
+                                    <span class="input-group-addon">{{::ctrl.text.Component.Select.Filter_attr}}</span>
+                                    <input  type="text" class="form-control element-margin" ng-model="model.datasource.parents[$index].filter_attr"></input>
+                                </div>
+                                <!--Filter equality-->
+                                <div class="input-group element-margin input-group-xs">
+                                    <span class="input-group-addon">{{::ctrl.text.Component.Select.Filter_equality}}</span>
+                                    <input  type="text" class="form-control element-margin" ng-model="model.datasource.parents[$index].filter_equality"></input>
+                                </div>
+                                <!--Wait for parent-->
+                                <div class="checkbox checkbox_margin">
+                                    <input type="checkbox" name="Element_Form_parent_wait_{{$index}}" id="Element_Form_parent_wait_{{$index}}" ng-model="model.datasource.parents[$index].wait_for_parent">
+                                    <label for="Element_Form_parent_wait_{{$index}}" id="Element_Form_parent_wait_label{{$index}}" class="control-label">{{::ctrl.text.Component.Select.Wait_For_Parent}}</label>
+                                </div>
+                            </div>    
+                        </div>
+                    </div>
+                </div>
+                <!-- Select double -->
+                <div ng-switch-when="double_select" class="double-select">
+                    <!--Etiquette/nom-->
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_label_label">{{::ctrl.text.Component.General.Label}}</span>
+                        <input ng-disabled="locker" ng-model="model.label" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Select.Label_PH}}" aria-describedby="Element_Form_label_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span ng-if="ctrl.applicationName !== 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name}}</span>
+                        <span ng-if="ctrl.applicationName === 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name_GTF}}</span>
+                        <input id="Element_Form_name_input" 
+                               type="text" class="form-control"
+                               placeholder="{{::ctrl.text.Component.Select.Name_PH}}" 
+                               aria-describedby="Element_Form_name_label" 
+                               ng-disabled="locker" 
+                               ng-model="model.name" 
+                               required>
+                    </div>
+                    <hr>
+                    <!--Hauteur-->
+                    <div id="div_slider_Form">
+                        <label id="label_slider_row_size" for="slider_Element_Row">{{::ctrl.text.Component.Double_Select.Size}}</label>
+                        <input ng-disabled="locker" data-app-param-element id="slider_Element_Row" data-slider-id='slider_Element_Row' type="text" data-slider-min="0" data-slider-max="12" data-slider-step="1" data-slider-value="3" required>
+                    </div>
+                    <!--Source de donnees-->
+                    <label for="Element_Form_Datasource_Select" id="Element_Form_Datasource_label" class="control-label">{{::ctrl.text.Component.Select.Datasource}}</label>
+                    <div class="row">
+                        <div class="col-sm-8" ng-show="Utils.keys(datasources).length > 0">
+                            <select class="form-control element-margin"
+                                    ng-disabled="locker" 
+                                    ng-model="model.datasource.datasource_id"
+                                    ng-options="key as value.name for (key, value) in datasources">
+                            </select>
+                        </div>
+                        <div class="col-sm-4">
+                            <i data-app-helper-icon class="icon icon-info" data-text="{{::ctrl.text.Component.Select.DatasourceManagementTitle}}"></i>
+                        </div>
+                    </div>
+                    <!--Parametres avancés-->
+                    <div ng-show="model.datasource.datasource_id.length > 0">
+
+                        <div ng-show="datasources[model.datasource.datasource_id].type === 'web_service' || (datasources[model.datasource.datasource_id].type === 'object' && datasources[model.datasource.datasource_id].options === 'undefined')">
+
+                            <div class="row">
+                                <div class="col-sm-10">
+                                    <!--Key-->
+                                    <div class="input-group element-margin input-group-xs">
+                                        <span class="input-group-addon" id="Element_Form_WS_Column_label">{{::ctrl.text.Component.Select.Webservice_Id}}</span>
+                                        <!--Si aWebServiceAttributs est vide-->
+                                        <select class="form-control element-margin"
+                                                ng-if="aWebServiceAttributs.length > 0"
+                                                ng-disabled="locker" 
+                                                ng-model="model.datasource.id_key"
+                                                ng-change="ctrl.updateDatasourceInfos(this)">
+                                            <option ng-repeat="attribute in aWebServiceAttributs" ng-value="attribute">{{attribute}}</option>
+                                        </select>
+                                        <!--Sinon-->
+                                        <input id="Element_Form_WS_Id_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Select.Webservice_Id_PH}}" aria-describedby="Element_Form_WS_Column_label" 
+                                               ng-if="aWebServiceAttributs.length === 0"
+                                               ng-disabled="locker" 
+                                               ng-model="model.datasource.id_key" 
+                                               ng-change="ctrl.updateDatasourceInfos(this)">
+                                    </div>
+                                    <!--Value-->
+                                    <div class="input-group element-margin input-group-xs">
+                                        <span class="input-group-addon" id="Element_Form_WS_Column_label">{{::ctrl.text.Component.Select.Webservice_Label}}</span>
+                                        <!--Si aWebServiceAttributs est complet-->
+                                        <select class="form-control element-margin"
+                                                ng-if="aWebServiceAttributs.length > 0"
+                                                ng-disabled="locker" 
+                                                ng-model="model.datasource.label_key"
+                                                ng-change="ctrl.updateDatasourceInfos(this)">
+                                            <option ng-repeat="attribute in aWebServiceAttributs" ng-value="attribute">{{attribute}}</option>
+                                        </select>
+                                        <!--Sinon-->
+                                        <input  id="Element_Form_WS_Label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Select.Webservice_Label_PH}}" aria-describedby="Element_Form_WS_Column_label"
+                                                ng-if="aWebServiceAttributs.length === 0"
+                                                ng-disabled="locker" 
+                                                ng-model="model.datasource.label_key" 
+                                                ng-change="ctrl.updateDatasourceInfos(this)">
+                                    </div>
+                                </div>
+                                <div class="col-sm-2 padding-sides-0" style="width:25px">
+                                    <br>
+                                    <button type="button" 
+                                            class="btn btn-info btn-sm form-control" 
+                                            ng-click="ctrl.updateWebServiceAttributs(datasources[model.datasource.datasource_id])"
+                                            ng-disabled="locker">
+                                        <span class="icon-refresh"></span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--Parametres avances Web service-->
+                        <div class="checkbox checkbox_margin" 
+                             ng-show="datasources[model.datasource.datasource_id].type === 'web_service'">
+                            <input type="checkbox" name="Element_Form_Advanced_input" id="Element_Form_Advanced_input" ng-model="advanced">
+                            <label for="Element_Form_Advanced_input" id="Element_Form_Advanced_label" class="control-label">{{::ctrl.text.Component.Select.Advanced}}</label>
+                        </div>
+                        <div ng-show="advanced">
+                            <!--attributs-->
+                            <div class="input-group element-margin input-group-xs">
+                                <span class="input-group-addon">attributs <i data-app-helper-icon class="icon icon-info" data-text="{{::ctrl.text.Component.Select.AttrHelp}}"></i></span>
+                                <input type="text" class="form-control" aria-describedby="Element_Form_WS_Column_label"
+                                       ng-disabled="locker" 
+                                       ng-model="model.datasource.attributs"
+                                       required>
+                            </div>
+                            <!--distinct-->
+                            <div class="input-group element-margin input-group-xs">
+                                <span class="input-group-addon">distinct</span>
+                                <select class="form-control" aria-describedby="Element_Form_WS_Column_label"
+                                        ng-disabled="locker" 
+                                        ng-model="model.datasource.distinct"
+                                        required>
+                                    <option value="true" label="true">true</option>
+                                    <option value="false" label="false">false</option>
+                                </select>
+                            </div>
+                            <!--order_by-->
+                            <div class="input-group element-margin input-group-xs">
+                                <span class="input-group-addon">order_by</span>
+                                <input type="text" class="form-control" aria-describedby="Element_Form_WS_Column_label"
+                                       ng-disabled="locker" 
+                                       ng-model="model.datasource.order_by"
+                                       required>
+                            </div>
+                            <!--sort_order-->
+                            <div class="input-group element-margin input-group-xs">
+                                <span class="input-group-addon">sort_order</span>
+                                <select class="form-control" aria-describedby="Element_Form_WS_Column_label"
+                                        ng-disabled="locker" 
+                                        ng-model="model.datasource.sort_order"
+                                        required>
+                                    <option value="ASC" label="ASC">ASC</option>
+                                    <option value="DESC" label="DESC">DESC</option>
+                                </select>
+                            </div>
+                            <!--filter-->
+                            <div class="input-group element-margin input-group-xs">
+                                <span class="input-group-addon">filter <i data-app-helper-icon class="icon icon-info" data-text="{{::ctrl.text.Component.Select.FilterHelp}}"></i></span>
+                                <input type="text" class="form-control" aria-describedby="Element_Form_WS_Column_label"
+                                       ng-disabled="locker" 
+                                       ng-model="model.datasource.filter"
+                                       required>
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                    <!--Etiquette from/to-->
+                    <label id="label_slider_Element_size">{{::ctrl.text.Component.Double_Select.From}}</label>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_label_label">{{::ctrl.text.Component.General.Label}}</span>
+                        <input ng-disabled="locker" ng-model="model.label_from" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Select.Label_PH}}" aria-describedby="Element_Form_label_label" required>
+                    </div>
+                    <label id="label_slider_Element_size">{{::ctrl.text.Component.Double_Select.To}}</label>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_label_label">{{::ctrl.text.Component.General.Label}}</span>
+                        <input ng-disabled="locker" ng-model="model.label_to" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Select.Label_PH}}" aria-describedby="Element_Form_label_label" required>
+                    </div>
+                    <hr>
+                    <!--Options-->
+                    <div id="div_slider_Form">
+                        <label id="label_slider_Element_size" for="slider_Element_size">{{::ctrl.text.Component.General.Width}}</label>
+                        <input ng-disabled="locker" data-app-param-element id="slider_Element_size" data-slider-id='slider_Element_size' type="text" data-slider-min="0" data-slider-max="12" data-slider-step="1" data-slider-value="6" required>
+                    </div>
+                    <div class="checkbox checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_required_input" id="Element_Form_required_input" ng-model="model.required">
+                        <label for="Element_Form_required_input" id="Element_Form_required_label" class="control-label">{{::ctrl.text.Component.General.Required}}</label>
+                    </div>
+                    <!--Cascade-->
+                    <div ng-show="datasources[model.datasource.datasource_id].type === 'web_service'">
+                        <div ng-show="model.datasource !== undefined" class="checkbox checkbox_margin">
+                            <input id="Element_Form_Parent_input" 
+                                   type="checkbox" 
+                                   name="Element_Form_Parent_input" 
+                                   ng-model="$parent.cascade" 
+                                   ng-change="ctrl.updateCascadeField()" 
+                                   ng-disabled="locker">
+                            <label for="Element_Form_Parent_input" id="Element_Form_Parent_label" class="control-label">{{::ctrl.text.Component.Select.Cascade}}</label>
+                        </div>
+                        <div ng-show="$parent.cascade" id="options_cascade_fields">
+                            <div class="input-group element-margin input-group-xs">
+                                <span class="input-group-addon" id="Element_Form_parents_label">{{::ctrl.text.Component.Select.Parents}}</span>
+                                <select id="Element_Form_parent_input" 
+                                        class="form-control element-margin"
+                                        ng-disabled="locker" 
+                                        ng-model="$parent.aParents" 
+                                        ng-change="ctrl.updateCascadeField()" 
+                                        ng-options="value for value in AllSelects track by value"
+                                        multiple></select>
+                            </div>
+                            <div ng-repeat="parent in aParents">
+                                <label class="control-label">{{parent}}: </label>
+                                <!--Filter attr-->
+                                <div class="input-group element-margin input-group-xs">
+                                    <span class="input-group-addon">{{::ctrl.text.Component.Select.Filter_attr}}</span>
+                                    <input  type="text" class="form-control element-margin" ng-model="model.datasource.parents[$index].filter_attr">
+                                </div>
+                                <!--Filter equality-->
+                                <div class="input-group element-margin input-group-xs">
+                                    <span class="input-group-addon">{{::ctrl.text.Component.Select.Filter_equality}}</span>
+                                    <input  type="text" class="form-control element-margin" ng-model="model.datasource.parents[$index].filter_equality">
+                                </div>
+                                <!--Wait for parent-->
+                                <div class="checkbox checkbox_margin">
+                                    <input type="checkbox" name="Element_Form_parent_wait_{{$index}}" id="Element_Form_parent_wait_{{$index}}" ng-model="model.datasource.parents[$index].wait_for_parent">
+                                    <label for="Element_Form_parent_wait_{{$index}}" id="Element_Form_parent_wait_label{{$index}}" class="control-label">{{::ctrl.text.Component.Select.Wait_For_Parent}}</label>
+                                </div>
+                            </div>    
+                        </div>
+                    </div>
+                </div>
+                <!-- Calendrier -->
+                <div ng-switch-when="date">
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_label_label">{{::ctrl.text.Component.General.Label}}</span>
+                        <input ng-disabled="locker" ng-model="model.label" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Date.Label_PH}}" aria-describedby="Element_Form_label_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span ng-if="ctrl.applicationName !== 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name}}</span>
+                        <span ng-if="ctrl.applicationName === 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name_GTF}}</span>
+                        <input ng-disabled="locker" ng-model="model.name" id="Element_Form_name_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Date.Name_PH}}" aria-describedby="Element_Form_name_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_value_label">{{::ctrl.text.Component.General.Value}}</span>
+                        <input ng-disabled="locker" ng-model="model.default_value" id="Element_Form_value_input" type="text" class="form-control" aria-describedby="Element_Form_value_label"></input>
+                    </div>
+                    <div id="div_slider_Form">
+                        <label id="label_slider_Element_size" for="slider_Element_size">{{::ctrl.text.Component.General.Width}}</label>
+                        <input ng-disabled="locker" data-app-param-element id="slider_Element_size" data-slider-id='slider_Element_size' type="text" data-slider-min="0" data-slider-max="12" data-slider-step="1" data-slider-value="6" required>
+                    </div>
+                    <div class="checkbox checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_required_input" id="Element_Form_required_input" ng-model="model.required">
+                        <label for="Element_Form_required_input" id="Element_Form_required_label" class="control-label">{{::ctrl.text.Component.General.Required}}</label>
+                    </div>
+                </div>  
+                <div ng-switch-when="datetime">
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_label_label">{{::ctrl.text.Component.General.Label}}</span>
+                        <input ng-disabled="locker" ng-model="model.label" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Date.Label_PH}}" aria-describedby="Element_Form_label_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span ng-if="ctrl.applicationName !== 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name}}</span>
+                        <span ng-if="ctrl.applicationName === 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name_GTF}}</span>
+                        <input ng-disabled="locker" ng-model="model.name" id="Element_Form_name_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Date.Name_PH}}" aria-describedby="Element_Form_name_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_value_label">{{::ctrl.text.Component.General.Value}}</span>
+                        <input ng-disabled="locker" ng-model="model.default_value" id="Element_Form_value_input" type="text" class="form-control" aria-describedby="Element_Form_value_label"></input>
+                    </div>
+                    <div id="div_slider_Form">
+                        <label id="label_slider_Element_size" for="slider_Element_size">{{::ctrl.text.Component.General.Width}}</label>
+                        <input ng-disabled="locker" data-app-param-element id="slider_Element_size" data-slider-id='slider_Element_size' type="text" data-slider-min="0" data-slider-max="12" data-slider-step="1" data-slider-value="6" required>
+                    </div>
+                    <div class="checkbox checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_required_input" id="Element_Form_required_input" ng-model="model.required">
+                        <label for="Element_Form_required_input" id="Element_Form_required_label" class="control-label">{{::ctrl.text.Component.General.Required}}</label>
+                    </div>
+                </div>  
+                <!-- Upload -->
+                <div ng-switch-when="upload">
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_label_label">{{::ctrl.text.Component.General.Label}}</span>
+                        <input ng-disabled="locker" ng-model="model.label" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Upload.Label_PH}}" aria-describedby="Element_Form_label_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span ng-if="ctrl.applicationName !== 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name}}</span>
+                        <span ng-if="ctrl.applicationName === 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name_GTF}}</span>
+                        <input ng-disabled="locker" ng-model="model.name" id="Element_Form_name_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Upload.Name_PH}}" aria-describedby="Element_Form_name_label" required>
+                    </div>
+                    <div id="div_slider_Form">
+                        <label id="label_slider_Element_size" for="slider_Element_size">{{::ctrl.text.Component.General.Width}}</label>
+                        <input ng-disabled="locker" data-app-param-element id="slider_Element_size" data-slider-id='slider_Element_size' type="text" data-slider-min="0" data-slider-max="12" data-slider-step="1" data-slider-value="6" required>
+                    </div>
+                    <div class="checkbox checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_required_input" id="Element_Form_required_input" ng-model="model.required">
+                        <label for="Element_Form_required_input" id="Element_Form_required_label" class="control-label">{{::ctrl.text.Component.General.Required}}</label>
+                    </div>
+                    <div class="checkbox checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_Advance_input" id="Element_Form_Advance_input" ng-model="advanceOptions">
+                        <label for="Element_Form_Advance_input" id="Element_Form_Advance_label" class="control-label">{{::ctrl.text.Component.Upload.Advance}}</label>
+                    </div>
+                    <div id="advance_options" ng-show="advanceOptions">
+                        <div class="checkbox checkbox_margin">
+                            <input ng-disabled="locker" type="checkbox" name="Element_Form_showPreview_input" id="Element_Form_showPreview_input" ng-model="model.options.showPreview">
+                            <label for="Element_Form_showPreview_input" id="Element_Form_showPreview_label" class="control-label">{{::ctrl.text.Component.Upload.ShowPreview}}</label>
+                        </div>
+                        <div class="checkbox checkbox_margin">
+                            <input ng-disabled="locker" type="checkbox" name="Element_Form_showRemove_input" id="Element_Form_showRemove_input" ng-model="model.options.showRemove">
+                            <label for="Element_Form_showRemove_input" id="Element_Form_showRemove_label" class="control-label">{{::ctrl.text.Component.Upload.ShowRemove}}</label>
+                        </div>
+                        <div class="input-group element-margin input-group-xs hidden">
+                            <span class="input-group-addon" id="Element_Form_label_label">{{::ctrl.text.Component.Upload.Ext}}</span>
+                            <select ng-disabled="locker" ng-model="model.options.allowedFileExtensions" id="Element_Form_label_input" type="text" class="form-control" aria-describedby="Element_Form_label_label" multiple required>
+                                <option value="xml">XML</option>
+                                <option value="fmw">FMW</option>
+                                <option value="json">JSON</option>
+                                <option value="txt">Text</option>
+                                <option value="jpg">JPEG</option>
+                                <option value="png">PNG</option>
+                                <option value="py">Python</option>
+                                <option value="tcl">TCL</option>
+                                <option value="zip">ZIP</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <!-- TinyMCE -->
+                <div ng-switch-when="tinymce">
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_label_label">{{::ctrl.text.Component.General.Label}}</span>
+                        <input ng-disabled="locker" ng-model="model.label" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.TinyMce.Label_PH}}" aria-describedby="Element_Form_label_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span ng-if="ctrl.applicationName !== 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name}}</span>
+                        <span ng-if="ctrl.applicationName === 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name_GTF}}</span>
+                        <input ng-disabled="locker" ng-model="model.name" id="Element_Form_name_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.TinyMce.Name_PH}}" aria-describedby="Element_Form_name_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_rows_label">{{::ctrl.text.Component.TinyMce.Row}}</span>
+                        <input ng-disabled="locker" ng-model="model.nb_rows" id="Element_Form_rows_input" type="number" min="0" class="form-control" placeholder="{{::ctrl.text.Component.TinyMce.Row_PH}}" aria-describedby="Element_Form_rows_label">
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_value_label">{{::ctrl.text.Component.General.Value}}</span>
+                        <textarea ng-disabled="locker" ng-model="model.default_value" id="Element_Form_value_input" type="text" class="form-control" aria-describedby="Element_Form_value_label" rows="3"></textarea>
+                    </div>
+                    <div class="checkbox checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_required_input" id="Element_Form_required_input" ng-model="model.required">
+                        <label for="Element_Form_required_input" id="Element_Form_required_label" class="control-label">{{::ctrl.text.Component.General.Required}}</label>
+                    </div>
+                </div>  
+                <!-- CodeMirror -->
+                <div ng-switch-when="codemirror">
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_label_label">{{::ctrl.text.Component.General.Label}}</span>
+                        <input ng-disabled="locker" ng-model="model.label" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.CodeMirror.Label}}" aria-describedby="Element_Form_label_label" required>
+                    </div>
+                    <div class="checkbox checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_required_input" id="Element_Form_required_input" ng-model="model.required">
+                        <label for="Element_Form_required_input" id="Element_Form_required_label" class="control-label">{{::ctrl.text.Component.General.Required}}</label>
+                    </div>
+                </div>
+                <!-- ColorPicker -->
+                <div ng-switch-when="color_picker">
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_label_label">{{::ctrl.text.Component.General.Label}}</span>
+                        <input ng-disabled="locker" ng-model="model.label" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.ColorPicker.Label_PH}}" aria-describedby="Element_Form_label_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span ng-if="ctrl.applicationName !== 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name}}</span>
+                        <span ng-if="ctrl.applicationName === 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name_GTF}}</span>
+                        <input ng-disabled="locker" ng-model="model.name" id="Element_Form_name_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.ColorPicker.Name_PH}}" aria-describedby="Element_Form_name_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_value_label">{{::ctrl.text.Component.General.Value}}</span>
+                        <input ng-disabled="locker" ng-model="model.default_value" id="Element_Form_value_input" type="text" class="form-control" aria-describedby="Element_Form_value_label"></input>
+                    </div>
+                    <div id="div_slider_Form">
+                        <label id="label_slider_Element_size" for="slider_Element_size">{{::ctrl.text.Component.General.Width}}</label>
+                        <input ng-disabled="locker" data-app-param-element id="slider_Element_size" data-slider-id='slider_Element_size' type="text" data-slider-min="0" data-slider-max="12" data-slider-step="1" data-slider-value="6" required>
+                    </div>
+                    <div class="checkbox checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_required_input" id="Element_Form_required_input" ng-model="model.required">
+                        <label for="Element_Form_required_input" id="Element_Form_required_label" class="control-label">{{::ctrl.text.Component.General.Required}}</label>
+                    </div>
+                </div>
+                <!-- Hidden -->
+                <div ng-switch-when="hidden">
+                    <div class="input-group element-margin input-group-xs">
+                        <span ng-if="ctrl.applicationName !== 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name}}</span>
+                        <span ng-if="ctrl.applicationName === 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name_GTF}}</span>
+                        <input ng-disabled="locker" ng-model="model.name" id="Element_Form_name_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Hidden.Name_PH}}" aria-describedby="Element_Form_name_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_value_label">{{::ctrl.text.Component.General.Value}}</span>
+                        <textarea ng-disabled="locker" ng-model="model.default_value" id="Element_Form_value_input" type="text" class="form-control" aria-describedby="Element_Form_value_label" rows="3"></textarea>
+                    </div>
+                </div>
+                <!-- Slider -->
+                <div ng-switch-when="slider">
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_label_label">{{::ctrl.text.Component.General.Label}}</span>
+                        <input ng-disabled="locker" ng-model="model.label" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Slider.Label_PH}}" aria-describedby="Element_Form_label_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span ng-if="ctrl.applicationName !== 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name}}</span>
+                        <span ng-if="ctrl.applicationName === 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name_GTF}}</span>
+                        <input ng-disabled="locker" ng-model="model.name" id="Element_Form_name_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Slider.Name_PH}}" aria-describedby="Element_Form_name_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_min_label">{{::ctrl.text.Component.Slider.Minimum}}</span>
+                        <input ng-disabled="locker" ng-model="model.options.min" id="Element_Form_min_input" type="number" class="form-control" placeholder="{{::ctrl.text.Component.Slider.Minimum_PH}}" aria-describedby="Element_Form_min_label">
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_max_label">{{::ctrl.text.Component.Slider.Maximum}}</span>
+                        <input ng-disabled="locker" ng-model="model.options.max" id="Element_Form_max_input" type="number" class="form-control" placeholder="{{::ctrl.text.Component.Slider.Maximum_PH}}" aria-describedby="Element_Form_max_label">
+                    </div>
+                    <!--Doit être compris entre 0 et 20-->
+                    <!--<div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_prec_label">{{::ctrl.text.Component.Slider.Precision}}</span>
+                        <input ng-disabled="locker" ng-model="model.options.precision" id="Element_Form_prec_input" type="number" min="0" class="form-control" placeholder="{{::ctrl.text.Component.Slider.Precision_PH}}" aria-describedby="Element_Form_prec_label">
+                    </div>-->
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_value_label">{{::ctrl.text.Component.General.Value}}</span>
+                        <input ng-disabled="locker" ng-model="model.default_value" id="Element_Form_value_input" type="number" class="form-control" aria-describedby="Element_Form_value_label"></input>
+                    </div>
+                </div>
+                <!-- Text -->
+                <div ng-switch-when="text">
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_label_label">{{::ctrl.text.Component.General.Label}}</span>
+                        <input ng-disabled="locker" ng-model="model.label" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Text.Label_PH}}" aria-describedby="Element_Form_label_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span ng-if="ctrl.applicationName !== 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name}}</span>
+                        <span ng-if="ctrl.applicationName === 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name_GTF}}</span>
+                        <input ng-disabled="locker" ng-model="model.name" id="Element_Form_name_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Text.Name_PH}}" aria-describedby="Element_Form_name_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_pattern_label" ng-attr-title="{{::ctrl.text.Component.Text.Pattern_PH}}">{{::ctrl.text.Component.Text.Pattern}}</span>
+                        <input ng-disabled="locker" ng-model="model.pattern" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Text.Pattern_PH}}" aria-describedby="Element_Form_pattern_label">
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_value_label">{{::ctrl.text.Component.General.Value}}</span>
+                        <textarea ng-disabled="locker" ng-model="model.default_value" id="Element_Form_value_input" type="text" class="form-control" aria-describedby="Element_Form_value_label" rows="3"></textarea>
+                    </div>
+                    <div id="div_slider_Form">
+                        <label id="label_slider_Element_size" for="slider_Element_size">{{::ctrl.text.Component.General.Width}}</label>
+                        <input ng-disabled="locker" data-app-param-element id="slider_Element_size" data-slider-id='slider_Element_size' type="text" data-slider-min="0" data-slider-max="12" data-slider-step="1" data-slider-value="12" required>
+                    </div>
+                    <div class="checkbox checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_required_input" id="Element_Form_required_input" ng-model="model.required">
+                        <label for="Element_Form_required_input" id="Element_Form_required_label" class="control-label">{{::ctrl.text.Component.General.Required}}</label>
+                    </div>
+                </div>
+                <!-- Password -->
+                <div ng-switch-when="password">
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_label_label">{{::ctrl.text.Component.General.Label}}</span>
+                        <input ng-disabled="locker" ng-model="model.label" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Password.Label_PH}}" aria-describedby="Element_Form_label_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span ng-if="ctrl.applicationName !== 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name}}</span>
+                        <span ng-if="ctrl.applicationName === 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name_GTF}}</span>
+                        <input ng-disabled="locker" ng-model="model.name" id="Element_Form_name_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Password.Name_PH}}" aria-describedby="Element_Form_name_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_pattern_label" ng-attr-title="{{::ctrl.text.Component.Text.Pattern_PH}}">{{::ctrl.text.Component.Password.Pattern}}</span>
+                        <input ng-disabled="locker" ng-model="model.pattern" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Password.Pattern_PH}}" aria-describedby="Element_Form_pattern_label">
+                    </div>
+                    <!--<div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_value_label">{{::ctrl.text.Component.General.Value}}</span>
+                        <input ng-disabled="locker" ng-model="model.default_value" id="Element_Form_value_input" type="text" class="form-control" aria-describedby="Element_Form_value_label"></input>
+                    </div>-->
+                    <div id="div_slider_Form">
+                        <label id="label_slider_Element_size" for="slider_Element_size">{{::ctrl.text.Component.General.Width}}</label>
+                        <input ng-disabled="locker" data-app-param-element id="slider_Element_size" data-slider-id='slider_Element_size' type="text" data-slider-min="0" data-slider-max="12" data-slider-step="1" data-slider-value="6" required>
+                    </div>
+                    <div class="checkbox checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_required_input" id="Element_Form_required_input" ng-model="model.required">
+                        <label for="Element_Form_required_input" id="Element_Form_required_label" class="control-label">{{::ctrl.text.Component.General.Required}}</label>
+                    </div>
+                </div>
+                <!-- URL -->
+                <div ng-switch-when="url">
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_label_label">{{::ctrl.text.Component.General.Label}}</span>
+                        <input ng-disabled="locker" ng-model="model.label" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.URL.Label_PH}}" aria-describedby="Element_Form_label_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span ng-if="ctrl.applicationName !== 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name}}</span>
+                        <span ng-if="ctrl.applicationName === 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name_GTF}}</span>
+                        <input ng-disabled="locker" ng-model="model.name" id="Element_Form_name_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.URL.Name_PH}}" aria-describedby="Element_Form_name_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_pattern_label">{{::ctrl.text.Component.Password.Pattern}}</span>
+                        <input ng-disabled="locker" ng-model="model.pattern" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.URL.Pattern_PH}}" aria-describedby="Element_Form_pattern_label">
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_value_label">{{::ctrl.text.Component.General.Value}}</span>
+                        <input ng-disabled="locker" ng-model="model.default_value" id="Element_Form_value_input" type="text" class="form-control" aria-describedby="Element_Form_value_label"></input>
+                    </div>
+                    <div id="div_slider_Form">
+                        <label id="label_slider_Element_size" for="slider_Element_size">{{::ctrl.text.Component.General.Width}}</label>
+                        <input ng-disabled="locker" data-app-param-element id="slider_Element_size" data-slider-id='slider_Element_size' type="text" data-slider-min="0" data-slider-max="12" data-slider-step="1" data-slider-value="6" required>
+                    </div>
+                    <div class="checkbox checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_required_input" id="Element_Form_required_input" ng-model="model.required">
+                        <label for="Element_Form_required_input" id="Element_Form_required_label" class="control-label">{{::ctrl.text.Component.General.Required}}</label>
+                    </div>
+                </div>
+                <!-- Mail -->
+                <div ng-switch-when="email">
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_label_label">{{::ctrl.text.Component.General.Label}}</span>
+                        <input ng-disabled="locker" ng-model="model.label" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.URL.Label_PH}}" aria-describedby="Element_Form_label_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span ng-if="ctrl.applicationName !== 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name}}</span>
+                        <span ng-if="ctrl.applicationName === 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name_GTF}}</span>
+                        <input ng-disabled="locker" ng-model="model.name" id="Element_Form_name_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.URL.Name_PH}}" aria-describedby="Element_Form_name_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_pattern_label" ng-attr-title="{{::ctrl.text.Component.Text.Pattern_PH}}">{{::ctrl.text.Component.Password.Pattern}}</span>
+                        <input ng-disabled="locker" ng-model="model.pattern" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.URL.Pattern_PH}}" aria-describedby="Element_Form_pattern_label">
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_value_label">{{::ctrl.text.Component.General.Value}}</span>
+                        <input ng-disabled="locker" ng-model="model.default_value" id="Element_Form_value_input" type="text" class="form-control" aria-describedby="Element_Form_value_label"></input>
+                    </div>
+                    <div id="div_slider_Form">
+                        <label id="label_slider_Element_size" for="slider_Element_size">{{::ctrl.text.Component.General.Width}}</label>
+                        <input ng-disabled="locker" data-app-param-element id="slider_Element_size" data-slider-id='slider_Element_size' type="text" data-slider-min="0" data-slider-max="12" data-slider-step="1" data-slider-value="6" required>
+                    </div>
+                    <div class="checkbox checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_required_input" id="Element_Form_required_input" ng-model="model.required">
+                        <label for="Element_Form_required_input" id="Element_Form_required_label" class="control-label">{{::ctrl.text.Component.General.Required}}</label>
+                    </div>
+                </div>
+                <!-- Map OSM -->
+                <div ng-switch-when="map_osm">
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_label_label">{{::ctrl.text.Component.General.Label}}</span>
+                        <input ng-disabled="locker" ng-model="model.label" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.URL.Label_PH}}" aria-describedby="Element_Form_label_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span ng-if="ctrl.applicationName !== 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name}}</span>
+                        <span ng-if="ctrl.applicationName === 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name_GTF}}</span>
+                        <input ng-disabled="locker" ng-model="model.name" id="Element_Form_name_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.URL.Name_PH}}" aria-describedby="Element_Form_name_label" required>
+                    </div>
+                    <div id="div_slider_Form">
+                        <label id="label_slider_Element_size" for="slider_Element_size">{{::ctrl.text.Component.General.Width}}</label>
+                        <input ng-disabled="locker" data-app-param-element id="slider_Element_size" data-slider-id='slider_Element_size' type="text" data-slider-min="1" data-slider-max="12" data-slider-step="1" data-slider-value="6" required>
+                    </div>
+                    <div id="div_slider_Form_height">
+                        <label id="label_slider_Element_height" for="slider_Element_height">{{::ctrl.text.Component.General.Height}}</label>
+                        <input ng-disabled="locker" data-app-param-element id="slider_Element_height" data-slider-id='slider_Element_height' type="text" data-slider-min="100" data-slider-max="800" data-slider-step="50" data-slider-value="350" required>
+                    </div>
+                    <div class="checkbox checkbox-primary checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_required_input" id="Element_Form_required_input" ng-model="model.required">
+                        <label for="Element_Form_required_input" id="Element_Form_required_label" class="control-label unselectable ">{{::ctrl.text.Component.General.Required}}</label>
+                    </div>
+                    <hr>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_Proj_label">{{::ctrl.text.Component.Map.Projection}}</span>
+                        <select ng-disabled="locker" ng-model="model.map_options.proj" ng-change="ctrl.updateMap('OSM', 'proj')" id="Element_Form_Proj_Select" class="form-control" aria-describedby="Element_Form_proj_label">
+                            <option ng-repeat="projection in $root.proj.projections" ng-selected="model.map_options.proj === projection.code" value="{{projection.code}}" ng-show="projection.osm">{{projection.name}}</option>
+                        </select>
+                    </div>
+                    <label for="Element_Form_Proj_Select" id="Element_Form_proj_label" class="control-label">{{::ctrl.text.Component.Map.Select_center}}</label>
+                    <select ng-disabled="locker" ng-model="centerSelect" ng-init="centerSelect = 'C&Z'" id="Element_Form_Proj_Select" type="text" class="form-control" aria-describedby="Element_Form_proj_label">
+                        <option value="Extent">{{::ctrl.text.Component.Map.Extent}}</option>
+                        <option value="C&Z">{{::ctrl.text.Component.Map.CZ}}</option>
+                    </select>
+
+                    <div id="Element_Form_Center_And_Zoom" ng-if="centerSelect == 'C&Z'">
+                        <label for="Element_Form_Center_And_Zoom" id="Element_Form_required_label" class="control-label">{{::ctrl.text.Component.Map.Center_Label}}</label>
+                        <div class="input-group element-margin input-group-xs">
+                            <span class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.Map.Longitude}}</span>
+                            <input ng-disabled="locker" ng-model="model.map_options.center.coord[0]" ng-change="ctrl.updateMap('OSM', 'center')" id="Element_Form_name_input" type="number" class="form-control" aria-describedby="Element_Form_name_label" required>
+                        </div>
+                        <div class="input-group element-margin input-group-xs">
+                            <span class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.Map.Latitude}}</span>
+                            <input ng-disabled="locker" ng-model="model.map_options.center.coord[1]" ng-change="ctrl.updateMap('OSM', 'center')" id="Element_Form_name_input" type="number" class="form-control" aria-describedby="Element_Form_name_label" required>
+                        </div>
+                        <div id="div_input_scale">
+                            <div class="input-group element-margin input-group-xs">
+                                <span class="input-group-addon" id="Element_Form_sclae_label">1:</span>
+                                <input ng-disabled="locker" ng-model="model.map_options.center.scale" ng-change="ctrl.updateMap('OSM', 'zoom')" id="Element_Form_scale_input" type="number" class="form-control" min="1" max="200000000" aria-describedby="Element_Form_scale_label" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="Element_Form_Center_And_Zoom" ng-if="centerSelect == 'Extent'">
+                        <label for="Element_Form_Center_And_Zoom" id="Element_Form_required_label" class="control-label">{{::ctrl.text.Component.Map.Extent_Label}}</label>
+                        <div class="input-group element-margin input-group-xs">
+                            <span class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.Map.LatMin}}</span>
+                            <input ng-disabled="locker" ng-model="model.map_options.center.extent[0]" id="Element_Form_name_input" type="number" class="form-control" aria-describedby="Element_Form_name_label" required>
+                        </div>
+                        <div class="input-group element-margin input-group-xs">
+                            <span class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.Map.LonMin}}</span>
+                            <input ng-disabled="locker" ng-model="model.map_options.center.extent[1]" id="Element_Form_name_input" type="number" class="form-control" aria-describedby="Element_Form_name_label" required>
+                        </div>
+                        <div class="input-group element-margin input-group-xs">
+                            <span class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.Map.LatMax}}</span>
+                            <input ng-disabled="locker" ng-model="model.map_options.center.extent[2]" id="Element_Form_name_input" type="number" class="form-control" aria-describedby="Element_Form_name_label" required>
+                        </div>
+                        <div class="input-group element-margin input-group-xs">
+                            <span class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.Map.LonMax}}</span>
+                            <input ng-disabled="locker" ng-model="model.map_options.center.extent[3]" id="Element_Form_name_input" type="number" class="form-control" aria-describedby="Element_Form_name_label" required>
+                        </div>
+                        <button ng-disabled="locker" type="button" class="btn btn-success btn-sm Map-btn map-ZoomToExtent" ng-click="ctrl.updateMap('OSM', 'extent')">
+                            <span class="fa fa-share fa-x1" aria-hidden="true"></span>
+                        </button>
+                    </div>
+                    <hr>
+                    <div class="checkbox checkbox-primary checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_MP_input" id="Element_Form_MP_input" ng-model="model.map_options.controls.MP" ng-change="ctrl.updateMap('OSM', 'controls')">
+                        <label for="Element_Form_MP_input" id="Element_Form_MP_label" class="control-label styled unselectable">{{::ctrl.text.Component.Map.MousePosition}}</label>
+                    </div>
+                    <div class="checkbox checkbox-primary checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_ZO_input" id="Element_Form_ZO_input" ng-model="model.map_options.controls.ZO" ng-change="ctrl.updateMap('OSM', 'controls')">
+                        <label for="Element_Form_ZO_input" id="Element_Form_ZO_label" class="control-label styled unselectable">{{::ctrl.text.Component.Map.ZoomButton}}</label>
+                    </div>
+                    <div class="checkbox checkbox-primary checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_SL_input" id="Element_Form_SL_input" ng-model="model.map_options.controls.SL" ng-change="ctrl.updateMap('OSM', 'controls')">
+                        <label for="Element_Form_SL_input" id="Element_Form_SL_label" class="control-label styled unselectable">{{::ctrl.text.Component.Map.ScaleLine}}</label>
+                    </div>
+                    <div class="checkbox checkbox-primary checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_CP_input" id="Element_Form_CP_input" ng-model="model.map_options.controls.CP" ng-change="ctrl.updateMap('OSM', 'controls')">
+                        <label for="Element_Form_CP_input" id="Element_Form_CP_label" class="control-label styled unselectable">{{::ctrl.text.Component.Map.CurrentProjection}}</label>
+                    </div>
+                    <div class="checkbox checkbox-primary checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_multi_geom_input" id="Element_Form_multi_geom_input" ng-model="model.map_options.interactions.multi_geometry">
+                        <label for="Element_Form_multi_geom_input" id="Element_Form_multi_geom_label" class="control-label styled unselectable">{{::ctrl.text.Component.Map.MultiGeom}}</label>
+                    </div>
+                    <hr>                    
+                    <div class="checkbox checkbox-primary checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_full_screen" id="Element_Form_full_screen" ng-model="model.map_options.interactions.full_screen" ng-change="ctrl.updateMap('OSM', 'interact')">
+                        <label for="Element_Form_full_screen" id="Element_Form_multi_geom_label" class="control-label styled unselectable">{{::ctrl.text.Component.Map.FullScreen}}</label>
+                    </div>
+                    <div class="checkbox checkbox-primary checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_RA_input" id="Element_Form_RA_input" ng-model="model.map_options.interactions.RA" ng-change="ctrl.updateMap('OSM', 'interact')">
+                        <label for="Element_Form_RA_input" id="Element_Form_RA_label" class="control-label styled unselectable">{{::ctrl.text.Component.Map.RemoveAll}}</label>
+                    </div>
+                    <div class="checkbox checkbox-primary checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_RO_input" id="Element_Form_RO_input" ng-model="model.map_options.interactions.RO" ng-change="ctrl.updateMap('OSM', 'interact')">
+                        <label for="Element_Form_RO_input" id="Element_Form_RO_label" class="control-label styled unselectable">{{::ctrl.text.Component.Map.RemoveOne}}</label>
+                    </div>
+                    <div class="checkbox checkbox-primary checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_ED_input" id="Element_Form_ED_input" ng-model="model.map_options.interactions.ED" ng-change="ctrl.updateMap('OSM', 'interact')">
+                        <label for="Element_Form_ED_input" id="Element_Form_ED_label" class="control-label styled unselectable">{{::ctrl.text.Component.Map.Modify}}</label>
+                    </div>
+                    <div class="checkbox checkbox-primary checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_DP_input" id="Element_Form_DP_input" ng-model="model.map_options.interactions.DP" ng-change="ctrl.updateMap('OSM', 'interact')">
+                        <label for="Element_Form_DP_input" id="Element_Form_DP_label" class="control-label styled unselectable">{{::ctrl.text.Component.Map.DrawPoint}}</label>
+                    </div>
+                    <div class="checkbox checkbox-primary checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_DL_input" id="Element_Form_DL_input" ng-model="model.map_options.interactions.DL" ng-change="ctrl.updateMap('OSM', 'interact')">
+                        <label for="Element_Form_DL_input" id="Element_Form_DL_label" class="control-label styled unselectable">{{::ctrl.text.Component.Map.DrawLine}}</label>
+                    </div>
+                    <div class="checkbox checkbox-primary checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_DPol_input" id="Element_Form_DPol_input" ng-model="model.map_options.interactions.DPol" ng-change="ctrl.updateMap('OSM', 'interact')">
+                        <label for="Element_Form_DPol_input" id="Element_Form_DPol_label" class="control-label styled unselectable">{{::ctrl.text.Component.Map.DrawPolygon}}</label>
+                    </div>
+                    <!--                    <div class="checkbox checkbox-primary checkbox_margin">
+                                            <input ng-disabled="locker" type="checkbox" name="Element_Form_SE_input" id="Element_Form_SE_input" ng-model="model.map_options.interactions.SE" ng-change="ctrl.updateMap('OSM', 'interact')">
+                                            <label for="Element_Form_SE_input" id="Element_Form_SE_label" class="control-label styled unselectable">{{::ctrl.text.Component.Map.Select}}</label>
+                                        </div>-->
+                    <hr>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_value_label">{{::ctrl.text.Component.General.Value}}</span>
+                        <textarea ng-disabled="locker" ng-model="model.default_value" id="Element_Form_value_input" type="text" class="form-control" aria-describedby="Element_Form_value_label" rows="5"></textarea>
+                    </div>
+                </div>
+                <!-- Map Bing -->
+                <div ng-switch-when="map_bing">
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_label_label">{{::ctrl.text.Component.General.Label}}</span>
+                        <input ng-disabled="locker" ng-model="model.label" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.URL.Label_PH}}" aria-describedby="Element_Form_label_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span ng-if="ctrl.applicationName !== 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name}}</span>
+                        <span ng-if="ctrl.applicationName === 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name_GTF}}</span>
+                        <input ng-disabled="locker" ng-model="model.name" id="Element_Form_name_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.URL.Name_PH}}" aria-describedby="Element_Form_name_label" required>
+                    </div>
+                    <div id="div_slider_Form">
+                        <label id="label_slider_Element_size" for="slider_Element_size">{{::ctrl.text.Component.General.Width}}</label>
+                        <input ng-disabled="locker" data-app-param-element id="slider_Element_size" data-slider-id='slider_Element_size' type="text" data-slider-min="0" data-slider-max="12" data-slider-step="1" data-slider-value="6" required>
+                    </div>
+                    <div id="div_slider_Form_height">
+                        <label id="label_slider_Element_height" for="slider_Element_height">{{::ctrl.text.Component.General.Height}}</label>
+                        <input ng-disabled="locker" data-app-param-element id="slider_Element_height" data-slider-id='slider_Element_height' type="text" data-slider-min="100" data-slider-max="800" data-slider-step="50" data-slider-value="350" required>
+                    </div>
+                    <div class="checkbox checkbox-primary checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_required_input" id="Element_Form_required_input" ng-model="model.required">
+                        <label for="Element_Form_required_input" id="Element_Form_required_label" class="control-label unselectable">{{::ctrl.text.Component.General.Required}}</label>
+                    </div>
+                    <hr>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_Culture_label">{{::ctrl.text.Component.Map.Culture}}</span>
+                        <select ng-disabled="locker" ng-model="model.map_options.source.culture" ng-change="ctrl.updateMap('bing', 'source')" id="Element_Form_Proj_Select" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Map.Projection_PH}}" aria-describedby="Element_Form_proj_label">
+                            <option value="fr-FR">fr-FR</option>
+                            <option value="en-EN">en-EN</option>
+                            <option value="en-US">en-US</option>
+                        </select>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_key_label">{{::ctrl.text.Component.Map.Key}}</span>
+                        <input ng-disabled="locker" ng-model="model.map_options.source.key" ng-change="ctrl.updateMap('bing', 'source')" id="Element_Form_key_input" type="text" class="form-control" aria-describedby="Element_Form_key_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_Culture_label">{{::ctrl.text.Component.Map.BingMap}}</span>
+                        <select ng-disabled="locker" ng-model="model.map_options.source.style" ng-change="ctrl.updateMap('bing', 'source')" id="Element_Form_Proj_Select" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Map.Projection_PH}}" aria-describedby="Element_Form_proj_label">
+                            <option value="Aerial">Aerial</option>
+                            <option value="AerialWithLabels">AerialWithLabels</option>
+                            <option value="Road">Road</option>
+                        </select>
+                    </div>
+                    <hr>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_Proj_label">{{::ctrl.text.Component.Map.Projection}}</span>
+                        <select ng-disabled="locker" ng-model="model.map_options.proj" ng-change="ctrl.updateMap('bing', 'proj')" id="Element_Form_Proj_Select" class="form-control" aria-describedby="Element_Form_proj_label">
+                            <option ng-repeat="projection in $root.proj.projections" ng-selected="model.map_options.proj === projection.code" value="{{projection.code}}" ng-show="projection.bing">{{projection.name}}</option>
+                        </select>
+                    </div>
+                    <label for="Element_Form_Proj_Select" id="Element_Form_proj_label" class="control-label">{{::ctrl.text.Component.Map.Select_center}}</label>
+                    <select ng-disabled="locker" ng-model="centerSelect" ng-init="centerSelect = 'C&Z'" id="Element_Form_Proj_Select" type="text" class="form-control" aria-describedby="Element_Form_proj_label">
+                        <option value="Extent">{{::ctrl.text.Component.Map.Extent}}</option>
+                        <option value="C&Z">{{::ctrl.text.Component.Map.CZ}}</option>
+                    </select>
+
+                    <div id="Element_Form_Center_And_Zoom" ng-if="centerSelect == 'C&Z'">
+                        <label for="Element_Form_Center_And_Zoom" id="Element_Form_required_label" class="control-label">{{::ctrl.text.Component.Map.Center_Label}}</label>
+                        <div class="input-group element-margin input-group-xs">
+                            <span class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.Map.Longitude}}</span>
+                            <input ng-disabled="locker" ng-model="model.map_options.center.coord[0]" ng-change="ctrl.updateMap('bing', 'center')" id="Element_Form_name_input" type="number" class="form-control" aria-describedby="Element_Form_name_label" required>
+                        </div>
+                        <div class="input-group element-margin input-group-xs">
+                            <span class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.Map.Latitude}}</span>
+                            <input ng-disabled="locker" ng-model="model.map_options.center.coord[1]" ng-change="ctrl.updateMap('bing', 'center')" id="Element_Form_name_input" type="number" class="form-control" aria-describedby="Element_Form_name_label" required>
+                        </div>
+                        <div id="div_input_scale">
+                            <div class="input-group element-margin input-group-xs">
+                                <span class="input-group-addon" id="Element_Form_sclae_label">1:</span>
+                                <input ng-disabled="locker" ng-model="model.map_options.center.scale" ng-change="ctrl.updateMap('bing', 'zoom')" id="Element_Form_scale_input" type="number" class="form-control" min="1" max="200000000"  aria-describedby="Element_Form_scale_label" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="Element_Form_Center_And_Zoom" ng-if="centerSelect == 'Extent'">
+                        <label for="Element_Form_Center_And_Zoom" id="Element_Form_required_label" class="control-label">{{::ctrl.text.Component.Map.Extent_Label}}</label>
+                        <div class="input-group element-margin input-group-xs">
+                            <span class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.Map.LatMin}}</span>
+                            <input ng-disabled="locker" ng-model="model.map_options.center.extent[0]" id="Element_Form_name_input" type="number" class="form-control" aria-describedby="Element_Form_name_label" required>
+                        </div>
+                        <div class="input-group element-margin input-group-xs">
+                            <span class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.Map.LonMin}}</span>
+                            <input ng-disabled="locker" ng-model="model.map_options.center.extent[1]" id="Element_Form_name_input" type="number" class="form-control" aria-describedby="Element_Form_name_label" required>
+                        </div>
+                        <div class="input-group element-margin input-group-xs">
+                            <span class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.Map.LatMax}}</span>
+                            <input ng-disabled="locker" ng-model="model.map_options.center.extent[2]" id="Element_Form_name_input" type="number" class="form-control" aria-describedby="Element_Form_name_label" required>
+                        </div>
+                        <div class="input-group element-margin input-group-xs">
+                            <span class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.Map.LonMax}}</span>
+                            <input ng-disabled="locker" ng-model="model.map_options.center.extent[3]" id="Element_Form_name_input" type="number" class="form-control" aria-describedby="Element_Form_name_label" required>
+                        </div>
+                        <button ng-disabled="locker" type="button" class="btn btn-success btn-sm Map-btn map-ZoomToExtent" ng-click="ctrl.updateMap('bing', 'extent')">
+                            <span class="fa fa-share fa-x1" aria-hidden="true"></span>
+                        </button>
+                    </div>
+                    <hr>
+                    <div class="checkbox checkbox-primary checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_MP_input" id="Element_Form_MP_input" ng-model="model.map_options.controls.MP" ng-change="ctrl.updateMap('bing', 'controls')">
+                        <label for="Element_Form_MP_input" id="Element_Form_MP_label" class="control-label styled unselectable">{{::ctrl.text.Component.Map.MousePosition}}</label>
+                    </div>
+                    <div class="checkbox checkbox-primary checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_ZO_input" id="Element_Form_ZO_input" ng-model="model.map_options.controls.ZO" ng-change="ctrl.updateMap('bing', 'controls')">
+                        <label for="Element_Form_ZO_input" id="Element_Form_ZO_label" class="control-label styled unselectable">{{::ctrl.text.Component.Map.ZoomButton}}</label>
+                    </div>
+                    <div class="checkbox checkbox-primary checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_SL_input" id="Element_Form_SL_input" ng-model="model.map_options.controls.SL" ng-change="ctrl.updateMap('bing', 'controls')">
+                        <label for="Element_Form_SL_input" id="Element_Form_SL_label" class="control-label styled unselectable">{{::ctrl.text.Component.Map.ScaleLine}}</label>
+                    </div>
+                    <div class="checkbox checkbox-primary checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_CP_input" id="Element_Form_CP_input" ng-model="model.map_options.controls.CP" ng-change="ctrl.updateMap('bing', 'controls')">
+                        <label for="Element_Form_CP_input" id="Element_Form_CP_label" class="control-label styled unselectable">{{::ctrl.text.Component.Map.CurrentProjection}}</label>
+                    </div>
+                    <div class="checkbox checkbox-primary checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_multi_geom_input" id="Element_Form_multi_geom_input" ng-model="model.map_options.interactions.multi_geometry">
+                        <label for="Element_Form_multi_geom_input" id="Element_Form_multi_geom_label" class="control-label styled unselectable">{{::ctrl.text.Component.Map.MultiGeom}}</label>
+                    </div>
+                    <hr>
+                    <div class="checkbox checkbox-primary checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_full_screen" id="Element_Form_full_screen" ng-model="model.map_options.interactions.full_screen" ng-change="ctrl.updateMap('bing', 'interact')">
+                        <label for="Element_Form_full_screen" id="Element_Form_multi_geom_label" class="control-label styled unselectable">{{::ctrl.text.Component.Map.FullScreen}}</label>
+                    </div>
+                    <div class="checkbox checkbox-primary checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_RA_input" id="Element_Form_RA_input" ng-model="model.map_options.interactions.RA" ng-change="ctrl.updateMap('bing', 'interact')">
+                        <label for="Element_Form_RA_input" id="Element_Form_RA_label" class="control-label styled unselectable">{{::ctrl.text.Component.Map.RemoveAll}}</label>
+                    </div>
+                    <div class="checkbox checkbox-primary checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_RO_input" id="Element_Form_RO_input" ng-model="model.map_options.interactions.RO" ng-change="ctrl.updateMap('bing', 'interact')">
+                        <label for="Element_Form_RO_input" id="Element_Form_RO_label" class="control-label styled unselectable">{{::ctrl.text.Component.Map.RemoveOne}}</label>
+                    </div>
+                    <div class="checkbox checkbox-primary checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_ED_input" id="Element_Form_ED_input" ng-model="model.map_options.interactions.ED" ng-change="ctrl.updateMap('bing', 'interact')">
+                        <label for="Element_Form_ED_input" id="Element_Form_ED_label" class="control-label styled unselectable">{{::ctrl.text.Component.Map.Modify}}</label>
+                    </div>
+                    <div class="checkbox checkbox-primary checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_DP_input" id="Element_Form_DP_input" ng-model="model.map_options.interactions.DP" ng-change="ctrl.updateMap('bing', 'interact')">
+                        <label for="Element_Form_DP_input" id="Element_Form_DP_label" class="control-label styled unselectable">{{::ctrl.text.Component.Map.DrawPoint}}</label>
+                    </div>
+                    <div class="checkbox checkbox-primary checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_DL_input" id="Element_Form_DL_input" ng-model="model.map_options.interactions.DL" ng-change="ctrl.updateMap('bing', 'interact')">
+                        <label for="Element_Form_DL_input" id="Element_Form_DL_label" class="control-label styled unselectable">{{::ctrl.text.Component.Map.DrawLine}}</label>
+                    </div>
+                    <div class="checkbox checkbox-primary checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_DPol_input" id="Element_Form_DPol_input" ng-model="model.map_options.interactions.DPol" ng-change="ctrl.updateMap('bing', 'interact')">
+                        <label for="Element_Form_DPol_input" id="Element_Form_DPol_label" class="control-label styled unselectable">{{::ctrl.text.Component.Map.DrawPolygon}}</label>
+                    </div>
+                    <!--                    <div class="checkbox checkbox-primary checkbox_margin">
+                                            <input ng-disabled="locker" type="checkbox" name="Element_Form_SE_input" id="Element_Form_SE_input" ng-model="model.map_options.interactions.SE" ng-change="ctrl.updateMap('bing', 'interact')">
+                                            <label for="Element_Form_SE_input" id="Element_Form_SE_label" class="control-label styled unselectable">{{::ctrl.text.Component.Map.Select}}</label>
+                                        </div>-->
+                    <hr>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_value_label">{{::ctrl.text.Component.General.Value}}</span>
+                        <textarea ng-disabled="locker" ng-model="model.default_value" id="Element_Form_value_input" type="text" class="form-control" aria-describedby="Element_Form_value_label" rows="5"></textarea>
+                    </div>
+                </div>
+                <!-- Map Vmap -->
+                <div ng-switch-when="map_vmap">
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_label_label">{{::ctrl.text.Component.General.Label}}</span>
+                        <input ng-disabled="locker" ng-model="model.label" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.URL.Label_PH}}" aria-describedby="Element_Form_label_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span ng-if="ctrl.applicationName !== 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name}}</span>
+                        <span ng-if="ctrl.applicationName === 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name_GTF}}</span>
+                        <input ng-disabled="locker" ng-model="model.name" id="Element_Form_name_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.URL.Name_PH}}" aria-describedby="Element_Form_name_label" required>
+                    </div>
+                    <div id="div_slider_Form">
+                        <label id="label_slider_Element_size" for="slider_Element_size">{{::ctrl.text.Component.General.Width}}</label>
+                        <input ng-disabled="locker" data-app-param-element id="slider_Element_size" data-slider-id='slider_Element_size' type="text" data-slider-min="0" data-slider-max="12" data-slider-step="1" data-slider-value="6" required>
+                    </div>
+                    <div id="div_slider_Form_height">
+                        <label id="label_slider_Element_height" for="slider_Element_height">{{::ctrl.text.Component.General.Height}}</label>
+                        <input ng-disabled="locker" data-app-param-element id="slider_Element_height" data-slider-id='slider_Element_height' type="text" data-slider-min="100" data-slider-max="800" data-slider-step="50" data-slider-value="350" required>
+                    </div>
+                    <div class="checkbox checkbox-primary checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_required_input" id="Element_Form_required_input" ng-model="model.required">
+                        <label for="Element_Form_required_input" id="Element_Form_required_label" class="control-label unselectable">{{::ctrl.text.Component.General.Required}}</label>
+                    </div>
+                    <hr>
+                    <div id="Vmap_Downloader">
+                        <label for="Vmap_Downloader_input" id="Vmap_Downloader_label" class="control-label">{{::ctrl.text.Select_Type.upload}}</label>
+                        <input ng-disabled="locker" id="Vmap_Downloader_input" class="file" type="file" data-show-upload="false" data-allowed-file-extensions='["json"]' data-show-preview="false">
+                    </div>
+                    <hr>
+                    <div class="checkbox checkbox-primary checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_MP_input" id="Element_Form_MP_input" ng-model="model.map_options.controls.MP" ng-change="ctrl.updateMap('Vmap', 'controls')">
+                        <label for="Element_Form_MP_input" id="Element_Form_MP_label" class="control-label styled unselectable">{{::ctrl.text.Component.Map.MousePosition}}</label>
+                    </div>
+                    <div class="checkbox checkbox-primary checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_ZO_input" id="Element_Form_ZO_input" ng-model="model.map_options.controls.ZO" ng-change="ctrl.updateMap('Vmap', 'controls')">
+                        <label for="Element_Form_ZO_input" id="Element_Form_ZO_label" class="control-label styled unselectable">{{::ctrl.text.Component.Map.ZoomButton}}</label>
+                    </div>
+                    <div class="checkbox checkbox-primary checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_SL_input" id="Element_Form_SL_input" ng-model="model.map_options.controls.SL" ng-change="ctrl.updateMap('Vmap', 'controls')">
+                        <label for="Element_Form_SL_input" id="Element_Form_SL_label" class="control-label styled unselectable">{{::ctrl.text.Component.Map.ScaleLine}}</label>
+                    </div>
+                    <div class="checkbox checkbox-primary checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_CP_input" id="Element_Form_CP_input" ng-model="model.map_options.controls.CP" ng-change="ctrl.updateMap('Vmap', 'controls')">
+                        <label for="Element_Form_CP_input" id="Element_Form_CP_label" class="control-label styled unselectable">{{::ctrl.text.Component.Map.CurrentProjection}}</label>
+                    </div>
+                    <div class="checkbox checkbox-primary checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_multi_geom_input" id="Element_Form_multi_geom_input" ng-model="model.map_options.interactions.multi_geometry">
+                        <label for="Element_Form_multi_geom_input" id="Element_Form_multi_geom_label" class="control-label styled unselectable">{{::ctrl.text.Component.Map.MultiGeom}}</label>
+                    </div>
+                    <hr>
+                    <div class="checkbox checkbox-primary checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_full_screen" id="Element_Form_full_screen" ng-model="model.map_options.interactions.full_screen" ng-change="ctrl.updateMap('Vmap', 'interact')">
+                        <label for="Element_Form_full_screen" id="Element_Form_multi_geom_label" class="control-label styled unselectable">{{::ctrl.text.Component.Map.FullScreen}}</label>
+                    </div>
+                    <div class="checkbox checkbox-primary checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_RA_input" id="Element_Form_RA_input" ng-model="model.map_options.interactions.RA" ng-change="ctrl.updateMap('Vmap', 'interact')">
+                        <label for="Element_Form_RA_input" id="Element_Form_RA_label" class="control-label styled unselectable">{{::ctrl.text.Component.Map.RemoveAll}}</label>
+                    </div>
+                    <div class="checkbox checkbox-primary checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_RO_input" id="Element_Form_RO_input" ng-model="model.map_options.interactions.RO" ng-change="ctrl.updateMap('Vmap', 'interact')">
+                        <label for="Element_Form_RO_input" id="Element_Form_RO_label" class="control-label styled unselectable">{{::ctrl.text.Component.Map.RemoveOne}}</label>
+                    </div>
+                    <div class="checkbox checkbox-primary checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_ED_input" id="Element_Form_ED_input" ng-model="model.map_options.interactions.ED" ng-change="ctrl.updateMap('Vmap', 'interact')">
+                        <label for="Element_Form_ED_input" id="Element_Form_ED_label" class="control-label styled unselectable">{{::ctrl.text.Component.Map.Modify}}</label>
+                    </div>
+                    <div class="checkbox checkbox-primary checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_DP_input" id="Element_Form_DP_input" ng-model="model.map_options.interactions.DP" ng-change="ctrl.updateMap('Vmap', 'interact')">
+                        <label for="Element_Form_DP_input" id="Element_Form_DP_label" class="control-label styled unselectable">{{::ctrl.text.Component.Map.DrawPoint}}</label>
+                    </div>
+                    <div class="checkbox checkbox-primary checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_DL_input" id="Element_Form_DL_input" ng-model="model.map_options.interactions.DL" ng-change="ctrl.updateMap('Vmap', 'interact')">
+                        <label for="Element_Form_DL_input" id="Element_Form_DL_label" class="control-label styled unselectable">{{::ctrl.text.Component.Map.DrawLine}}</label>
+                    </div>
+                    <div class="checkbox checkbox-primary checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_DPol_input" id="Element_Form_DPol_input" ng-model="model.map_options.interactions.DPol" ng-change="ctrl.updateMap('Vmap', 'interact')">
+                        <label for="Element_Form_DPol_input" id="Element_Form_DPol_label" class="control-label styled unselectable">{{::ctrl.text.Component.Map.DrawPolygon}}</label>
+                    </div>
+                    <!--                    <div class="checkbox checkbox-primary checkbox_margin">
+                                            <input ng-disabled="locker" type="checkbox" name="Element_Form_SE_input" id="Element_Form_SE_input" ng-model="model.map_options.interactions.SE" ng-change="ctrl.updateMap('Vmap', 'interact')">
+                                            <label for="Element_Form_SE_input" id="Element_Form_SE_label" class="control-label styled unselectable">{{::ctrl.text.Component.Map.Select}}</label>
+                                        </div>-->
+                    <hr>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_value_label">{{::ctrl.text.Component.General.Value}}</span>
+                        <textarea ng-disabled="locker" ng-model="model.default_value" id="Element_Form_value_input" type="text" class="form-control" aria-describedby="Element_Form_value_label" rows="5"></textarea>
+                    </div>
+                </div>
+                <!-- Integer -->
+                <div ng-switch-when="integer">
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_label_label">{{::ctrl.text.Component.General.Label}}</span>
+                        <input ng-disabled="locker" ng-model="model.label" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Number.Label_PH}}" aria-describedby="Element_Form_label_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span ng-if="ctrl.applicationName !== 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name}}</span>
+                        <span ng-if="ctrl.applicationName === 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name_GTF}}</span>
+                        <input ng-disabled="locker" ng-model="model.name" id="Element_Form_name_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Number.Name_PH}}" aria-describedby="Element_Form_name_label" required>
+                    </div>
+                    <!--<div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_min_label">{{::ctrl.text.Component.Number.Minimum}}</span>
+                        <input ng-disabled="locker" ng-model="model.min" id="Element_Form_min_input" type="number" min="0" class="form-control" placeholder="{{::ctrl.text.Component.Number.Minimum_PH}}" aria-describedby="Element_Form_min_label">
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_max_label">{{::ctrl.text.Component.Number.Maximum}}</span>
+                        <input ng-disabled="locker" ng-model="model.max" id="Element_Form_max_input" type="number" min="0" class="form-control" placeholder="{{::ctrl.text.Component.Number.Maximum_PH}}" aria-describedby="Element_Form_max_label">
+                    </div>-->
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_value_label">{{::ctrl.text.Component.General.Value}}</span>
+                        <input ng-disabled="locker" ng-model="model.default_value" id="Element_Form_value_input" type="number" class="form-control" aria-describedby="Element_Form_value_label"></input>
+                    </div>
+                    <div class="checkbox checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_required_input" id="Element_Form_required_input" ng-model="model.required">
+                        <label for="Element_Form_required_input" id="Element_Form_required_label" class="control-label">{{::ctrl.text.Component.General.Required}}</label>
+                    </div>
+                </div>
+                <!-- float -->
+                <div ng-switch-when="float">
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_label_label">{{::ctrl.text.Component.General.Label}}</span>
+                        <input ng-disabled="locker" ng-model="model.label" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Number.Label_PH}}" aria-describedby="Element_Form_label_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span ng-if="ctrl.applicationName !== 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name}}</span>
+                        <span ng-if="ctrl.applicationName === 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name_GTF}}</span>
+                        <input ng-disabled="locker" ng-model="model.name" id="Element_Form_name_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Number.Name_PH}}" aria-describedby="Element_Form_name_label" required>
+                    </div>
+                    <!--<div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_min_label">{{::ctrl.text.Component.Number.Minimum}}</span>
+                        <input ng-disabled="locker" ng-model="model.min" id="Element_Form_min_input" type="number" min="0" class="form-control" placeholder="{{::ctrl.text.Component.Number.Minimum_PH}}" aria-describedby="Element_Form_min_label">
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_max_label">{{::ctrl.text.Component.Number.Maximum}}</span>
+                        <input ng-disabled="locker" ng-model="model.max" id="Element_Form_max_input" type="number" min="0" class="form-control" placeholder="{{::ctrl.text.Component.Number.Maximum_PH}}" aria-describedby="Element_Form_max_label">
+                    </div>-->
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_value_label">{{::ctrl.text.Component.General.Value}}</span>
+                        <input ng-disabled="locker" ng-model="model.default_value" id="Element_Form_value_input" type="number" class="form-control" aria-describedby="Element_Form_value_label"></input>
+                    </div>
+                    <div class="checkbox checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_required_input" id="Element_Form_required_input" ng-model="model.required">
+                        <label for="Element_Form_required_input" id="Element_Form_required_label" class="control-label">{{::ctrl.text.Component.General.Required}}</label>
+                    </div>
+                </div>
+                <!-- Image File-->
+                <div ng-switch-when="image">
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_label_label">{{::ctrl.text.Component.General.Label}}</span>
+                        <input ng-disabled="locker" ng-model="model.label" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Number.Label_PH}}" aria-describedby="Element_Form_label_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span ng-if="ctrl.applicationName !== 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name}}</span>
+                        <span ng-if="ctrl.applicationName === 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name_GTF}}</span>
+                        <input ng-disabled="locker" ng-model="model.name" id="Element_Form_name_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Number.Name_PH}}" aria-describedby="Element_Form_name_label" required>
+                    </div>
+                    <div id="div_slider_Form">
+                        <label id="label_slider_Element_size" for="slider_Element_size">{{::ctrl.text.Component.General.Width}}</label>
+                        <input ng-disabled="locker" data-app-param-element id="slider_Element_size" data-slider-id='slider_Element_size' type="text" data-slider-min="0" data-slider-max="12" data-slider-step="1" data-slider-value="12" required>
+                    </div>
+                    <div id="div_slider_Form">
+                        <label id="label_slider_Element_size" for="slider_Element_width">{{::ctrl.text.Component.Image.Width}}</label>
+                        <input ng-disabled="locker" data-app-param-element id="slider_Element_width" data-slider-id='slider_Element_width' type="text" data-slider-min="0" data-slider-max="1000" data-slider-step="1" data-slider-value="1000" required>
+                    </div>
+                    <div id="div_slider_Form">
+                        <label id="label_slider_Element_size" for="slider_Element_height">{{::ctrl.text.Component.Image.Height}}</label>
+                        <input ng-disabled="locker" data-app-param-element id="slider_Element_height" data-slider-id='slider_Element_height' type="text" data-slider-min="0" data-slider-max="1000" data-slider-step="1" data-slider-value="1000" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_label_label">{{::ctrl.text.Component.Image.Alias}}</span>
+                        <input ng-disabled="locker" ng-model="model.alias" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Image.Alias_PH}}" aria-describedby="Element_Form_label_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_label_label">{{::ctrl.text.Component.Image.Folder}}</span>
+                        <input ng-disabled="locker" ng-model="model.folder" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Image.Folder_PH}}" aria-describedby="Element_Form_label_label" required>
+                    </div>
+                </div>
+                <!-- Image Url-->
+                <div ng-switch-when="imageurl">
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_label_label">{{::ctrl.text.Component.General.Label}}</span>
+                        <input ng-disabled="locker" ng-model="model.label" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Number.Label_PH}}" aria-describedby="Element_Form_label_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name}}</span>
+                        <input ng-disabled="locker" ng-model="model.name" id="Element_Form_name_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Number.Name_PH}}" aria-describedby="Element_Form_name_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_value_label">{{::ctrl.text.Component.General.Value}}</span>
+                        <input ng-disabled="locker" ng-model="model.default_value" id="Element_Form_value_input" type="text" class="form-control" aria-describedby="Element_Form_value_label"></input>
+                    </div>
+                    <div id="div_slider_Form">
+                        <label id="label_slider_Element_size" for="slider_Element_size">{{::ctrl.text.Component.General.Width}}</label>
+                        <input ng-disabled="locker" data-app-param-element id="slider_Element_size" data-slider-id='slider_Element_size' type="text" data-slider-min="0" data-slider-max="12" data-slider-step="1" data-slider-value="12" required>
+                    </div>
+                </div>
+                <!-- image WS_Data -->
+                <div ng-switch-when="image_wsdata">
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_label_label">{{::ctrl.text.Component.General.Label}}</span>
+                        <input ng-disabled="locker" ng-model="model.label" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Number.Label_PH}}" aria-describedby="Element_Form_label_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name}}</span>
+                        <input ng-disabled="locker" ng-model="model.name" id="Element_Form_name_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Number.Name_PH}}" aria-describedby="Element_Form_name_label" required>
+                    </div>
+                    <div id="div_slider_Form">
+                        <label id="label_slider_Element_size" for="slider_Element_size">{{::ctrl.text.Component.General.Width}}</label>
+                        <input ng-disabled="locker" data-app-param-element id="slider_Element_size" data-slider-id='slider_Element_size' type="text" data-slider-min="0" data-slider-max="12" data-slider-step="1" data-slider-value="12" required>
+                    </div>
+                    <div class="checkbox checkbox-primary checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_displayOnly_input" id="Element_Form_displayOnly_input" ng-model="model.displayOnly">
+                        <label for="Element_Form_displayOnly_input" id="Element_Form_displayOnly_label" class="control-label unselectable ">{{::ctrl.text.Component.General.displayOnly}}</label>
+                    </div>
+                </div>
+                <!-- Link -->
+                <div ng-switch-when="link">
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_label_label">{{::ctrl.text.Component.General.Label}}</span>
+                        <input ng-disabled="locker" ng-model="model.label" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Number.Label_PH}}" aria-describedby="Element_Form_label_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span ng-if="ctrl.applicationName !== 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name}}</span>
+                        <span ng-if="ctrl.applicationName === 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name_GTF}}</span>
+                        <input ng-disabled="locker" ng-model="model.name" id="Element_Form_name_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Number.Name_PH}}" aria-describedby="Element_Form_name_label" required>
+                    </div>
+                    <div id="div_slider_Form">
+                        <label id="label_slider_Element_size" for="slider_Element_size">{{::ctrl.text.Component.General.Width}}</label>
+                        <input ng-disabled="locker" data-app-param-element id="slider_Element_size" data-slider-id='slider_Element_size' type="text" data-slider-min="0" data-slider-max="12" data-slider-step="1" data-slider-value="12" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_label_label">{{::ctrl.text.Component.Link.Alias}}</span>
+                        <input ng-disabled="locker" ng-model="model.alias" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Link.Alias_PH}}" aria-describedby="Element_Form_label_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_label_label">{{::ctrl.text.Component.Link.Folder}}</span>
+                        <input ng-disabled="locker" ng-model="model.folder" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Link.Folder_PH}}" aria-describedby="Element_Form_label_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_label_label">{{::ctrl.text.Component.Link.Target}}</span>
+                        <select ng-disabled="locker" ng-model="model.target" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Link.Target_PH}}" aria-describedby="Element_Form_label_label" required>
+                            <option value="_blank"> {{::ctrl.text.Component.Link.TargetOptions.NewTab}}</option>
+                        </select>
+                    </div>
+                </div>
+                <!-- Link URL -->
+                <div ng-switch-when="linkurl">
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_label_label">{{::ctrl.text.Component.General.Label}}</span>
+                        <input ng-disabled="locker" ng-model="model.label" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Number.Label_PH}}" aria-describedby="Element_Form_label_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span ng-if="ctrl.applicationName !== 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name}}</span>
+                        <span ng-if="ctrl.applicationName === 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name_GTF}}</span>
+                        <input ng-disabled="locker" ng-model="model.name" id="Element_Form_name_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Number.Name_PH}}" aria-describedby="Element_Form_name_label" required>
+                    </div>
+                    <div id="div_slider_Form">
+                        <label id="label_slider_Element_size" for="slider_Element_size">{{::ctrl.text.Component.General.Width}}</label>
+                        <input ng-disabled="locker" data-app-param-element id="slider_Element_size" data-slider-id='slider_Element_size' type="text" data-slider-min="0" data-slider-max="12" data-slider-step="1" data-slider-value="12" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_text_label">{{::ctrl.text.Component.Link.Text}}</span>
+                        <input ng-disabled="locker" ng-model="model.text" id="Element_Form_text_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Link.Text_PH}}" aria-describedby="Element_Form_text_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_target_label">{{::ctrl.text.Component.Link.Target}}</span>
+                        <input ng-disabled="locker" ng-model="model.target" id="Element_Form_target_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Link.Target_PH}}" aria-describedby="Element_Form_target_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_value_label">{{::ctrl.text.Component.General.Value}}</span>
+                        <input ng-disabled="locker" ng-model="model.default_value" id="Element_Form_value_input" type="text" class="form-control" aria-describedby="Element_Form_value_label"></input>
+                    </div>
+                </div>
+                <!-- File WS_Data -->
+                <div ng-switch-when="file_wsdata">
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_label_label">{{::ctrl.text.Component.General.Label}}</span>
+                        <input ng-disabled="locker" ng-model="model.label" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Number.Label_PH}}" aria-describedby="Element_Form_label_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name}}</span>
+                        <input ng-disabled="locker" ng-model="model.name" id="Element_Form_name_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Number.Name_PH}}" aria-describedby="Element_Form_name_label" required>
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.Upload.Formats}}</span>
+                        <input ng-disabled="locker" ng-model="model.formats" id="Element_Form_name_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Upload.Formats_PH}}" aria-describedby="Element_Form_format_label" required>
+                    </div>
+                    <div id="div_slider_Form">
+                        <label id="label_slider_Element_size" for="slider_Element_size">{{::ctrl.text.Component.General.Width}}</label>
+                        <input ng-disabled="locker" data-app-param-element id="slider_Element_size" data-slider-id='slider_Element_size' type="text" data-slider-min="0" data-slider-max="12" data-slider-step="1" data-slider-value="12" required>
+                    </div>
+                </div>
+                <!-- Boutons -->
+                <div ng-switch-when="button">
+
+                    <!--Label-->
+                    <label id="Element_Form_label_label" for="Element_Form_label_input">{{::ctrl.text.Component.General.Label}}</label>
+                    <div class="element-margin">
+                        <input ng-disabled="locker" ng-model="model.buttons[0].label" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Title.Placeholder}}" aria-describedby="Element_Form_label_label" required>
+                    </div>
+
+                    <!--Class-->
+                    <label id="Element_Form_class_label" for="Element_Form_class_label">{{::ctrl.text.Component.General.Class}}</label>
+                    <div class="input-group element-margin input-group-xs" style="width: 100%;">
+                        <select ng-model="model.buttons[0].class" id="Element_Form_class_select" type="text" class="form-control element-margin" style="width: 30%;">
+                            <option value="btn-default">Default</option>
+                            <option value="btn-primary">Primary</option>
+                            <option value="btn-success">Success</option>
+                            <option value="btn-info">Info</option>
+                            <option value="btn-warning">Warning</option>
+                            <option value="btn-danger">Danger</option>
+                        </select>
+                        <input ng-disabled="locker" ng-model="model.buttons[0].class" id="Element_Form_class_input"  style="width: 70%;" type="text" class="form-control" placeholder="" aria-describedby="Element_Form_class_select" required>
+                    </div>                    
+
+                    <!--Type de bouton-->
+                    <label id="Element_Form_Button_Type_Label" for="Element_Form_Button_Type">{{::ctrl.text.Component.Button.Type}}</label>
+                    <select ng-disabled="locker" ng-model="model.buttons[0].type" id="Element_Form_Button_Type" type="text" class="form-control element-margin" aria-describedby="Element_Form_Button_Type_Label">
+                        <option value="submit">Submit</option>
+                        <option value="button">Event</option>
+                    </select>
+
+                    <!--Event-->
+                    <label id="Element_Form_event_label" for="Element_Form_event_input">{{::ctrl.text.Component.Button.Event}}</label>
+                    <div class="element-margin">
+                        <input ng-disabled="locker" ng-model="model.buttons[0].event" id="Element_Form_event_input" type="text" class="form-control" placeholder="" aria-describedby="Element_Form_event_label" required>
+                    </div>
+
+                    <!--Width-->
+                    <div id="div_slider_Form">
+                        <label id="label_slider_Element_size" for="slider_Element_size">{{::ctrl.text.Component.General.Width}}</label>
+                        <input ng-disabled="locker" data-app-param-element id="slider_Element_size" data-slider-id='slider_Element_size' type="text" data-slider-min="0" data-slider-max="12" data-slider-step="1" data-slider-value="12" required>
+                    </div>
+
+                </div>
+                <!-- Default -->
+                <span ng-switch-default>
+                </span>
+            </div>
+        </form>
+    </div>
+</div>

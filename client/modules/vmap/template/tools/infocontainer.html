@@ -1,0 +1,80 @@
+
+<div id="infocontainer-info-container">
+
+    <!--boutons de navigation-->
+    <div id="infocontainer-nav" class="transparent">
+
+        <ul class="nav nav-pills nav-infocontainer">
+            <li class="margin-sides-10">
+                <label class="color-dark-blue">
+                    <span class="icon-shopping_basket my-card-logo"></span>
+                    MON PANIER
+                </label>
+            </li>
+            <li role="presentation" 
+                ng-repeat="tab in ctrl.infos" 
+                ng-class="{'active': ctrl.selectedTabIndex === this['$index']}">
+                <a data-toggle="pill"
+                   id="infocontainer-{{this['$index']}}-btn"
+                   class="basic-tools-element pointer infocontainer-nav-element btn"
+                   ng-click="ctrl.displayTabByIndex(this['$index'])">
+                    <span class="infocontainer-nav-title">{{tab.tabName}}</span>
+                    <span class="infocontainer-btn-close-tab pointer"
+                          ng-click="ctrl.removeTabByCode(tab.tabCode)">
+                        <span class="glyphicon glyphicon-remove"></span>
+                    </span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="infocontainer-btn-container">
+            <div class="infocontainer-btn-remove-location">
+                <button class="btn btn-default btn-xs" 
+                        type="button" 
+                        onclick="oVmap.getMap().getLocationOverlayFeatures().clear()">
+                    <span class="glyphicon glyphicon-remove"></span> Localisation
+                </button>
+            </div>
+            <div class="btn-group dropup infocontainer-btn-reports">
+                <button id="infocontainer-dropdown-reports"
+                        class="btn btn-default btn-xs dropdown-toggle" 
+                        type="button" 
+                        data-toggle="dropdown" 
+                        aria-haspopup="true" 
+                        aria-expanded="false"
+                        ng-click="ctrl.setAvaliablePrintReports(ctrl.infos[ctrl.selectedTabIndex].tabCode)">
+                    Rapports <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu pull-right">
+                    <li ng-repeat="printReport in ctrl.avaliablePrintReports">
+                        <a href="javascript:void(0)"
+                           class="padding-sides-10"
+                           ng-click="ctrl.generatePrintReport(printReport, $parent.ctrl.selectedTabIndex)">
+                            <span class="glyphicon glyphicon-download-alt margin-sides-5"></span>
+                            {{printReport.name}}
+                            <span ng-class="printReport.multiobject ? 'icon-file-o' : 'icon-files-o'" class="margin-sides-5"></span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!--tables-->
+    <div id="infocontainer-info-lists">
+
+        <div id="infocontainer-{{this['$index']}}" 
+             class="fade absolute infocontainer-table" 
+             ng-repeat="tab in ctrl.infos"
+             ng-init="tab.index = this['$index']"
+             ng-class="{'active in': ctrl.selectedTabIndex === this['$index']}">
+
+            {{tab.content}}
+
+            <table id="infocontainer-table-{{this['$index']}}"
+                   class="font-10 white infocontainer-table-content"></table>
+        </div>
+    </div>
+</div>
+
+

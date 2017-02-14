@@ -1,0 +1,586 @@
+{
+    "search":{
+        "name":"vmap_map_search_form",
+        "title":"",
+        "input_size":"xxs",
+        "nb_cols":12,
+        "rows":[
+            {
+                "fields":[
+                    {
+                        "type":"text",
+                        "name":"name",
+                        "label":"FORM_NAME_VMAP_MAP_MAP",
+                        "nb_cols":4
+                    },
+                    {
+                        "type":"select",
+                        "name":"maptheme_id",
+                        "label":"FORM_THEME_VMAP_MAP_MAP",
+                        "nb_cols":4,
+                        "web_service":{
+                            "ressource_id":"vmap/mapthemes",
+                            "id_key":"maptheme_id",
+                            "label_key":"name"
+                        }
+                    },
+                    {
+                        "type":"select",
+                        "name":"crs_id",
+                        "label":"FORM_COORDINATE_SYSTEM_VMAP_MAP_MAP",
+                        "nb_cols":4,
+                        "web_service":{
+                            "ressource_id":"vmap/crss",
+                            "id_key":"crs_id",
+                            "label_key":"name",
+                            "callback": "concatSelectAttributes('crs_id', ' : ')"
+                        }
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"button",
+                        "class":"btn-ungroup btn-group-xs",
+                        "nb_cols":12,
+                        "buttons":[
+                            {
+                                "type":"button",
+                                "name":"search",
+                                "label":"FORM_SEARCH_BUTTON",
+                                "class":"btn-primary",
+                                "event":"setGridFilter()"
+                            },
+                            {
+                                "type":"reset",
+                                "name":"reset",
+                                "label":"FORM_RESET_BUTTON",
+                                "class":"btn-primary",
+                                "event":"resetGridFilter()"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "update":{
+        "name":"vmap_map_update_form",
+        "title":"FORM_TITLE_VMAP_MAP_MAP",
+        "input_size":"xs",
+        "initEvent":"initOLMapExtent()",
+        "event":"sendSimpleForm()",
+        "nb_cols":8,
+        "rows":[
+            {
+                "fields":[
+                    {
+                        "type":"label",
+                        "name":"map_id",
+                        "label":"FORM_MAP_ID_VMAP_MAP_MAP",
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"text",
+                        "name":"name",
+                        "label":"FORM_NAME_VMAP_MAP_MAP",
+                        "required":true,
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"select",
+                        "name":"crs_id",
+                        "label":"FORM_COORDINATE_SYSTEM_VMAP_MAP_MAP",
+                        "nb_cols":6,
+                        "required":true,
+                        "web_service":{
+                            "ressource_id":"vmap/crss",
+                            "id_key":"crs_id",
+                            "label_key":"name",
+                            "callback": "concatSelectAttributes('crs_id', ' : ')"
+                        }
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"textarea",
+                        "name":"description",
+                        "label":"FORM_DESCRIPTION_VMAP_MAP_MAP",
+                        "size":8,
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "map_osm",
+                        "name": "map_extent",
+                        "label": "FORM_EXTENT_VMAP_MAP_MAP",
+                        "required": false,
+                        "nb_cols": 12,
+                        "id": "vmap_map_map_extent",
+                        "style": {
+                            "height": "300px",
+                            "margin-bottom": "-20px"
+                        },
+                        "map_options": {
+                            "proj": "EPSG:3857",
+                            "type": "OSM",
+                            "center": {
+                                "extent": [
+                                    -1901744.2199433097,
+                                    4779520.942381757,
+                                    2501744.2199433097,
+                                    7220479.057618243
+                                ]
+                            },
+                            "controls": {
+                                "MP": false,
+                                "ZO": false,
+                                "SL": true,
+                                "CP": false
+                            },
+                            "layers": [],
+                            "interactions": {
+                                "multi_geometry": false,
+                                "full_scrren": true,
+                                "RA": false,
+                                "RO": false,
+                                "ED": false,
+                                "DP": false,
+                                "DL": false,
+                                "DPol": false,
+                                "SE": true
+                            },
+                            "draw_color": "rgba(54,184,255,0.6)",
+                            "contour_color": "rgba(0,0,0,0.4)",
+                            "contour_size": 2,
+                            "circle_radius": 6,
+                            "features": [],
+                            "coord_accuracy": 8
+                        }
+                    }
+                ]
+            },
+            {
+                "class":"form-field-inline form-field-inline-right-button",
+                "fields":[
+                    {
+                        "type":"text",
+                        "name":"extent",
+                        "required":true,
+                        "readonly":true,
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"number",
+                        "name":"catalog_index",
+                        "label":"FORM_CATALOG_INDEX_VMAP_MAP_MAP",
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "image_wsdata",
+                        "name": "thumbnail",
+                        "label": "FORM_THUMBNAIL_VMAP_MAP_MAP",
+                        "nb_cols": 6
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"select",
+                        "name":"maptheme_id",
+                        "label":"FORM_THEME_VMAP_MAP_MAP",
+                        "nb_cols":6,
+                        "web_service":{
+                            "ressource_id":"vmap/mapthemes",
+                            "id_key":"maptheme_id",
+                            "label_key":"name"
+                        }
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"double_select",
+                        "name":"groups",
+                        "name_from":"group",
+                        "name_to":"groups",
+                        "label":"FORM_GROUPS_VMAP_MAP_MAP",
+                        "label_from":"FORM_AVAILABLE_GROUPS_VMAP_MAP_MAP",
+                        "label_to":"FORM_MAP_GROUPS_VMAP_MAP_MAP",
+                        "web_service":{
+                            "ressource_id":"vitis/groups",
+                            "id_key":"group_id",
+                            "label_key":"name"
+                        },
+                        "size":"6",
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"button",
+                        "class":"btn-ungroup btn-group-sm",
+                        "nb_cols":12,
+                        "buttons":[
+                            {
+                                "type":"submit",
+                                "name":"form_submit",
+                                "label":"FORM_UPDATE",
+                                "class":"btn-primary"
+                            },
+                            {
+                                "type":"button",
+                                "name":"return_list",
+                                "label":"FORM_RETURN_LIST",
+                                "class":"btn-primary",
+                                "event":"setMode(\"search\")"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "insert":{
+        "name":"vmap_map_insert_form",
+        "title":"FORM_TITLE_VMAP_MAP_MAP",
+        "input_size":"xs",
+        "initEvent":"initOLMapExtent()",
+        "event":"sendSimpleForm()",
+        "afterEvent":"editSectionForm()",
+        "nb_cols":8,
+        "rows":[
+            {
+                "fields":[
+                    {
+                        "type":"text",
+                        "name":"name",
+                        "label":"FORM_NAME_VMAP_MAP_MAP",
+                        "required":true,
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"select",
+                        "name":"crs_id",
+                        "label":"FORM_COORDINATE_SYSTEM_VMAP_MAP_MAP",
+                        "nb_cols":6,
+                        "required":true,
+                        "web_service":{
+                            "ressource_id":"vmap/crss",
+                            "id_key":"crs_id",
+                            "label_key":"name",
+                            "callback": "concatSelectAttributes('crs_id', ' : ')"
+                        },
+                        "default_value": "EPSG:3857"
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"textarea",
+                        "name":"description",
+                        "label":"FORM_DESCRIPTION_VMAP_MAP_MAP",
+                        "size":8,
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "map_osm",
+                        "name": "map_extent",
+                        "label": "FORM_EXTENT_VMAP_MAP_MAP",
+                        "required": false,
+                        "nb_cols": 12,
+                        "id": "vmap_map_map_extent",
+                        "style": {
+                            "height": "300px",
+                            "margin-bottom": "-20px"
+                        },
+                        "map_options": {
+                            "proj": "EPSG:3857",
+                            "type": "OSM",
+                            "center": {
+                                "extent": [
+                                    -1901744.2199433097,
+                                    4779520.942381757,
+                                    2501744.2199433097,
+                                    7220479.057618243
+                                ]
+                            },
+                            "controls": {
+                                "MP": false,
+                                "ZO": false,
+                                "SL": true,
+                                "CP": false
+                            },
+                            "layers": [],
+                            "interactions": {
+                                "multi_geometry": false,
+                                "full_scrren": true,
+                                "RA": false,
+                                "RO": false,
+                                "ED": false,
+                                "DP": false,
+                                "DL": false,
+                                "DPol": false,
+                                "SE": true
+                            },
+                            "draw_color": "rgba(54,184,255,0.6)",
+                            "contour_color": "rgba(0,0,0,0.4)",
+                            "contour_size": 2,
+                            "circle_radius": 6,
+                            "features": [],
+                            "coord_accuracy": 8
+                        }
+                    }
+                ]
+            },
+            {
+                "class":"form-field-inline form-field-inline-right-button",
+                "fields":[
+                    {
+                        "type":"text",
+                        "name":"extent",
+                        "required":true,
+                        "readonly":true,
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"number",
+                        "name":"catalog_index",
+                        "label":"FORM_CATALOG_INDEX_VMAP_MAP_MAP",
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "tooltip": {
+                            "title": "",
+                            "content": "FORM_THUMBNAIL_VMAP_MAP_MAP_TOOLTIP",
+                            "container": "body"
+                        },
+                        "type": "image_wsdata",
+                        "name": "thumbnail",
+                        "label": "FORM_THUMBNAIL_VMAP_MAP_MAP",
+                        "nb_cols": 6
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"select",
+                        "name":"maptheme_id",
+                        "label":"FORM_THEME_VMAP_MAP_MAP",
+                        "nb_cols":6,
+                        "web_service":{
+                            "ressource_id":"vmap/mapthemes",
+                            "id_key":"maptheme_id",
+                            "label_key":"name"
+                        }
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"double_select",
+                        "name":"groups",
+                        "name_from":"group",
+                        "name_to":"groups",
+                        "label":"FORM_GROUPS_VMAP_MAP_MAP",
+                        "label_from":"FORM_AVAILABLE_GROUPS_VMAP_MAP_MAP",
+                        "label_to":"FORM_MAP_GROUPS_VMAP_MAP_MAP",
+                        "web_service":{
+                            "ressource_id":"vitis/groups",
+                            "id_key":"group_id",
+                            "label_key":"name"
+                        },
+                        "size":"6",
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"button",
+                        "class":"btn-ungroup btn-group-sm",
+                        "nb_cols":12,
+                        "buttons":[
+                            {
+                                "type":"submit",
+                                "name":"form_submit",
+                                "label":"FORM_CREATE",
+                                "class":"btn-primary"
+                            },
+                            {
+                                "type":"button",
+                                "name":"return_list",
+                                "label":"FORM_RETURN_LIST",
+                                "class":"btn-primary",
+                                "event":"setMode(\"search\")"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "display":{
+        "name":"vmap_map_display_form",
+        "title":"FORM_TITLE_VMAP_MAP_MAP",
+        "input_size":"xs",
+        "nb_cols":8,
+        "rows":[
+            {
+                "fields":[
+                    {
+                        "type":"label",
+                        "name":"map_id",
+                        "label":"FORM_MAP_ID_VMAP_MAP_MAP",
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"label",
+                        "name":"name",
+                        "label":"FORM_NAME_VMAP_MAP_MAP",
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"label",
+                        "name":"crs_id",
+                        "label":"FORM_COORDINATE_SYSTEM_VMAP_MAP_MAP",
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"label",
+                        "name":"description",
+                        "label":"FORM_DESCRIPTION_VMAP_MAP_MAP",
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"label",
+                        "name":"extent",
+                        "label":"FORM_EXTENT_VMAP_MAP_MAP",
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"label",
+                        "name":"catalog_index",
+                        "label":"FORM_CATALOG_INDEX_VMAP_MAP_MAP",
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "image_wsdata",
+                        "name": "thumbnail",
+                        "label": "FORM_THUMBNAIL_VMAP_MAP_MAP",
+                        "displayOnly": true,
+                        "nb_cols": 6
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"label",
+                        "name":"theme_name",
+                        "label":"FORM_THEME_VMAP_MAP_MAP",
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"label",
+                        "name":"groups_label",
+                        "label":"FORM_MAP_GROUPS_VMAP_MAP_MAP",
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"button",
+                        "class":"btn-ungroup btn-group-sm",
+                        "nb_cols":12,
+                        "buttons":[
+                            {
+                                "type":"button",
+                                "name":"return_list",
+                                "label":"FORM_RETURN_LIST",
+                                "class":"btn-primary",
+                                "event":"setMode(\"search\")"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}

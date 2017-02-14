@@ -1,0 +1,586 @@
+{
+    "search": {
+        "name": "vmap_printreport_search_form",
+        "title": "",
+        "input_size": "xxs",
+        "nb_cols": 12,
+        "rows": [
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "name",
+                        "label": "FORM_NAME_VMAP_PRINTREPORT",
+                        "nb_cols": 3
+                    },
+                    {
+                        "type": "select",
+                        "name": "rt_format_id",
+                        "label": "FORM_FORMAT_VMAP_PRINTREPORT",
+                        "nb_cols": 2,
+                        "web_service": {
+                            "ressource_id": "vmap/formats",
+                            "id_key": "rt_format_id",
+                            "label_key": "rt_format_id"
+                        }
+                    },
+                    {
+                        "type": "select",
+                        "name": "rt_orientation_id",
+                        "label": "FORM_ORIENTATION_VMAP_PRINTREPORT",
+                        "nb_cols": 2,
+                        "web_service": {
+                            "ressource_id": "vmap/orientations",
+                            "id_key": "rt_orientation_id",
+                            "label_key": "rt_orientation_id"
+                        }
+                    },
+                    {
+                        "type": "select",
+                        "name": "outputformat_id",
+                        "label": "FORM_OUTPUT_FORMATS_VMAP_PRINTREPORT",
+                        "nb_cols": 2,
+                        "web_service": {
+                            "ressource_id": "vmap/outputformats",
+                            "id_key": "outputformats_id",
+                            "label_key": "outputformats_id"
+                        }
+                    },
+                    {
+                        "type": "select",
+                        "name": "business_object_title",
+                        "label": "FORM_BUSINESS_OBJECT_VMAP_PRINTREPORT",
+                        "nb_cols": 2,
+                        "web_service": {
+                            "ressource_id": "vmap/businessobjects",
+                            "id_key": "business_object_id",
+                            "label_key": "business_object_id"
+                        }
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "button",
+                        "class": "btn-ungroup btn-group-xs",
+                        "nb_cols": 12,
+                        "buttons": [
+                            {
+                                "type": "button",
+                                "name": "search",
+                                "label": "FORM_SEARCH_BUTTON",
+                                "class": "btn-primary",
+                                "event": "setGridFilter()"
+                            },
+                            {
+                                "type": "reset",
+                                "name": "reset",
+                                "label": "FORM_RESET_BUTTON",
+                                "class": "btn-primary",
+                                "event": "resetGridFilter()"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "update": {
+        "name": "vmap_printreport_update_form",
+        "title": "FORM_TITLE_VMAP_PRINTREPORT",
+        "input_size": "xs",
+        "beforeEvent": "beforeVmapAdminTemplateSubmit()",
+        "event": "sendSimpleForm()",
+        "nb_cols": 12,
+        "rows": [
+            {
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "printreport_id",
+                        "label": "FORM_PRINTTEMPLATE_ID_VMAP_PRINTREPORT",
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "name",
+                        "label": "FORM_NAME_VMAP_PRINTREPORT",
+                        "required": true,
+                        "nb_cols": 6
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "select",
+                        "name": "rt_format_id",
+                        "label": "FORM_FORMAT_VMAP_PRINTREPORT",
+                        "required": true,
+                        "nb_cols": 3,
+                        "web_service": {
+                            "ressource_id": "vmap/formats",
+                            "id_key": "rt_format_id",
+                            "label_key": "rt_format_id"
+                        }
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "select",
+                        "name": "rt_orientation_id",
+                        "label": "FORM_ORIENTATION_VMAP_PRINTREPORT",
+                        "required": true,
+                        "nb_cols": 3,
+                        "web_service": {
+                            "ressource_id": "vmap/orientations",
+                            "id_key": "rt_orientation_id",
+                            "label_key": "rt_orientation_id"
+                        }
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "select",
+                        "name": "outputformats_id",
+                        "label": "FORM_OUTPUT_FORMATS_VMAP_PRINTREPORT",
+                        "required": true,
+                        "nb_cols": 3,
+                        "web_service": {
+                            "ressource_id": "vmap/outputformats",
+                            "id_key": "outputformats_id",
+                            "label_key": "outputformats_id"
+                        }
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "select",
+                        "name": "business_object_id",
+                        "label": "FORM_BUSINESS_OBJECT_VMAP_PRINTREPORT",
+                        "required": true,
+                        "nb_cols": 3,
+                        "web_service": {
+                            "ressource_id": "vmap/businessobjects",
+                            "id_key": "business_object_id",
+                            "label_key": "business_object_id"
+                        }
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "radio",
+                        "name": "multiobject",
+                        "label": "FORM_MULTIOBJECT_VMAP_PRINTREPORT",
+                        "nb_cols": 12,
+                        "options": {
+                            "choices": [
+                                {
+                                    "label": "Oui",
+                                    "value": true
+                                },
+                                {
+                                    "label": "Non",
+                                    "value": false
+                                }
+                            ]
+                        },
+                        "default_value": false
+                    }
+                ]
+            },
+            {
+                "fields": [{
+                        "type": "codemirror",
+                        "name": "htmldefinition",
+                        "label": "FORM_HTML_DEFINITION_VMAP_PRINTREPORT",
+                        "nb_cols": 8,
+                        "required": true,
+                        "codemirrorOptions": {
+                            "runnable": true,
+                            "lineNumbers": true,
+                            "matchBrackets": true,
+                            "mode": "htmlmixed",
+                            "indentUnit": 4,
+                            "indentWithTabs": true,
+                            "enterMode": "keep",
+                            "tabMode": "shift",
+                            "appHeight": "50%",
+                            "appName": "htmldefinition"
+                        }
+                    }, {
+                        "type": "codemirror",
+                        "name": "jsonobjects",
+                        "label": "FORM_JSON_DEFINITION_VMAP_PRINTREPORT",
+                        "nb_cols": 4,
+                        "required": true,
+                        "codemirrorOptions": {
+                            "runnable": true,
+                            "lineNumbers": true,
+                            "matchBrackets": true,
+                            "mode": "htmlmixed",
+                            "indentUnit": 4,
+                            "indentWithTabs": true,
+                            "enterMode": "keep",
+                            "tabMode": "shift",
+                            "appHeight": "50%",
+                            "appName": "jsonobjects"
+                        }
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "button",
+                        "class": "btn-ungroup btn-group-sm",
+                        "nb_cols": 12,
+                        "buttons": [
+                            {
+                                "type": "submit",
+                                "name": "form_submit",
+                                "label": "FORM_UPDATE",
+                                "class": "btn-primary"
+                            },
+                            {
+                                "type": "button",
+                                "name": "return_list",
+                                "label": "FORM_RETURN_LIST",
+                                "class": "btn-primary",
+                                "event": "setMode(\"search\")"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "insert": {
+        "name": "vmap_printreport_insert_form",
+        "title": "FORM_TITLE_VMAP_PRINTREPORT",
+        "input_size": "xs",
+        "beforeEvent": "beforeVmapAdminTemplateSubmit()",
+        "event": "sendSimpleForm()",
+        "afterEvent": "editSectionForm()",
+        "nb_cols": 12,
+        "rows": [
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "name",
+                        "label": "FORM_NAME_VMAP_PRINTREPORT",
+                        "required": true,
+                        "nb_cols": 6
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "select",
+                        "name": "rt_format_id",
+                        "label": "FORM_FORMAT_VMAP_PRINTREPORT",
+                        "required": true,
+                        "nb_cols": 3,
+                        "web_service": {
+                            "ressource_id": "vmap/formats",
+                            "id_key": "rt_format_id",
+                            "label_key": "rt_format_id"
+                        },
+                        "options": ["|"]
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "select",
+                        "name": "rt_orientation_id",
+                        "label": "FORM_ORIENTATION_VMAP_PRINTREPORT",
+                        "required": true,
+                        "nb_cols": 3,
+                        "web_service": {
+                            "ressource_id": "vmap/orientations",
+                            "id_key": "rt_orientation_id",
+                            "label_key": "rt_orientation_id"
+                        },
+                        "options": ["|"]
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "select",
+                        "name": "outputformats_id",
+                        "label": "FORM_OUTPUT_FORMATS_VMAP_PRINTREPORT",
+                        "required": true,
+                        "nb_cols": 3,
+                        "web_service": {
+                            "ressource_id": "vmap/outputformats",
+                            "id_key": "outputformats_id",
+                            "label_key": "outputformats_id"
+                        },
+                        "default_value": "pdf"
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "select",
+                        "name": "business_object_id",
+                        "label": "FORM_BUSINESS_OBJECT_VMAP_PRINTREPORT",
+                        "required": true,
+                        "nb_cols": 3,
+                        "web_service": {
+                            "ressource_id": "vmap/businessobjects",
+                            "id_key": "business_object_id",
+                            "label_key": "business_object_id"
+                        }
+                    }
+                ]
+            },
+            
+            {
+                "fields": [
+                    {
+                        "type": "radio",
+                        "name": "multiobject",
+                        "label": "FORM_MULTIOBJECT_VMAP_PRINTREPORT",
+                        "nb_cols": 12,
+                        "options": {
+                            "choices": [
+                                {
+                                    "label": "Oui",
+                                    "value": true
+                                },
+                                {
+                                    "label": "Non",
+                                    "value": false
+                                }
+                            ]
+                        },
+                        "default_value": false
+                    }
+                ]
+            },
+            {
+                "fields": [{
+                        "type": "codemirror",
+                        "name": "htmldefinition",
+                        "label": "FORM_HTML_DEFINITION_VMAP_PRINTREPORT",
+                        "nb_cols": 8,
+                        "required": true,
+                        "default_value": "",
+                        "codemirrorOptions": {
+                            "runnable": true,
+                            "lineNumbers": true,
+                            "matchBrackets": true,
+                            "mode": "htmlmixed",
+                            "indentUnit": 4,
+                            "indentWithTabs": true,
+                            "enterMode": "keep",
+                            "tabMode": "shift",
+                            "appHeight": "50%",
+                            "appName": "htmldefinition"
+                        }
+                    }, {
+                        "type": "codemirror",
+                        "name": "jsonobjects",
+                        "label": "FORM_JSON_DEFINITION_VMAP_PRINTREPORT",
+                        "nb_cols": 4,
+                        "required": true,
+                        "default_value": "",
+                        "codemirrorOptions": {
+                            "runnable": true,
+                            "lineNumbers": true,
+                            "matchBrackets": true,
+                            "mode": "htmlmixed",
+                            "indentUnit": 4,
+                            "indentWithTabs": true,
+                            "enterMode": "keep",
+                            "tabMode": "shift",
+                            "appHeight": "50%",
+                            "appName": "jsonobjects"
+                        }
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "button",
+                        "class": "btn-ungroup btn-group-sm",
+                        "nb_cols": 12,
+                        "buttons": [
+                            {
+                                "type": "submit",
+                                "name": "form_submit",
+                                "label": "FORM_CREATE",
+                                "class": "btn-primary"
+                            },
+                            {
+                                "type": "button",
+                                "name": "return_list",
+                                "label": "FORM_RETURN_LIST",
+                                "class": "btn-primary",
+                                "event": "setMode(\"search\")"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "display": {
+        "name": "vmap_printreport_display_form",
+        "title": "FORM_TITLE_VMAP_PRINTREPORT",
+        "input_size": "xs",
+        "nb_cols": 12,
+        "rows": [
+            {
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "printreport_id",
+                        "label": "FORM_PRINTTEMPLATE_ID_VMAP_PRINTREPORT",
+                        "nb_cols": 6
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "name",
+                        "label": "FORM_NAME_VMAP_PRINTREPORT",
+                        "nb_cols": 6
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "rt_format_id",
+                        "label": "FORM_FORMAT_VMAP_PRINTREPORT",
+                        "nb_cols": 6
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "rt_orientation_id",
+                        "label": "FORM_ORIENTATION_VMAP_PRINTREPORT",
+                        "nb_cols": 6
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "outputformats_id",
+                        "label": "FORM_OUTPUT_FORMATS_VMAP_PRINTREPORT",
+                        "nb_cols": 6
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "business_object_title",
+                        "label": "FORM_BUSINESS_OBJECT_VMAP_PRINTREPORT",
+                        "nb_cols": 6
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "multiobject",
+                        "label": "FORM_MULTIOBJECT_VMAP_PRINTREPORT",
+                        "nb_cols": 6
+                    }
+                ]
+            },
+            {
+                "fields": [{
+                        "type": "codemirror",
+                        "name": "htmldefinition",
+                        "label": "FORM_HTML_DEFINITION_VMAP_PRINTREPORT",
+                        "nb_cols": 8,
+                        "required": true,
+                        "codemirrorOptions": {
+                            "runnable": true,
+                            "lineNumbers": true,
+                            "matchBrackets": true,
+                            "mode": "htmlmixed",
+                            "indentUnit": 4,
+                            "indentWithTabs": true,
+                            "enterMode": "keep",
+                            "tabMode": "shift",
+                            "appHeight": "50%",
+                            "readOnly": "nocursor"
+                        }
+                    }, {
+                        "type": "codemirror",
+                        "name": "jsonobjects",
+                        "label": "FORM_JSON_DEFINITION_VMAP_PRINTREPORT",
+                        "nb_cols": 4,
+                        "required": true,
+                        "codemirrorOptions": {
+                            "runnable": true,
+                            "lineNumbers": true,
+                            "matchBrackets": true,
+                            "mode": "htmlmixed",
+                            "indentUnit": 4,
+                            "indentWithTabs": true,
+                            "enterMode": "keep",
+                            "tabMode": "shift",
+                            "appHeight": "50%",
+                            "readOnly": "nocursor"
+                        }
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "button",
+                        "class": "btn-ungroup btn-group-sm",
+                        "nb_cols": 6,
+                        "buttons": [
+                            {
+                                "type": "button",
+                                "name": "return_list",
+                                "label": "FORM_RETURN_LIST",
+                                "class": "btn-primary",
+                                "event": "setMode(\"search\")"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}

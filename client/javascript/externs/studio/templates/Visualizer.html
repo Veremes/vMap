@@ -1,0 +1,32 @@
+<div class="panel panel-veremes " id="Visualizer">
+    <div class="panel-heading">
+        <div class="btn-group">
+            <button type="button" class="btn btn-veremes dropdown-toggle" data-toggle="dropdown" ng-click="ctrl.verifyMode()" aria-haspopup="true" id="modal_button_visualizer">
+                {{ctrl.ModeSelected}} <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu">
+                <li><a ng-click="ctrl.form()">{{::ctrl.text.FormMode}}</a></li>
+                <li><a ng-click="ctrl.json()">{{::ctrl.text.JsonMode}}</a></li>
+                <li><a ng-click="ctrl.js()">{{::ctrl.text.JsMode}}</a></li>
+                <li ng-hide="ctrl.CSSPresent"><a ng-click="ctrl.css()">{{::ctrl.text.CssMode}}</a></li>
+            </ul>   
+        </div>
+        <i ng-show="error_Json" class="fa fa-exclamation-triangle fa-x2" aria-hidden="true"></i>
+        <span id="studio-full-screen-btn" class="icon-enlarge right pointer" style="line-height: 1.4" ng-click="ctrl.toggleFullScreen()"></span>
+    </div>
+    <div class="panel-body visualizer-panel">
+        <button ng-if="ctrl.json_" id="Json_Save_button" type="button" class="btn btn-info btn-fly" onclick="angular.element('#cm_Json_Editor').scope().ctrl.saveData()" title="{{::ctrl.text.SaveJSON}}">
+            <span class="glyphicon glyphicon-floppy-open" aria-hidden="true"></span>
+        </button>
+        <button ng-if="ctrl.form_" id="Json_Save_button" type="button" class="btn btn-info btn-fly" onclick="oVFB.reloadLists()" title="{{::ctrl.text.LoadDatasourcesValues}}">
+            <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+        </button>
+<!--        <button ng-if="ctrl.js_" id="JsDefault_Load_button" type="button" class="btn btn-info btn-fly" ng-click="ctrl.loadDefaultJavascript()" title="{{::ctrl.text.LoadDefaultJavascript}}">
+            <span class="icon icon-input" aria-hidden="true"></span>
+        </button>-->
+        <div data-app-visualizermode-form></div>
+        <div data-app-visualizermode-json></div>
+        <div data-app-editor-js></div>
+        <div data-app-editor-css></div>
+    </div>
+</div>

@@ -1,0 +1,57 @@
+
+<div style="text-align: left">
+
+    <div class="print-form-label" ng-show="!ctrl.properties.models.length > 0">
+        Aucun modèle d'impression associé
+    </div>
+
+    <form role="form" ng-submit="ctrl.prepareAndLaunchPrint()" ng-show="ctrl.properties.models.length > 0">
+        <div class="print-form-label">Modèle</div>
+        <select id="select-print-format" class="form-control minus" ng-model="modelIndex" ng-change="ctrl.loadModelParmas(modelIndex)">
+            <option ng-repeat="model in ctrl.properties.models"
+                    value="{{$index}}">{{model.name}}</option>
+        </select>
+
+        <div ng-repeat="variable in ctrl.model.variables" ng-if="variable.editable === true">
+            <div class="print-form-label">{{variable.label}}</div>
+            <input class="minus" style="width: 100%; border: 0px;" type="text" placeholder="{{variable.description}}" ng-model="variable.value" required>
+            <br>
+        </div>
+
+        <div class="print-form-label">Echelle</div>
+        <select id="select-print-scale" class="form-control minus" ng-model="ctrl.scale" ng-change="ctrl.changeScale(ctrl.scale)">
+            <option value="auto">{{ctrl.currentScale}}</option>
+            <option value="1000000">1:1,000,000</option>
+            <option value="500000">1:500,000</option>
+            <option value="200000">1:200,000</option>
+            <option value="100000">1:100,000</option>
+            <option value="50000">1:50,000</option>
+            <option value="25000">1:25,000</option>
+            <option value="10000">1:10,000</option>
+            <option value="5000">1:5,000</option>
+            <option value="2500">1:2,500</option>
+            <option value="2000">1:2,000</option>
+            <option value="1000">1:1,000</option>
+            <option value="500">1:500</option>
+            <option value="200">1:200</option>
+            <option value="100">1:100</option>
+        </select>
+
+        <div class="hidden print-form-label">Résolution</div>
+        <select id="select-print-resolution" class="hidden form-control minus" ng-model="ctrl.dpi">
+            <option value="1">72 dpi</option>
+            <option value="2" ng-show="ctrl.resolution <= 4">144 dpi</option>
+            <option value="4" ng-show="ctrl.resolution <= 2">288 dpi</option>
+        </select>
+
+        <button type="button"
+                class="btn btn-info btn-sm"
+                style="margin-top: 10px"
+                ng-class="{'active': ctrl.currentAction === 'print-modifyPrintZone'}"
+                ng-click="ctrl.managePrintZone()"><span class="glyphicon glyphicon-move"></span></button>
+
+        <button type="submit"
+                class="btn btn-info btn-sm"
+                style="margin-top: 10px">Imprimer</button>
+    </form>
+</div>

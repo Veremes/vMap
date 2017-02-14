@@ -1,0 +1,80 @@
+body{
+	text-align: justify;
+	font-size: arial;
+}
+
+#logo{
+	height: 150px;
+}
+
+#logo img{
+	margin-left: 100px;
+	float:right;
+}
+
+h1{
+	font-size: 50px;
+}
+
+section{
+	margin-left: 180px;
+	margin-right: 20px;
+}
+
+nav{
+	top:10px;
+	width: 130px;
+	height: inherit;
+	margin-left: 15px;
+	position:relative;
+	float:left;
+}
+
+.separation{
+	clear: both;
+	position: absolute;
+	margin-top : 10px;
+	margin-left: 150px;
+	height: 300px;
+	width : 2px;
+	background: black;
+	overflow : hidden;
+}
+
+.bouton8 {
+   width:auto; 
+    padding:8px 0; 
+    text-align:center; 
+    display: inline-block; 
+    float:left; 
+    margin:0 15px 15px 0; 
+    font-size: 1.6em; 
+    border-radius:7px; 
+    box-shadow: 0 0 1px rgba( 0, 0, 0, 0.2), 0 -1px 0 rgba( 255, 255, 255, 0.1); 
+    font-size: 0.85em; 
+    width:120px; 
+    color:#333; 
+    text-shadow: 0px 1px 0px rgba( 255, 255, 255, 0.3);
+}
+
+/* -- Bouton gris -- */	
+.bouton8.gris {
+	background: #C8C8C8;
+	background: -webkit-linear-gradient( #C8C8C8, #A0A0A0);
+	background: -moz-linear-gradient( #C8C8C8, #A0A0A0);
+	background: -ms-linear-gradient( #C8C8C8, #A0A0A0);
+	background: -o-linear-gradient( #C8C8C8, #A0A0A0);
+	background: linear-gradient( #C8C8C8, #A0A0A0);
+	}	
+.bouton8.gris:hover {
+	background: #D8D8D8;
+	background: -webkit-linear-gradient( #D8D8D8, #B0B0B0); 
+	background: -moz-linear-gradient( #D8D8D8, #B0B0B0); 
+	background: -ms-linear-gradient( #D8D8D8, #B0B0B0); 
+	background: -o-linear-gradient( #D8D8D8, #B0B0B0); 
+	background: linear-gradient( #D8D8D8, #B0B0B0);
+	}
+.bouton8.gris:active{box-shadow: 1px 1px 10px #999 inset, 0 1px 0 rgba( 255, 255, 255, 0.4);}
+
+.bouton8.gris {color:#ffffff; text-shadow: 0px 1px 0px rgba( 255, 255, 255, 0.4);}
+.bouton8.gris:hover,  .bouton.gris:active {color:#000000;text-shadow: 0px 1px 0px rgba( 0, 0, 0, 0.4);}

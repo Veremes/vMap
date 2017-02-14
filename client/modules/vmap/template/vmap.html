@@ -1,0 +1,69 @@
+<div id="container">
+
+    <!-- Bandeau de gauche -->
+    <div id="left-sidebar" ng-class="vmapCtrl.left_open ? 'open' : ''">
+        <div id="maplistlitle-container" class="dropdown">
+            <!--voir dans maplistlitle.js pour l'evenement de fermeture de la dropdown-->
+            <button id="maplistlitle-button" class="btn btn-success dropdown-toggle btn-map-manager" 
+                    type="button"
+                    onclick="$('#maplistlitle-container').toggleClass('open')">
+                <span class="icon-map left" style="font-size: 30px"></span>
+                <span class="left" style="margin: 6px 14px">CARTES</span>
+                <span class="right" style="margin: 6px 4px">
+                    <span class="caret"></span>
+                </span>
+            </button>
+            
+            
+            <div id="dropdownMenuMaps" class="dropdown-menu map-list-litle-panel">
+
+                <app-maplistlitle app-lang="ctrl.lang" app-maplistlitle-map="ctrl.map"></app-maplistlitle>
+
+                <div id="map-manager-button-container" style="text-align: center">
+                    <button id="map-manager-button" 
+                            type="button" 
+                            class="btn btn-success btn-sm btn-modal margin-10"
+                            onclick="oVmap.simuleClick('btn-reload-myMap'); $('#mapModalManager').modal('show'); $('#dropdownMenuMaps').dropdown('toggle')">
+                        GESTION DES CARTES
+                    </button> 
+                </div>
+            </div>
+        </div>
+
+        <div app-layertree app-map="vmapCtrl.map" app-proj="vmapCtrl.proj" app-lang="vmapCtrl.lang" id="app-layertree"></div>
+        <div app-layersorder app-map="vmapCtrl.map" app-proj="vmapCtrl.proj" app-lang="vmapCtrl.lang" id="app-layersorder"></div>
+        <div app-maplegend app-map="vmapCtrl.map" app-proj="vmapCtrl.proj" app-lang="vmapCtrl.lang" id="app-maplegend"></div>
+        <div id="LayersDiv"></div> 
+
+        <!-- Map Modal -->
+        <div class="modal fade" id="mapModalManager" role="dialog">
+            <app-mapmodal app-lang="vmapCtrl.lang" app-map="vmapCtrl.map" app-proj="vmapCtrl.proj" id="app-mapmodal"></app-mapmodal>
+        </div>
+    </div>
+
+    <!-- Outils Vmap -->
+    <app-vmaptools id="vmap-tools" app-lang="vmapCtrl.lang" app-map="vmapCtrl.map" app-proj="vmapCtrl.proj" app-infos="vmapCtrl.infos" app-action="vmapCtrl.currentAction"></app-vmaptools>
+
+    <!-- Ouvre le bandeau de gauche -->
+    <div id="opener-sidebar" ng-click="vmapCtrl.left_open = !vmapCtrl.left_open" onclick="oVmap.resizeLayerTools(false); oVmap.getToolsManager().getBasicTools().toggleOutTools();">
+        <div class="layer-tools-btn shadow-hover icon-tree" ng-class="vmapCtrl.left_open ? 'open' : ''" data-original-title="Couches et cartes"></div>
+    </div>
+    
+    <!-- Carte -->
+    <div id="map-container" ng-class="ctrl.bottom_open ? 'open' : ''">
+        <app-map app-map="vmapCtrl.map" app-action="vmapCtrl.currentAction"></app-map>
+    </div>
+
+    <!-- Bandeau de selection -->
+    <div id="opener-bottombar" class="list-group-item active">
+        <div id="opener-bottombar-1" class="open-selection-info" ng-click="ctrl.bottom_open = !ctrl.bottom_open" onclick="oVmap.minResizeBottomBar()"></div>
+        <div id="opener-bottombar-2" class="open-more-selection-info" ng-click="ctrl.bottom_open = !ctrl.bottom_open" onclick="oVmap.maxResizeBottomBar()"><button class="btn-open-more-selection-info">^</button></div>
+    </div>
+    <div id="bottombar" ng-class="{'open': ctrl.bottom_open, 'bottombar_right_open': vmapCtrl.right_open, 'bottombar_left_open': vmapCtrl.left_open, 'bottombar_sides_open': vmapCtrl.right_open && vmapCtrl.left_open}">
+        <div id="info-container" app-infocontainer app-infocontainer-lang="vmapCtrl.lang" app-infos="vmapCtrl.infos"></div>
+    </div>
+</div>
+
+
+
+

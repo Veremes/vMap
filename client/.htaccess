@@ -1,0 +1,22 @@
+<IfModule mod_deflate.c>
+  # place filter 'DEFLATE' on all outgoing content
+  SetOutputFilter DEFLATE
+  # exclude uncompressible content via file type
+  SetEnvIfNoCase Request_URI \.(?:gif|jpe?g|png|rar|zip)$ no-gzip
+  <IfModule mod_headers.c>
+    # properly handle requests coming from behind proxies
+    Header append Vary User-Agent
+  </IfModule>
+</IfModule>
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+#Enlève le répertoire de l'application ???
+RewriteRule (.*) %1 [L]
+#Mode debug ?
+#RewriteCond %{QUERY_STRING} debug
+#RewriteRule ^$ index-debug.html [L]
+#Eviter le cross-domain.
+Header set Access-Control-Allow-Origin "*"
+Header set Access-Control-Allow-Headers "origin, x-requested-with, content-type"
+Header set Access-Control-Allow-Methods "PUT, GET, POST, DELETE, OPTIONS"

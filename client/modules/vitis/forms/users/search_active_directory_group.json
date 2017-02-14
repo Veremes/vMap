@@ -1,0 +1,52 @@
+{
+    "search":{
+        "name":"active_directory_groups_search_form",
+        "title":"",
+        "input_size":"xs",
+        "event":"searchAdTree('group')",
+        "nb_cols":12,
+        "rows":[
+            {
+                "fields":[
+                    {
+                        "type":"text",
+                        "name":"search_group",
+                        "label":"FORM_GROUP_ACTIVE_DIRECTORY_USERS_GROUP",
+                        "tooltip": {
+                                "title":"",
+                                "content":"FORM_GROUP_INFO_ACTIVE_DIRECTORY_USERS_GROUP",
+                                "container": "body"
+                        },
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"button",
+                        "class":"btn-ungroup btn-group-sm",
+                        "nb_cols":12,
+                        "buttons":[
+                            {
+                                "type":"submit",
+                                "name":"form_submit",
+                                "label":"FORM_SEARCH_BTN_ACTIVE_DIRECTORY_USERS_GROUP",
+                                "class":"btn-primary"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "update":{
+            
+    },
+    "insert":{
+
+    },
+    "display":{
+            
+    }
+}

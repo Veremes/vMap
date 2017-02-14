@@ -1,0 +1,8 @@
+javascript/app
+javascript/require
+javascript/test
+javascript/externs/openLayers/ol
+javascript/externs/openLayers/ol.ext
+javascript/externs/studio/properties
+javascript/externs/studio/javascript
+modules/vitis/javascript

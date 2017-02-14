@@ -1,0 +1,44 @@
+
+<div id="selection-info-container">
+
+	<!--boutons de navigation-->
+	<div id="selection-nav" class="transparent">
+		<ul class="nav nav-pills nav-select">
+			<li role="presentation" ng-repeat="node in ctrl.FeaturesSelected">
+				<a data-toggle="pill"
+				   id="selection-layer-{{this['$index']}}-btn"
+				   class="basic-tools-element pointer selection-nav-element btn btn-default"
+				   href="#selection-layer-{{this['$index']}}"
+				   ng-click="ctrl.reloadSelection()">
+					{{node.name}}
+				</a>
+			</li>
+		</ul>
+	</div>
+
+	<!--tables-->
+	<div id="selection-info-lists">
+		<div id="selection-layer-{{this['$index']}}" 
+			 class="fade absolute selection-table" 
+			 ng-repeat="node in ctrl.FeaturesSelected">
+			<table id="selection-table-{{this['$index']}}" class="font-10"></table>
+		</div>
+	</div>
+
+
+
+
+	<div id="selection-message"></div>
+	<div id="feature-info" style="display: none"></div>
+	<div id="feature-info2" style="display: none"></div>
+
+	<button id="btn-refresh-selection" ng-click="ctrl.reloadSelection()" style="display: none">Reset Selection</button>
+
+	<div class="load-img"><img src="images/ajax-load-big.gif"></div>
+
+
+
+
+</div>
+
+

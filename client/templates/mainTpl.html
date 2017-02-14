@@ -1,0 +1,53 @@
+<div data-app-main="">
+    <header id="header_line" class="row">
+        <!-- Login de l'utilisateur -->
+        <div class="dropdown">
+            <div id="user_column" class="user_column" data-toggle="dropdown">
+                {{sUserLoginText}} <span class="caret"></span>
+            </div>
+            <ul class="dropdown-menu dropdown-user-menu">
+                <li><a href="" ng-click="selectMode('user')" data-translate="USER_INFOS"></a></li>
+                <li><a id="btn_disconnect" href="" ng-click="disconnect()" data-translate="DISCONNECT"></a></li>
+            </ul>
+        </div>
+        <div class="col-xs-12 banner_line">
+            <div class="row">
+                <!-- Logo -->
+                <div id="gtf_logo" class="col-xs-1">
+                    <span class="icon-logo_{{oProperties.app_name| lowercase}} banner_line_logo"></span>
+                </div>
+                <!-- menu des objets -->
+                <nav id="object_column">
+                    <a ng-repeat="object in objects|filter: {display_menu: true} track by $index" ng-click="selectObject(object.name, object.startMode, $event)" ng-class="{object_link_selected: (object.name == sSelectedObjectName)}" id="object_column_{{object.name}}" href="#" class="object_link" ng-bind="object.label"></a>
+                </nav>
+            </div>        
+        </div>
+    </header>
+    <section id="works_line" class="row works_line">
+        <!-- menu des modes -->
+        <div id="mode_column_layout" class="col-xs-1">
+            <button type="button" class="row btn button_mode button_mode_top" ng-show="showModeScrollBoutton()" ng-click="scrollMode(-50)"><i class="icon icon-keyboard_arrow_up"></i></button>
+            <nav id="mode_column" class="row mode_column no_bs_padding">
+                <ul class="list-unstyled">
+                    <li ng-repeat="mode in ::modes track by $index" data-repeat-mode="">
+                        <a ng-click="selectMode(mode.mode_id, $event)" id="mode_{{::mode.mode_id}}" class="icon-{{::mode.mode_id}}" ng-class="{mode_selected:$first}" href="#" data-content="{{::mode.text}}" data-original-title="{{::mode.title}}"></a>
+                    </li>
+                </ul>
+            </nav>
+            <button type="button" class="row btn button_mode button_mode_down" ng-show="showModeScrollBoutton()" ng-click="scrollMode(50)"><i class="icon icon-keyboard_arrow_down"></i></button>
+        </div>
+        <!-- Container des object de l'application -->
+        <section id="data_column" class="col-xs-11 data_column no_bs_padding no_overflow">
+            <!-- Objests de l'application -->
+            <div ng-repeat="mode in ::modes track by $index" id="container_mode_{{::mode.mode_id}}" class="container-mode"></div>
+        </section>
+    </section>
+    <footer id="footer_line" class="row footer_line">
+        <div id="footer-credits_column" class="col-xs-6 footer-credits_column">
+            <a href="#" ng-click="showCredits()" data-translate="CREDITS"></a>
+        </div>
+        <div class="col-xs-6 text-right footer-logo_column">
+            <img src="images/logo-veremes.png">
+        </div>
+    </footer>
+</div>

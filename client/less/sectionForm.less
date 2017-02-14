@@ -1,0 +1,111 @@
+.section-form {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #f8f8f8;
+}
+
+// Titre de la section.
+.section-form-title {
+    padding: 10px 25px;
+    color: @font-color-purple;
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+//
+// Element du menu des sections.
+.section-form-edit-first, .section-form-edit-second {
+    height: 100%;
+    padding: 0;
+    overflow-x: hidden;
+}
+.section-form-edit-second {
+    overflow-y: hidden;
+}
+
+.section-form-edit-first {
+    overflow-y: auto;
+}
+
+.section-form-edit-first form {
+    padding: 10px;
+    background-color: #ffffff;
+    border: 1px solid #838383;
+    border-radius: 10px;
+}
+// Element du formulaire.
+.section-form-edit-second {
+}
+
+//
+// Menu des sections.
+.section-form-section-title{
+    .section-form-section;
+    cursor: auto;
+    cursor: initial;
+    margin: 13px 0px 6px 0px;
+}
+
+.section-form-section, .section-form-section-selected, .section-form-section-insert {
+    padding: 15px;
+    background-position: 97% center;
+    background-repeat: no-repeat;
+    border-color: @application-lighen-color-theme;
+    border-style: solid;
+    border-width: 1px 1px 0 1px;
+}
+
+.section-form-section, .section-form-section-insert {
+    color: white;
+    cursor: pointer;
+    background-color: @application-lighen-color-theme;
+}
+
+.section-form-section:last-child, .section-form-section-insert:last-child {
+    border-width: 1px;
+}
+
+.section-form-section-selected, .section-form-section:hover {
+    color: @application-color-theme;
+    font-weight: bold;
+    background-color: #ffffff;
+}
+.section-keyboard_arrow_right{
+    font-size: 40px;
+    line-height: 0;
+    float: right;
+    margin: 10px -12px 0px 0px;
+}
+.sections-container{
+    margin-left: 12px;
+}
+
+.section-form-section-insert {
+    cursor: auto;
+}
+//
+// Conteneurs des sections
+.container-section {
+    display: none;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.col-lg-2_5, .col-xs-2_5 {
+    width: 20%;
+    float: left;
+    position: relative;
+    min-height: 1px;
+}
+
+.col-lg-9_5, .col-xs-9_5 {
+    width: 80%;
+    float: left;
+    position: relative;
+    min-height: 1px;
+}

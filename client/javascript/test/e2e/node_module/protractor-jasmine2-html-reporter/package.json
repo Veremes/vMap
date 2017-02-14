@@ -1,0 +1,62 @@
+{
+  "name": "protractor-jasmine2-html-reporter",
+  "version": "0.0.5",
+  "description": "HTML reporter for Jasmine2 and Protractor",
+  "main": "index.js",
+  "scripts": {
+    "test": "protractor protractor.config.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Kenzitron/protractor-jasmine2-html-reporter"
+  },
+  "keywords": [
+    "jasmine2",
+    "protractor",
+    "reporter",
+    "html",
+    "test",
+    "functional testing",
+    "screenshots",
+    "end2end",
+    "bdd"
+  ],
+  "author": {
+    "name": "Alejandro Asensio",
+    "email": "alejandro@kenzilab.com",
+    "url": "http://www.kenzilab.com/"
+  },
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/Kenzitron/protractor-jasmine2-html-reporter/issues"
+  },
+  "dependencies": {
+    "hat": "0.0.3",
+    "lodash": "^3.0.0",
+    "mkdirp": "^0.5.0",
+    "string.prototype.startswith": "^0.2.0"
+  },
+  "gitHead": "ab3d5e30eff07f0a563ed2cacd16e27bfd82b3cc",
+  "homepage": "https://github.com/Kenzitron/protractor-jasmine2-html-reporter",
+  "_id": "protractor-jasmine2-html-reporter@0.0.5",
+  "_shasum": "0628bfec981618a85e9228144abe6b0a0dd029d6",
+  "_from": "protractor-jasmine2-html-reporter@*",
+  "_npmVersion": "2.7.1",
+  "_nodeVersion": "0.10.21",
+  "_npmUser": {
+    "name": "kenzitron",
+    "email": "kenzitron@gmail.com"
+  },
+  "maintainers": [
+    {
+      "name": "kenzitron",
+      "email": "kenzitron@gmail.com"
+    }
+  ],
+  "dist": {
+    "shasum": "0628bfec981618a85e9228144abe6b0a0dd029d6",
+    "tarball": "http://registry.npmjs.org/protractor-jasmine2-html-reporter/-/protractor-jasmine2-html-reporter-0.0.5.tgz"
+  },
+  "directories": {},
+  "_resolved": "https://registry.npmjs.org/protractor-jasmine2-html-reporter/-/protractor-jasmine2-html-reporter-0.0.5.tgz"
+}

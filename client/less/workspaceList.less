@@ -1,0 +1,247 @@
+// boutons d'actions dans la liste des enregistrements
+.workspace-list-action > img {
+    margin-left: 15px;
+    cursor: pointer;
+}
+
+// ui-grid
+.workspacelist-grid {
+    width: 100%;
+    height: 100%;
+    background-color: #f8f8f8;
+}
+.workspacelist-grid-data {
+    height: auto;
+    //width: calc(100% - 2px);
+    font-size: 12px;
+}
+
+// ui-grid : header
+.workspacelist-grid-header, .workspacelist-grid-footer {
+    padding: 0 7px;
+    border-image: none;
+    -moz-border-bottom-colors: none;
+    -moz-border-left-colors: none;
+    -moz-border-right-colors: none;
+    -moz-border-top-colors: none;
+}        
+
+.workspacelist-grid-header {
+    font-family: arial;
+    font-size: 14px;
+}
+
+.workspacelist-grid-header-title {
+    min-height: 32px;
+    line-height: 32px;
+    padding: 0 7px;
+    font-weight: bold;
+    color: @application-darken-color-theme;
+    background: rgba(0, 0, 0, 0) url(@ui-grid-bg-image) repeat-x scroll center top;
+    border-color: -moz-use-text-color #ccc;
+    border-style: none solid;
+    border-width: 0 1px 1px 0;
+}
+//
+// Formulaire de recherche.
+.workspacelist-grid-header-search {
+    min-height: 32px;
+    line-height: 32px;
+    padding-left: 7px;
+    color: @application-darken-color-theme;
+    background: rgba(0, 0, 0, 0) linear-gradient(to bottom, #ededed 0%, #f8f8f8 100%) repeat scroll 0 0;
+    border-bottom: 1px solid #e3e3e3;
+}
+
+.workspacelist-grid-header-search-button-arrow-icon{
+    font-size: 22px;
+    top: 5px !important;
+    left: -3px;
+}
+.workspacelist-grid-header-search-button-filter-icon{
+    font-size: 19px;
+    top: 3px !important;
+    left: -3px;
+}
+
+.workspacelist-grid-header-search-button {
+    cursor: pointer;
+}
+
+.workspacelist-grid-header-search-form {
+    display: none; 
+    padding: 10px 0px;
+    color: #000000;
+    background-color: #f8f8f8;
+}
+//
+.workspacelist-grid-header .row {
+    margin: 0;
+}
+
+// ui-grid : footer
+.workspacelist-grid-footer {
+    min-height: 32px;
+    line-height: 32px;
+    background: rgba(0, 0, 0, 0) url(@ui-grid-bg-image) repeat-x scroll 0 -1px;
+    border-color: -moz-use-text-color #ccc #ccc;
+    //border-style: none solid solid;
+    //border-width: 0 1px 1px 0;
+}
+.workspacelist-grid-footer button {
+    margin: 0 2px;
+}
+
+.ui-grid-pager-panel {
+    background: rgba(0, 0, 0, 0) url(@ui-grid-bg-image) repeat-x scroll 0 -1px;
+    border-color: -moz-use-text-color #ccc #ccc;
+    border-image: none;
+    border-style: none solid solid;
+    border-width: 0 1px 1px;
+}
+
+// Pagination
+.ui-grid-pagination {
+    font-size: 12px;
+    font-weight: normal;
+}
+
+.ui-grid-pagination-page-input {
+    width: 70px !important;
+    height: 26px;
+    //text-align: right;
+}
+
+.ui-grid-pagination button {
+    margin: 0 2px;
+}
+
+.ui-grid-pagination-nb-page-select {
+    width: 52px !important;
+    height: 26px !important;
+}
+//
+// Bordure droite sur le menu des modes.
+.workspacelist-grid .ui-grid {
+    border-left: none;
+}
+
+// Images en fond d'élément (listes).
+.true-icon {
+    background: url(../images/true.png) center center no-repeat;
+}
+.custom-icon {
+    background: url(../images/custom.png) center center no-repeat;
+}
+.false-icon {
+    background: url(../images/false.png) center center no-repeat;
+}
+.wk-params-icon {
+    background: url(../images/wk_params.png) center center no-repeat;
+}
+.info-icon {
+    background: url(../images/i.png) center center no-repeat;
+}
+.enveloppe-icon {
+    background: url(../images/enveloppe.png) center center no-repeat;
+}
+.download-icon {
+    background: url(../images/download.png) center center no-repeat;
+}
+.page-icon {
+    background: url(../images/page.png) center center no-repeat;
+}
+//
+.status1-icon {
+    background: url(../images/sql_list/st1.png) center center no-repeat;
+}
+.status2-icon {
+    background: url(../images/sql_list/st2.png) center center no-repeat;
+}
+.status3-icon {
+    background: url(../images/sql_list/st3.png) center center no-repeat;
+}
+.status4-icon {
+    background: url(../images/sql_list/st4.png) center center no-repeat;
+}
+.status5-icon {
+    background: url(../images/sql_list/st5.gif) center center no-repeat;
+}
+.status6-icon {
+    background: url(../images/sql_list/st6.png) center center no-repeat;
+}
+
+// Lien avec un icône.
+.icon-link {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+// Colonne avec un glyph icône.
+.grid-column-glyph-icon {
+    margin-top: 0.3em;
+    color: black;
+    font-size:1.5em;
+    text-decoration: none;
+}
+.grid-column-glyph-icon:hover {
+    color: black;
+    text-decoration: none;
+}
+
+// Liste dans une section.
+.section-container-workspace-list {
+    border-left: 1px solid #ccc;
+}
+// Liste dans une fenêtre modale.
+.dialog-modal-window-workspace-list {
+}
+.dialog-modal-window-workspace-list .modal-body, .dialog-modal-window-workspace-list .bootbox-body, .dialog-modal-window-workspace-list .bootbox-body > div {
+    height: 100%;
+}
+.dialog-modal-window-workspace-list .bootbox-body > div {
+    padding-bottom: 20px;
+}
+.dialog-modal-window-workspace-list .workspacelist-grid .ui-grid, .dialog-modal-window-workspace-list .workspacelist-grid-header, .dialog-modal-window-workspace-list .workspacelist-grid-footer {
+    border: 1px solid #d4d4d4;
+}
+.dialog-modal-window-workspace-list .workspacelist-grid-header-title {
+    border: none;
+}
+
+// Ligne sélectionnée de couleur différente si le drag'n drop est activé.
+.ui-grid-row.ui-grid-row-selected > [ui-grid-row] > [draggable] > .ui-grid-cell {
+    background-color: #c9dde1;
+}
+//
+.ui-grid-draggable-row-over {
+//    cursor: pointer;
+}
+.ui-grid-draggable-row-over:before {
+    border-bottom: 1px solid #aaa;
+}
+
+// Alignement du contenu d'une colonne.
+.cell-align-left {
+    text-align: left;
+}
+.cell-align-center {
+    text-align: left;
+}
+.cell-align-right {
+    text-align: right;
+}
+
+// Champ de form. de type "number" dans une colonne de la liste.
+.cell-input-type-text {
+    width: 100%;
+    height: 100%;
+}
+.cell-input-type-text > input[type="number"] {
+    width: 100%;
+    height: 100%;
+    border: none;
+    text-align: right;
+    background-color: inherit;
+}
+//

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>Map for printing</title>
+        <link rel="stylesheet" href="../lib/ol/ol.css" type="text/css">
+        <script src="../lib/ol/ol.js"></script>
+        <style>
+            #map {
+                width: 100%;
+                height: 100%;
+                top: 0;
+                left: 0;
+                position: absolute;
+                z-index: 1;
+            }
+            #progress {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                height: 4px;
+                background: rgba(0, 60, 136, 0.8);
+                width: 0;
+                transition: width 250ms;
+                z-index: 2;
+            } 
+        </style>
+    </head>
+    <body>
+        <div id="map" class="map"></div>
+        <script src="../utils/utils.js"></script>
+        <script src="../utils/http.js"></script>
+        <script src="../utils/properties.js"></script>
+        <script src="progress.js"></script>
+        <script src="projections.js"></script>
+        <script src="scale.js"></script>
+        <script src="map.js"></script>
+        <script src="index.js"></script>
+    </body>
+</html>

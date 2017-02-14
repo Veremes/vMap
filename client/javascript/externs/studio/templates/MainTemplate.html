@@ -1,0 +1,808 @@
+<div class="container low-app-padding app_window works_line_studio col-xs-12" id="FormBuilder">
+    <!--Composants-->
+    <div id="studio_container">
+        <div class="col-xs-3 low-padding" id="first-Layout">
+            <!--Formulaire-->
+            <div data-app-json-loader></div>
+            <!--<div data-app-dev-tools></div>-->
+            <!--Definition-->
+            <div data-app-element-form></div>
+        </div>
+        <div class="col-xs-6 low-padding" id="third-Layout" >
+            <!--Visualiseur-->
+            <div data-app-visualizer></div>
+        </div>
+        <div class="col-xs-3 low-padding" id="second-Layout">
+            <!--Paramètres publiés-->
+            <div data-app-form-tools></div>
+        </div>
+        <!--Modale source de donnees-->
+        <div id="studio-datasource-modal" class="modal fade" role="dialog">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">{{::ctrl.text.Element.Component.Select.Datasources}}</h4>
+                    </div>
+                    <div class="modal-body modal-body-big">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <!--objet-->
+                                <div ng-show="selectedDatasource.dataType === 'text'">
+                                    <h4>{{::ctrl.text.Element.Component.Select.Select_Text}}</h4>
+                                    <form class="element-margin form-group-xs">
+                                        <!--ID-->
+                                        <div ng-show="false" class="input-group element-margin input-group-xs width-100">
+                                            <label class="control-label">ID</label>
+                                            <input type="text" class="form-control" ng-model="selectedDatasource.id" disabled>
+                                        </div>
+                                        <!--Nom-->
+                                        <div class="input-group element-margin input-group-xs width-100">
+                                            <label class="control-label">{{::ctrl.text.Element.Component.Select.Name}}</label>
+                                            <input type="text" class="form-control" ng-model="selectedDatasource.name" disabled>
+                                        </div>
+                                        <!--Description-->
+                                        <!--<div class="input-group element-margin input-group-xs width-100">
+                                            <label class="control-label">{{::ctrl.text.Element.Component.Select.Description}}</label>
+                                            <input type="text" class="form-control" ng-model="selectedDatasource.description" disabled>
+                                        </div>-->
+                                        <!--Contenu-->
+                                        <label class="control-label" data-translate="{{::ctrl.text.Element.Component.Select.Content}}"></label>
+                                        <div>
+                                            <i>{{::ctrl.text.Element.Component.Select.Content_description}}</i>
+                                        </div>                                    
+                                        <textarea style="width: 398px; height: 132px; cursor: not-allowed" ng-model="selectedDatasource.options_model" disabled></textarea>
+                                    </form>
+                                </div>
+                                <!--valeurs d'une table-->
+                                <div ng-show="selectedDatasource.dataType === 'tableValue'">
+                                    <h4>{{::ctrl.text.Element.Component.Select.Select_Table_Values}}</h4>
+                                    <form class="element-margin form-group-xs">
+                                        <!--ID-->
+                                        <div ng-show="false" class="input-group element-margin input-group-xs width-100">
+                                            <label class="control-label">ID</label>
+                                            <input type="text" class="form-control" ng-model="selectedDatasource.id" disabled>
+                                        </div>
+                                        <!--Name-->
+                                        <div class="input-group element-margin input-group-xs width-100">
+                                            <label class="control-label">{{::ctrl.text.Element.Component.Select.Name}}</label>
+                                            <input type="text" class="form-control" ng-model="selectedDatasource.name" disabled>
+                                        </div>
+                                        <!--Description-->
+                                        <!--<div class="input-group element-margin input-group-xs width-100">
+                                            <label class="control-label">{{::ctrl.text.Element.Component.Select.Description}}</label>
+                                            <input type="text" class="form-control" ng-model="selectedDatasource.description" disabled>
+                                        </div>-->
+                                        <!--Database-->
+                                        <div class="input-group element-margin input-group-xs width-100">
+                                            <label class="control-label">{{::ctrl.text.Element.Component.Select.Database}}</label>
+                                            <input type="text" class="form-control" ng-model="selectedDatasource.parameters.database" disabled>
+                                        </div>
+                                        <!--Schema-->
+                                        <div class="input-group element-margin input-group-xs width-100">
+                                            <label class="control-label">{{::ctrl.text.Element.Component.Select.Schema}}</label>
+                                            <input type="text" class="form-control" ng-model="selectedDatasource.parameters.schema" disabled>
+                                        </div>
+                                        <!--Table-->
+                                        <div class="input-group element-margin input-group-xs width-100">
+                                            <label class="control-label">{{::ctrl.text.Element.Component.Select.Table}}</label>
+                                            <input type="text" class="form-control" ng-model="selectedDatasource.parameters.table" disabled>
+                                        </div>
+                                        <!--Filtre-->
+                                        <div class="input-group element-margin input-group-xs width-100">
+                                            <label class="control-label">{{::ctrl.text.Element.Component.Select.Filter}}</label>
+                                            <input type="text" class="form-control" placeholder="ex: name='Public'" ng-model="selectedDatasource.parameters.filter" disabled>
+                                        </div>
+                                    </form>
+                                </div>
+                                <!--Service web-->
+                                <div ng-show="selectedDatasource.dataType === 'webService'">
+                                    <h4>{{::ctrl.text.Element.Component.Select.Select_Webservice}}</h4>
+                                    <form class="element-margin form-group-xs">
+                                        <!--ID-->
+                                        <div ng-show="false" class="input-group element-margin input-group-xs width-100">
+                                            <label class="control-label">ID</label>
+                                            <input type="text" class="form-control" ng-model="selectedDatasource.id" disabled>
+                                        </div>
+                                        <!--name-->
+                                        <div class="input-group element-margin input-group-xs width-100">
+                                            <label class="control-label">{{::ctrl.text.Element.Component.Select.Name}}</label>
+                                            <input type="text" class="form-control" ng-model="selectedDatasource.name" disabled>
+                                        </div>
+                                        <!--description-->
+                                        <!--<div class="input-group element-margin input-group-xs width-100">
+                                            <label class="control-label">{{::ctrl.text.Element.Component.Select.Description}}</label>
+                                            <input type="text" class="form-control" ng-model="selectedDatasource.description" disabled>
+                                        </div>-->
+                                        <!--web service-->
+                                        <div class="input-group element-margin input-group-xs width-100">
+                                            <label class="control-label">{{::ctrl.text.Element.Component.Select.Webservice}}</label>
+                                            <input type="text" class="form-control" ng-model="selectedDatasource.webservice.name" disabled>
+                                        </div>
+                                        <!--ressource-->
+                                        <div class="input-group element-margin input-group-xs width-100">
+                                            <label class="control-label">{{::ctrl.text.Element.Component.Select.Ressource}}</label>
+                                            <input type="text" class="form-control" ng-model="selectedDatasource.ressource.name" disabled>
+                                        </div>
+                                    </form>
+                                </div>
+                                <!--Objet métier-->
+                                <div ng-show="selectedDatasource.dataType === 'businessObject'">
+                                    <h4>{{::ctrl.text.Element.Component.Select.BusinessObject}}</h4>
+                                    <form class="element-margin form-group-xs">
+                                        <!--ID-->
+                                        <div ng-show="false" class="input-group element-margin input-group-xs width-100">
+                                            <label class="control-label">ID</label>
+                                            <input type="text" class="form-control" ng-model="selectedDatasource.id" disabled>
+                                        </div>
+                                        <!--name-->
+                                        <div class="input-group element-margin input-group-xs width-100">
+                                            <label class="control-label">{{::ctrl.text.Element.Component.Select.Name}}</label>
+                                            <input type="text" class="form-control" ng-model="selectedDatasource.name" disabled>
+                                        </div>
+                                        <!--description-->
+                                        <!--<div class="input-group element-margin input-group-xs width-100">
+                                            <label class="control-label">{{::ctrl.text.Element.Component.Select.Description}}</label>
+                                            <input type="text" class="form-control" ng-model="selectedDatasource.description" disabled>
+                                        </div>-->
+                                        <!--Objet métier-->
+                                        <div class="input-group element-margin input-group-xs width-100">
+                                            <label class="control-label">{{::ctrl.text.Element.Component.Select.BusinessObject}}</label>
+                                            <input type="text" class="form-control" ng-model="selectedDatasource.businessObject.business_object_id" disabled>
+                                        </div>
+                                        <!--requête-->
+                                        <div class="input-group element-margin input-group-xs width-100">
+                                            <label class="control-label">{{::ctrl.text.Element.Component.Select.BusinessObject_Request}}</label>
+                                            <input type="text" class="form-control" ng-model="selectedDatasource.businessObjectRequest" disabled>
+                                        </div>
+                                    </form>
+                                </div>
+                                <!--Base de données externe-->
+                                <div ng-show="selectedDatasource.dataType === 'externalDatabase'">
+                                    <h4>{{::ctrl.text.Element.Component.Select.Select_External_Database}}</h4>
+                                    <form class="element-margin form-group-xs">
+                                        <!--ID-->
+                                        <div ng-show="false" class="input-group element-margin input-group-xs width-100">
+                                            <label class="control-label">ID</label>
+                                            <input type="text" class="form-control" ng-model="selectedDatasource.id" disabled>
+                                        </div>
+                                        <!--Name-->
+                                        <div class="input-group element-margin input-group-xs width-100">
+                                            <label class="control-label">{{::ctrl.text.Element.Component.Select.Name}}</label>
+                                            <input type="text" class="form-control" ng-model="selectedDatasource.name" disabled>
+                                        </div>
+                                        <!--Description-->
+                                        <!--<div class="input-group element-margin input-group-xs width-100">
+                                            <label class="control-label">{{::ctrl.text.Element.Component.Select.Description}}</label>
+                                            <input type="text" class="form-control" ng-model="selectedDatasource.description" disabled>
+                                        </div>-->
+                                        <!--Server-->
+                                        <div class="input-group element-margin input-group-xs width-100">
+                                            <label class="control-label">{{::ctrl.text.Element.Component.Select.Server}}</label>
+                                            <input type="text" class="form-control" ng-model="selectedDatasource.parameters.server" disabled>
+                                        </div>
+                                        <!--Port-->
+                                        <div class="input-group element-margin input-group-xs width-100">
+                                            <label class="control-label">{{::ctrl.text.Element.Component.Select.Port}}</label>
+                                            <input type="text" class="form-control" ng-model="selectedDatasource.parameters.port" disabled>
+                                        </div>
+                                        <!--SGBD-->
+                                        <div class="input-group element-margin input-group-xs width-100">
+                                            <label class="control-label">{{::ctrl.text.Element.Component.Select.SGBD}}</label>
+                                            <input type="text" class="form-control" ng-model="selectedDatasource.parameters.sgbd" disabled>
+                                        </div>
+                                        <!--Login-->
+                                        <div class="input-group element-margin input-group-xs width-100">
+                                            <label class="control-label">{{::ctrl.text.Element.Component.Select.Login}}</label>
+                                            <input type="text" class="form-control" ng-model="selectedDatasource.parameters.login" disabled>
+                                        </div>
+                                        <!--Password-->
+                                        <div class="input-group element-margin input-group-xs width-100">
+                                            <label class="control-label">{{::ctrl.text.Element.Component.Select.Password}}</label>
+                                            <input type="text" class="form-control" ng-model="selectedDatasource.parameters.password" disabled>
+                                        </div>                                    
+                                        <!--Database-->
+                                        <div class="input-group element-margin input-group-xs width-100">
+                                            <label class="control-label">{{::ctrl.text.Element.Component.Select.Database}}</label>
+                                            <input type="text" class="form-control" ng-model="selectedDatasource.parameters.database" disabled>
+                                        </div>
+                                        <!--Schema-->
+                                        <div class="input-group element-margin input-group-xs width-100">
+                                            <label class="control-label">{{::ctrl.text.Element.Component.Select.Schema}}</label>
+                                            <input type="text" class="form-control" ng-model="selectedDatasource.parameters.schema" disabled>
+                                        </div>
+                                        <!--Table-->
+                                        <div class="input-group element-margin input-group-xs width-100">
+                                            <label class="control-label">{{::ctrl.text.Element.Component.Select.Table}}</label>
+                                            <input type="text" class="form-control" ng-model="selectedDatasource.parameters.table" disabled>
+                                        </div>
+                                        <!--Filtre-->
+                                        <div class="input-group element-margin input-group-xs width-100">
+                                            <label class="control-label">{{::ctrl.text.Element.Component.Select.Filter}}</label>
+                                            <input type="text" class="form-control" placeholder="ex: name='Public'" ng-model="selectedDatasource.parameters.filter" disabled>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div style="height: 40px">
+                                    <button class="btn btn-primary right margin-sides-5" ng-click="ctrl.removeSelectedSource()">{{::ctrl.text.Element.Component.Select.Delete}}</button>
+                                    <button class="btn btn-primary right margin-sides-5" ng-click="ctrl.showNewSourceModal()">{{::ctrl.text.Element.Component.Select.Add}}</button>
+                                    <button class="btn btn-primary right margin-sides-5" ng-click="ctrl.showEditSourceModal()">{{::ctrl.text.Element.Component.Select.Edit}}</button>
+                                </div>
+                                <div>
+                                    <div id="grid-studio-datasources" ui-grid="studioDatasourcesGridOptions" ui-grid-selection class="grid" style="width: 425px;  height: 350px;"></div>
+                                </div>
+                                <div style="margin-top: 8px">
+                                    <button class="btn btn-primary right margin-sides-5" data-dismiss="modal">{{::ctrl.text.Element.Component.Select.Save}}</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>  
+        </div>
+        <!--Modale édition source de donnees-->
+        <div id="studio-datasource-edit-modal" class="modal fade" role="dialog">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">{{::ctrl.text.Element.Component.Select.Datasources}}</h4>
+                    </div>
+                    <div class="modal-body modal-body-big">
+                        <div class="row">
+                            <form ng-submit="ctrl.saveDatasource(editedDatasource)">
+                                <!--ID-->
+                                <div ng-show="false" class="element-margin form-group-xxs col-xs-12">
+                                    <label class="control-label">ID</label>
+                                    <input type="text" class="form-control element-margin"
+                                           ng-model="editedDatasource.id"
+                                           required>
+                                </div>
+                                <!--Nom-->
+                                <div class="element-margin form-group-xxs col-xs-12">
+                                    <label class="control-label">{{::ctrl.text.Element.Component.Select.Name}}</label>
+                                    <input type="text" class="form-control element-margin"
+                                           ng-model="editedDatasource.name"
+                                           required>
+                                </div>
+                                <!--Description-->
+                                <!--<div class="input-group element-margin input-group-xs width-100">
+                                    <label class="control-label">{{::ctrl.text.Element.Component.Select.Description}}</label>
+                                    <input type="text" class="form-control"
+                                           ng-model="editedDatasource.description">
+                                </div>-->
+                                <!--text-->
+                                <div id="textDatasourceAddform" class="col-xs-12" ng-if="editedDatasource.dataType === 'text'">
+                                    <!--Contenu-->
+                                    <label class="control-label" data-translate="{{::ctrl.text.Element.Component.Select.Content}}"></label>
+                                    <div>
+                                        <i>{{::ctrl.text.Element.Component.Select.Content_description}}</i>
+                                    </div>                                
+                                    <ui-codemirror 
+                                        id="textOptionsCodeMirrorEdit"
+                                        ui-refresh="refresh"
+                                        ui-codemirror-opts="editorOptions" 
+                                        ng-model="editedDatasource.options_model"
+                                        ng-change="ctrl.updateDatasourceTextContent(editedDatasource)"></ui-codemirror>
+                                </div>
+                                <!--tableValue-->
+                                <div id="tableValueDatasourceAddform" ng-if="editedDatasource.dataType === 'tableValue'">
+                                    <!--Base-->
+                                    <div class="element-margin form-group-xxs col-xs-12">
+                                        <label class="control-label">{{::ctrl.text.Element.Component.Select.Database}}</label>
+                                        <input type="text" class="form-control"
+                                               ng-model="editedDatasource.parameters.database">
+                                    </div>
+                                    <!--Schema-->
+                                    <div class="element-margin form-group-xxs col-xs-6">
+                                        <label class="control-label">{{::ctrl.text.Element.Component.Select.Schema}}</label>
+                                        <div class="row">
+                                            <div class="col-sm-9">
+                                                <input type="text" class="form-control"
+                                                       ng-show="schemas.length === 0"
+                                                       ng-model="editedDatasource.parameters.schema">
+                                                <select type="text" class="form-control"
+                                                        ng-show="schemas.length > 0"
+                                                        ng-options="schema.schemaname for schema in schemas| orderBy: 'schemaname' track by schema.schemaname" 
+                                                        ng-model="$parent.schemaSelected"
+                                                        ng-change="editedDatasource.parameters.schema = schemaSelected.schemaname" required></select>
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <button type="button" class="btn btn-success form-control" ng-click="ctrl.setLocalDatabaseSchemas(editedDatasource.parameters.database)">
+                                                    <span class="glyphicon glyphicon-share-alt"></span> {{::ctrl.text.Element.Component.Select.Schema_List}}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!--Table-->
+                                    <div class="element-margin form-group-xxs col-xs-6">
+                                        <label class="control-label">{{::ctrl.text.Element.Component.Select.Table}}</label>
+                                        <div class="row">
+                                            <div class="col-sm-9">
+                                                <input type="text" class="form-control"
+                                                       ng-show="tables.length === 0"
+                                                       ng-model="editedDatasource.parameters.table">
+                                                <select class="form-control"
+                                                        ng-show="tables.length > 0"
+                                                        ng-options="table.table_name for table in tables| orderBy: 'table_name' track by table.table_name"
+                                                        ng-model="$parent.tableSelected"
+                                                        ng-change="editedDatasource.parameters.table = tableSelected.table_name"
+                                                        required>      
+                                                </select>
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <button type="button" class="btn btn-success form-control" ng-click="ctrl.reloadTablesList(editedDatasource.parameters.schema, editedDatasource.parameters.database)">
+                                                    <span class="glyphicon glyphicon-share-alt"></span> {{::ctrl.text.Element.Component.Select.Table_List}}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!--Filter-->
+                                    <div class="element-margin form-group-xxs col-xs-12">
+                                        <label class="control-label">{{::ctrl.text.Element.Component.Select.Filter}}</label>
+                                        <input type="text" class="form-control" placeholder="ex: name='Public'"
+                                               ng-model="editedDatasource.parameters.filter">
+                                    </div>
+                                </div>
+                                <!--webService-->
+                                <div id="webServiceDatasourceAddform" ng-if="editedDatasource.dataType === 'webService'">
+                                    <!--Webservice-->
+                                    <div class="element-margin form-group-xxs col-xs-6">
+                                        <label class="control-label">{{::ctrl.text.Element.Component.Select.Webservice}}</label>
+                                        <select class="form-control element-margin"
+                                                ng-model="editedDatasource.webservice"
+                                                ng-change="ctrl.updateRessources(editedDatasource.webservice)"  
+                                                ng-options="webservice.name for webservice in webservices track by webservice.name"
+                                                required></select>
+                                    </div>
+                                    <!--Ressource-->
+                                    <div class="element-margin form-group-xxs col-xs-6">
+                                        <label class="control-label">{{::ctrl.text.Element.Component.Select.Ressource}}</label>
+                                        <select class="form-control element-margin"
+                                                ng-model="editedDatasource.ressource" 
+                                                ng-options="ressource.name for ressource in ressources track by ressource.name"
+                                                required></select>
+                                    </div>
+                                </div>
+                                <!--businessObject-->
+                                <div id="businessObjectDatasourceAddform" ng-if="newSource.dataType === 'businessObject'">
+                                    <!--Business Object-->
+                                    <div class="element-margin form-group-xxs col-xs-6">
+                                        <label class="control-label">{{::ctrl.text.Element.Component.Select.BusinessObject}}</label>
+                                        <select class="form-control element-margin"
+                                                ng-model="editedDatasource.businessObject" 
+                                                ng-options="businessObjects.business_object_id for businessObjects in businessObjects track by businessObjects.business_object_id"
+                                                required></select>
+                                    </div>
+                                    <!--Formulaire-->
+                                    <div class="element-margin form-group-xxs col-xs-6">
+                                        <label class="control-label">{{::ctrl.text.Element.Component.Select.BusinessObject_Request}}</label>
+                                        <select class="form-control element-margin"
+                                                ng-model="editedDatasource.businessObjectRequest">
+                                            <option value="summary">sql_summary</option>
+                                            <option value="list">sql_list</option>
+                                        </select>
+                                    </div>
+                                    <textarea style="width:calc(100% - 30px);height: 63px;margin-left: 15px;margin-right: 15px;" ng-model="newSource.businessObject['sql_' + newSource.businessObjectRequest]" disabled></textarea>
+                                </div>
+                                <!--externalDatabase-->
+                                <div id="externalDatabaseDatasourceAddform" ng-if="editedDatasource.dataType === 'externalDatabase'">
+                                    <!--Description du serveur-->
+                                    <!--Serveur-->
+                                    <div class="element-margin form-group-xxs col-xs-6">
+                                        <label class="control-label">{{::ctrl.text.Element.Component.Select.Server}}</label>
+                                        <input type="text" class="form-control"
+                                               ng-model="editedDatasource.parameters.server"
+                                               required>
+                                    </div>
+                                    <!--Port-->
+                                    <div class="element-margin form-group-xxs col-xs-3">
+                                        <label class="control-label">{{::ctrl.text.Element.Component.Select.Port}}</label>
+                                        <input type="text" class="form-control"
+                                               ng-model="editedDatasource.parameters.port"
+                                               required>
+                                    </div>
+                                    <!--SGBD-->
+                                    <div class="element-margin form-group-xxs col-xs-3">
+                                        <label class="control-label">{{::ctrl.text.Element.Component.Select.SGBD}}</label>
+                                        <select class="form-control" ng-model="editedDatasource.parameters.sgbd" required>
+                                            <option value="pgsql" label="Postgres">Postgres</option>     
+                                            <option value="oci" label="Oracle">Oracle</option>  
+                                        </select>
+                                    </div>
+                                    <!--Login-->
+                                    <div class="element-margin form-group-xxs col-xs-6">
+                                        <label class="control-label">{{::ctrl.text.Element.Component.Select.Login}}</label>
+                                        <input type="text" class="form-control"
+                                               ng-model="editedDatasource.parameters.login"
+                                               required>
+                                    </div>
+                                    <!--Password-->
+                                    <div class="element-margin form-group-xxs col-xs-6">
+                                        <label class="control-label">{{::ctrl.text.Element.Component.Select.Password}}</label>
+                                        <input type="text" class="form-control"
+                                               ng-model="editedDatasource.parameters.password"
+                                               required>
+                                    </div>
+                                    <!--Database-->
+                                    <div class="element-margin form-group-xxs col-xs-6">
+                                        <label class="control-label">{{::ctrl.text.Element.Component.Select.Database}}</label>
+                                        <input type="text" class="form-control"
+                                               ng-model="editedDatasource.parameters.database"
+                                               required>
+                                    </div>
+                                    <!--Schema-->
+                                    <div class="element-margin form-group-xxs col-xs-6">
+                                        <label class="control-label">{{::ctrl.text.Element.Component.Select.Schema}}</label>
+                                        <input type="text" class="form-control"
+                                               ng-model="editedDatasource.parameters.schema"
+                                               required>
+                                    </div>
+                                    <!--Liste des tables-->
+                                    <div class="col-xs-12 form-group-xxs ">
+                                        <label class=" element-margin control-label">{{::ctrl.text.Element.Component.Select.Table}}</label>
+                                        <div class="row">
+                                            <div class="col-sm-9">
+
+                                                <input type="text" class="form-control element-margin"
+                                                       ng-show="!aExternalDatabaseTables.length > 0"
+                                                       ng-model="editedDatasource.parameters.table"
+                                                       required>
+                                                <select class="form-control element-margin"
+                                                        ng-show="aExternalDatabaseTables.length > 0"
+                                                        ng-change="aExternalDatabaseColumns.length = 0"
+                                                        ng-model="editedDatasource.parameters.table">
+                                                    <option ng-repeat="table in aExternalDatabaseTables" ng-value="table">{{table}}</option>
+                                                </select>
+
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <button type="button" class="btn btn-success form-control" ng-click="ctrl.getExternalDatabaseTables(editedDatasource)">
+                                                    <span class="glyphicon glyphicon-share-alt"></span> {{::ctrl.text.Element.Component.Select.Table_List}}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!--Filter-->
+                                    <div class="element-margin form-group-xxs col-xs-12">
+                                        <label class="control-label">{{::ctrl.text.Element.Component.Select.Filter}}</label>
+                                        <input type="text" class="form-control" placeholder="ex: name='Public'"
+                                               ng-model="editedDatasource.parameters.filter">
+                                    </div>
+                                </div>
+                                <!--test-->
+                                <div class="col-xs-12" id="Layout_Preview">
+                                    <!--Text-->
+                                    <div ng-show="editedDatasource.dataType === 'text'">
+                                        <div><label class="control-label" data-translate="{{::ctrl.text.Element.Component.Select.Result}}"></label></div>
+                                        <div class="row">
+                                            <div class="form-group-xxs col-xs-6">
+                                                <select class="element-margin form-control"
+                                                        ng-model="editedDatasource.test_result"
+                                                        ng-options="option.label for option in editedDatasource.result_options track by option.value">
+                                                </select>
+                                            </div>
+                                            <div class="col-xs-3">
+                                                {{editedDatasource.test_result.value}}
+                                            </div>
+                                            <div class="col-xs-3">
+                                                <button ng-if="editedDatasource.dataType === 'tableValue' || editedDatasource.dataType === 'webService' || editedDatasource.dataType === 'businessObject' || editedDatasource.dataType === 'externalDatabase' || editedDatasource.dataType === 'text'" 
+                                                        type="submit" 
+                                                        class="btn btn-primary right">{{::ctrl.text.Element.Component.Select.Save}}</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!--Valeurs d'une table-->
+                                    <div ng-show="editedDatasource.dataType === 'tableValue' || editedDatasource.dataType === 'webService' || editedDatasource.dataType === 'businessObject' || editedDatasource.dataType === 'externalDatabase'">
+                                        <!--Test-->
+                                        <div>
+                                            <button type="button" class="btn btn-success element-margin" ng-click="ctrl.testDatasource(editedDatasource, 'studio-datasource-edit-modal')">Test</button>
+                                            <button ng-if="editedDatasource.dataType === 'tableValue' || editedDatasource.dataType === 'webService' || editedDatasource.dataType === 'businessObject' || editedDatasource.dataType === 'externalDatabase' || editedDatasource.dataType === 'text'" 
+                                                    type="submit" 
+                                                    class="btn btn-primary right">{{::ctrl.text.Element.Component.Select.Save}}</button>
+                                        </div>
+                                        <div><label class="control-label" data-translate="{{::ctrl.text.Element.Component.Select.Result}}"></label></div>
+                                        <div>
+                                            <div id="grid-studio-webService-test" ui-grid="studioEditModalTestGridOptions" style="width:856px;height: 350px;" class="grid element-margin"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>  
+        </div>
+        <!--Modale ajout source de données-->
+        <div id="studio-datasource-add-modal" class="modal fade" role="dialog">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">{{::ctrl.text.Element.Component.Select.Datasources}}</h4>
+                    </div>
+                    <div class="modal-body modal-body-big">
+                        <div class="row">
+                            <div class="element-margin form-group-xs col-sm-6">
+                                <label for="Element_Form_Datasource_Select" id="Element_Form_Datasource_label" class="control-label">{{::ctrl.text.Element.Component.Select.Select_Type}}</label>
+                                <select class="form-control element-margin"
+                                        ng-change="ctrl.clearTestGrids()"
+                                        ng-model="newSource.dataType">
+                                    <option value="text">{{::ctrl.text.Element.Component.Select.Select_Text}}</option>
+                                    <option value="tableValue">{{::ctrl.text.Element.Component.Select.Select_Table_Values}}</option>
+                                    <option value="webService">{{::ctrl.text.Element.Component.Select.Select_Webservice}}</option>
+                                    <option ng-if="applicationName !== 'gtf'" value="businessObject">{{::ctrl.text.Element.Component.Select.Select_Business_Object}}</option>
+                                    <option value="externalDatabase">{{::ctrl.text.Element.Component.Select.Select_External_Database}}</option>
+                                </select>
+                                <hr>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <form ng-submit="ctrl.addSource(newSource)">
+                                <!--ID-->
+                                <div ng-show="false" class="element-margin form-group-xxs col-xs-12">
+                                    <label class="control-label">ID</label>
+                                    <input type="text" class="form-control element-margin"
+                                           ng-model="newSource.id"
+                                           required>
+                                </div>
+                                <!--Nom-->
+                                <div class="element-margin form-group-xxs col-xs-12">
+                                    <label class="control-label">{{::ctrl.text.Element.Component.Select.Name}}</label>
+                                    <input type="text" class="form-control element-margin"
+                                           ng-model="newSource.name"
+                                           required>
+                                </div>
+                                <!--Description-->
+                                <!--<div class="input-group element-margin input-group-xs width-100">
+                                    <label class="control-label">{{::ctrl.text.Element.Component.Select.Description}}</label>
+                                    <input type="text" class="form-control"
+                                           ng-model="newSource.description">
+                                </div>-->
+                                <!--text-->
+                                <div id="textDatasourceAddform" class="col-xs-12" ng-if="newSource.dataType === 'text'">
+                                    <!--Contenu-->
+                                    <label class="control-label" data-translate="{{::ctrl.text.Element.Component.Select.Content}}"></label>
+                                    <div>
+                                        <i>{{::ctrl.text.Element.Component.Select.Content_description}}</i>
+                                    </div>                                
+                                    <ui-codemirror 
+                                        id="textOptionsCodeMirrorAdd"
+                                        ui-refresh="newSource.dataType === 'text'"
+                                        ui-codemirror-opts="editorOptions" 
+                                        ng-model="newSource.options_model"
+                                        ng-change="ctrl.updateDatasourceTextContent(newSource)"></ui-codemirror>
+                                </div>
+                                <!--tableValue-->
+                                <div id="tableValueDatasourceAddform" ng-if="newSource.dataType === 'tableValue'">
+                                    <!--Base-->
+                                    <div class="element-margin form-group-xxs col-xs-12">
+                                        <label class="control-label">{{::ctrl.text.Element.Component.Select.Database}}</label>
+                                        <input type="text" class="form-control"
+                                               ng-model="newSource.parameters.database">
+                                    </div>
+                                    <!--Schema-->
+                                    <div class="element-margin form-group-xxs col-xs-6">
+                                        <label class="control-label">{{::ctrl.text.Element.Component.Select.Schema}}</label>
+                                        <div class="row">
+                                            <div class="col-sm-9">
+                                                <input type="text" class="form-control"
+                                                       ng-show="schemas.length === 0"
+                                                       ng-model="newSource.parameters.schema">
+                                                <select type="text" class="form-control"
+                                                        ng-show="schemas.length > 0"
+                                                        ng-options="schema.schemaname for schema in schemas| orderBy: 'schemaname' track by schema.schemaname" 
+                                                        ng-model="$parent.schemaSelected"
+                                                        ng-change="newSource.parameters.schema = schemaSelected.schemaname" required></select>
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <button type="button" class="btn btn-success form-control" ng-click="ctrl.setLocalDatabaseSchemas(newSource.parameters.database)">
+                                                    <span class="glyphicon glyphicon-share-alt"></span> {{::ctrl.text.Element.Component.Select.Schema_List}}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!--Table-->
+                                    <div class="element-margin form-group-xxs col-xs-6">
+                                        <label class="control-label">{{::ctrl.text.Element.Component.Select.Table}}</label>
+                                        <div class="row">
+                                            <div class="col-sm-9">
+                                                <input type="text" class="form-control"
+                                                       ng-show="tables.length === 0"
+                                                       ng-model="newSource.parameters.table">
+                                                <select class="form-control"
+                                                        ng-show="tables.length > 0"
+                                                        ng-options="table.table_name for table in tables| orderBy: 'table_name' track by table.table_name"
+                                                        ng-model="$parent.tableSelected"
+                                                        ng-change="newSource.parameters.table = tableSelected.table_name"
+                                                        required>      
+                                                </select>
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <button type="button" class="btn btn-success form-control" ng-click="ctrl.reloadTablesList(newSource.parameters.schema, newSource.parameters.database)">
+                                                    <span class="glyphicon glyphicon-share-alt"></span> {{::ctrl.text.Element.Component.Select.Table_List}}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!--Filter-->
+                                    <div class="element-margin form-group-xxs col-xs-12">
+                                        <label class="control-label">{{::ctrl.text.Element.Component.Select.Filter}}</label>
+                                        <input type="text" class="form-control" placeholder="ex: name='Public'"
+                                               ng-model="newSource.parameters.filter">
+                                    </div>
+                                </div>
+                                <!--webService-->
+                                <div id="webServiceDatasourceAddform" ng-if="newSource.dataType === 'webService'">
+                                    <!--Webservice-->
+                                    <div class="element-margin form-group-xxs col-xs-6">
+                                        <label class="control-label">{{::ctrl.text.Element.Component.Select.Webservice}}</label>
+                                        <select class="form-control element-margin"
+                                                ng-model="newSource.webservice"
+                                                ng-change="ctrl.updateRessources(newSource.webservice)"  
+                                                ng-options="webservice.name for webservice in webservices track by webservice.name"
+                                                required></select>
+                                    </div>
+                                    <!--Ressource-->
+                                    <div class="element-margin form-group-xxs col-xs-6">
+                                        <label class="control-label">{{::ctrl.text.Element.Component.Select.Ressource}}</label>
+                                        <select class="form-control element-margin"
+                                                ng-model="newSource.ressource" 
+                                                ng-options="ressource.name for ressource in ressources track by ressource.name"
+                                                required></select>
+                                    </div>
+                                </div>
+                                <!--businessObject-->
+                                <div id="businessObjectDatasourceAddform" ng-if="newSource.dataType === 'businessObject'">
+                                    <!--Business Object-->
+                                    <div class="element-margin form-group-xxs col-xs-6">
+                                        <label class="control-label">{{::ctrl.text.Element.Component.Select.BusinessObject}}</label>
+                                        <select class="form-control element-margin"
+                                                ng-model="newSource.businessObject" 
+                                                ng-options="businessObjects.business_object_id for businessObjects in businessObjects track by businessObjects.business_object_id"
+                                                required></select>
+                                    </div>
+                                    <!--Formulaire-->
+                                    <div class="element-margin form-group-xxs col-xs-6">
+                                        <label class="control-label">{{::ctrl.text.Element.Component.Select.BusinessObject_Request}}</label>
+                                        <select class="form-control element-margin"
+                                                ng-model="newSource.businessObjectRequest">
+                                            <option value="summary">sql_summary</option>
+                                            <option value="list">sql_list</option>
+                                        </select>
+                                    </div>
+                                    <textarea style="width:calc(100% - 30px);height: 63px;margin-left: 15px;margin-right: 15px;" ng-model="newSource.businessObject['sql_' + newSource.businessObjectRequest]" disabled></textarea>
+                                </div>
+                                <!--externalDatabase-->
+                                <div id="externalDatabaseDatasourceAddform" ng-if="newSource.dataType === 'externalDatabase'">
+                                    <!--Description du serveur-->
+                                    <!--Serveur-->
+                                    <div class="element-margin form-group-xxs col-xs-6">
+                                        <label class="control-label">{{::ctrl.text.Element.Component.Select.Server}}</label>
+                                        <input type="text" class="form-control"
+                                               ng-model="newSource.parameters.server"
+                                               required>
+                                    </div>
+                                    <!--Port-->
+                                    <div class="element-margin form-group-xxs col-xs-3">
+                                        <label class="control-label">{{::ctrl.text.Element.Component.Select.Port}}</label>
+                                        <input type="text" class="form-control"
+                                               ng-model="newSource.parameters.port"
+                                               required>
+                                    </div>
+                                    <!--SGBD-->
+                                    <div class="element-margin form-group-xxs col-xs-3">
+                                        <label class="control-label">{{::ctrl.text.Element.Component.Select.SGBD}}</label>
+                                        <select class="form-control" ng-model="newSource.parameters.sgbd" required>
+                                            <option value="pgsql" label="Postgres">Postgres</option>     
+                                            <option value="oci" label="Oracle">Oracle</option>  
+                                        </select>
+                                    </div>
+                                    <!--Login-->
+                                    <div class="element-margin form-group-xxs col-xs-6">
+                                        <label class="control-label">{{::ctrl.text.Element.Component.Select.Login}}</label>
+                                        <input type="text" class="form-control"
+                                               ng-model="newSource.parameters.login"
+                                               required>
+                                    </div>
+                                    <!--Password-->
+                                    <div class="element-margin form-group-xxs col-xs-6">
+                                        <label class="control-label">{{::ctrl.text.Element.Component.Select.Password}}</label>
+                                        <input type="text" class="form-control"
+                                               ng-model="newSource.parameters.password"
+                                               required>
+                                    </div>
+                                    <!--Database-->
+                                    <div class="element-margin form-group-xxs col-xs-6">
+                                        <label class="control-label">{{::ctrl.text.Element.Component.Select.Database}}</label>
+                                        <input type="text" class="form-control"
+                                               ng-model="newSource.parameters.database"
+                                               required>
+                                    </div>
+                                    <!--Schema-->
+                                    <div class="element-margin form-group-xxs col-xs-6">
+                                        <label class="control-label">{{::ctrl.text.Element.Component.Select.Schema}}</label>
+                                        <input type="text" class="form-control"
+                                               ng-model="newSource.parameters.schema"
+                                               required>
+                                    </div>
+                                    <!--Liste des tables-->
+                                    <div class="col-xs-12 form-group-xxs ">
+                                        <label class=" element-margin control-label">{{::ctrl.text.Element.Component.Select.Table}}</label>
+                                        <div class="row">
+                                            <div class="col-sm-9">
+
+                                                <input type="text" class="form-control element-margin"
+                                                       ng-show="!aExternalDatabaseTables.length > 0"
+                                                       ng-model="newSource.parameters.table"
+                                                       required>
+                                                <select class="form-control element-margin"
+                                                        ng-show="aExternalDatabaseTables.length > 0"
+                                                        ng-change="aExternalDatabaseColumns.length = 0"
+                                                        ng-model="newSource.parameters.table">
+                                                    <option ng-repeat="table in aExternalDatabaseTables" ng-value="table">{{table}}</option>
+                                                </select>
+
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <button type="button" class="btn btn-success form-control" ng-click="ctrl.getExternalDatabaseTables(newSource)">
+                                                    <span class="glyphicon glyphicon-share-alt"></span> {{::ctrl.text.Element.Component.Select.Table_List}}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!--Filter-->
+                                    <div class="element-margin form-group-xxs col-xs-12">
+                                        <label class="control-label">{{::ctrl.text.Element.Component.Select.Filter}}</label>
+                                        <input type="text" class="form-control" placeholder="ex: name='Public'" ng-model="newSource.parameters.filter">
+                                    </div>
+                                </div>
+                                <!--Test-->
+                                <div class="col-xs-12" id="Layout_Preview">
+                                    <!--Text-->
+                                    <div ng-show="newSource.dataType === 'text'">
+                                        <div><label class="control-label" data-translate="{{::ctrl.text.Element.Component.Select.Result}}"></label></div>
+                                        <div class="row">
+                                            <div class="form-group-xxs col-xs-6">
+                                                <select class="element-margin form-control"
+                                                        ng-model="newSource.test_result"
+                                                        ng-options="option.label for option in newSource.result_options track by option.value">
+                                                </select>
+                                            </div>
+                                            <div class="col-xs-3">
+                                                {{newSource.test_result.value}}
+                                            </div>
+                                            <div class="col-xs-3">
+                                                <button ng-if="newSource.dataType === 'tableValue' || newSource.dataType === 'webService' || newSource.dataType === 'businessObject' || newSource.dataType === 'externalDatabase' || newSource.dataType === 'text'" 
+                                                        type="submit" 
+                                                        class="btn btn-primary right">{{::ctrl.text.Element.Component.Select.Save}}</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!--Valeurs d'une table-->
+                                    <div ng-show="newSource.dataType === 'tableValue' || newSource.dataType === 'webService' || newSource.dataType === 'businessObject' || newSource.dataType === 'externalDatabase'">
+                                        <!--Test-->
+                                        <div>
+                                            <button type="button" class="btn btn-success element-margin" ng-click="ctrl.testDatasource(newSource, 'studio-datasource-add-modal')">Test</button>
+                                            <button ng-if="newSource.dataType === 'tableValue' || newSource.dataType === 'webService' || newSource.dataType === 'businessObject' || newSource.dataType === 'externalDatabase' || newSource.dataType === 'text'" 
+                                                    type="submit" 
+                                                    class="btn btn-primary right">{{::ctrl.text.Element.Component.Select.Save}}</button>
+                                        </div>
+                                        <div><label class="control-label" data-translate="{{::ctrl.text.Element.Component.Select.Result}}"></label></div>
+                                        <div>
+                                            <div id="grid-studio-webService-test" ui-grid="studioAddModalTestGridOptions" style="width:856px;height: 350px;" class="grid element-margin"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

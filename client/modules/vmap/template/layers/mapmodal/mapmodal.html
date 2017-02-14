@@ -1,0 +1,61 @@
+<!-- Fichier contenant la fenêtre modale -->
+<div class="modal-dialog modal-lg">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" id="close-modal-button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">Gestion des cartes</h4>
+        </div>
+        <!-- Body -->
+        <div class="modal-body modal-body-big">
+
+            <div class="row" style="height: 100%;">
+                <div class="col-md-3">
+                    <br>
+                    <ul class="nav nav-pills nav-stacked" style="width: 180px">
+                        <br>
+                        <li data-toggle="pill" href="#modal-mymap" class="list-group-item list-group-item-modal active" onclick="oVmap.simuleClick('btn-reload-myMap')">Ma carte</li>
+                        <li data-toggle="pill" href="#modal-maplist" class="list-group-item list-group-item-modal" onclick="oVmap.simuleClick('btn-reload-maplist')">Changer de carte</li>
+                        <br>
+                        <br>
+                        <i class="center"> -- Ajout de couches -- </i>
+                        <br>
+                        <br>
+                        <li data-toggle="pill" href="#modal-wms" class="list-group-item list-group-item-modal" onclick="oVmap.simuleClick('btn-reload-wms')">Service WMS</li>
+                        <!--<li data-toggle="pill" href="#modal-wfs" class="list-group-item list-group-item-modal" onclick="oVmap.simuleClick('btn-reload-wfs')">Service WFS</li>-->
+                        <li id="modal-geometry-modal-button" data-toggle="pill" href="#modal-geometry" class="list-group-item list-group-item-modal" onclick="oVmap.simuleClick('btn-reload-geometry')">Fichier local</li>
+                        <li data-toggle="pill" href="#modal-osm" class="list-group-item list-group-item-modal" onclick="oVmap.simuleClick('btn-reload-osm')">Open Street Map</li>
+                        <li data-toggle="pill" href="#modal-bing" class="list-group-item list-group-item-modal" onclick="oVmap.simuleClick('btn-reload-bing')">Bing Maps</li>
+                        <!--<li data-toggle="pill" href="#modal-ign" class="list-group-item list-group-item-modal" onclick="oVmap.simuleClick('btn-reload-ign')">Géoportail</li>-->
+                    </ul>
+                </div>
+
+                <div class="col-md-9" style="height: 100%;">
+                    <div id="modal-mymap" class="mapmodal-element fade in active">
+                        <app-mymap app-lang="ctrl.lang" app-proj="ctrl.proj" app-map="ctrl.map"></app-mymap>
+                    </div>
+                    <div id="modal-maplist" class="mapmodal-element fade">
+                        <app-maplist app-lang="ctrl.lang" app-proj="ctrl.proj" app-map="ctrl.map"></app-maplist>
+                    </div>
+                    <div id="modal-wms" class="mapmodal-element fade">
+                        <app-wmssuggestions app-lang="ctrl.lang" app-proj="ctrl.proj" app-map="ctrl.map"></app-wmssuggestions>
+                    </div>
+                    <div id="modal-wfs" class="mapmodal-element fade">
+                        <app-wfssuggestions app-lang="ctrl.lang" app-proj="ctrl.proj" app-map="ctrl.map"></app-wfssuggestions>
+                    </div>
+                    <div id="modal-geometry" class="mapmodal-element fade">
+                        <app-loadgeometry app-lang="ctrl.lang" app-proj="ctrl.proj" app-map="ctrl.map"></app-loadgeometry>
+                    </div>
+                    <div id="modal-osm" class="mapmodal-element fade">
+                        <app-osmsuggestions app-lang="ctrl.lang" app-proj="ctrl.proj" app-map="ctrl.map"></app-osmsuggestions>
+                    </div>
+                    <div id="modal-bing" class="mapmodal-element fade">
+                        <app-bingsuggestions id="app-bingsuggestions" app-proj="ctrl.proj" app-lang="ctrl.lang" app-map="ctrl.map"</app-bingsuggestions>
+                    </div>
+                    <div id="modal-ign" class="mapmodal-element fade">
+                        <app-ignsuggestions app-lang="ctrl.lang" app-proj="ctrl.proj" app-map="ctrl.map"></app-ignsuggestions>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

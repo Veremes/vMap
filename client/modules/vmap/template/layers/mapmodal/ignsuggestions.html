@@ -1,0 +1,71 @@
+<!-- Liste des couches utilisables -->
+
+
+<h3>Ajouter une couche IGN: </h3>
+<hr>
+
+<div>
+	<div class="row">
+	    <div class="col-md-3">
+	    	<b>Nom:</b>
+		</div>
+	    <div class="col-md-4">
+	    	<b>Ressource:</b>
+		</div>
+	    <div class="col-md-3">
+	    	<b>Clé IGN:</b>
+		</div>
+	    <div class="col-md-2">
+		</div>
+	</div>
+	<div class="row">
+	    <div class="col-md-3">
+	    	<input type="text" id="ign-name-field" class="form-control" placeholder="Service name" aria-describedby="sizing-addon1">
+		</div>
+	    <div class="col-md-4">
+	    	<input type="text" id="ign-layer-field" class="form-control" placeholder="Service layer" aria-describedby="sizing-addon1">
+		</div>
+	    <div class="col-md-3">
+	    	<input type="text" id="ign-key-field" class="form-control" placeholder="Service layer" aria-describedby="sizing-addon1">
+		</div>
+	    <div class="col-md-2">
+	    	<button ng-if="ctrl.projection == 'EPSG:3857'" type="button" class="btn btn-success right" onclick="oVmap.getMapManager().addIGNLayerFromHTML(this)">Ajouter</button>
+	    	<button ng-if="ctrl.projection != 'EPSG:3857'" type="button" class="btn btn-danger right" onclick="if(confirm('Attention: la projection de la couche semble incompatible avec celle de la carte en cours.\n\nCela peut engendrer des errreurs d\'affichage \n\nContinuer quand même ?') != true) return 0;oVmap.getMapManager().addIGNLayerFromHTML(this)">Ajouter</button>
+		</div>
+	</div>
+</div>
+
+<br>
+<div id="ign-log-message"></div>
+<hr>
+
+<div ng-repeat="node in ctrl.catalog.services.ign">
+	<div class="row">
+	    <div class="col-md-3">
+	    	<img src="{{node.thumbnail}}" layer="{{node.layer}}" class="img-responsive pointer opacity-hover" name="{{node.name}}" key="{{node.key}}" onclick="if(confirm('Attention: la projection de la couche semble incompatible avec celle de la carte en cours.\n\nCela peut engendrer des errreurs d\'affichage \n\nContinuer quand même ?') != true) return 0;oVmap.getMapManager().addIGNLayerFromHTML(this)">
+	    </div>
+	    <div class="col-md-9">
+	    	<b>{{node.name}}</b>
+	    	<p>
+		    	<i>
+			    	{{node.description}}
+			    </i>
+			</p>
+			<p>
+				Clé: <i>{{node.key}}</i>
+			</p>
+		</div>
+	</div>
+	<div class="row" style="margin-bottom: -15px">
+		<div class="col-md-3"></div>
+		<div class="col-md-7 auto-overflow">
+			<b>Ressource</b>: <i>{{node.layer}}</i>
+		</div>
+		<div class="col-md-2">
+			<button ng-if="ctrl.projection == 'EPSG:3857'" type="button" class="btn btn-primary right" name="{{node.name}}" layer="{{node.layer}}" key="{{node.key}}" onclick="oVmap.getMapManager().addIGNLayerFromHTML(this)">Ajouter</button>
+			<button ng-if="ctrl.projection != 'EPSG:3857'" type="button" class="btn btn-danger right" name="{{node.name}}" layer="{{node.layer}}" key="{{node.key}}" onclick="if(confirm('Attention: la projection de la couche semble incompatible avec celle de la carte en cours.\n\nCela peut engendrer des errreurs d\'affichage \n\nContinuer quand même ?') != true) return 0;oVmap.getMapManager().addIGNLayerFromHTML(this)">Ajouter</button>
+		</div>
+	</div>
+	<hr>
+</div>
+<button id="btn-reload-ign" style="display: none" ng-click="ctrl.reload()">Reload map</button>

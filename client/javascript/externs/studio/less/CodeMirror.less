@@ -1,0 +1,40 @@
+
+// Imports
+@import '../../../../conf/less/variables.less';
+
+@testColorRed: #FB0000;
+@Number: #00b300; 
+@Atom: #C79F26;
+@Operator: #000000;
+@variable: #0093FF;
+
+.cm-s-Veremes.CodeMirror { background: white !important; color: @Operator !important; } 
+.cm-s-Veremes div.CodeMirror-selected { background: rgba(66, 145, 202, 0.55); } 
+.cm-s-Veremes .CodeMirror-line::selection, .cm-s-Veremes .CodeMirror-line > span::selection, .cm-s-Veremes .CodeMirror-line > span > span::selection { background: @testColorRed; }
+.cm-s-Veremes .CodeMirror-line::-moz-selection, .cm-s-Veremes .CodeMirror-line > span::-moz-selection, .cm-s-Veremes .CodeMirror-line > span > span::-moz-selection { background: @testColorRed; }
+.cm-s-Veremes .CodeMirror-gutters { background: @application-color-theme; border-right: 2px solid @application-color-theme; } 
+.cm-s-Veremes .CodeMirror-guttermarker { color: @testColorRed; }
+.cm-s-Veremes .CodeMirror-guttermarker-subtle { color: @testColorRed; }
+.cm-s-Veremes .CodeMirror-linenumber { color: white; } 
+.cm-s-Veremes .CodeMirror-cursor { border-left: 1px solid black; } 
+
+.cm-s-Veremes .cm-keyword { color: @application-color-theme; font-weight: bold; } 
+.cm-s-Veremes span.cm-atom { color: @Atom; }  
+.cm-s-Veremes span.cm-number { color: @Number; } 
+.cm-s-Veremes span.cm-def { color: lighten(@application-color-theme, 30%); }   
+.cm-s-Veremes span.cm-variable { color: @variable; }  
+.cm-s-Veremes span.cm-variable-2 { color: @variable; }  
+.cm-s-Veremes span.cm-variable-3 { color: @variable; }  
+.cm-s-Veremes span.cm-property { color: @application-color-theme; } 
+.cm-s-Veremes span.cm-operator { color: @Operator; } 
+.cm-s-Veremes span.cm-comment { color: #0F0F0F; } 
+.cm-s-Veremes span.cm-string { color: @application-lighen-color-theme; }
+.cm-s-Veremes span.cm-meta { color: @application-color-theme; }
+.cm-s-Veremes span.cm-qualifier { color: #9819A7; }
+.cm-s-Veremes span.cm-builtin { color: lighten(@application-color-theme, 30%); }
+.cm-s-Veremes span.cm-bracket { color: @testColorRed; }
+.cm-s-Veremes span.cm-tag { color: #635252; }
+.cm-s-Veremes span.cm-attribute { color: @testColorRed; }
+.cm-s-Veremes span.cm-error { color: @testColorRed; }
+
+.cm-s-Veremes .CodeMirror-activeline-background { background: @testColorRed; } 

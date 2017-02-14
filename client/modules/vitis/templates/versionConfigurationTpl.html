@@ -1,0 +1,65 @@
+<div data-app-version-configuration="" class="row version-configuration">
+        <div class="col-xs-12 no_bs_padding">
+                <!-- Version -->
+                <div class="panel panel-default">
+                        <div class="panel-heading">
+                                <h3 class="panel-title" data-translate="VERSION_SECTION_TITLE_VERSION_CONFIGURATION"></h3>
+                        </div>
+                        <ul class="list-group">
+                                <li class="list-group-item"><span data-translate="CLIENT_VERSION_CONFIGURATION"></span>{{::oVersion.VM_VERSION}}</li>
+                                <li class="list-group-item"><span data-translate="BUILD_VERSION_CONFIGURATION"></span>{{::oVersion.VM_BUILD}}</li>
+                        </ul>                        
+                </div>
+                <!-- État de l'installation -->
+                <div class="panel panel-default">
+                        <div class="panel-heading">
+                                <h3 class="panel-title" data-translate="INSTALLATION_SECTION_TITLE_VERSION_CONFIGURATION"></h3>
+                        </div>
+                        <ul class="list-group">
+                                <li class="list-group-item" ng-class="getStateCssClass(oVersion.php_version)">
+                                        <span data-translate="PHP_VERSION_CONFIGURATION" data-translate-values="oVersion"></span>
+                                </li>
+                                <li class="list-group-item" ng-class="getStateCssClass(oVersion.pdo_extension_loaded)">
+                                        <span data-translate="PDO_VERSION_CONFIGURATION" data-translate-values="oVersion"></span>
+                                </li>
+                                <li class="list-group-item" ng-class="getStateCssClass(oVersion.pdo_pgsql_extension_loaded)">
+                                        <span data-translate="POSTGRESQL_PDO_VERSION_CONFIGURATION" data-translate-values="oVersion"></span>
+                                </li>
+                                <li class="list-group-item" ng-class="getStateCssClass(oVersion.curl_extension_loaded)">
+                                        <span data-translate="CURL_VERSION_CONFIGURATION" data-translate-values="oVersion"></span>
+                                </li>
+                                <li class="list-group-item" ng-class="getStateCssClass(oVersion.postgresql)">
+                                        <span data-translate="POSTGRESQL_VERSION_CONFIGURATION" data-translate-values="oVersion"></span>
+                                </li>
+                                <li class="list-group-item" ng-class="getStateCssClass(oVersion.ldap_extension_loaded)">
+                                        <span data-translate="LDAP_VERSION_CONFIGURATION" data-translate-values="oVersion"></span>
+                                </li>
+                                <li class="list-group-item" ng-class="getStateCssClass(oVersion.postgis)">
+                                        <span data-translate="POSTGIS_VERSION_CONFIGURATION" data-translate-values="oVersion"></span>
+                                </li>
+                        </ul>                        
+                </div>
+                <!-- Informations sur le serveur -->
+                <div class="panel panel-default">
+                        <div class="panel-heading">
+                                <h3 class="panel-title" data-translate="SERVER_INFORMATIONS_SECTION_TITLE_VERSION_CONFIGURATION"></h3>
+                        </div>
+                        <ul class="list-group">
+                                <li class="list-group-item"><span data-translate="OS_VERSION_CONFIGURATION"></span>{{::oVersion.os_version}}</li>
+                                <li class="list-group-item"><span data-translate="DISK_VERSION_CONFIGURATION"></span>{{::oVersion.disk_info}}</li>
+                        </ul>                        
+                </div>
+                <!-- Serveur web -->
+                <div class="panel panel-default">
+                        <div class="panel-heading">
+                                <h3 class="panel-title" data-translate="WEB_SERVER_SECTION_TITLE_VERSION_CONFIGURATION"></h3>
+                        </div>
+                        <ul class="list-group">
+                                <li class="list-group-item"><span>{{::oVersion.server_software}}</span></li>
+                                <li class="list-group-item"><span data-translate="SERVER_ADDR_VERSION_CONFIGURATION"></span>{{::oVersion.server_addr}}</li>
+                                <li class="list-group-item"><span data-translate="SERVER_NAME_VERSION_CONFIGURATION"></span>{{::oVersion.server_name}}</li>
+                                <li class="list-group-item"><span data-translate="SERVER_PORT_VERSION_CONFIGURATION"></span>{{::oVersion.server_port}}</li>
+                        </ul>                        
+                </div>
+        </div>
+</div>

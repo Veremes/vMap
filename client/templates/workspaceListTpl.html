@@ -1,0 +1,41 @@
+<div id="{{sSelectedObjectName}}_grid" class="workspacelist-grid" data-app-workspace-list="">
+        <div ng-show="::gridOptions.appHeader" id="{{sSelectedObjectName}}_grid_header" class="col-xs-12 workspacelist-grid-header no_bs_padding">
+                <!-- Filtre de recherche -->
+                <div class="row">
+                        <div class="col-xs-12 workspacelist-grid-header-search">
+                                <div class="row">
+                                        <!-- Bouton de recherche -->
+                                        <div class="col-xs-12 no_bs_padding">
+                                                <span id="{{sSelectedObjectName}}_search_filter_button" class="workspacelist-grid-header-search-button-arrow-right workspacelist-grid-header-search-button">
+                                                        <span class="icon-filter workspacelist-grid-header-search-button-filter-icon"></span>
+                                                        <b data-translate="FORM_SEARCH_FILTER_BUTTON"></b>
+                                                        <span class="icon-keyboard_arrow_right workspacelist-grid-header-search-button-arrow-icon"></span>
+                                                </span>
+                                        </div>
+                                </div>
+                        </div>
+                </div>
+                <!-- Formulaire de recherche -->
+                <div ng-if="::gridOptions.appHeaderSearchForm" class="row">
+                        <div data-app-search-form="" id="{{sSelectedObjectName}}_grid_header_search_form" class="col-xs-12 workspacelist-grid-header-search-form"></div>
+                </div>
+                <!-- Barre optionnelle -->
+                <div ng-if="gridOptions.appHeaderOptionBar" id="{{sSelectedObjectName}}_grid_header_option_bar" class="row">
+                </div>
+                <!-- Titre de l'onglet -->
+                <div ng-if="::gridOptions.appHeaderTitleBar" class="row">
+                        <div class="col-xs-12 workspacelist-grid-header-title">
+                                <div class="row">
+                                        <div class="col-xs-4 no_bs_padding" data-translate="{{::gridOptions.appGridTitle}}"></div>
+                                        <div class="col-xs-8  text-right">
+                                                <button ng-repeat="action in gridOptions.appActions" type="button" name="{{::action.name}}" id="{{::action.name + '_ui_grid_add'}}" class="btn btn-primary btn-xs" ng-click="scopeEval(this, action.event)" style="margin-left: 10px;">{{::action.label}}</button>
+                                        </div>
+                                </div>
+                        </div>
+                </div>
+        </div>
+        <div id="{{sSelectedObjectName}}_grid_data" class="col-xs-12 no_bs_padding workspacelist-grid-data" data-ui-grid="gridOptions" data-ui-grid-selection="" data-ui-grid-pagination="" data-ui-grid-move-columns="" data-ui-grid-resize-columns="" data-ui-grid-draggable-rows=""></div>
+        <div ng-if="gridOptions.appFooter" id="{{sSelectedObjectName}}_grid_footer" class="col-xs-12 workspacelist-grid-footer">
+                <div ng-if="gridOptions.appShowPagination" data-app-ui-grid-pagination="" class="ui-grid-pagination row"></div>
+        </div>
+</div>

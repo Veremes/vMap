@@ -1,0 +1,5 @@
+fop -xml monxml.xml -xsl mj_fo.xsl -foout res.fo
+fop -xml res.fo -xsl fo2html.xsl -foout res.html
+
+
+C:\serveurs\fop-0.93\fop -xml C:\serveurs\Apache2\htdocs\rgd\fp\2010\complet\740011000AR0497.xml -xsl C:\serveurs\Apache2\htdocs\lib\majic_lib\xsl\FP_fo_Complet.xsl -pdf C:\serveurs\Apache2\htdocs\rgd\fp\2010\complet\740011000AR0497.pdf

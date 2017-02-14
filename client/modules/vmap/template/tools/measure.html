@@ -1,0 +1,171 @@
+
+
+<div style="display: none">
+    <input id="geodesic" type="checkbox" style="cursor:pointer" checked>use geodesic measures
+</div>
+<div style="display: none" class="checkbox checkbox-success">
+    <input id="measure-anotations" type="checkbox" style="cursor:pointer" ng-click="ctrl.showHideAnotations()" checked>
+    <label for="measure-anotations" style="cursor:pointer">Afficher / Cacher les annotations</label>
+</div>
+
+<i class="basic-tools-dropdown-title">Mesure</i>
+
+<ul class="basic-tools-dropdown-menu">
+    <li role="separator" class="divider"></li>
+    <li class="basic-tools-dropdown-btn">
+        <a id="measure-point-button" 
+           class="btn-measure" 
+           ng-class="{
+                   'active'
+                   : ctrl.currentAction === 'basicTools-measurePoint'}"
+           ng-click="ctrl.drawPoint(ctrl.currentAction === 'basicTools-measurePoint')">
+            <span class="icon-line"></span>
+            <span class="margin-sides-10">Point</span>
+        </a>
+    </li>
+    <li class="basic-tools-dropdown-btn">
+        <a id="measure-line-button"
+           class="btn-measure"
+           ng-class="{
+                   'active': ctrl.currentAction === 'basicTools-measureLineString'}"
+           ng-click="ctrl.measureLine(ctrl.currentAction === 'basicTools-measureLineString')">
+            <span class="icon-line"></span>
+            <span class="margin-sides-10">Ligne</span>
+        </a>
+    </li>
+    <li class="basic-tools-dropdown-btn">
+        <a id="measure-polygon-button"
+           class="btn-measure"
+           ng-class="{
+                   'active': ctrl.currentAction === 'basicTools-measurePolygon'}"
+           ng-click="ctrl.measurePolygon(ctrl.currentAction === 'basicTools-measurePolygon')">
+            <span class="icon-polygon"></span>
+            <span class="margin-sides-10">Polygone</span>
+        </a>
+    </li>
+    <li class="basic-tools-dropdown-btn">
+        <a id="measure-circle-button"
+           class="btn-measure"
+           ng-class="{
+                   'active'
+                   : ctrl.currentAction === 'basicTools-measureCircle'}"
+           ng-click="ctrl.measureCircle(ctrl.currentAction === 'basicTools-measureCircle')">
+            <span class="icon-circle"></span>
+            <span class="margin-sides-10">Cercle</span>
+        </a>
+    </li>
+
+    <li role="separator" class="divider"></li>
+
+    <li class="basic-tools-dropdown-btn">
+        <a id="measure-modify-button"
+           class="btn-measure"
+           ng-class="{
+                   'active'
+                   : ctrl.currentAction === 'basicTools-modifyMeasure'}"
+           ng-click="ctrl.modifyFeature(ctrl.currentAction === 'basicTools-modifyMeasure')">
+            <span class="glyphicon glyphicon-pencil"></span>
+            <span class="margin-sides-10">Editer</span>
+        </a>
+    </li>
+    <li class="basic-tools-dropdown-btn">
+        <a id="measure-dell-button"
+           class="btn-measure"
+           ng-class="{
+                   'active': ctrl.currentAction === 'basicTools-deleteMeasure'}"
+           ng-click="ctrl.deleteFeature(ctrl.currentAction === 'basicTools-deleteMeasure')">
+            <span class="glyphicon glyphicon-remove"></span>
+            <span class="margin-sides-10">Supprimer</span>
+        </a>
+    </li>
+    <li class="basic-tools-dropdown-btn">
+        <a id="measure-deleteAllFeatures-btn" class="btn-measure" ng-click="ctrl.deleteAllFeatures()">
+            <span class="glyphicon glyphicon-trash"></span>
+            <span class="margin-sides-10">Vider</span>
+        </a>
+    </li>
+
+    <li role="separator" class="divider"></li>
+    <li class="basic-tools-dropdown-btn"><a id="measure-display-features-button"
+                                            data-toggle="modal"
+                                            data-target="#measureAndDrawModal"
+                                            ng-click="ctrl.displayFeatures()">
+            Afficher les mesures
+        </a></li>
+</ul>
+
+
+<!--Modal-->
+<div class="modal fade" id="measureAndDrawModal" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <!--Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button id="modal-display-measure-close" type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Mesures</h4>
+            </div>
+            <div class="modal-body modal-body-big" style="height:82%">
+                <div ng-if="ctrl.sketches.length === 0">
+                    <b>Aucune mesure à afficher</b>
+                </div>
+                <div ng-repeat="feature in ctrl.sketches">
+                    
+                    <div ng-if="feature.get('Type') === 'Cercle'">
+                        <div class="font-15" class="font-14">
+                            <div><b class="font-15">Type: </b>{{feature.get('Type')}}</div>
+                            <div><b class="font-15">Rayon: </b>{{feature.get('Rayon')}}</div>
+                            <div><b class="font-15">Projection des coordonnées </b>{{ctrl.oProjections[feature.get('Projection')]}}</div>
+                        </div>
+                        <table class="table table-striped bordered margin-10 font-14">
+                            <thead>
+                                <tr class="info">
+                                    <th ng-repeat="key in feature.get('Keys')" ng-if="key !== 'geometry' && key !== 'Type' && key !== 'Rayon' && key !== 'Id' && key !== 'Coordonnées' && key !== 'Projection' && key !== 'Keys'">{{key}}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td ng-repeat="key in feature.get('Keys')" ng-if="key !== 'geometry' && key !== 'Type' && key !== 'Rayon' && key !== 'Id' && key !== 'Coordonnées' && key !== 'Projection' && key !== 'Keys'">{{feature.get(key)}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div ng-if="feature.get('Type') !== 'Cercle'">
+                        <div class="font-15" ng-repeat="key in feature.get('Keys')" ng-if="key !== 'Coordonnées' && key !== 'Projection' && key !== 'geometry' && key !== 'Id' && key !== 'Keys'">
+                            <b class="font-15">{{key}}: </b>{{feature.get(key)}}
+                        </div>
+                        <div class="font-15" ng-repeat="key in feature.get('Keys')" ng-if="key === 'Coordonnées'">
+                            <b class="font-15">{{key}}: </b>{{ctrl.transform(feature.get('Coordonnées'), ctrl.projection, feature.get('Projection'))}}
+                        </div>
+                        <div><b class="font-15">Projection des coordonnées: </b>{{ctrl.oProjections[feature.get('Projection')]}}</div>
+                    </div>
+                    
+                    <table class="table table-striped bordered margin-10 font-14" ng-if="feature.get('Type') !== 'Point' || feature.get('Type') !== 'Cercle'">
+                        <thead>
+                            <tr class="info">
+                                <th ng-repeat="key in feature.Points.keys">
+                                    {{key}}
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="point in feature.Points">
+                                <td ng-repeat="key in feature.Points.keys">
+                                    {{point[key]}}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button type="button" class="btn btn-primary right margin-sides-5" data-dismiss="modal" ng-click="ctrl.zoomToFeature(feature)">Voir sur la carte</button>
+                    <br>
+                    <br>
+                </div>
+                <!--end ng-repeat-->
+            </div>
+            <!--/.modal-body modal-body-big-->
+            <div class="modal-footer" ng-if="ctrl.sketches.length !== 0">
+                <a id="export-csv-button" class="btn btn-primary" download='Mesures.csv' href="" >Exporter tout en CSV</a>
+            </div>
+        </div>
+    </div>
+</div>

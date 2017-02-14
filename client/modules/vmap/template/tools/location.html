@@ -1,0 +1,243 @@
+<!--location search-->
+<li id="location-search-tool" role="presentation">
+    <form ng-submit="ctrl.searchLocation()" id="location-search-form" class="margin-sides-5 from-control">		
+        <input id="location-search-input"
+               type="text" 
+               placeholder="Localiser.."
+               ng-model="ctrl.locationSearch"
+               ng-click="ctrl.searchLocation()">
+
+        <select id="location-search-api-select"
+                ng-if="sizeOf(ctrl.customLocationServicesProperties) > 0"
+                ng-model="ctrl.locationService"
+                ng-change="ctrl.searchLocation()">
+            <option value="osm">OpenStreetMap</option>
+            <option ng-repeat="(key, value) in ctrl.customLocationServicesProperties"
+                    ng-if="value.bo_search_field && value.bo_result_field"
+                    value="{{key}}">{{value.bo_title}}</option>
+        </select>
+    </form>
+
+    <div class="dropdown-menu basic-tools-dropdown-element">
+
+        <!--Bandeau du haut-->
+        <div style="margin: 10px">
+            <label>Résultats de la recherche: </label>
+            <span class="glyphicon glyphicon-remove right pointer margin-sides-10" 
+                  ng-click="ctrl.removeLocation()"></span>
+        </div>
+
+        <!--Infos sur le chargement-->
+        <div style="text-align: center" class="margin-10">
+            <img class="hidden" src="images/ajax-load-big.gif" height="42" width="42" ng-class="{'block': ctrl.searching === true}">
+            <span ng-class="{'hidden': ctrl.noResults === ''}">{{ctrl.noResults}}</span>
+        </div>
+
+        <!-- Custom -->
+        <div ng-if="ctrl.locationService !== 'osm'" class="location-search-dropdown-content">
+            <div class="location-search-dropdown-result"
+                 ng-repeat="node in ctrl.locationResults">
+
+                <div class="pointer opacity-hover"
+                     ng-click="ctrl.addToSelection(node, ctrl.customLocationServicesProperties[ctrl.locationService])">
+                    <span>{{node['bo_summary'][ctrl.customLocationServicesProperties[ctrl.locationService].bo_result_field]}}</span>
+                </div>
+
+                <div class="location-search-dropdown-result-buttons pointer collapsed" data-toggle="collapse" href="#location-custom-search-dropdown-result-infos-{{this['$index']}}">
+                    <a>Détails</a>
+                    <i class="caret right" style="margin: 9px 0px 0px 6px;"></i>
+                </div>
+
+                <div class="collapse" id="location-custom-search-dropdown-result-infos-{{this['$index']}}">
+                    <div style="padding-bottom: 10px">
+                        <ul>
+                            <li ng-repeat="key in node['bo_summary_attributs']"">
+                                {{key}}: {{node['bo_summary'][key]}}
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- OSM -->
+        <div ng-if="ctrl.locationService === 'osm'" class="location-search-dropdown-content">
+            <div class="location-search-dropdown-result" 
+                 ng-repeat="node in ctrl.locationResults">
+
+                <div class="pointer opacity-hover"
+                     ng-click="ctrl.locatePlace(node)">
+                    <span>{{node.display_name}}</span>
+                </div>					
+
+                <div class="location-search-dropdown-result-buttons pointer collapsed" data-toggle="collapse" href="#location-search-dropdown-result-infos-{{this['$index']}}">
+                    <a>Détails</a>
+                    <i class="caret right" style="margin: 9px 0px 0px 6px;"></i>
+                </div>
+
+                <div class="collapse" id="location-search-dropdown-result-infos-{{this['$index']}}">
+                    <div style="padding-bottom: 10px">	
+
+                        <ul>
+                            <li ng-if="node.address.country">Pays: {{node.address.country}}</li>
+                            <li ng-if="node.address.state">Région: {{node.address.state}}</li>
+                            <li ng-if="node.address.postcode">Code postal: {{node.address.postcode}}</li>
+                            <li ng-if="node.extratags.population">Population: {{node.extratags.population}}</li>
+                            <li ng-if="node.extratags.website">Site internet: 
+                                <a href="{{node.extratags.website}}" target="_blank">{{node.extratags.website}}</a>
+                            </li>
+                            <li ng-if="node.extratags.wikipedia">Wikipédia: 
+                                <a href="https://fr.wikipedia.org/wiki/{{node.extratags.wikipedia}}" target="_blank">https://fr.wikipedia.org/wiki/{{node.extratags.wikipedia}}</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--Bandeau du bas-->
+        <div style="text-align: center; margin: 10px;">
+            <button type="button" class="btn btn-sm btn-primary" ng-click="ctrl.searchLocation(ctrl.locationSearch, 12)">
+                Plus de résultats
+            </button>			
+        </div>
+    </div>
+</li>
+
+<!--Go home-->
+<li role="presentation">
+    <a id="original-position-tool"
+       class="basic-tools-element pointer" title="Centre la carte sur l'empise par défaut"
+       ng-click="ctrl.goHome()">
+        <span class="glyphicon glyphicon-home" aria-hidden="true"></span>
+    </a>
+</li>
+
+<!--Refresh map-->
+<li role="presentation">
+    <a id="original-position-tool"
+       class="basic-tools-element pointer" title="Rafraichir les couches de la carte"
+       ng-click="ctrl.refreshMap()">
+        <span class="icon-repeat" aria-hidden="true"></span>
+    </a>
+</li>
+
+<!--Max extent-->
+<li role="presentation">
+    <a class="basic-tools-element pointer" title="Centre la carte à l'étendue maximale"
+       ng-click="ctrl.maxExtent()">
+        <span class="icon-language" aria-hidden="true"></span>
+    </a>
+</li>
+
+<!--Geolocate me-->
+<li role="presentation">
+    <a class="basic-tools-element pointer" title="Centre la carte sur ma position"
+       ng-click="ctrl.geolocateMe()">
+        <span class="glyphicon glyphicon-map-marker" aria-hidden="true"></span>
+    </a>
+</li>
+
+
+<!--Go to-->
+<li role="presentation" style="position: inherit" class="basic-tools-dropdown">
+
+    <a class="basic-tools-element pointer"
+       title="Centre la carte sur une position donnée"
+       onclick="oVmap.getToolsManager().getBasicTools().toggleTool(this)">
+        <span class="icon-coordinates" aria-hidden="true" style="font-size: 19px;line-height: 0.7 !important;"></span>
+    </a>
+
+    <div class="dropdown-menu basic-tools-dropdown-element" style="margin: -11px -1px">
+        <div class="row margin-sides-0 margin-10">
+            <div class="col-md-5">
+                <div class="input-group-sm">
+                    <input type="number" id="goto-coordinates-field-lon" class="form-control" placeholder="X">
+                </div>
+                <div class="input-group-sm">
+                    <input type="number" id="goto-coordinates-field-lat" class="form-control" placeholder="Y">
+                </div>
+            </div>			
+            <div class="col-md-5">
+                <b>Projection:</b>
+                <select id="location-select-projection" class="form-control">
+                    <option value="EPSG:4326">{{ctrl.projections['EPSG:4326']}}</option>
+                    <option value="EPSG:3857">{{ctrl.projections['EPSG:3857']}}</option>
+                    <option value="EPSG:2154">{{ctrl.projections['EPSG:2154']}}</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <br>
+                <button type="button" class="btn btn-success btn-sm"
+                        ng-click="ctrl.goTo('goto-coordinates-field-lon', 'goto-coordinates-field-lat', 'location-select-projection')">
+                    Go
+                </button>
+            </div>
+        </div>
+    </div>
+</li>
+
+<!--Change scale-->
+<!--<li role="presentation" style="position: inherit" class="basic-tools-dropdown">
+
+        <a class="basic-tools-element pointer"
+           title="Centre la carte sur une position donnée"
+           onclick="oVmap.getToolsManager().getBasicTools().toggleTool(this)">
+                <span class="icon-scale_bar" aria-hidden="true" style="font-size: 19px;line-height: 1.4 !important;"></span>
+        </a>
+
+        <div class="dropdown-menu basic-tools-dropdown-element" style="margin: -18px -1px">
+                <div class='margin-10 margin-sides-10'>
+
+                        <label>Echelle: 1:{{ctrl.scale}}</label>
+
+                        <select id="select-print-scale" class="form-control minus ng-pristine ng-valid ng-touched" ng-model="ctrl.scale" onchange="oVmap.getMap().setScale(this.value)">
+                                <option value="1000000">1:1,000,000</option>
+                                <option value="500000">1:500,000</option>
+                                <option value="200000">1:200,000</option>
+                                <option value="100000">1:100,000</option>
+                                <option value="50000">1:50,000</option>
+                                <option value="25000">1:25,000</option>
+                                <option value="10000">1:10,000</option>
+                                <option value="5000">1:5,000</option>
+                                <option value="2500">1:2,500</option>
+                                <option value="2000">1:2,000</option>
+                                <option value="1000">1:1,000</option>
+                                <option value="500">1:500</option>
+                                <option value="200">1:200</option>
+                                <option value="100">1:100</option>
+                        </select>
+                        <br>
+                        <div class="text-center">
+                                <button class="btn btn-sm btn-primary">saisir manuellement</button>
+                        </div>
+                </div>
+        </div>
+</li>-->
+
+<!-- Modal -->
+<div id="scale-modal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <form ng-submit="ctrl.addScale()">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Nouvelle échelle</h4>
+                </div>
+                <div class="modal-body">
+                    <i>Saisissez une nouvelle échelle puis cliquez sur "ajouter"</i>
+                    <div class="input-group">
+                        <span class="input-group-addon" id="new-scale-describer">1:</span>
+                        <input type="number" class="form-control" id="new-scale-input" aria-describedby="new-scale-describer" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Ajouter</button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>

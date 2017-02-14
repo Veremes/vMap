@@ -1,0 +1,11 @@
+
+              +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+              +                                                                                   +
+              +                   VEREMES - changelog de Majic_lib		                  +
+              +                                                                                   +
+              +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+__________________________________________________________________________________________________________________
+|b4379|NOUVEAUTE   |RELEASE| VERSION 2011.1 Rajout du champ TAXE AD qui correspond aux taxes additionnelles sur les parcelles. Cette mise à jour s'applique sur la version 2011 applicable sur les données 2012 
+|

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- VAS -->
+<installer>
+	<dependenciesCollection>
+		<dependency>
+			<name>jre</name>
+			<nature>extern-pre</nature>
+			<location>\\roussillon\Ressources\vitis\jre-8u101</location>
+		</dependency>
+	</dependenciesCollection>
+</installer>

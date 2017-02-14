@@ -1,0 +1,72 @@
+{
+    "search":{},
+    "update":{
+        "name":"logs_form",
+        "title":"FORM_TITLE_LOGS",
+        "input_size":"xxs",
+        "nb_cols":12,
+        "rows":[
+            {
+                "class":"form-field-inline logs-min-days-row",
+                "fields":[
+                    {
+                        "type":"number",
+                        "name":"min_days_files",
+                        "id":"min_days_files",
+                        "label":"FORM_DELETE_LOGS_LOG",
+                        "min":5,
+                        "max":200,
+                        "read_only":"true",
+                        "required":true,
+                        "nb_cols":10
+                    },
+                    {
+                        "type":"label",
+                        "name":"min_days_files_unity",
+                        "default_value":"FORM_DAYS_LOGS_LOG",
+                        "nb_cols":2
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"button",
+                        "class":"btn-ungroup btn-group-xs",
+                        "nb_cols":12,
+                        "buttons":[
+                            {
+                                "type":"button",
+                                "name":"btn_delete_file",
+                                "glyphicon":"trash",
+                                "class":"btn-primary btn-xs",
+                                "event":"deleteLogsHistory()",
+                                "tooltip": {
+                                        "title":"FORM_BTN_DELETE_HISTORY_LOGS",
+                                        "placement": "bottom",
+                                        "trigger": "hover",
+                                        "container": "body"
+                                }
+                            },
+                            {
+                                "type":"button",
+                                "name":"btn_refresh_treeview",
+                                "glyphicon":"refresh",
+                                "class":"btn-primary btn-xs",
+                                "event":"loadTreeview()",
+                                "tooltip": {
+                                        "title":"FORM_BTN_REFRESH_LOGS",
+                                        "placement": "bottom",
+                                        "trigger": "hover",
+                                        "container": "body"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "insert":{},
+    "display": {}
+}

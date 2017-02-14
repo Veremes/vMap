@@ -1,0 +1,1 @@
+node_modules/jsdoc/api/.bin/jsdoc ../../modules/vmap/javascript/app/vmap ../../modules/vmap/javascript/app/modules -r -c node_modules/jsdoc/api/conf.json -d node_modules/jsdoc/api/docs

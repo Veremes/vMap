@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Core -->
+<installer>
+	<dependenciesCollection>
+		<dependency>
+			<nature>vas</nature>
+			<version>2016.05.00</version>
+		</dependency>
+	</dependenciesCollection>
+</installer>

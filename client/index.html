@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=10">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Administration</title>
+        <script src="javascript/externs/jquery/jquery-1.11.3.min.js"></script>
+    </head>
+    <body data-app-init="">
+        <div class=""></div>
+        <div ng-include="getMainTemplateUrl()" class="container" id="container"></div>
+        <script>
+
+            /**
+             * Load a JS file with possibility to add a possible attribute
+             * @param {string} sJsFile File path
+             * @param {string|undefined} attr Attribute to add (can be undefined)
+             */
+            var loadJSFile = function (sJsFile, attr) {
+                var oScriptElement = document.createElement('script');
+                if (typeof attr === 'undefined')
+                    oScriptElement.src = sJsFile;
+                else
+                    oScriptElement.src = sJsFile + '?_' + attr;
+                document.write(oScriptElement.outerHTML);
+            };
+
+            /**
+             * Variable de session
+             */
+            var sessionStorage = {};
+
+            // Récupère la version de l'application
+            // important: utilise jQuery pour faire une requête synchrone
+            $.ajax({
+                url: 'conf/properties.json?_' + Date.now(),
+                async: false,
+                context: document.body
+            }).done(function (data) {
+
+                /**
+                 * Version de l'application
+                 */
+                sessionStorage['build'] = data['build'];
+                
+                /**
+                 * Nom de l'application
+                 */
+                sessionStorage['application'] = data['application'];
+                
+                /**
+                 * Paramètre "environment"
+                 */
+                sessionStorage['environment'] = data['environment'];
+                
+                /**
+                 * Paramètre "web_server_name" dans les properties (protocol + hostname + port).
+                 */
+                if (typeof(data["web_server_name"]) == "undefined" || data["web_server_name"] == "")
+                    data["web_server_name"] = window.location.protocol + "//" + window.location.host;
+                
+                /**
+                 * Sauve les properties du client.
+                 */
+                window["oClientProperties"] = data;
+            });
+
+            /**
+             * Paramètres de l'url dans un objet
+             */
+            var oUrlParams = {};
+            location.search.replace("?","").split("&").forEach(function(sUrlParams){
+                var aUrlParams = sUrlParams.split("=");
+                oUrlParams[aUrlParams[0]] = aUrlParams[1];
+            });
+
+            /**
+             * Mode compiled/degug
+             */
+            if (Object.keys(oUrlParams).indexOf("debug") !== -1)
+                sessionStorage['debug'] = 'true';
+            else
+                sessionStorage['debug'] = 'false';
+
+            /**
+             * Paramètre "environment" : Nom de l'application concaténé avec le paramètre "environment".
+             */
+            if (sessionStorage['environment'] != "")
+                sessionStorage['appEnv'] = sessionStorage['application'] + "_" + sessionStorage['environment'];
+            else
+                sessionStorage['appEnv'] = sessionStorage['application'];
+                
+            /**
+             * Fichiers à charger
+             * @type Array
+             */
+            var aJsFiles = [
+                'javascript/externs/less/less.min.js',
+                'javascript/externs/underscore-min.js',
+                'javascript/externs/jquery/plugins/bootstrap-datepicker/bootstrap-datepicker.js',
+                'javascript/externs/jquery/plugins/bootstrap-datepicker/locales/bootstrap-datepicker.fr.min.js',
+                'javascript/externs/jquery/plugins/bootstrap-colorpicker/bootstrap-colorpicker.min.js',
+                'javascript/externs/jquery/plugins/bootstrap-fileinput/fileinput.min.js',
+                'javascript/externs/jquery/plugins/bootstrap-fileinput/fileinput_locale_fr.js',
+                'javascript/externs/jquery/plugins/bootbox/bootbox.min.js',
+                'javascript/externs/angular/angular.min.js',
+                'javascript/externs/angular/modules/ui-grid/ui-grid.min.js',
+                'javascript/externs/angular/modules/ui-grid/plugins/draggable-rows.js',
+                'javascript/externs/angular/modules/angular-translate/angular-translate.min.js',
+                'javascript/externs/angular/modules/angular-translate/angular-translate-loader-partial.min.js',
+                'javascript/externs/angular/modules/restangular/restangular.min.js',
+                'javascript/externs/angular-bind-notifier/bindNotifier.js',
+                'javascript/externs/bootstrap/bootstrap.min.js',
+                'javascript/externs/jquery/plugins/bootstrap-slider/bootstrap-slider.min.js',
+                'javascript/externs/jquery/plugins/malihu-custom-scrollbar/jquery.mCustomScrollbar.concat.min.js'
+            ];
+
+            // Fichier de chargement à lancer
+            if (sessionStorage['debug'] === 'true') {
+                aJsFiles.push('conf/node_modules/google-closure-library/closure/goog/base.js');
+                aJsFiles.push('javascript/' + sessionStorage['application'] + '.deps.js');
+                aJsFiles.push('javascript/require/requireVitis.js');
+            } else {
+                aJsFiles.push('javascript/' + sessionStorage['application'] + '.min.js');
+            }
+
+            // Inclut les fichiers JS
+            aJsFiles.forEach(function (sJsFile) {
+                loadJSFile(sJsFile, sessionStorage['build']);
+            });
+        </script>
+    </body>
+</html>

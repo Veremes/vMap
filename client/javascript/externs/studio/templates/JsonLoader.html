@@ -1,0 +1,115 @@
+<div class="panel panel-veremes" id="FilesURL" ng-class="{ 'studio-panel-collapsed': $parent.aCollapsed[0], 'studio-panel-expanded': (!$parent.aCollapsed[0] && $parent.aCollapsed[4])}">
+    <div class="panel-heading unselectable" ng-click="ctrl.resize()">{{::ctrl.text.Title}}
+        <span ng-if="collapsed" id="colapse_uploader_icon" class="fa fa-angle-right fa-lg" style="float:right"></span>
+        <span ng-if="!collapsed" id="colapse_uploader_icon" class="fa fa-angle-down fa-lg" style="float:right"></span>
+    </div>
+    <div class="panel-body uploader-panel" ng-hide="collapsed">
+        <div class="element-margin text-center">
+            <!-- <div class="input-group element-margin input-group-sm">
+                 <span class="input-group-addon" id="Workspace_id_label">ID</span>
+                 <input ng-model="iWorkspaceId" id="Workspace_id_input" type="number" class="form-control" placeholder="Workspace's id" aria-describedby="Workspace_id_label" required>
+             </div>
+             <div class="input-group element-margin input-group-sm">
+                 <span class="input-group-addon" id="Workspace_token_label">Token</span>
+                 <input ng-model="token" id="Workspace_token_input" type="text" class="form-control" placeholder="Session token" aria-describedby="Workspace_token_label" required>
+             </div>-->
+            <div class="btn-group btn-group-sm" id="json_loader_Mode_groupButton" role="group">
+                <button type="button" 
+                        id="load_Default_button" 
+                        class="btn btn-primary" 
+                        ng-click="ctrl.load('Default', 'load_Default_button')" 
+                        ng-class="{'active':FormSelected === 'Default'}"
+                        title="{{::ctrl.applicationName === 'gtf' ? ctrl.text.InfoBulle.Default.Button_gtf : ctrl.text.InfoBulle.Default.Button}}">
+                    {{::ctrl.text.SelectForm.Default}}
+                </button>
+                <button type="button" 
+                        id="load_Publish_button" 
+                        class="btn btn-primary" 
+                        ng-click="ctrl.load('Published', 'load_Publish_button')" 
+                        ng-class="{'active':FormSelected === 'Published'}" 
+                        title="{{::ctrl.applicationName === 'gtf' ? ctrl.text.InfoBulle.Published.Button_gtf : ctrl.text.InfoBulle.Published.Button}}">
+                    {{::ctrl.text.SelectForm.Published}}
+                </button>
+                <button type="button" 
+                        id="load_Perso_button" 
+                        class="btn btn-primary" 
+                        ng-click="ctrl.load('Perso', 'load_Perso_button')" 
+                        ng-class="{'active':FormSelected === 'Perso'}" 
+                        title="{{::ctrl.text.InfoBulle.Perso.Button}}">
+                    {{::ctrl.text.SelectForm.Perso}}
+                </button>
+            </div>
+        </div>
+        <div class="text-center button_range element-margin" ng-switch on="FormSelected" >
+            <div ng-switch-when="Default" class="btn-group btn-group-sm" id="json_loader_Actions_groupButton" role="group" aria-label="...">
+                <button type="button" class="btn btn-success" ng-click="ctrl.publish()" title="{{::ctrl.text.InfoBulle.Default.Publish}}">
+                    <span class="glyphicon glyphicon-copy fa-lg" aria-hidden="true"></span>
+                </button>
+                <button type="button" id="reset_json_button" class="btn btn-success" ng-click="ctrl.reset()" title="{{::ctrl.text.InfoBulle.Default.Reset}}">
+                    <span class="fa fa-recycle fa-lg" aria-hidden="true"></span>
+                </button>
+            </div>
+            <div ng-switch-when="Published" id="json_loader_groupButton" role="group" aria-label="..."></div>
+            <div ng-switch-when="Perso" class="btn-group btn-group-sm" id="json_loader_Actions_groupButton" role="group" aria-label="...">
+                <!--btn sauvegrde formulaire personnalisé-->
+                <button type="button" class="btn btn-success" ng-click="ctrl.save()" title="{{::ctrl.text.InfoBulle.Perso.Save}}">
+                    <span class="glyphicon glyphicon-floppy-disk fa-x1" aria-hidden="true"></span>
+                </button>
+                <!--btn recharge les formulaires depuis les serveur-->
+                <button type="button" this="reset_Perso_button" class="btn btn-success" ng-click="ctrl.loadWithEdit(false, 'Perso', 'load_Perso_button')" title="{{::ctrl.text.InfoBulle.Perso.Reload}}">
+                    <span class="glyphicon glyphicon-refresh fa-x1" aria-hidden="true"></span>
+                </button>
+                <!--btn publier le formaulaire personnalisé-->
+                <button type="button" class="btn btn-success" ng-click="ctrl.publish()" title="{{::ctrl.text.InfoBulle.Perso.Publish}}">
+                    <span class="glyphicon glyphicon-copy fa-lg" aria-hidden="true"></span>
+                </button>
+                <!--btn remplacer le formulaire presonnalisé par le formulaire par défaut-->
+                <button type="button" id="reset_json_button" class="btn btn-success" ng-click="ctrl.reset()" title="{{::ctrl.text.InfoBulle.Perso.Reset}}">
+                    <span class="fa icon-recycle fa-lg" aria-hidden="true"></span>
+                </button>
+            </div>
+        </div>
+        <div class="input-group element-margin input-group-xs">
+            <span class="input-group-addon" id="Title_Form_label">{{::ctrl.text.Form.Title}}</span>
+            <input ng-model="title" id="Title_Form_input" type="text" class="form-control" placeholder="{{::ctrl.text.Form.TitlePlaceholder}}" aria-describedby="Title_Form_label" required>
+        </div>
+
+        <div id="div_Select_Form" ng-if="json_forms.length > 1">
+            <label id="label_select_Form" class="input-xs" for="select_size_input">{{::ctrl.text.Form.SelectForm.Label}}</label>
+            <select id="select_form_type"
+                    class="form-control element-margin input-xs"
+                    ng-model="$root.selected_form_type">
+                <option ng-repeat="form_type in json_forms" ng-value="form_type">{{form_type}}</option>
+            </select>       
+        </div>
+        <div id="div_slider_Form" ng-show="ctrl.applicationName !== 'gtf'">
+            <label id="label_slider_Form" class="input-xs" for="slider_Form">{{::ctrl.text.Form.Width}}</label>
+            <input id="slider_Form" data-slider-id='slider_Form' type="text" data-slider-min="0" data-slider-max="12" data-slider-step="1" data-slider-value="10" required>
+        </div>
+    </div>
+
+    <div id="select-fields-modal" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content" style="height:100%">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">{{::ctrl.text.Form.SuggestedFields}}</h4>
+                </div>
+                <div class="modal-body" style="height:calc(100% - 100px);overflow: auto;">
+                    <div ng-repeat="node in ctrl.aSuggestedTableFields">
+                        <div class="checkbox checkbox-info margin-2">
+                            <input id="aSuggestedTableFields_{{$index}}" 
+                                   type="checkbox" 
+                                   style="cursor:pointer; position: absolute"
+                                   ng-model="node.fields[0].bUseForGenerate">
+                            <label for="aSuggestedTableFields_{{$index}}" style="cursor:pointer">{{node.fields[0].name}} ({{node.fields[0].type}})</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" ng-click="ctrl.generateFormByBusinessObject()">{{::ctrl.text.Confirmation.Confirm}}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

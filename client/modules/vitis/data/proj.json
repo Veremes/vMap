@@ -1,0 +1,22 @@
+{
+    "projections": [
+        {
+            "code": "EPSG:2154",
+            "name": "Lambert 93",
+            "osm": true,
+            "bing": true
+        },
+        {
+            "code": "EPSG:3857",
+            "name": "WGS84 Spherical Mercator",
+            "osm": true,
+            "bing": true
+        },
+        {
+            "code": "EPSG:4326",
+            "name": "WGS84 Spherical Mercator (longlat)",
+            "osm": false,
+            "bing": false
+        }
+    ]
+}

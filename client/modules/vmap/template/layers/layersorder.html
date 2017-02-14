@@ -1,0 +1,41 @@
+<div id="layersorder-button">
+    <div class="list-group-item active pointer layersorder-button-content" 
+         title="Outil de modification de l'ordre des couches" 
+         collapse="{{ctrl.layersorder_collapsed === true ? 'out' : 'in'}}" 
+         data-target="#layersorder" 
+         onclick="oVmap.getMapManager().collapseElement(this)">
+        <span class="icon-layers2 list-group-icon"></span>
+        <span>Table des matières</span>
+        <span class="list-group-icon2"
+              ng-class="{'icon-keyboard_arrow_down':ctrl.layersorder_collapsed !== true, 'icon-keyboard_arrow_right':ctrl.layersorder_collapsed === true}"></span>
+    </div>
+</div>
+
+<div id="layersorder" class="layers-tool" collapse="{{ctrl.layersorder_collapsed === true ? 'out' : 'in'}}">
+    <div class="indicators" style="margin-right: 4px;">
+        <span class="text-info icon-eye" style="font-size: 18px;line-height: 0"></span>
+    </div>
+    <ul class="sortable-list layer-order-list">
+        <!-- Affiche uniquement les couches qui ont un nom -->
+        <li ng-repeat="layer in ctrl.selectedLayers"
+            class="{{layer.get('type')}}-layer-order-item layer-order-item auto-height"
+            data-hashkey="{{layer.$$hashKey}}">
+            <span class="sortable-handle order-layer">
+                <div class="glyphicon glyphicon-menu-hamburger legend-glyphicon" aria-hidden="true"></div>
+                <div class="layer-name layer-name-order">{{layer.get('name')}}</div>
+            </span>
+            <div class="margin-3">
+                <!-- Checkbox visible -->
+                <div class="checkbox checkbox-info inline-checkbox">
+                    <input id="{{$id}}_visible_order_checkbox" 
+                           type="checkbox" 
+                           style="cursor:pointer" 
+                           title="Definit si la couche est visible"
+                           ng-checked="layer.values.visible === true"
+                           ng-click="ctrl.setVisible(layer, !layer.values.visible)">
+                    <label for="{{$id}}_visible_order_checkbox" style="cursor:pointer" title="Definit si la couche est visible"></label>
+                </div>
+            </div>
+        </li>
+    </ul>
+</div>

@@ -1,0 +1,156 @@
+[
+    {
+        "label": "CREDITS_SOFTWARE",
+        "rows": [
+            {
+                "type": "text",
+                "value": "vMap"
+            }
+        ]
+    },
+    {
+        "label": "CREDITS_VERSION",
+        "rows": [
+            {
+                "type": "text",
+                "value": "CREDITS_VERSION_CONTENT"
+            }
+        ]
+    },
+    {
+        "label": "CREDITS_DATE",
+        "rows": [
+            {
+                "type": "text",
+                "value": "CREDITS_DATE_CONTENT"
+            }
+        ]
+    },
+    {
+        "label": "CREDITS_EDITOR",
+        "rows": [
+            {
+                "type": "link",
+                "value": "Veremes",
+                "url": "http://www.veremes.com"
+            }
+        ]
+    },
+    {
+        "label": "CREDITS_AUTHOR",
+        "rows": [
+            {
+                "type": "text",
+                "value": "Armand Bahi"
+            },
+            {
+                "type": "text",
+                "value": "Alexandre Bizien"
+            },
+            {
+                "type": "text",
+                "value": "Anthony Borghi"
+            },
+            {
+                "type": "text",
+                "value": "Frédéric Carretero"
+            },
+            {
+                "type": "text",
+                "value": "Olivier Gayte"
+            },
+            {
+                "type": "text",
+                "value": "Sébastien Legrand"
+            },
+            {
+                "type": "text",
+                "value": "Laurent Panabieres"
+            },
+            {
+                "type": "text",
+                "value": "Yoann Perollet"
+            }
+        ]
+    },
+    {
+        "label": "CREDITS_GRAPHICS",
+        "rows": [
+            {
+                "type": "link",
+                "value": "Nematis",
+                "url": "http://www.nematis.com"
+            }
+        ]
+    },
+    {
+        "label": "CREDITS_LIBRARIES",
+        "rows": [
+            {
+                "type": "link",
+                "value": "Bootstrap",
+                "url": "http://getbootstrap.com"
+            },
+            {
+                "type": "link",
+                "value": "AngularJS",
+                "url": "https://angularjs.org"
+            },
+            {
+                "type": "link",
+                "value": "Google Closure",
+                "url": "https://developers.google.com/closure"
+            },
+            {
+                "type": "link",
+                "value": "jQuery",
+                "url": "http://jquery.com"
+            },
+            {
+                "type": "link",
+                "value": "Rgraph",
+                "url": "http://www.rgraph.net"
+            },
+            {
+                "type": "link",
+                "value": "CodeMirror",
+                "url": "http://codemirror.net"
+            },
+            {
+                "type": "link",
+                "value": "OpenLayers",
+                "url": "http://openlayers.org"
+            },
+            {
+                "type": "link",
+                "value": "TinyMCE",
+                "url": "https://www.tinymce.com"
+            }
+        ]
+    },
+    {
+        "label": "CREDITS_CONTACT",
+        "rows": [
+            {
+                "type": "link",
+                "value": "www.veremes.com",
+                "url": "http://www.veremes.com"
+            },
+            {
+                "type": "link",
+                "value": "www.veremes.com/nous-contacter#1",
+                "url": "http://www.veremes.com/nous-contacter#1"
+            }
+        ]
+    },
+    {
+        "label": "CREDITS_LICENSE",
+        "rows": [
+            {
+                "type": "link",
+                "value": "Cecill-B",
+                "url": "http://www.cecill.info/licences/Licence_CeCILL-B_V1-fr.html"
+            }
+        ]
+    }
+]

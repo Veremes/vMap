@@ -1,0 +1,11 @@
+<div class="active-directory-tree-nav">
+        <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a href="#{{::sSelectedObjectName}}_treeview" aria-controls="{{::sSelectedObjectName}}_treeview" role="tab" data-toggle="tab" data-translate="TITLE_TAB_TREE_ACTIVE_DIRECTORY_USERS_USER"></a></li>
+                <li role="presentation"><a href="#{{::sSelectedObjectName}}_search_form" aria-controls="{{::sSelectedObjectName}}_search_form" role="tab" data-toggle="tab" data-translate="TITLE_TAB_SEARCH_ACTIVE_DIRECTORY_USERS_USER"></a></li>
+        </ul>
+        <div class="active-directory-tree-title">{{oLdap.sDn}}</div>
+        <div class="tab-content">
+                <div data-app-active-directory-tree-treeview-container="" role="tabpanel" class="tab-pane active"></div>
+                <div data-app-active-directory-tree-form="" role="tabpanel" class="tab-pane" id="{{::sSelectedObjectName}}_search_form">...</div>
+        </div>
+</div>

@@ -1,0 +1,188 @@
+
+<div id="vmap-select-tool"></div>
+
+<!-- Selection Avancée -->
+<div class="right">
+    <li role="presentation" style="position: inherit" class="basic-tools-dropdown">
+        <a class="basic-tools-element pointer"
+           id="basic-tools-dropdown-select-btn" 
+           title="Sélection multiple"
+           onclick="oVmap.getToolsManager().getBasicTools().toggleTool(this)">
+            <span class="icon-info" aria-hidden="true"></span> +
+        </a>
+        <div app-advancedselect app-lang="ctrl.lang" app-map="ctrl.map" app-action="ctrl.currentAction"
+             id="basic-tools-dropdown-select-content" 
+             class="dropdown-menu basic-tools-dropdown-element basic-tools-dropdown-select-content">
+        </div>
+    </li>
+</div>
+
+<!-- Selection Basique -->
+<div app-basicselect app-lang="ctrl.lang" app-map="ctrl.map" app-action="ctrl.currentAction" class="right"></div>
+
+<!--Palette d'édition (non visible par défaut)-->
+<div id="basictools-select-modify-palette" 
+     class="dropdown-menu basic-tools-dropdown-element basic-tools-dropdown-select-modifypalette-content">
+    <div class="basic-tools-select-container basic-tools-dropdown-menu">
+        <div>
+
+            <div class="btn-group btn-block">
+                <button type="button" 
+                        class="btn btn-sm btn-info"
+                        style="width: 80%"
+                        ng-class="{'white color-gray': ctrl.currentAction === 'basicTools-select-insertPoint' || ctrl.currentAction === 'basicTools-select-insertLineString' || ctrl.currentAction === 'basicTools-select-insertPolygon' || ctrl.currentAction === 'basicTools-select-insertCircle'}"
+                        ng-click="ctrl.addPartGeomType !== '' ? ctrl.startEdition('insert' + ctrl.addPartGeomType, ctrl.currentAction === 'basicTools-select-insert' + ctrl.addPartGeomType) : angular.noop">
+                        Ajouter une partie
+                </button>
+                <button type="button" 
+                        class="btn btn-sm btn-default dropdown-toggle" 
+                        style="width: 20%"
+                        data-toggle="dropdown" 
+                        aria-haspopup="true" 
+                        aria-expanded="false">
+                    <span class="caret" ng-show="ctrl.editableFeatureType === 'GEOMETRYCOLLECTION'"></span>
+                    <span class="icon-point" ng-show="ctrl.addPartGeomType === 'Point'"></span>
+                    <span class="icon-line" ng-show="ctrl.addPartGeomType === 'LineString'"></span>
+                    <span class="icon-polygon" ng-show="ctrl.addPartGeomType === 'Polygon'"></span>
+                    <span class="icon-circle" ng-show="ctrl.addPartGeomType === 'Circle'"></span>
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a href="javascript:void(0)"
+                           ng-show="ctrl.editableFeatureType === 'GEOMETRYCOLLECTION' || ctrl.editableFeatureType === 'POINT' || ctrl.editableFeatureType === 'MULTIPOINT'"
+                           ng-click="ctrl.addPartGeomType = 'Point'; ctrl.startEdition('insertPoint', false)">
+                            <span class="icon-point"></span> Point
+                        </a></li>
+                    <li><a href="javascript:void(0)"
+                           ng-show="ctrl.editableFeatureType === 'GEOMETRYCOLLECTION' || ctrl.editableFeatureType === 'LINESTRING' || ctrl.editableFeatureType === 'MULTILINESTRING'"
+                           ng-click="ctrl.addPartGeomType = 'LineString'; ctrl.startEdition('insertLineString', false)">
+                            <span class="icon-line"></span> Ligne
+                        </a></li>
+                    <li><a href="javascript:void(0)"
+                           ng-show="ctrl.editableFeatureType === 'GEOMETRYCOLLECTION' || ctrl.editableFeatureType === 'POLYGON' || ctrl.editableFeatureType === 'MULTIPOLYGON'"
+                           ng-click="ctrl.addPartGeomType = 'Polygon'; ctrl.startEdition('insertPolygon', false)">
+                            <span class="icon-polygon"></span> Polygone
+                        </a></li>
+                    <li><a href="javascript:void(0)"
+                           ng-show="ctrl.editableFeatureType === 'GEOMETRYCOLLECTION' || ctrl.editableFeatureType === 'POLYGON' || ctrl.editableFeatureType === 'MULTIPOLYGON'"
+                           ng-click="ctrl.addPartGeomType = 'Circle'; ctrl.startEdition('insertCircle', false)">
+                            <span class="icon-circle"></span> Cercle
+                        </a></li>
+                </ul>
+            </div>
+
+            <div class="hr-gray margin-10"></div>
+
+            <ul class="list-menu gray-list-menu">
+                <li class="basic-tools-dropdown-btn">
+                    <a class="btn-draw"
+                       ng-class="{'active': ctrl.currentAction === 'basicTools-select-editFeature'}"
+                       ng-click="ctrl.startEdition('editFeature', ctrl.currentAction === 'basicTools-select-editFeature')">
+                        <span class="icon-edit"></span>
+                        <span class="margin-sides-10">Modifier la géométrie</span>
+                    </a>
+                </li>
+                <li class="basic-tools-dropdown-btn">
+                    <a class="btn-draw"
+                       ng-class="{'active': ctrl.currentAction === 'basicTools-select-deleteFeature'}"
+                       ng-click="ctrl.startEdition('deleteFeature', ctrl.currentAction === 'basicTools-select-deleteFeature')">
+                        <span class="icon-trash"></span>
+                        <span class="margin-sides-10">Supprimer une partie</span>
+                    </a>
+                </li>
+                <li class="basic-tools-dropdown-btn">
+                    <a class="btn-draw"
+                       ng-show="(ctrl.editableFeatureType === 'GEOMETRYCOLLECTION' || ctrl.editableFeatureType === 'POLYGON' || ctrl.editableFeatureType === 'MULTIPOLYGON')"
+                       ng-class="{'active': ctrl.currentAction === 'basicTools-select-addHole'}"
+                       ng-click="ctrl.startEdition('addHole', ctrl.currentAction === 'basicTools-select-addHole')">
+                        <span class="icon-dot-circle-o"></span>
+                        <span class="margin-sides-10">Ajouter un trou</span>
+                    </a>
+                </li>
+                <li class="basic-tools-dropdown-btn">
+                    <a class="btn-draw"
+                       ng-show="(ctrl.editableFeatureType === 'GEOMETRYCOLLECTION' || ctrl.editableFeatureType === 'POLYGON' || ctrl.editableFeatureType === 'MULTIPOLYGON')"
+                       ng-class="{'active': ctrl.currentAction === 'basicTools-select-deleteHole'}"
+                       ng-click="ctrl.startEdition('deleteHole', ctrl.currentAction === 'basicTools-select-deleteHole')">
+                        <span class="icon-dot-circle-o"></span>
+                        <span class="margin-sides-10">Supprimer un trou</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="hr-gray margin-10"></div>
+
+            <div style="text-align: center">
+                <button type="button" 
+                        class="btn btn-info btn-sm"
+                        ng-click="ctrl.finishEdition()">
+                    <span class="glyphicon glyphicon-remove margin-sides-2"></span>
+                    Annuler
+                </button>
+                <button type="button" 
+                        class="btn btn-info btn-sm"
+                        ng-show="ctrl.editGeometryFromForm"
+                        ng-click="ctrl.validateGeomAndDisplayEditForm()">
+                    <span class="glyphicon glyphicon-share-alt margin-sides-2"></span>
+                    Valider géométrie
+                </button>
+                <button type="button" 
+                        class="btn btn-info btn-sm"
+                        ng-show="!ctrl.editGeometryFromForm"
+                        ng-click="ctrl.submitGeomEdition()">
+                    <span class="glyphicon glyphicon-share-alt margin-sides-2"></span>
+                    Sauvegarder
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--Select card modal-->
+<div class="modal fade" id="select-card-modal" role="dialog">
+    <div class="modal-dialog ">
+        <!--Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">{{ctrl.editSelection.bo_title}}</h4>
+            </div>
+            <div class="modal-body modal-body-big-3 font-12">
+                <!--Form reader-->
+                <div id="select_display_form_reader"
+                     app-form-reader 
+                     app-properties="ctrl.properties"
+                     app-token="ctrl.token"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--Select edit modal-->
+<div class="modal fade" id="select-edit-modal" role="dialog">
+    <div class="modal-dialog ">
+        <!--Modal content-->
+        <div class="modal-content" style="">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">{{ctrl.editSelection.bo_title}}</h4>
+            </div>
+            <div class="modal-body modal-body-big-with-footer-3 font-12">
+                <!--Form reader-->
+                <div id="select_edit_form_reader"
+                     app-form-reader 
+                     app-properties="ctrl.properties"
+                     app-token="ctrl.token"></div>
+            </div>
+            <div class="modal-footer modal-footer-sm text-left">
+                <button class="btn btn-primary" ng-click="ctrl.editFormFeature(ctrl.editSelection)">
+                    <span class="icon-line margin-2"></span>
+                    Modifier la géométrie
+                </button>
+                <button class="btn btn-primary" onclick="oVmap.simuleClick('basictools-select-form-reader-submit-btn')">
+                    <span class="glyphicon glyphicon-share-alt margin-2"></span>
+                    Sauvegarder
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

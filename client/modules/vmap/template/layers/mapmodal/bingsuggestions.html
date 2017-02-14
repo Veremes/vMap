@@ -1,0 +1,77 @@
+<!-- Liste des couches utilisables -->
+
+
+<h3>Ajouter une couche Bing Maps: </h3>
+<hr>
+
+<div>
+    <div class="row">
+        <div class="col-md-3">
+            <b>Couche:</b>
+        </div>
+        <div class="col-md-4">
+            <b>Clé Bing:</b>
+        </div>
+        <div class="col-md-3">
+            <b>Langue:</b>
+        </div>
+        <div class="col-md-2">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-3">
+            <input type="text" id="bing-imagerySet-field" class="form-control" placeholder="Type of imagery" aria-describedby="sizing-addon1">
+        </div>
+        <div class="col-md-4">
+            <input type="text" id="bing-key-field" class="form-control" placeholder="Bing Maps API Key" aria-describedby="sizing-addon1">
+        </div>
+        <div class="col-md-3">
+            <select id="bing-culture-select" class="form-control">
+                <option value="fr-FR">French</option>
+                <option value="en-US">English</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="button" class="btn btn-success right" onclick="oVmap.getMapManager().addBingLayerFromHTML(this)">Ajouter</button>
+        </div>
+    </div>
+</div>
+
+<br>
+<div id="bing-log-message"></div>
+<hr>
+
+<div ng-repeat="node in ctrl.catalog.services.bing">
+    <div class="row">
+        <div class="col-md-3">
+            <img src="{{node.thumbnail.substring(0, 4) === 'http' ? node.thumbnail : node.thumbnail ? ctrl.properties.web_server_name + '/' + ctrl.properties.public_alias + '/vmap/' + node.thumbnail : ''}}" 
+                 class="img-responsive pointer opacity-hover" 
+                 imagerySet="{{node.imagerySet}}" 
+                 key="{{node.key}}" 
+                 culture="{{node.culture}}" 
+                 onclick="oVmap.getMapManager().addBingLayerFromHTML(this)">
+        </div>
+        <div class="col-md-9">
+            <b>{{node.imagerySet}}</b>
+            <p>
+                <i>
+                    {{node.description}}
+                </i>
+            </p>
+            <p>
+                Lang: <i>{{node.culture}}</i>
+            </p>
+        </div>
+    </div>
+    <div class="row" style="margin-bottom: -15px">
+        <div class="col-md-3"></div>
+        <div class="col-md-7 auto-overflow">
+            <b>key</b>: <i>{{node.key}}</i>
+        </div>
+        <div class="col-md-2">
+            <button type="button" class="btn btn-primary right" imagerySet="{{node.imagerySet}}" key="{{node.key}}" culture="{{node.culture}}" onclick="oVmap.getMapManager().addBingLayerFromHTML(this)">Ajouter</button>
+        </div>
+    </div>
+    <hr>
+</div>
+<button id="btn-reload-bing" style="display: none" ng-click="ctrl.reload()">Reload map</button>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- WS vMap -->
+<installer>
+	<schema>
+		<name>s_vmap</name>
+		<version>2016.03.01</version>
+		<dependenciesCollection>
+			<dependency>
+				<nature>schema</nature>
+				<name>s_vitis</name>
+				<version>2016.05.00</version>
+				<object>vas</object>
+			</dependency>
+			<dependency>
+				<name>postgis</name>
+				<version>2.0</version>
+				<nature>extern-pre</nature>
+			</dependency>
+		</dependenciesCollection>
+	</schema>
+	<dependenciesCollection>
+		<dependency>
+			<nature>vas</nature>
+			<version>2016.05.00</version>
+		</dependency>
+		<dependency>
+			<name>webSocket</name>
+			<version>1.0</version>
+			<nature>extern-pre</nature>
+		</dependency>
+		<dependency>
+			<name>phantomjs</name>
+			<nature>extern-post</nature>
+			<location>\\roussillon\Ressources\vitis\phantomjs-2.1.1</location>
+		</dependency>
+	</dependenciesCollection>
+</installer>

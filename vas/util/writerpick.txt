@@ -1,0 +1,7 @@
+
+Esri Shapefile|SHAPE
+MapInfo Tab|MITAB
+MapInfo Mif/Mid|MIF
+Autocad DWG|ACAD
+GML|GML
+Google KML|OGCKML

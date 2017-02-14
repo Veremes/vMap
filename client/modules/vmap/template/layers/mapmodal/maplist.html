@@ -1,0 +1,155 @@
+<!-- Liste des cartes utilisables -->
+
+
+<h3>Liste des cartes utilisables: </h3>
+<hr>
+<div>
+    <div class="row">
+        <div class="col-md-10">
+            <b>Fichier:</b>
+        </div>
+        <div class="col-md-2">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-10">
+            <div class="input-group">
+                <input type="text" id="upload-file-info" class="form-control" ng-model="ctrl.newMapUrl" placeholder="http://www.ma-carte.com/get-map.php">
+                <span class="input-group-btn">
+                    <span class="btn btn-success btn-file">
+                        Chercher&hellip; <input type="file" id="browse-map-button" onchange='oVmap.getMapManager().getMapModalTool().getMapListTool().changeFilePath(this)'>
+                    </span>
+                </span>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <!-- l'attribut "url" est utilisé si on rentre le path à la main, si on rentre par le bouton "browse", alors on utilisera le contennu de browse-map-button -->
+            <button type="button" id="upload-file-add-button" url="{{ctrl.newMapUrl}}" file-container="" class="btn btn-success right" onclick="oVmap.getMapManager().loadMapFromFile(this)">Utiliser</button>
+        </div>
+    </div>
+</div>
+<br>
+<div class="upload-drop-zone" id="maplist-file-drop-zone">Déplacer le fichier ici</div>
+<div id="maplist-log-message"></div>
+<div class="row">	
+    <div class="col-md-10"></div>
+    <div class="col-md-2">
+        <button type="button" 
+                id="upload-file-new-map-button" 
+                class="btn btn-primary right" 
+                data-toggle="modal" 
+                data-target="#mapmodal-newmap-modal"
+                ng-click="ctrl.initNewMapForm()">
+            Nouvelle carte (vide)
+        </button>
+    </div>
+</div>
+
+<div ng-repeat="node in ctrl.catalog.maps">
+    <div class="row">
+        <div class="col-md-3">
+            <img src="{{node.thumbnail}}" url="{{node.url}}" class="img-responsive pointer opacity-hover" data-dismiss="modal" onclick="oVmap.getMapManager().loadMap(this)">
+        </div>
+        <div class="col-md-9">
+            <b>{{node.name}}</b>
+            <p>
+                <i>
+                    {{node.description}}
+                </i>
+            </p>
+        </div>
+    </div>
+    <div class="row" style="margin-bottom: -15px">
+        <div class="col-md-3"></div>
+        <div class="col-md-6">
+            <div ng-if="node.theme_name !== null && node.theme_name !== undefined">
+                <b>Thème</b>: <i>{{node.theme_name}}</i>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <button type="button" url="{{node.url}}" class="btn btn-primary right" data-dismiss="modal" onclick="oVmap.getMapManager().loadMap(this)">Utiliser cette carte</button>
+        </div>
+    </div>
+    <hr>
+</div>
+<button id="btn-reload-maplist" style="display: none" ng-click="ctrl.reload()">Reload map</button>
+
+
+
+<!-- new map modal -->
+<div id="mapmodal-newmap-modal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" onclick="$('#mapmodal-newmap-modal').modal('hide')">&times;</button>
+                <h4 class="modal-title">Nouvelle carte</h4>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <label>Centre</label>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="input-group">
+                                <span class="input-group-addon">X: </span>
+                                <input type="float" class="form-control" ng-model="ctrl.mapForm.view.center[0]">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="input-group">
+                                <span class="input-group-addon">Y: </span>
+                                <input type="float" class="form-control" ng-model="ctrl.mapForm.view.center[1]">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="input-group">
+                                <button id="myMap-newMapForm-reproject" 
+                                        class="btn btn-success" 
+                                        title="Reprojeter en fonction de la nouvelle projection"
+                                        ng-click="ctrl.reprojectCenter()">Reprojeter</button>
+                            </div>
+                        </div>
+                    </div>
+                    <br>
+
+                    <label>Niveau de zoom</label>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <input type="number" class="form-control" required="true" ng-model="ctrl.mapForm.view.zoom">
+                        </div>
+                    </div>
+                    <br>
+                    <label>Niveau de zoom maximum</label>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <input type="number" class="form-control" required="true" ng-model="ctrl.mapForm.view.maxZoom">
+                        </div>
+                    </div>
+                    <br>
+                    <label>Niveau de zoom minimum</label>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <input type="number" class="form-control" required="true" ng-model="ctrl.mapForm.view.minZoom">
+                        </div>
+                    </div>
+                    <br>
+
+                    <label>Projection</label>
+                    <select class="form-control" ng-model="ctrl.mapForm.view.projection">
+                        <option ng-repeat="(key, value) in ctrl.projections"
+                                value="{{key}}">{{value}}</option>
+                    </select>
+                    <br>
+                    <br>
+                    <div style="width: 100%">
+                        <button type="submit" 
+                                class="btn btn-primary center" 
+                                onclick="$('#mapmodal-newmap-modal').modal('hide')"
+                                ng-click="ctrl.createNewMap()">Créér et utiliser</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,72 @@
+<div class="map-basic-tools">
+    <div id="map-basic-tools-row" class="map-basic-tools-row">
+        <div>
+            <ul class="nav nav-pills basic-tools-nav">
+                <!-- Outils de localisation -->
+                <div app-location app-lang="ctrl.lang" app-map="ctrl.map"></div>
+                <!-- Contrôles -->
+                <div class="right">
+                    <li role="presentation" style="position: inherit" class="basic-tools-dropdown">
+                        <a class="basic-tools-element pointer"
+                           title="Outils de contôle"
+                           onclick="oVmap.getToolsManager().getBasicTools().toggleTool(this)">
+                            <span class="icon-cog" aria-hidden="true"></span>
+                        </a>
+                        <div app-controls app-lang="ctrl.lang" app-map="ctrl.map" app-action="ctrl.currentAction"
+                             id="basic-tools-dropdown-controls-content"
+                             class="dropdown-menu basic-tools-dropdown-element basic-tools-dropdown-controls-content">
+                        </div>
+                    </li>
+                </div>
+                <!-- Impression -->
+                <div class="right">
+                    <li role="presentation" style="position: inherit" class="basic-tools-dropdown">
+                        <a id="print-select-btn"
+                           class="basic-tools-element pointer"
+                           title="Imprimer"
+                           onclick="oVmap.getToolsManager().getBasicTools().toggleTool(this)">
+                            <span class="glyphicon glyphicon-print" aria-hidden="true"></span>
+                        </a>
+                        <div app-print app-lang="ctrl.lang" app-map="ctrl.map" app-action="ctrl.currentAction"
+                             id="basic-tools-dropdown-print-content"
+                             class="dropdown-menu basic-tools-dropdown-element basic-tools-dropdown-print-content">		
+                        </div>
+                    </li>
+                </div>
+                <!-- Insertion -->
+                <div class="right">
+                    <li role="presentation" style="position: inherit" class="basic-tools-dropdown">
+                        <a class="basic-tools-element pointer"
+                           id="basic-tools-dropdown-insert-btn" 
+                           title="Insertion"
+                           onclick="oVmap.getToolsManager().getBasicTools().toggleTool(this)">
+                            <span class="icon-add-feature" aria-hidden="true"></span>
+                        </a>
+                        <div app-insert app-lang="ctrl.lang" app-map="ctrl.map" app-action="ctrl.currentAction"
+                             id="basic-tools-dropdown-insert-content" 
+                             class="dropdown-menu basic-tools-dropdown-element basic-tools-dropdown-select-content">
+                        </div>
+                    </li>
+                </div>
+                
+                <!--Outils de sélection-->
+                <div app-select app-lang="ctrl.lang" app-map="ctrl.map" app-action="ctrl.currentAction" class="right basic-tools-nav"></div>
+                
+                <!-- Mesure -->
+                <div class="right">
+                    <li style="position: inherit" class="basic-tools-dropdown">
+                        <a 	class="basic-tools-element pointer"
+                            title="Outils de mesure"
+                            onclick="oVmap.getToolsManager().getBasicTools().toggleTool(this)">
+                            <span class="icon-measure"></span>
+                        </a>
+                        <div app-measure app-lang="ctrl.lang" app-map="ctrl.map" app-action="ctrl.currentAction"
+                             id="basic-tools-dropdown-measure-content"
+                             class="dropdown-menu basic-tools-dropdown-element basic-tools-dropdown-measure-content">
+                        </div>
+                    </li>
+                </div>
+            </ul>
+        </div>
+    </div>
+</div>

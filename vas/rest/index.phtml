@@ -1,0 +1,143 @@
+<?php
+
+require_once("class/vitis_lib/Error.class.inc");
+require_once("class/vmlib/cryptUtil.inc");
+require_once("conf/properties.inc");
+
+if (isset($_SERVER['HTTP_ORIGIN'])) {
+    header("Access-Control-Allow-Origin: {$_SERVER['HTTP_ORIGIN']}");
+    header('Access-Control-Allow-Credentials: true');
+    header('Access-Control-Max-Age: 86400');    // cache for 1 day
+}
+if (isset($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'])) {
+    $sMethod = $_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'];
+} else {
+    $sMethod = $_SERVER['REQUEST_METHOD'];
+}
+$_PUTDATA = null;
+$paramJson2 = null;
+$params = file_get_contents('php://input');
+$oJson = $params;
+if (is_object(json_decode($oJson))){
+    $paramJson2 = get_object_vars(json_decode($oJson));
+}
+$boundary = substr($params, 0, strpos($params, "\r\n"));
+// Fetch each part
+if (!empty($boundary)){
+    $parts = array_slice(explode($boundary, $params), 1);
+    foreach ($parts as $part) {
+        // If this is the last part, break
+        if ($part == "--\r\n")
+            break;
+
+        // Separate content from headers
+        $part = ltrim($part, "\r\n");
+        list($raw_headers, $body) = explode("\r\n\r\n", $part, 2);
+
+        // Parse the headers list
+        $raw_headers = explode("\r\n", $raw_headers);
+        $headers = array();
+        foreach ($raw_headers as $header) {
+            list($name, $value) = explode(':', $header);
+            $headers[strtolower($name)] = ltrim($value, ' ');
+        }
+        // Parse the Content-Disposition to get the field name, etc.
+        if (isset($headers['content-disposition'])) {
+            $filename = null;
+            preg_match(
+                    '/^(.+); *name="([^"]+)"(; *filename="([^"]+)")?/', $headers['content-disposition'], $matches
+            );
+            list(, $type, $name) = $matches;
+            isset($matches[4]) and $filename = $matches[4];
+            // handle your fields here
+            // Ce champ est un fichier ()?
+            if (!empty($filename)) {
+                $_PUTDATA[$name . "_file"] = substr($body, 0, strlen($body) - 2);
+                $_PUTDATA[$name . "_name"] = $filename;
+            } else
+                $_PUTDATA[$name] = substr($body, 0, strlen($body) - 2);
+            /*
+              switch ($name) {
+              // this is a file upload
+              case 'userfile':
+              file_put_contents($filename, $body);
+              break;
+              // default for all other files is to populate $data
+              default:
+              $_PUTDATA[$name."_file"] = substr($body, 0, strlen($body) - 2);
+              $_PUTDATA[$name."_name"] = $filename;
+              break;
+              }
+             */
+        }
+    }
+}
+
+
+$aParamsJson = json_decode(file_get_contents('php://input'), true);
+if ($_PUTDATA != null) {
+    $aValues = array_merge($_REQUEST, $_PUTDATA);
+} else {
+    $aValues = $_REQUEST;
+}
+if ($aParamsJson != null) {
+    $aValues = array_merge($aValues, $aParamsJson);
+}
+
+if ($paramJson2 != null) {
+    $aValues = array_merge($aValues, $paramJson2);
+}
+
+//RÃ©cupÃ©ration des ressources
+$aPath = explode('/', trim($_SERVER['PATH_INFO'], '/'));
+//DÃ©finition du format de sortie
+$sOutput = 'application/json';
+if (!isset($aValues['output']))
+    $aValues['output'] = null;
+if ($aValues['output'] == "application/xml" || $_SERVER['HTTP_ACCEPT'] == 'application/xml') {
+    $sOutput = 'application/xml';
+} elseif ($aValues['output'] == "text/html" || $_SERVER['HTTP_ACCEPT'] == 'text/html') {
+    $sOutput = 'text/html';
+} elseif ($aValues['output'] == "application/x-vm-json" || $_SERVER['HTTP_ACCEPT'] == 'application/x-vm-json') {
+    $sOutput = 'application/x-vm-json';
+}
+$aValues['output'] = $sOutput;
+//DÃ©finition de l'encodage
+if (empty($aValues["encoding"])) {
+    $aValues['sEncoding'] = $properties["page_encoding"];
+} else {
+    $aValues['sEncoding'] = $aValues["encoding"];
+}
+$aValues['sSourceEncoding'] = $properties["page_encoding"];
+
+if (empty($aValues['xslstylesheet'])) {
+    $aValues['xslstylesheet'] = "";
+}
+
+//VÃ©rification d'appel Ã  une ressource
+if ($_SERVER['PATH_INFO'] == "/") {
+    $oError = new Error(5, 'Service missing.');
+    $aXmlRacineAttribute['status'] = 0;
+    $sMessage = $oError->asDocument($aValues['xslstylesheet'], 'vitis', $aValues['sEncoding'], True, $aXmlRacineAttribute, $aValues['sSourceEncoding'], $aValues['output']);
+    $bXMLError = true;
+} else {
+    //Instanciation de la classe
+    $sModule = $aPath[0];
+    $sClassName = $aPath[1];
+    //$aValues['my_vitis_id'] = null;
+    if (isset($aPath[2]))
+        $aValues['my_vitis_id'] = $aPath[2];
+    $aValues['module'] = $sModule;
+    $files = glob("ws/$sModule/*.class.inc");
+    foreach ($files as $file) {
+        if (strtolower("ws/$sModule/$sClassName.class.inc") == strtolower($file)) {
+
+            require($file);
+            $sClass = new $sClassName($aPath, $aValues, $properties);
+            //Appel de la mÃ©thode GET PUT POST ou DELETE de la classe
+            $sMessage = $sClass->$sMethod();
+        }
+    }
+}
+include ("index.vhtml");
+?>

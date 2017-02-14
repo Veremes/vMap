@@ -1,0 +1,36 @@
+
+              +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+              +                                                                                   +
+              +             			 VEREMES - Vitis Core change log 	          		      +
+              +                                                                                   +
+              +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+|b21177|BUG         |BETA	|   Correction d'un bug sur l'état des formulaires (paramètre "$dirty") si un éditeur CodeMirror est affiché.
+|b21172|BUG         |BETA	|   Une liste ui-grid affichée dans une section n'a pas de boutons en mode "display".
+|b21168|AMELIORATION|BETA	|   Formulaires : clonage d'un enregistrement en appelant la fonction "cloneSectionForm()" dans un bouton.
+|b21145|AMELIORATION|BETA	|   Formulaires : traduction de la valeur d'un champ radio (true/false) en passant la fonction "setRadioTranslation" dans le paramètre "default_value".
+|b21135|BUG         |BETA	|   Formreader: correction d'un bug à l'appel de la fonction "copyFormValues" en mode compilé.
+|b21080|AMELIORATION|BETA	|   Généralisation du dossier conteneur de fichiers à objets métier ou vitis
+|b21043|AMELIORATION|BETA	|   Depuis vMap ouvrir un objet Vitis en édition avec modesSrvc.scope.selectMode, modesSrvc.scope.selectObject, modesSrvc.scope.displayObjectElement, modesSrvc.scope.editObjectElement
+|b21004|BUG         |BETA	|   Module Vitis: l'utilisateur connecté ne peut pas être retiré de la liste des utilisateurs liés au groupe dans l'édition des privilèges "vitis_user" et "vitis_admin".
+|b21003|BUG         |BETA	|   Module Vitis: l'utilisateur connecté ne peut pas supprimer ses privilèges "vitis_user" et "vitis_admin" après rafraichissement de l'application.
+|b20998|BUG         |BETA	|   Module Vitis: l'utilisateur connecté ne peut pas supprimer son compte.
+|b20994|AMELIORATION|BETA	|   Nouveaux types possibles dans le studio/formReader:Image (Objet métier), Fichier en téléchargement (Objet métier)
+|b20962|AMELIORATION|BETA	|   FormReader : paramètre "inline" dans un champ "radio" pour l'aligner horizontalement avec le label.
+|b20924|AMELIORATION|BETA	|   Compilation du formulaire des filtres dès le 1er affichage du formulaire.
+|b20923|AMELIORATION|BETA	|   FormReader : évènement "formExtracted" déclenché à la fin de l'extraction des valeurs d'un formulaire.
+|b20949|AMELIORATION|BETA	|   Formreader: Paramètre de type Lien URL
+|b20918|BUG         |BETA	|   Formreader: SetValue pour types liste avec ou sans parent
+|b20863|BUG         |BETA	|   Correction d'un bug dans les filtres de recherche (<select> avec valeur numérique mais colonne de type "string" dans la base).
+|b20863|AMELIORATION|BETA	|   Selection du mode en passant mode_id dans l'url, de l'objet en pasant object_id, de l'action sur un élément en passant action + ids
+|b20863|AMELIORATION|BETA	|   FormReader: possibilité de sélectionner les couches à afficher pour les types carte vmap en passant "interactions"."layer_tree" = true
+|b20863|BUG         |BETA	|   vMap admin/couches/getCapabilities: correction du bug contraignant à utiliser un seul étage dans les balises "layer"
+|b20291|BUG         |BETA	|   Correction d'un bug sur la taille maximale des fichiers de log à afficher.
+|b20082|AMELIORATION|BETA	|   Tri par ordre alphabétique dans les champs de formulaire "select" et "double_select".
+|b20058|BUG         |BETA	|   Correction d'un bug de connexion avec une session sauvée dans le localStorage (cookie).
+|b20053|AMELIORATION|BETA	|   Surcharge du paramètre "web_server_name" dans le fichier des properties (conf/properties.json).
+|b19968|AMELIORATION|BETA	|   Paramètre "web_server_name" des properties à partir des données de l'url.
+|b19944|AMELIORATION|BETA	|   Suppression du chargement du fichier "properties.json" dans loadApp.js (doublon avec index.html).
+|b19935|BUG         |BETA	|   Suppression du paramètre non utilisé "uiGridConstants" dans la directive formReader.appFormFieldNgRepeatDrtv (erreur avec les widgets de GTF).
+|b19984|BUG         |BETA	|   Correction d'un bug sur la sélection du champ "Nombre de lignes par page" dans le formulaire de configuration.

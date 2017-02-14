@@ -1,0 +1,29 @@
+<div class="col-xs-12 form-inline">
+        <!-- Nb lignes par page -->
+        <select class="form-control input-sm ui-grid-pagination-nb-page-select" ng-model="gridOptions.paginationPageSize" data-ng-options="option for option in gridOptions.paginationPageSizes"></select>                
+        <!-- 1ere page -->
+        <button type="button" id="{{::sSelectedObjectName+'_ui_grid_first_page'}}" class="btn btn-xs btn-primary" aria-label="Left Align" ng-click="gridApi[sSelectedObjectName].pagination.seek(1)">
+                <span class="glyphicon glyphicon-step-backward"></span>
+        </button>
+        <!-- Page précédente -->
+        <button type="button"  id="{{::sSelectedObjectName+'_ui_grid_previous_page'}}" class="btn btn-xs btn-primary" aria-label="Left Align" ng-click="gridApi[sSelectedObjectName].pagination.previousPage()">
+                <span class="glyphicon glyphicon-triangle-left"></span>
+        </button>
+        <!-- Aller à la page n° -->
+        <label id="{{::sSelectedObjectName+'_ui_grid_page_number_label'}}">Page</label>
+        <input type="number" class="form-control input-sm ui-grid-pagination-page-input" id="{{::sSelectedObjectName+'_ui_grid_page_number'}}" min="1" max="{{(gridApi[sSelectedObjectName].pagination.getTotalPages() > 0) ? gridApi[sSelectedObjectName].pagination.getTotalPages() : '1'}}" size="3" maxlength="3" ng-model="gridOptions.paginationCurrentPage"><b> / {{(gridApi[sSelectedObjectName].pagination.getTotalPages() > 0) ? gridApi[sSelectedObjectName].pagination.getTotalPages() : '1'}}</b>
+        <!-- Page suivante -->
+        <button type="button" id="{{::sSelectedObjectName+'_ui_grid_next_page'}}" class="btn btn-xs btn-primary" aria-label="Left Align" ng-click="(gridApi[sSelectedObjectName].pagination.getTotalPages() > 0) ? gridApi[sSelectedObjectName].pagination.nextPage() : noop()">
+                <span class="glyphicon glyphicon-triangle-right"></span>
+        </button>
+        <!-- Dernière page -->
+        <button type="button" id="{{::sSelectedObjectName+'_ui_grid_last_page'}}" class="btn btn-xs btn-primary" aria-label="Left Align" ng-click="gridApi[sSelectedObjectName].pagination.seek(gridApi[sSelectedObjectName].pagination.getTotalPages())">
+                <span class="glyphicon glyphicon-step-forward"></span>
+        </button>
+        <!-- Raffraichissement -->
+        <button type="button" id="{{::sSelectedObjectName+'_ui_grid_refresh_page'}}" class="btn btn-xs btn-primary" aria-label="Left Align" ng-click="refreshGrid(this, gridOptions)">
+                <span class="glyphicon glyphicon-refresh"></span>
+        </button>
+        {{sPaginationStatus}}
+</div>
+

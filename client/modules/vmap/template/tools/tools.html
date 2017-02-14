@@ -1,0 +1,25 @@
+
+<!--Bandeau de droite-->
+<tools-container id="tools-container"></tools-container>
+
+<!-- Bandeau du haut -->
+<div id="basic-tools-bar" app-basictools app-lang="ctrl.lang" app-map="ctrl.map" app-infos="ctrl.infos" app-action="ctrl.currentAction"></div>
+
+<!-- Boutons badeau de droite -->
+<div id="tool-sidebar" ng-show="ctrl.oToolsTree !== undefined">
+
+	<div ng-repeat="(id, value) in ctrl.oToolsTree"
+		id="{{id}}-button"
+		class="{{value.infos.icon}}"
+		data-toggle="tooltip"
+		data-placement="left"
+		data-trigger='hover'
+		title="{{value.infos.tooltip}}"
+		onclick="angular.element($('#olMap')).scope().ctrl.startAnimation(); oVmap.getToolsManager().getBasicTools().toggleOutTools(); $('[data-toggle=\'tooltip\']').tooltip('hide');"
+		ng-click="ctrl.openedTool !== id ? ctrl.openedTool = id : ctrl.openedTool = '_'; $parent.$parent.vmapCtrl.right_open = ctrl.openedTool !== '_'"
+		ng-class="ctrl.openedTool === id ? 'tool-btn tool-btn-active' : 'tool-btn'"
+		style="background-color; background-image: url({{value.infos.image}})"></div>
+
+	<div id="close-tools" class="right-sidebar-closeband" onclick="oVmap.simuleClickOnClass('tool-btn-active')"></div>
+
+</div>

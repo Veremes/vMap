@@ -1,0 +1,156 @@
+<div id="vmap-advancedselect-tool"></div>
+
+<div class="basic-tools-select-container basic-tools-dropdown-menu">
+
+    <!--Palette d'interrogation-->
+    <div id="basictools-select-select-palette" ng-show="vmapScope.sizeOf(ctrl.oQueryableBOs) > 0">
+        
+        <div class="btn-group btn-block">
+            <button type="button" 
+                    class="btn btn-sm btn-info"
+                    style="width: 80%"
+                    ng-class="{'white color-gray': ctrl.currentAction === 'basicTools-selectByPoint' || ctrl.currentAction === 'basicTools-selectByLineString' || ctrl.currentAction === 'basicTools-selectByPolygon' || ctrl.currentAction === 'basicTools-selectByCircle'}"
+                    ng-click="ctrl.selectGeomType !== '' ? ctrl.startSelection(ctrl.selectGeomType, ctrl.currentAction === 'basicTools-selectBy' + ctrl.selectGeomType) : angular.noop">
+                Séleciton graphique
+            </button>
+            <button type="button" 
+                    class="btn btn-sm btn-default dropdown-toggle" 
+                    style="width: 20%"
+                    data-toggle="dropdown" 
+                    aria-haspopup="true" 
+                    aria-expanded="false">
+                <span class="icon-point" ng-show="ctrl.selectGeomType === 'Point'"></span>
+                <span class="icon-line" ng-show="ctrl.selectGeomType === 'LineString'"></span>
+                <span class="icon-polygon" ng-show="ctrl.selectGeomType === 'Polygon'"></span>
+                <span class="icon-circle" ng-show="ctrl.selectGeomType === 'Circle'"></span>
+            </button>
+            <ul class="dropdown-menu">
+                <li><a href="javascript:void(0)"
+                       ng-click="ctrl.selectGeomType = 'Point'; ctrl.startSelection('Point', false)">
+                        <span class="icon-point"></span> Point
+                    </a></li>
+                <li><a href="javascript:void(0)"
+                       ng-click="ctrl.selectGeomType = 'LineString'; ctrl.startSelection('LineString', false)">
+                        <span class="icon-line"></span> Ligne
+                    </a></li>
+                <li><a href="javascript:void(0)"
+                       ng-click="ctrl.selectGeomType = 'Polygon'; ctrl.startSelection('Polygon', false)">
+                        <span class="icon-polygon"></span> Polygone
+                    </a></li>
+                <li><a href="javascript:void(0)"
+                       ng-click="ctrl.selectGeomType = 'Circle'; ctrl.startSelection('Circle', false)">
+                        <span class="icon-circle"></span> Cercle
+                    </a></li>
+            </ul>
+        </div>
+
+        <div class="margin-10"></div>
+
+        <!--Bouton Requêteur-->
+        <div style="text-align: center">
+            <button type="button" 
+                    class="btn btn-info btn-sm btn-block"
+                    ng-click="ctrl.displaySelectionTable(ctrl.aSelections)">
+                <span class="icon-format_list_bulleted margin-sides-2"></span>
+                Requêteur
+            </button>
+        </div>
+    </div>
+    <div ng-show="!vmapScope.sizeOf(ctrl.oQueryableBOs) > 0">
+        <label class="margin-10 margin-sides-10">
+            Aucun objet métier ou pas de droits en édition
+        </label>
+    </div>
+
+</div>
+
+<!--Select list modal-->
+<div class="modal fade" id="select-list-modal" role="dialog">
+    <div class="modal-dialog modal-xl">
+        <!--Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title"><span class="icon-format_list_bulleted margin-sides-5"></span>Requêteur</h4>
+            </div>
+            <div class="modal-body modal-body-big">
+
+                <div class="row" style="height: 100%;">
+                    <!--Menu-->
+                    <div class="col-md-2">
+                        <ul class="nav nav-pills nav-stacked" style="width: 180px">
+
+                            <!--Boutons du menu-->
+                            <li data-toggle="pill" 
+                                id="select_modal_tab_{{bo_id}}"
+                                href="#select_modal_container_{{$index}}" 
+                                class="list-group-item list-group-item-modal"
+                                ng-repeat="(bo_id, bo) in ctrl.oBusinessObjects"
+                                ng-class="{'active': $index === 0}">
+                                <span ng-show="ctrl.tableSelection[bo_id].length === ctrl.limitList_">
+                                    {{bo.title}} ({{ctrl.tableSelection[bo_id].length}}+)
+                                </span>
+                                <span ng-show="ctrl.tableSelection[bo_id].length !== undefined && ctrl.tableSelection[bo_id].length !== ctrl.limitList_">
+                                    {{bo.title}} ({{ctrl.tableSelection[bo_id].length}})
+                                </span>
+                                <span ng-show="ctrl.tableSelection[bo_id].length === undefined">
+                                    {{bo.title}} (0)
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!--Workspace-->
+                    <div class="col-md-10" style="height: 100%;">
+
+                        <!--Tables-->
+                        <div id="select_modal_container_{{$index}}" 
+                             class="mapmodal-element fade"
+                             ng-repeat="(bo_id, bo) in ctrl.oBusinessObjects"
+                             ng-class="{'in active': $index === 0}">
+
+                            <!--Search Form reader-->
+                            <div id="select_search_form_reader_{{bo_id}}"
+                                 app-form-reader 
+                                 app-properties="ctrl.properties"
+                                 app-token="ctrl.token"></div>
+
+                            <!--Table-->
+                            <div class="select_modal_table_container">     
+                                <table id="select_table_{{bo_id}}" 
+                                       class="select_modal_table"
+                                       data-toggle="table"
+                                       data-search="false"
+                                       data-show-columns="false"
+                                       data-classes="table table-hover table-condensed"
+                                       data-striped="true"
+                                       data-click-to-select="true"
+                                       data-show-export="false">
+                                    <thead>
+                                        <tr>
+                                            <th data-field="state" data-checkbox="true"></th>
+                                            <th class="col-btn" data-field="action" data-formatter="nsVmap.nsToolsManager.AdvancedSelect.selectTableFormatter" data-events="selectTableEvents"></th>
+                                            <th ng-repeat="(key, value) in bo.list_fields"
+                                                ng-if="value !== 'selection'"
+                                                data-field="{{value}}"
+                                                data-sortable="true">{{value}}</th>
+                                            <th data-field="selection" data-visible="false"></th>
+                                        </tr>
+                                    </thead>
+                                </table>
+                            </div>
+                            <div class="select_modal_table_buttons">
+                                <button class="btn btn-default" ng-click="ctrl.tableAddToCard('#select_table_' + bo_id, false)">
+                                    <span class="icon-shopping_basket"></span> Ajouter au panier
+                                </button>
+                                <button class="btn btn-default" ng-click="ctrl.tableAddToCard('#select_table_' + bo_id, true)">
+                                    <span class="glyphicon glyphicon-repeat"></span> Remplacer panier
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

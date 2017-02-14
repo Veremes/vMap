@@ -1,0 +1,44 @@
+
+              +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+              +                                                                                   +
+              +             			 VEREMES - Module Vmap change log        	  		      +
+              +                                                                                   +
+              +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+|b21152|AMELIORATION|BETA	|   Utilisation du composant DocumentViewer (Vitis) pour l'apperçu des images dans les listes de vMap Admin (Cartes et Services)
+|b21080|AMELIORATION|BETA	|   Généralisation du dossier conteneur de fichiers à objets métier ou vitis
+|b21037|BUG 		|BETA	|   Dans l'objet cartes du mode cartes en édition lorsqu'on change le système de projection, l'étendue ne change pas automatiquement.
+|b21033|BUG         |BETA	|   Onglet "Couches" : correction d'un bug sur le drag'n drop et l'affichage dans l'ordre des couches WMS associées.
+|b21030|AMELIORATION|BETA	|   Légendes pour les calques non répétées
+|b21025|AMELIORATION|BETA	|   Ordre des couches dans un calque
+|b21025|AMELIORATION|BETA	|   Couches dans un calque: ne pas utiliser getCapabilities tant que l'utilisateur ne clique pas sur "Ajouter une couche"
+|b21011|AMELIORATION|BETA	|   Supprimer les dossiers de l'objet métier lors de la suppression de celui-ci
+|b21008|AMELIORATION|BETA	|   Couches dájà présentes avec affichage des erreurs par notification
+|b21006|BUG 		|BETA	|   "Gestion des cartes" lorsque l'utilisateur est associé à aucun groupe
+|b20999|AMELIORATION|BETA	|   Bug projections Cadastre
+|b20992|AMELIORATION|BETA	|   Upload de fichiers grace aux objets métier
+|b20937|AMELIORATION|BETA	|   Dans les onglets Rapports et Couches, utiliser l'identifiant de l'objet métier et non son titre
+|b20928|AMELIORATION|BETA	|   Filtres des couches: passer la valeur -1000000 par défaut
+|b20861|AMELIORATION|BETA	|   Sélection de la carte à afficher en utilisant map_id dans l'url
+|b20861|AMELIORATION|BETA	|   Sélection d'un ou plusieurs objets dans le panier en utilisant bo_id et ids dans l'url
+|b20861|AMELIORATION|BETA	|   Sélection avec i et i+
+|b20861|AMELIORATION|BETA	|   Ordre (index) des objets métiers à selectionner avec i
+|b20861|AMELIORATION|BETA	|   Possibilité de gérer les objets sans géométrie
+|b20861|AMELIORATION|BETA	|   Utilisation de couleurs différentes entre basicTool.active et interaction.active
+|b20861|AMELIORATION|BETA	|   Affichage de l'étiquelle à l'endroit du click
+|b20861|AMELIORATION|BETA	|   "Effacer la locatisation" dans le panier
+|b20861|BUG 		|BETA	|   Conflits couches de localisation
+|b20861|AMELIORATION|BETA	|   ToogleOutTools quand on affiche une popup
+|b20861|AMELIORATION|BETA	|   Bouton ajouter une partie dans i, i+ et insertion
+|b20861|AMELIORATION|BETA	|   Outil d'insertion: enlever la possibilité d'éditer la géométrie tant qu'il y en a pas
+|b20861|AMELIORATION|BETA	|   Changement logo "poubelle" dans le panier
+|b20861|BUG 		|BETA	|   GetCapabilities lent sur certains flux
+|b20780|BUG 		|BETA	|   Bug téléchargement de la carte: étendue
+|b20777|BUG 		|BETA	|   Bug impressions: {{map_scale}}
+|b20774|BUG 		|BETA	|   Bug utilisation d'une carte sans couches associées
+|b20701|AMELIORATION|BETA	|   Fiche urbanisme: pouvoir utiliser une carte prédéfinie avec un zoom par rapport à la parcelle prédéfini
+|b20699|AMELIORATION|BETA	|   Bug administration: pouvoir ajouter des couches privées (remplacer la balise [token] avand le getCapabilities)
+|b20657|AMELIORATION|BETA	|   Correction du bug d'impression (taille des templates) sous linux
+|b20571|AMELIORATION|BETA	|   Implémentation des raports d'impression (module courrier)
+|b20571|AMELIORATION|BETA	|   Possibilié de ne pas utiliser le proxy pour l'affichage des couches

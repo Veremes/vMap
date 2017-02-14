@@ -1,0 +1,109 @@
+<div id="layertree-button">
+    <div class="list-group-item active pointer layertree-button-content" 
+         title="Affiche les jeux de données" 
+         collapse="{{ctrl.layerstree_collapsed === true ? 'out' : 'in'}}"
+         data-target="#layertree" 
+         onclick="oVmap.getMapManager().collapseElement(this)">
+
+        <span class="icon-database list-group-icon"></span>
+        <span>Jeux de données</span>
+        <span class="list-group-icon2" ng-class="{'icon-keyboard_arrow_down':ctrl.layerstree_collapsed !== true, 'icon-keyboard_arrow_right':ctrl.layerstree_collapsed === true}"></span>
+    </div>
+</div>
+
+<div id="layertree" class="layers-tool" collapse="{{ctrl.layerstree_collapsed === true ? 'out' : 'in'}}">
+    <div class="indicators">
+        <span class="text-info icon-eye" style="font-size: 18px;line-height: 0" title="Définit si la couche est visible"></span>
+    </div>
+    <ul class="tree">
+        <div ng-repeat="node in tree.children" ng-if="node.view === undefined">
+
+            <!-- Service -->
+            <div class="layerstree-phather">
+                <div class="tree-father-collapse-btn service-name left" data-toggle="collapse" data-target="#tree_element_{{$id}}" onclick="setTimeout(function () {
+                                oVmap.resizeLayerTools(true)
+                            }, 500)">
+                    {{node.name}}
+                </div>
+                <div class="checkbox checkbox-info inline-checkbox right"
+                     ng-class="{'checkbox_indeterminate': node.visible === null}">
+                    <input id="service_{{$id}}_visible"
+                           ng-init="node.visible = ctrl.isGroupVisible(node)"
+                           ng-model="node.visible"
+                           ng-model-options="{getterSetter: true}"
+                           ng-click="ctrl.setGroupVisible(node)" 
+                           type="checkbox" 
+                           style="cursor:pointer; position: absolute" 
+                           title="Definit si le groupe est visible">
+                    <label for="service_{{$id}}_visible" 
+                           style="cursor:pointer" 
+                           title="Definit si le groupe est visible"></label>
+                </div>
+            </div>
+
+            <!-- Couche -->
+            <ul id="tree_element_{{$id}}" class="collapse layers-tree-ul tree-element" ng-class="{'in': ctrl.layers_collapsed !== true}">
+                <li ng-repeat="layer in node.children">
+                    <ul class="list-group-item layertree-item auto-height">
+
+                        <!-- Nom de la couche -->
+                        <div class="layer-name layer-name-tree">{{layer.name}}</div>
+
+                        <div class="layer-checkboxes">
+                            <button type="button" 
+                                    class="btn btn-xs margin-sides-10 hidden"
+                                    ng-click="layer.olLayer.getSource().refreshWithTimestamp()">
+                                <span class="glyphicon glyphicon-refresh"></span>
+                            </button>
+                            <div type="button" class="btn btn-xs" style="margin-right: 7px; margin-top: -2px;"
+                                 ng-if="layer.olLayer.get('is_filtered')"
+                                 ng-click="ctrl.displayFilterLayerModal(layer.olLayer)">
+                                <span class="icon-filter"></span>
+                            </div>
+
+                            <!-- Checkbox visible -->
+                            <div class="checkbox checkbox-info inline-checkbox">
+                                <input id="{{layer.olLayer.$$hashKey}}_visible_order_checkbox" 
+                                       type="checkbox" 
+                                       style="cursor:pointer; position: absolute" 
+                                       title="Definit si la couche est visible"
+                                       ng-checked="layer.olLayer.values.visible === true" 
+                                       ng-click="ctrl.setVisible(layer.olLayer, !layer.olLayer.values.visible);node.visible = ctrl.isGroupVisible(node)">
+                                <label for="{{layer.olLayer.$$hashKey}}_visible_order_checkbox" style="cursor:pointer" title="Definit si la couche est visible"></label>
+                            </div>                            
+                        </div>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </ul>
+</div>
+
+<!--Modale pour le filtrage-->
+<div id="layerstree-filter-modal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content" style="max-height: 100%">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">Filtrer la couche: {{ctrl.olFilteredLayer.get('name')}}</h4>
+            </div>
+            <div class="modal-body modal-body-big-with-footer">
+                <div id="layerstree_filter_formreader"
+                     app-form-reader 
+                     app-properties="ctrl.properties"
+                     app-token="ctrl.token"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" onclick="oVmap.simuleClick('layerstree_filter_formreader_submit_btn')">Appliquer le filtre</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 
+    Bouton invisible qui sert à charger les cartes: 
+    ceci a été fait car ce bouton a besoin de ctrl.reloadTree 
+    qui se trouve uniquement ici. Pour appeler la fonction:
+-->
+<button id="btn-reload-map" style="display: none" ng-click="ctrl.reloadTree()">Reload map</button>

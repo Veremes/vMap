@@ -1,0 +1,95 @@
+
+@import '../conf/less/variables.less';
+
+.login {
+    width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+// Proposition 1
+/*.login-logo{
+    font-size: 190px;
+    text-align: center;
+    line-height: 1;
+}
+.login-logo-icon{
+    
+}*/
+
+// Proposition 2
+.login-logo{
+    font-size: 136px;
+    text-align: center;
+    line-height: 1;
+    margin-bottom: 80px;
+}
+.login-logo-icon{
+    padding: 28px 40px;
+    background-color: @application-color-theme;
+    color: white;
+}
+
+/*Pour les petits écrans le logo n'apparait pas'*/
+@media screen and (max-height: 600px){
+    .login-logo{
+        display: none;
+    }
+}
+@media screen and (max-width: 1000px){
+    .login{
+        width: 75%;
+    }
+}
+
+.login-form-container{
+    position: absolute;
+    height: 100%;
+    width: 100%;
+}
+
+.login-form {
+    padding: 25px 50px 15px;
+    background-color: @application-color-theme;
+    color: white;
+    /*border: 1px solid #e2e2e2;*/
+    border-radius: 10px;
+}
+
+.login-container{
+    position: relative;
+    top: 48%;
+    transform: translateY(-50%);
+}
+
+
+// Titre du formulaire.
+.login-form-title {
+    margin-bottom: 20px;
+    color: @font-color-purple;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+}
+// Bouton de connexion
+.login-connect-btn {
+    width: 100%;
+}
+.login-connect-btn > button {
+    float: right !important;
+}
+
+// Message d'erreur de connexion.
+.login-error-alert {
+    display: none;
+    text-align: center;
+}
+
+.login-credits dl {
+        margin-bottom: 12px;
+}
+
+//
+.login-remember-me .form-group {
+    padding-left: 0;
+}

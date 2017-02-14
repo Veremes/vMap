@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- VAS -->
+<installer>
+	<schema>
+		<name>s_vitis</name>
+		<version>2016.05.00</version>
+		<dependenciesCollection>
+			<dependency>
+				<name>postgres</name>
+				<version>9.2</version>
+				<nature>extern-pre</nature>
+			</dependency>
+		</dependenciesCollection>
+	</schema>
+	<dependenciesCollection>
+		<dependency>
+			<name>apache</name>
+			<version>2.4</version>
+			<nature>extern-pre</nature>
+		</dependency>
+		<dependency>
+			<name>vcredist</name>
+			<nature>extern-post</nature>
+			<location>\\roussillon\Ressources\vitis\vcredist-11</location>
+		</dependency>
+		<dependency>
+			<name>php</name>
+			<nature>extern-post</nature>
+			<location>\\roussillon\Ressources\vitis\php-5.6.28</location>
+		</dependency>
+	</dependenciesCollection>
+</installer>

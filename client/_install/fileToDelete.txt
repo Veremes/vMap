@@ -1,0 +1,4 @@
+javascript/externs/formreader/formreader.js
+javascript/externs/formreader/formreaderCtrl.js
+javascript/externs/formreader/formreaderDrtv.js
+javascript/externs/formreader/formreaderSrvc.js

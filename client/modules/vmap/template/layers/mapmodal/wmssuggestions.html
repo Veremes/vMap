@@ -1,0 +1,61 @@
+<!-- Liste des cartes utilisables -->
+
+
+<h3>Ajouter une couche WMS: </h3>
+<hr>
+
+<form ng-submit="ctrl.getCapabilities()">
+	<div class="row">
+	    <div class="col-md-3">
+			<select id="select-wms-service" class="form-control">
+			  <option value="">Service</option>
+			  <option ng-repeat="node in ctrl.catalog.services.wms" value="{{node.url}}">{{node.name}}</option>
+			</select>
+	    </div>
+	    <div class="col-md-9">
+	    	<input type="text" id="getCapabilities-url-field" class="form-control" placeholder="Service url" aria-describedby="sizing-addon1">
+		</div>
+	</div>
+	<br>
+	<button type="submit" class="btn btn-success right">Voir le contenu</button>
+</form>
+			
+<br><br>
+<div id="wms-log-message"></div>
+<br>
+
+<div id="load-img" style="display: none; text-align: center"><img src="images/ajax-load-big.gif"></div>
+<div id="wms-suggestions-list" style="display: none">
+	<table class="table table-striped">
+		<thead>
+		  <tr>
+		    <th>Description</th>
+		    <th>Nom</th>
+		    <th>Projection</th>
+		    <th></th>
+		  </tr>
+		</thead>
+		<tbody>
+			
+		  <tr ng-repeat="node in ctrl.aLayers">
+		    <td class="WMSSuggestionTitle">{{node.Title}}</td>
+		    <td class="WMSSuggestion" title="{{node.Name}}">{{node.Name}}</td>
+		    <td class="WMSSuggestion">{{node.projections}}</td>
+		    <!-- Si la projeciton est bonne -->
+		    <td class="WMSSuggestionsButton">
+				<button type="button" 
+						class="btn btn-info"
+						ng-class="{'btn-danger': node.projections.indexOf(ctrl.proj) === -1}"
+						layerName="{{node.Name}}" 
+						layerTitle="{{node.Title}}" 
+						version="{{ctrl.aLayers.version}}" 
+						serviceTitle="{{ctrl.aLayers.serviceTitle}}" 
+						queryable="{{node.queryable}}" 
+						isProjectionCompatible="true" 
+						onclick="oVmap.getMapManager().addWMSLayerFromHTML(this)">Ajouter</button>
+			</td>
+		  </tr>
+		</tbody>
+	</table>
+</div>
+<button id="btn-reload-wms" style="display: none" ng-click="ctrl.reload()">Reload map</button>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- WS cadastreV2 -->
+<installer>
+	<schema>
+		<name>s_cadastre</name>
+		<version>2016.02.00</version>
+		<dependenciesCollection>
+			<dependency>
+				<nature>schema</nature>
+				<name>s_vmap</name>
+				<version>2016.02.00</version>
+				<object>vmap</object>
+			</dependency>
+			<dependency>
+				<name>postgis</name>
+				<version>2.0</version>
+				<nature>extern-pre</nature>
+			</dependency>
+		</dependenciesCollection>
+	</schema>
+	<dependenciesCollection>
+		<dependency>
+			<nature>vas</nature>
+			<version>2016.02.00</version>
+		</dependency>
+		<dependency>
+			<nature>web_services</nature>
+			<name>vmap</name>
+			<version>2016.02.00</version>
+		</dependency>
+		<dependency>
+			<name>jre</name>
+			<nature>extern-post</nature>
+			<location>\\roussillon\Ressources\vitis\jre-8u101</location>
+		</dependency>
+		<dependency>
+			<name>fop</name>
+			<nature>extern-post</nature>
+			<location>\\roussillon\Ressources\vitis\fop-2.0</location>
+		</dependency>
+	</dependenciesCollection>
+</installer>
