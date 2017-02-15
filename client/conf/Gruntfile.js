@@ -54,6 +54,36 @@ module.exports = function (grunt) {
                     create_source_map: '../javascript/vmap.min.js.map',
                     output_wrapper: '(function(){\n%output%\n}).call(this)\n//# sourceMappingURL=../javascript/vmap.min.js.map'
                 }
+            },
+            studio: {
+                files: {
+                    '../javascript/externs/studio/javascript/studio.min.js': [
+                        // Fichiers Studio
+                        sHome + 'javascript/externs/studio/properties/properties.js',
+                        sHome + 'javascript/externs/studio/javascript/app/**/*.js'
+                    ]
+                },
+                options: {
+                    compilation_level: 'WHITESPACE_ONLY',
+                    angular_pass: true,
+                    language_in: 'ECMASCRIPT5',
+                    language_out: 'ECMASCRIPT5',
+                    closure_entry_point: ['oVFB']
+                }
+            },
+            formReader: {
+                files: {
+                    '../javascript/externs/formReader/formReader.min.js': [
+                        // Fichiers FormReader
+                        sHome + 'javascript/externs/formReader/**/*.js'
+                    ]
+                },
+                options: {
+                    compilation_level: 'WHITESPACE_ONLY',
+                    angular_pass: true,
+                    language_in: 'ECMASCRIPT5',
+                    language_out: 'ECMASCRIPT5'
+                }
             }
         },
         'closureDepsWriter': {
@@ -72,7 +102,7 @@ module.exports = function (grunt) {
                     '"' + sHome + 'modules/vmap/javascript/vitis ' + sClosureDepsHome + 'modules/vmap/javascript/vitis"',
                     // Fichiers Studio
                     '"' + sHome + 'javascript/externs/studio/properties ' + sClosureDepsHome + 'javascript/externs/studio/properties"',
-                    '"' + sHome + 'javascript/externs/studio/javascript/app ' + sClosureDepsHome + 'javascript/externs/studio/javascript/app"',
+                    '"' + sHome + 'javascript/externs/studio/javascript ' + sClosureDepsHome + 'javascript/externs/studio/javascript"',
                     // Closure library
                     '"' + sHome + 'conf/node_modules/google-closure-library/closure/goog ' + sClosureDepsHome + 'conf/node_modules/google-closure-library/closure/goog"'
                 ]
@@ -87,9 +117,15 @@ module.exports = function (grunt) {
 
     // Tache par défaut 
     // cmd: grunt
-    grunt.registerTask('default', ['closureDepsWriter, closure-compiler']);
+    grunt.registerTask('default', ['closureDepsWriter, closure-compiler:vMap']);
     // cmd: grunt generate-deps
     grunt.registerTask('generate-deps', ['closureDepsWriter']);
+    // cmd: grunt studio minify
+    grunt.registerTask('minify-studio', ['closure-compiler:studio']);
+    // cmd: grunt formReader minify
+    grunt.registerTask('minify-formReader', ['closure-compiler:formReader']);
+    // cmd: grunt formReader and studio minify
+    grunt.registerTask('minify-libs', ['closure-compiler:formReader', 'closure-compiler:studio']);
     // cmd: grunt compile
-    grunt.registerTask('compile', ['closure-compiler']);
+    grunt.registerTask('compile', ['closure-compiler:vMap']);
 };
