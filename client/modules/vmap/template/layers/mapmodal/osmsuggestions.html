@@ -6,43 +6,37 @@
 
 <div>
     <div class="row">
-        <div class="col-md-3">
+        <div class="col-xs-3">
             <b>Nom:</b>
         </div>
-        <div class="col-md-7">
+        <div class="col-xs-7">
             <b>URL:</b>
-        </div>
-        <div class="col-md-2">
         </div>
     </div>
     <div class="row">
-        <div class="col-md-3">
-            <input type="text" id="osm-service-field" class="form-control" placeholder="Service name" aria-describedby="sizing-addon1">
+        <div class="col-xs-3">
+            <input type="text" ng-model="ctrl.sLayerName" class="form-control" placeholder="Service name" aria-describedby="sizing-addon1">
         </div>
-        <div class="col-md-7">
-            <input type="text" id="osm-url-field" class="form-control" placeholder="Service url" aria-describedby="sizing-addon1">
+        <div class="col-xs-7">
+            <input type="text" ng-model="ctrl.sLayerUrl" class="form-control" placeholder="Service url" aria-describedby="sizing-addon1">
         </div>
-        <div class="col-md-2">
-            <button type="button" class="btn btn-success right" onclick="oVmap.getMapManager().addOSMLayerFromHTML(this)">Ajouter</button>
-            <!--<button ng-if="ctrl.projection != 'EPSG:3857'" type="button" class="btn btn-danger right" onclick="if (confirm('Attention: la projection de la couche semble incompatible avec celle de la carte en cours.\n\nCela peut engendrer des errreurs d\'affichage \n\nContinuer quand même ?') != true) return 0; oVmap.getMapManager().addOSMLayerFromHTML(this)">Ajouter</button>-->
+        <div class="col-xs-2">
+            <button type="button" class="btn btn-success right" ng-click="ctrl.addLayer()">Ajouter</button>
         </div>
     </div>
 </div>
 
 <br>
-<div id="osm-log-message"></div>
 <hr>
 
 <div ng-repeat="node in ctrl.catalog.services.osm">
     <div class="row">
-        <div class="col-md-3">
-            <img src="{{node.thumbnail.substring(0, 4) === 'http' ? node.thumbnail : node.thumbnail ? ctrl.properties.web_server_name + '/' + ctrl.properties.public_alias + '/vmap/' + node.thumbnail : ''}}" 
-                 url="{{node.url}}" 
+        <div class="col-xs-3" ng-if="(node.thumbnail | getType) == 'string'">
+            <img src="{{node.thumbnail}}" 
                  class="img-responsive pointer opacity-hover" 
-                 name="{{node.name}}"
-                 onclick="oVmap.getMapManager().addOSMLayerFromHTML(this)">
+                 ng-click="ctrl.addLayer(node)">
         </div>
-        <div class="col-md-9">
+        <div class="col-xs-9">
             <b>{{node.name}}</b>
             <p>
                 <i>
@@ -52,15 +46,14 @@
         </div>
     </div>
     <div class="row" style="margin-bottom: -15px">
-        <div class="col-md-3"></div>
-        <div class="col-md-7 auto-overflow">
-            <div ng-if="node.url">
+        <div class="col-xs-3" ng-if="(node.thumbnail | getType) == 'string'"></div>
+        <div class="auto-overflow" ng-class="{ 'col-xs-7': (node.thumbnail | getType) == 'string', 'col-xs-10': (node.thumbnail | getType) != 'string' }">
+            <div>
                 <b>url</b>: <i>{{node.url}}</i>
             </div>
         </div>
-        <div class="col-md-2">
-            <button type="button" class="btn btn-primary right" name="{{node.name}}" url="{{node.url}}" onclick="oVmap.getMapManager().addOSMLayerFromHTML(this)">Ajouter</button>
-            <!--<button ng-if="ctrl.projection != 'EPSG:3857'" type="button" class="btn btn-danger right" name="{{node.name}}" url="{{node.url}}" onclick="if (confirm('Attention: la projection de la couche semble incompatible avec celle de la carte en cours.\n\nCela peut engendrer des errreurs d\'affichage \n\nContinuer quand même ?') != true) return 0; oVmap.getMapManager().addOSMLayerFromHTML(this)">Ajouter</button>-->
+        <div class="col-xs-2">
+            <button type="button" class="btn btn-primary right" ng-click="ctrl.addLayer(node)">Ajouter</button>
         </div>
     </div>
     <hr>

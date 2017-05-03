@@ -7,6 +7,7 @@
  */
 goog.provide('nsVmap.nsToolsManager.BasicSelect');
 
+goog.require('oVmap');
 
 /**
  * @classdesc
@@ -16,10 +17,7 @@ goog.provide('nsVmap.nsToolsManager.BasicSelect');
  * @export
  */
 nsVmap.nsToolsManager.BasicSelect = function () {
-
-    // Directives et controleurs Angular
-    oVmap.module.directive('appBasicselect', this.basicSelectDirective);
-    oVmap.module.controller('AppBasicselectController', this.basicSelectController);
+    oVmap.log('nsVmap.nsToolsManager.BasicSelect');
 };
 
 /**
@@ -153,8 +151,8 @@ nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController = function ($h
      * Queryable business objects list
      */
     this['aBusinessObjectsList'] = [];
-    
-    var setQueryableBos = function(){
+
+    var setQueryableBos = function () {
         this_.$scope_.$applyAsync(function () {
             // rempli this.oQueryableBOs
             this_['oQueryableBOs'] = oVmap.getMapManager().getQueryableBusinessObjects();
@@ -162,16 +160,16 @@ nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController = function ($h
 
             // séléctionne le premier objet métier si besoin
             if (!goog.isDefAndNotNull(this_['oQueryableBOs'][this_['sSelectedBo']])) {
-                
+
                 var iSmallestIndex = 1000000;
                 var sFirstBo = '';
-                
+
                 for (var bo in this_['oQueryableBOs']) {
-                    if(this_['oQueryableBOs'][bo]['bo_index'] < iSmallestIndex){
+                    if (this_['oQueryableBOs'][bo]['bo_index'] < iSmallestIndex) {
                         iSmallestIndex = this_['oQueryableBOs'][bo]['bo_index'];
                         sFirstBo = this_['oQueryableBOs'][bo]['bo_id'];
                     }
-                }                
+                }
                 this_['sSelectedBo'] = sFirstBo;
             }
         });
@@ -191,7 +189,7 @@ nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController = function ($h
             // Re-crée la géométrie en WKT
             var olPoint = new ol.geom.Point(evt.coordinate);
             var EWKTGeometry = oVmap.getEWKTFromGeom(olPoint);
-            
+
             // Ferme les outils
             oVmap.getToolsManager().getBasicTools().toggleOutTools();
 
@@ -211,6 +209,11 @@ nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController = function ($h
             this_.canceler_.resolve();
         }
     });
+    
+    // Vide les popups quand on change de carte
+    oVmap['scope'].$on('mapChanged', function () {
+        this_.removePopups();
+    });
 };
 
 
@@ -220,9 +223,10 @@ nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController = function ($h
  * Call sendQueryByEWKTGeom_ for the selected layers
  * @param {string} EWKTGeometry
  * @param {boolean} useTableFormat true to result in table format, false for popup
+ * @param {string|undefined} sQueryBo Business object to query, this.sSelectedBo if undefined
  * @returns {undefined}
  */
-nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController.prototype.queryByEWKTGeom = function (EWKTGeometry, olPoint) {
+nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController.prototype.queryByEWKTGeom = function (EWKTGeometry, olPoint, sQueryBo) {
     oVmap.log('nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController.prototype.queryByEWKTGeom');
 
     var this_ = this;
@@ -238,10 +242,13 @@ nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController.prototype.quer
 
     // Réinitialise canceler_
     this.canceler_ = this.$q_.defer();
+    
+    // Objet métier sur lequel effectuer la selection
+    sQueryBo = goog.isDefAndNotNull(sQueryBo) ? sQueryBo : this['sSelectedBo'];
 
     // Interroge l'objet métier sélectionné
     this.oSelect.queryByEWKTGeom({
-        bo_id: this['sSelectedBo'],
+        bo_id: sQueryBo,
         EWKTGeometry: EWKTGeometry,
         canceler: this.canceler_,
         useTableFormat: false,
@@ -398,7 +405,7 @@ nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController.prototype.disp
             }, true);
         }
 
-        // Ajoute une image si il y a un bo_image_path
+        // Ajout du contennu
         aSelection[i]['mapPopup'].displayMessage('<b>' + aSelection[i]['bo_title'] + ':</b>');
         aSelection[i]['mapPopup'].addMessageTable(aSelection[i]['bo_summary']);
         if (goog.isDef(aSelection[i]['bo_image_path']))
@@ -477,7 +484,7 @@ nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController.prototype.cent
     }
 
     var geom = selection['olFeature'].getGeometry();
-    
+
     if (!goog.isDefAndNotNull(geom)) {
         console.error("selection['olFeature'].getGeometry() not defined");
         return 0;
@@ -518,8 +525,9 @@ nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController.prototype.disp
 nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController.prototype.displayEditFrom = function (selection) {
     oVmap.log('nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController.prototype.displayEditFrom');
     var this_ = this;
-    this.oSelect.displayEditFrom(selection, function(){
-        this_.queryByEWKTGeom(this_.EWKTGeometry, this_.olPoint);
+    var sQueryBo = angular.copy(selection['bo_type']);    
+    this.oSelect.displayEditFrom(selection, function () {
+        this_.queryByEWKTGeom(this_.EWKTGeometry, this_.olPoint, sQueryBo);
     });
 };
 
@@ -534,10 +542,10 @@ nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController.prototype.disp
  */
 nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController.prototype.editFeature = function (selection) {
     oVmap.log('nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController.prototype.editFeature');
-    
+
     // Ferme l'ensemble des popups
     this.closeSelectionPopup();
-    
+
     this.oSelect.editFeature(selection);
 };
 
@@ -573,12 +581,12 @@ nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController.prototype.dele
  * Remove the popups and empty this['aSelections']
  * @export
  */
-nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController.prototype.removePopups = function (){
+nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController.prototype.removePopups = function () {
     oVmap.log('nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController.prototype.removePopups');
-    
+
     // Supprime toutes les anciennes popup
     this.closeSelectionPopup();
-    
+
     // Supprime toutes les anciennes selections
     this.removeSelections();
 };
@@ -642,3 +650,8 @@ nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController.prototype.addT
     oVmap.log('nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController.prototype.tableAddToCard');
     this.oSelect.addToCard([oSelection]);
 };
+
+
+// Définit la directive et le controller
+oVmap.module.directive('appBasicselect', nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectDirective);
+oVmap.module.controller('AppBasicselectController', nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController);

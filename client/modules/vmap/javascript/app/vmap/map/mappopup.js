@@ -50,6 +50,11 @@ nsVmap.Map.MapPopup = function (olFeature, olPoint) {
      */
     this.actions = [];
 
+    /**
+     * Style à utiliser
+     */
+    this.oStyle = {};
+
     // Ajoute la feature sur la carte
     if (!goog.array.contains(oVmap.getMap().getPopupOverlaySource().getFeatures(), olFeature))
         oVmap.getMap().getPopupOverlaySource().addFeature(olFeature);
@@ -66,25 +71,24 @@ nsVmap.Map.MapPopup = function (olFeature, olPoint) {
     this.HTMLButtonsContainer_.style = 'height: 7px;';
     this.HTMLContainer_.appendChild(this.HTMLButtonsContainer_);
 
-    // Ajoute le style définit en properties
+    // Ajoute le style défini en properties
     if (goog.isDefAndNotNull(oVmap['properties']['popup'])) {
         if (goog.isDefAndNotNull(oVmap['properties']['popup']['style'])) {
             if (goog.isString(oVmap['properties']['popup']['style'])) {
 
                 // Style définit en properties en enlevant les "\n"
-                var sStyle = oVmap['properties']['popup']['style'].replace('<return>', '');
+                var sStyle = oVmap['properties']['popup']['style'].replace(/<return>/g, '');
                 var aStyle1 = sStyle.split(';');
-                var oStyle = {};
 
                 for (var i = 0; i < aStyle1.length; i++) {
                     var aStyle2 = aStyle1[i].split(':');
                     if (goog.isDefAndNotNull(aStyle2[0]) && goog.isDefAndNotNull(aStyle2[1])) {
-                        oStyle[aStyle2[0]] = aStyle2[1];
+                        this.oStyle[aStyle2[0]] = aStyle2[1];
                     }
                     delete aStyle2;
                 }
-                for (var key in oStyle) {
-                    this.HTML_.style[key] = oStyle[key];
+                for (var key in this.oStyle) {
+                    this.HTML_.style[key] = this.oStyle[key];
                 }
             }
         }
@@ -97,6 +101,7 @@ nsVmap.Map.MapPopup = function (olFeature, olPoint) {
     this.HTMLButtonsContainer_.appendChild(this.HTMLCloser_);
 
     this.HTMLContent_ = document.createElement('div');
+    this.HTMLContent_.classList.add('popup-content');
     this.HTMLContainer_.appendChild(this.HTMLContent_);
 
 
@@ -250,48 +255,22 @@ nsVmap.Map.MapPopup.prototype.addPhoto = function (photoURL) {
     img.style.width = '100px';
     img.src = photoURL;
 
+    if (!goog.isDefAndNotNull(this.oStyle['min-width']) || $(this_.HTML_).css('min-width') === '0px') {
+        $(this_.HTML_).css('min-width', '300px');
+    }
+
     if (!goog.isDef(this.HTMLImageContainer_)) {
 
         this.HTMLImageContainer_ = document.createElement("div");
+        this.HTMLImageContainer_.classList.add('popup-image-content');
         this.HTMLImageContainer_.style['position'] = 'relative';
         this.HTMLImageContainer_.style['float'] = 'right';
-        this.HTMLImageContainer_.style['cursor'] = 'pointer';
         this.HTMLContent_.style['float'] = 'left';
-
-        this.HTMLImageEnlargeButton_ = document.createElement("div");
-        this.HTMLImageEnlargeButton_.className = 'select-img-enlarge-button';
-        this.HTMLImageEnlargeButton_.innerHTML = '<span class="icon-enlarge2"></span>';
-
-        this.HTMLImageSaveButton_ = document.createElement("a");
-        this.HTMLImageSaveButton_.className = 'select-download-img-button';
-        this.HTMLImageSaveButton_.href = photoURL;
-        this.HTMLImageSaveButton_.download = "image.jpg";
-        this.HTMLImageSaveButton_.style.display = "none";
-        this.HTMLImageSaveButton_.innerHTML = '<span class="glyphicon glyphicon-save"></span>';
-
-        this.HTMLImageContainer_.appendChild(this.HTMLImageEnlargeButton_);
-        this.HTMLImageContainer_.appendChild(this.HTMLImageSaveButton_);
+        this.HTMLContent_.style['width'] = 'calc(100% - 100px)';
         this.HTMLContainer_.appendChild(this.HTMLImageContainer_);
     }
 
     this.HTMLImageContainer_.appendChild(img);
-    $(this.HTML_).width($(this.HTMLImageContainer_).width() + $(this.HTMLContent_).width());
-
-    this.HTMLImageContainer_.addEventListener('click', function () {
-        if (img.style.width === '100px') {
-            $(img).animate({
-                width: $(this_.HTML_).width() + 'px'
-            }, 500);
-            this_.HTMLImageSaveButton_.style.display = 'block';
-            this_.HTMLImageEnlargeButton_.innerHTML = '<span class="icon-shrink2"></span>';
-        } else {
-            $(img).animate({
-                width: '100px'
-            }, 500, "linear");
-            this_.HTMLImageSaveButton_.style.display = 'none';
-            this_.HTMLImageEnlargeButton_.innerHTML = '<span class="icon-enlarge2"></span>';
-        }
-    }, false);
 
     return true;
 };
@@ -302,7 +281,7 @@ nsVmap.Map.MapPopup.prototype.addPhoto = function (photoURL) {
  * @returns {Boolean}
  */
 nsVmap.Map.MapPopup.prototype.addMessageTable = function (data) {
-    oVmap.log('nsVmap.Map.MapPopup.prototype.displayTable');
+    oVmap.log('nsVmap.Map.MapPopup.prototype.addMessageTable');
 
     if (!goog.isDef(data)) {
         console.error('MapPopup: data not defined');
@@ -327,6 +306,13 @@ nsVmap.Map.MapPopup.prototype.addMessageTable = function (data) {
         column2.className = 'padding-sides-5 map-popup-cell';
         row.appendChild(column2);
 
+        if (goog.isString(data[item])) {
+            data[item] = data[item].replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            if (data[item].indexOf('[bo_link') !== -1 && data[item].indexOf('[/bo_link]') !== -1) {
+                data[item] = this.parseBoLink_(data[item]);
+            }
+        }
+
         column1.innerHTML = item;
         column2.innerHTML = data[item];
 
@@ -339,6 +325,175 @@ nsVmap.Map.MapPopup.prototype.addMessageTable = function (data) {
 
     this.HTMLContent_.appendChild(HTMLMessageContainer);
     return true;
+};
+
+/**
+ * Parse the bo_link string and returns a <a></a> tag
+ * @param {string} sString
+ * @returns {String}
+ * @private
+ */
+nsVmap.Map.MapPopup.prototype.parseBoLink_ = function (sString) {
+
+    var sBoLink = sString.substr(sString.indexOf('[bo_link'), sString.indexOf('[/bo_link]') - sString.indexOf('[bo_link') + 10);
+    var sBoLinkFirstTag = this.getFirstBoLinkTag_(sBoLink);
+    var sBoLinkLastTag = '[/bo_link]';
+    var sBoLinkContent = this.getBoLinkContent_(sBoLink, sBoLinkFirstTag, sBoLinkLastTag);
+    var oBoLinkArgs = this.getBoLinkTagArguments_(sBoLinkFirstTag);
+
+    var sHref = goog.isDefAndNotNull(oBoLinkArgs['href']) ? oBoLinkArgs['href'] : null;
+    var sTarget = goog.isDefAndNotNull(oBoLinkArgs['target']) ? oBoLinkArgs['target'] : '_blank';
+    var sContent = sBoLinkContent.length > 0 ? sBoLinkContent : sHref;
+
+    if (goog.isDefAndNotNull(sHref)) {
+        var sLink = '<a href="' + sHref + '" target="' + sTarget + '">' + sContent + '</a>';
+        return sLink;
+    } else {
+        console.error('cannot parse href');
+        return sString;
+    }
+};
+
+
+/**
+ * Get the fisrt bo_link tag
+ * @param {string} sBoLink
+ * @returns {String}
+ * @private
+ */
+nsVmap.Map.MapPopup.prototype.getFirstBoLinkTag_ = function (sBoLink) {
+
+    var quoteIndex1 = null;
+    var quoteIndex2 = null;
+    var bInArgument = false;
+    var sBoLinkFirstTag = '';
+
+    for (var i = 0; i < sBoLink.length; i++) {
+        sBoLinkFirstTag += sBoLink[i];
+        if (sBoLink[i] === '"') {
+            if (quoteIndex1 === null) {
+                if (sBoLink[i - 1] !== '\\') {
+                    quoteIndex1 = i;
+                    continue;
+                }
+            }
+        }
+        if (sBoLink[i] === '"') {
+            if (quoteIndex2 === null && quoteIndex1 !== null) {
+                if (sBoLink[i - 1] !== '\\') {
+                    quoteIndex2 = i;
+                    continue;
+                }
+            }
+        }
+
+        if (quoteIndex1 !== null && quoteIndex2 === null) {
+            bInArgument = true;
+        } else {
+            bInArgument = false;
+            if (quoteIndex1 !== null && quoteIndex2 !== null) {
+                quoteIndex1 = null;
+                quoteIndex2 = null;
+            }
+        }
+
+        if (!bInArgument && sBoLink[i] === ']') {
+            break;
+        }
+    }
+    return sBoLinkFirstTag;
+};
+
+/**
+ * Get the bo_link content (between tags)
+ * @param {string} sBoLink
+ * @param {string} sBoLinkFirstTag
+ * @param {string} sBoLinkLastTag
+ * @returns {String}
+ * @private
+ */
+nsVmap.Map.MapPopup.prototype.getBoLinkContent_ = function (sBoLink, sBoLinkFirstTag, sBoLinkLastTag) {
+
+    // sBoLink sans le premier tag
+    var content1 = sBoLink.substr(sBoLink.indexOf(sBoLinkFirstTag) + sBoLinkFirstTag.length);
+    // Contenu
+    var content = content1.substr(0, content1.indexOf(sBoLinkLastTag));
+    return content;
+};
+
+/**
+ * Get the fisrt bo_link tag arguments on object form
+ * @param {string} sBoLinkTag
+ * @returns {object}
+ * @private
+ */
+nsVmap.Map.MapPopup.prototype.getBoLinkTagArguments_ = function (sBoLinkTag) {
+
+    var quoteIndex1 = null;
+    var quoteIndex2 = null;
+    var spaceIndex = null;
+    var equalIndex = null;
+    var content = null;
+    var argument = null;
+    var bInArgument = false;
+    var oArguments = {};
+
+    for (var i = 0; i < sBoLinkTag.length; i++) {
+
+        if (sBoLinkTag[i] === '"') {
+            if (quoteIndex1 === null) {
+                if (sBoLinkTag[i - 1] !== '\\') {
+                    quoteIndex1 = i;
+                    continue;
+                }
+            }
+        }
+        if (sBoLinkTag[i] === '"') {
+            if (quoteIndex2 === null && quoteIndex1 !== null) {
+                if (sBoLinkTag[i - 1] !== '\\') {
+                    quoteIndex2 = i;
+                    continue;
+                }
+            }
+        }
+
+        if (quoteIndex1 !== null && quoteIndex2 === null) {
+            bInArgument = true;
+        } else {
+            bInArgument = false;
+            if (quoteIndex1 !== null && quoteIndex2 !== null) {
+                content = sBoLinkTag.substr(quoteIndex1 + 1, quoteIndex2 - quoteIndex1 - 1);
+                quoteIndex1 = null;
+                quoteIndex2 = null;
+            }
+        }
+
+        if (!bInArgument) {
+            if (sBoLinkTag[i] === ' ') {
+                if (spaceIndex === null) {
+                    spaceIndex = i;
+                }
+            }
+            if (sBoLinkTag[i] === '=') {
+                if (equalIndex === null) {
+                    equalIndex = i;
+                }
+            }
+
+            if (spaceIndex !== null && equalIndex !== null) {
+                argument = sBoLinkTag.substr(spaceIndex + 1, equalIndex - spaceIndex - 1);
+                spaceIndex = null;
+                equalIndex = null;
+            }
+        }
+
+        if (content !== null && argument !== null) {
+            oArguments[argument] = content;
+            content = null;
+            argument = null;
+        }
+    }
+    return oArguments;
 };
 
 /**

@@ -13,7 +13,7 @@ require_once __DIR__.'/../../class/vitis_lib/Connection.class.inc';
 * This class defines operation for one user
 * 
 */
-class User  extends Vitis{
+class User extends Vitis{
     
     public $oError;
     /**
@@ -23,12 +23,12 @@ class User  extends Vitis{
      * @param type $properties properties
      * @param type $oConnection connection object
      */
-    function User ($aPath, $aValues, $properties, $oConnection){
+    function __construct ($aPath, $aValues, $properties, $oConnection){
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
         $this->oConnection = $oConnection;
-        $this->aSelectedFields = Array("user_id", "login", "email", "name", "company", "department","ip_constraint", "domain", "domain_id", "restriction", "last_connection", "groups", "privileges", "role", "restriction");
+        $this->aSelectedFields = Array("user_id", "login", "email", "name", "company", "department","ip_constraint", "domain", "domain_id", "restriction", "last_connection", "groups", "privileges", "role", "restriction", "name || ' (' || login || ')' as user_string");
     }
       /**
      * @SWG\Get(path="/users/{user_id}", 
@@ -145,7 +145,7 @@ class User  extends Vitis{
             if ($sErrorMesssage == "") {
                 $this->aFields["user_id"] = $this->aValues['my_vitis_id'];
             } else {
-                $this->oError = new Error(1, $this->oConnection->oBd->getBDMessage());
+                $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
             }
         }
     }

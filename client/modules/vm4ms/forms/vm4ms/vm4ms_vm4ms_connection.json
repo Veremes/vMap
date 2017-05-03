@@ -1,0 +1,498 @@
+{
+    "search":{
+        "name":"vm4ms_connection_search_form",
+        "title":"",
+        "input_size":"xxs",
+        "nb_cols":12,
+        "rows":[
+            {
+                "fields":[
+                    {
+                        "type":"text",
+                        "name":"name",
+                        "label":"FORM_NAME_VM4MS_VM4MS_CONNECTION",
+                        "nb_cols":3
+                    },
+                    {
+                        "type":"radio",
+                        "name":"private",
+                        "label":"FORM_PRIVATE_VM4MS_VM4MS_CONNECTION",
+                        "options": {
+                            "choices": [{
+                                    "label": "FORM_PRIVATE_YES_VM4MS_VM4MS_CONNECTION",
+                                    "value": true
+                                },
+                                {
+                                    "label": "FORM_PRIVATE_NO_VM4MS_VM4MS_CONNECTION",
+                                    "value": false
+                                }]
+                        },
+                        "inline":true,
+                        "nb_cols":3
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"text",
+                        "name":"server",
+                        "label":"FORM_SERVER_VM4MS_VM4MS_CONNECTION",
+                        "nb_cols":3
+                    },
+                    {
+                        "type":"number",
+                        "name":"port",
+                        "label":"FORM_PORT_VM4MS_VM4MS_CONNECTION",
+                        "nb_cols":3
+                    },
+                    {
+                        "type":"text",
+                        "name":"database",
+                        "label":"FORM_DATABASE_VM4MS_VM4MS_CONNECTION",
+                        "nb_cols":3
+                    },
+                    {
+                        "type":"text",
+                        "name":"user",
+                        "label":"FORM_USER_VM4MS_VM4MS_CONNECTION",
+                        "nb_cols":3
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"button",
+                        "class":"btn-ungroup btn-group-xs",
+                        "nb_cols":12,
+                        "buttons":[
+                            {
+                                "type":"button",
+                                "name":"search",
+                                "label":"FORM_SEARCH_BUTTON",
+                                "class":"btn-primary",
+                                "event":"setGridFilter()"
+                            },
+                            {
+                                "type":"reset",
+                                "name":"reset",
+                                "label":"FORM_RESET_BUTTON",
+                                "class":"btn-primary",
+                                "event":"resetGridFilter()"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "update":{
+        "name":"vm4ms_connection_update_form",
+        "title":"FORM_TITLE_VM4MS_VM4MS_CONNECTION",
+        "input_size":"xs",
+        "initEvent":"initVm4msConnectionForm()",
+        "beforeEvent":"beforeSendingVm4msConnectionForm()",
+        "event":"sendSimpleForm()",
+        "nb_cols":12,
+        "rows":[
+            {
+                "fields":[
+                    {
+                        "type":"label",
+                        "name":"connection_id",
+                        "label":"FORM_CONNECTION_ID_VM4MS_VM4MS_CONNECTION",
+                        "nb_cols":4
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"text",
+                        "name":"name",
+                        "label":"FORM_NAME_VM4MS_VM4MS_CONNECTION",
+                        "nb_cols":4,
+                        "visible": true
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"text",
+                        "name":"server",
+                        "label":"FORM_SERVER_VM4MS_VM4MS_CONNECTION",
+                        "nb_cols":4,
+                        "visible": true
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"text",
+                        "name":"port",
+                        "label":"FORM_PORT_VM4MS_VM4MS_CONNECTION",
+                        "nb_cols":4,
+                        "visible": true
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"text",
+                        "name":"public_database",
+                        "label":"FORM_DATABASE_VM4MS_VM4MS_CONNECTION",
+                        "nb_cols":4,
+                        "visible": true
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type": "select",
+                        "name": "private_database",
+                        "label": "FORM_DATABASE_VM4MS_VM4MS_CONNECTION",
+                        "nb_cols": 3,
+                        "web_service": {
+                            "ressource_id": "vitis/genericquerys",
+                            "id_key": "datname",
+                            "label_key": "datname",
+                            "parameters": {
+                                "order_by": "datname",
+                                "schema": "pg_catalog",
+                                "table": "pg_database",
+                                "sort_order": "ASC",
+                                "attributs": "datname",
+                                "distinct": true,
+                                "filter": "datistemplate = false AND datname <> 'postgres'"
+                            }
+                        },
+                        "required": true,
+                        "visible": true
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type": "hidden",
+                        "name": "database",
+                        "nb_cols": 1
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"text",
+                        "name":"user",
+                        "label":"FORM_USER_VM4MS_VM4MS_CONNECTION",
+                        "nb_cols":4,
+                        "visible": true
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"text",
+                        "name":"password",
+                        "label":"FORM_PASSWORD_VM4MS_VM4MS_CONNECTION",
+                        "tooltip": {
+                            "content":"FORM_PASSWORD_TOOLTIP_CONTENT_VM4MS_VM4MS_PRIVATE_WMS_SERVICE"
+                        },
+                        "nb_cols":4,
+                        "visible": true
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"button",
+                        "class":"btn-ungroup btn-group-sm",
+                        "nb_cols":12,
+                        "buttons":[
+                            {
+                                "type":"submit",
+                                "name":"form_submit",
+                                "label":"FORM_UPDATE",
+                                "class":"btn-primary"
+                            },
+                            {
+                                "type":"button",
+                                "name":"return_list",
+                                "label":"FORM_RETURN_LIST",
+                                "class":"btn-primary",
+                                "event":"setMode(\"search\")"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "insert":{
+        "name":"vm4ms_connection_insert_form",
+        "title":"FORM_TITLE_VM4MS_VM4MS_CONNECTION",
+        "input_size":"xs",
+        "beforeEvent":"beforeSendingVm4msConnectionForm()",
+        "initEvent":"initVm4msConnectionForm()",
+        "event":"sendSimpleForm()",
+        "afterEvent":"editSectionForm()",
+        "nb_cols":12,
+        "rows":[
+            {
+                "fields":[
+                    {
+                        "type":"radio",
+                        "name":"private",
+                        "label":"FORM_PRIVATE_VM4MS_VM4MS_CONNECTION",
+                        "options": {
+                            "choices": [{
+                                    "label": "FORM_PRIVATE_YES_VM4MS_VM4MS_CONNECTION",
+                                    "value": true
+                                },
+                                {
+                                    "label": "FORM_PRIVATE_NO_VM4MS_VM4MS_CONNECTION",
+                                    "value": false
+                                }]
+                        },
+                        "default_value": false,
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"text",
+                        "name":"name",
+                        "label":"FORM_NAME_VM4MS_VM4MS_CONNECTION",
+                        "required":true,
+                        "nb_cols":4,
+                        "visible": true
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"text",
+                        "name":"server",
+                        "label":"FORM_SERVER_VM4MS_VM4MS_CONNECTION",
+                        "nb_cols":4,
+                        "visible": true
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"text",
+                        "name":"port",
+                        "label":"FORM_PORT_VM4MS_VM4MS_CONNECTION",
+                        "nb_cols":4,
+                        "visible": true
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"text",
+                        "name":"public_database",
+                        "label":"FORM_DATABASE_VM4MS_VM4MS_CONNECTION",
+                        "nb_cols":4,
+                        "visible": true
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type": "select",
+                        "name": "private_database",
+                        "label": "FORM_DATABASE_VM4MS_VM4MS_CONNECTION",
+                        "nb_cols": 3,
+                        "web_service": {
+                            "ressource_id": "vitis/genericquerys",
+                            "id_key": "datname",
+                            "label_key": "datname",
+                            "parameters": {
+                                "order_by": "datname",
+                                "schema": "pg_catalog",
+                                "table": "pg_database",
+                                "sort_order": "ASC",
+                                "attributs": "datname",
+                                "distinct": true,
+                                "filter": "datistemplate = false AND datname <> 'postgres'"
+                            }
+                        },
+                        "required": true,
+                        "visible": true
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type": "hidden",
+                        "name": "database",
+                        "nb_cols": 1
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"text",
+                        "name":"user",
+                        "label":"FORM_USER_VM4MS_VM4MS_CONNECTION",
+                        "nb_cols":4,
+                        "visible": true
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"text",
+                        "name":"password",
+                        "label":"FORM_PASSWORD_VM4MS_VM4MS_CONNECTION",
+                        "tooltip": {
+                            "content":"FORM_PASSWORD_TOOLTIP_CONTENT_VM4MS_VM4MS_PRIVATE_WMS_SERVICE"
+                        },
+                        "nb_cols":4,
+                        "visible": true
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"button",
+                        "class":"btn-ungroup btn-group-sm",
+                        "nb_cols":12,
+                        "buttons":[
+                            {
+                                "type":"submit",
+                                "name":"form_submit",
+                                "label":"FORM_CREATE",
+                                "class":"btn-primary"
+                            },
+                            {
+                                "type":"button",
+                                "name":"return_list",
+                                "label":"FORM_RETURN_LIST",
+                                "class":"btn-primary",
+                                "event":"setMode(\"search\")"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "display":{
+        "name":"vm4ms_connection_display_form",
+        "title":"FORM_TITLE_VM4MS_VM4MS_CONNECTION",
+        "input_size":"xs",
+        "initEvent":"initVm4msConnectionForm()",
+        "nb_cols":12,
+        "rows":[
+            {
+                "fields":[
+                    {
+                        "type":"label",
+                        "name":"connection_id",
+                        "label":"FORM_CONNECTION_ID_VM4MS_VM4MS_CONNECTION",
+                        "nb_cols":6
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"label",
+                        "name":"name",
+                        "label":"FORM_NAME_VM4MS_VM4MS_CONNECTION",
+                        "nb_cols":3
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"label",
+                        "name":"server",
+                        "label":"FORM_SERVER_VM4MS_VM4MS_CONNECTION",
+                        "nb_cols":4
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"label",
+                        "name":"port",
+                        "label":"FORM_PORT_VM4MS_VM4MS_CONNECTION",
+                        "nb_cols":4
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"label",
+                        "name":"database",
+                        "label":"FORM_DATABASE_VM4MS_VM4MS_CONNECTION",
+                        "nb_cols":4
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"label",
+                        "name":"user",
+                        "label":"FORM_USER_VM4MS_VM4MS_CONNECTION",
+                        "nb_cols":4
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"label",
+                        "name":"password",
+                        "label":"FORM_PASSWORD_VM4MS_VM4MS_CONNECTION",
+                        "nb_cols":4
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"button",
+                        "class":"btn-ungroup btn-group-sm",
+                        "nb_cols":12,
+                        "buttons":[
+                            {
+                                "type":"button",
+                                "name":"return_list",
+                                "label":"FORM_RETURN_LIST",
+                                "class":"btn-primary",
+                                "event":"setMode(\"search\")"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}

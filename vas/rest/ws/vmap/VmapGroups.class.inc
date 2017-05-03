@@ -36,7 +36,7 @@ class VmapGroups extends Vmap {
      * @param type $aValues parameters of the request
      * @param type $properties properties
      */
-    function vmapGroups($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties) {
        
         $this->aValues = $aValues;
         $this->aPath = $aPath;
@@ -117,13 +117,15 @@ class VmapGroups extends Vmap {
                 $sSql = str_replace('[sSchemaVmap]', $this->aProperties['schema_vmap'], $sSql);
                 $resultat = $this->oConnection->oBd->execute($sSql);
                 if ($this->oConnection->oBd->enErreur()) {
-                    $this->oError = new Error(1, $this->oConnection->oBd->getBDMessage());
-                    $oError = new Error(1, $this->oConnection->oBd->getBDMessage());
+                    $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
+                    $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                     $aXmlRacineAttribute['status'] = 0;
                     $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
                 }
             }
         }
+        // Supprime les modèles d'impression rattachés au groupe.
+        $this->oConnection->oBd->delete($this->aProperties['schema_vmap'], 'printtemplate_group', 'group_id', $this->aValues["my_vitis_id"]);
         // Modèles d'impression à rattacher au groupe ?
         if (!empty($this->aValues['print_templates'])) {
             $aPrintTemplates = explode('|', $this->aValues['print_templates']);
@@ -133,8 +135,8 @@ class VmapGroups extends Vmap {
                 $sSql = str_replace('[sSchemaVmap]', $this->aProperties['schema_vmap'], $sSql);
                 $resultat = $this->oConnection->oBd->execute($sSql);
                 if ($this->oConnection->oBd->enErreur()) {
-                    $this->oError = new Error(1, $this->oConnection->oBd->getBDMessage());
-                    $oError = new Error(1, $this->oConnection->oBd->getBDMessage());
+                    $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
+                    $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                     $aXmlRacineAttribute['status'] = 0;
                     $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
                 }

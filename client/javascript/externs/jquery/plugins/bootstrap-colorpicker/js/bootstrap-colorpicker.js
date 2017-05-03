@@ -759,8 +759,13 @@
       if (this.options.align === 'right') {
         offset.left -= this.picker.outerWidth() - element.outerWidth();
       }
+      // Vérifie si la palette ne dépasse pas la fenêtre en bas. 
+      var iTop = offset.top + element.outerHeight();
+      var iDefaultHeight = 124;
+      if (iTop + iDefaultHeight > window.innerHeight)
+          iTop -= iTop + iDefaultHeight - window.innerHeight;
       this.picker.css({
-        top: offset.top + element.outerHeight(),
+        top: iTop,
         left: offset.left
       });
     },

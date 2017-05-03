@@ -196,15 +196,15 @@
 				INSERT INTO s_vitis.privileges(rolname, description) VALUES ('vmap_user', 'utilisateur vmap');
 				INSERT INTO s_vitis.privileges(rolname, description) VALUES ('vmap_admin', 'administrateur vmap');
 				INSERT INTO s_vitis.vm_mode_rolname(index, mode_id, rolname) VALUES (0, 'vmap', 'vmap_user');
-				INSERT INTO s_vitis.vm_mode_rolname(index, mode_id, rolname) VALUES (6, 'vmap_business_object', 'vmap_admin');
+				INSERT INTO s_vitis.vm_mode_rolname(index, mode_id, rolname) VALUES (45, 'vmap_business_object', 'vmap_admin');
 				INSERT INTO s_vitis.vm_tab(tab_id, event, index, mode_id, label_id, name) VALUES ((SELECT nextval('s_vitis.seq_vm'::regclass)), 'javascript:loadVmap();', 0, 'vmap', 'vitis_1', 'vmap_map');
 				INSERT INTO s_vitis.vm_section(section_id, label_id, name, index, event, tab_id, template, module) VALUES ((SELECT nextval('s_vitis.seq_vm'::regclass)), 'vitis_1', 'general', 1, 'Javascript:reloadSectionForm', (SELECT tab_id FROM s_vitis.vm_tab WHERE name = 'vmap_map'), 'modules/vmap/index-vitis.html', 'vmap');
 				INSERT INTO s_vitis.vm_mode (mode_id, module_id) VALUES ('vmap_admin_map', 'vmap');
-				INSERT INTO s_vitis.vm_mode_rolname (rolname, mode_id, "index") VALUES ('vmap_admin', 'vmap_admin_map', 3);
+				INSERT INTO s_vitis.vm_mode_rolname (rolname, mode_id, "index") VALUES ('vmap_admin', 'vmap_admin_map', 40);
 				INSERT INTO s_vitis.vm_string (string, string_id) VALUES ('Chaine de caractère nulle', 'vmap_1');
 				INSERT INTO s_vitis.vm_string (string, string_id) VALUES ('Onglet "Cartes" du mode "vmap"', 'vmap_2');
 				INSERT INTO s_vitis.vm_string (string, string_id) VALUES ('Onglet "Services" du mode "vmap"', 'vmap_3');
-				INSERT INTO s_vitis.vm_string (string, string_id) VALUES ('Onglet "Couches" du mode "vmap"', 'vmap_4');
+				INSERT INTO s_vitis.vm_string (string, string_id) VALUES ('Onglet "Calques" du mode "vmap"', 'vmap_4');
 				INSERT INTO s_vitis.vm_string (string, string_id) VALUES ('Button d''ajout de l''onglet vmap_map', 'vmap_5');
 				INSERT INTO s_vitis.vm_string (string, string_id) VALUES ('Button de suppression de l''onglet vmap_map', 'vmap_6');
 				INSERT INTO s_vitis.vm_string (string, string_id) VALUES ('Champ map_id de l''onglet vmap_map', 'vmap_7');
@@ -238,7 +238,7 @@
 				INSERT INTO s_vitis.vm_translation (translation_id, lang, translation) VALUES ('vmap_2', 'en', 'Maps');
 				INSERT INTO s_vitis.vm_translation (translation_id, lang, translation) VALUES ('vmap_3', 'fr', 'Services');
 				INSERT INTO s_vitis.vm_translation (translation_id, lang, translation) VALUES ('vmap_3', 'en', 'Services');
-				INSERT INTO s_vitis.vm_translation (translation_id, lang, translation) VALUES ('vmap_4', 'fr', 'Couches');
+				INSERT INTO s_vitis.vm_translation (translation_id, lang, translation) VALUES ('vmap_4', 'fr', 'Calques');
 				INSERT INTO s_vitis.vm_translation (translation_id, lang, translation) VALUES ('vmap_4', 'en', 'Layers');
 				INSERT INTO s_vitis.vm_translation (translation_id, lang, translation) VALUES ('vmap_5', 'fr', 'Ajouter une carte');
 				INSERT INTO s_vitis.vm_translation (translation_id, lang, translation) VALUES ('vmap_5', 'en', 'Add map');
@@ -282,9 +282,9 @@
 				INSERT INTO s_vitis.vm_translation (translation_id, lang, translation) VALUES ('vmap_24', 'en', 'Thumbnail');
 				INSERT INTO s_vitis.vm_translation (translation_id, lang, translation) VALUES ('vmap_25', 'fr', 'Général');
 				INSERT INTO s_vitis.vm_translation (translation_id, lang, translation) VALUES ('vmap_25', 'en', 'General');
-				INSERT INTO s_vitis.vm_translation (translation_id, lang, translation) VALUES ('vmap_26', 'fr', 'Ajouter une couche');
+				INSERT INTO s_vitis.vm_translation (translation_id, lang, translation) VALUES ('vmap_26', 'fr', 'Ajouter un calque');
 				INSERT INTO s_vitis.vm_translation (translation_id, lang, translation) VALUES ('vmap_26', 'en', 'Add layer');
-				INSERT INTO s_vitis.vm_translation (translation_id, lang, translation) VALUES ('vmap_27', 'fr', 'Supprimer les couches');
+				INSERT INTO s_vitis.vm_translation (translation_id, lang, translation) VALUES ('vmap_27', 'fr', 'Supprimer les calques');
 				INSERT INTO s_vitis.vm_translation (translation_id, lang, translation) VALUES ('vmap_27', 'en', 'Delete layers');
 				INSERT INTO s_vitis.vm_translation (translation_id, lang, translation) VALUES ('vmap_28', 'fr', 'ID');
 				INSERT INTO s_vitis.vm_translation (translation_id, lang, translation) VALUES ('vmap_28', 'en', 'ID');
@@ -303,20 +303,20 @@
 				INSERT INTO s_vitis.vm_string (string, string_id) VALUES ('Champ crs_list de l''onglet vmap_map', 'vmap_34');
 				INSERT INTO s_vitis.vm_translation (translation_id, lang, translation) VALUES ('vmap_34', 'fr', 'Système de coordonnées');
 				INSERT INTO s_vitis.vm_translation (translation_id, lang, translation) VALUES ('vmap_34', 'en', 'Coordinate system');
-				INSERT INTO s_vitis.vm_string (string, string_id) VALUES ('Titre de la section "couches de la carte" de l''onglet "vmap_map"', 'vmap_35');
-				INSERT INTO s_vitis.vm_translation (translation_id, lang, translation) VALUES ('vmap_35', 'fr', 'Couches de la carte');
+				INSERT INTO s_vitis.vm_string (string, string_id) VALUES ('Titre de la section "calques de la carte" de l''onglet "vmap_map"', 'vmap_35');
+				INSERT INTO s_vitis.vm_translation (translation_id, lang, translation) VALUES ('vmap_35', 'fr', 'Calques de la carte');
 				INSERT INTO s_vitis.vm_translation (translation_id, lang, translation) VALUES ('vmap_35', 'en', 'Map layers');
-				CREATE OR REPLACE VIEW s_vmap.v_map_layer AS SELECT v_layer.layer_id,v_layer.name,v_layer.theme_name,map_layer.layer_visible,map_layer.map_id,map_layer.layer_index,map_layer.layer_opacity FROM s_vmap.v_layer,s_vmap.map_layer WHERE v_layer.layer_id=map_layer.layer_id;
+				CREATE OR REPLACE VIEW s_vmap.v_map_layer AS SELECT v_layer.layer_id,v_layer.name,v_layer.theme_name,map_layer.layer_visible,map_layer.map_id,map_layer.layer_index,map_layer.layer_opacity,v_layer.layertheme_id,v_layer.service_id FROM s_vmap.v_layer,s_vmap.map_layer WHERE v_layer.layer_id=map_layer.layer_id;
 				GRANT ALL ON TABLE s_vmap.v_map_layer TO vmap_admin;
 				GRANT SELECT ON TABLE s_vmap.v_map_layer TO vmap_user;
-				INSERT INTO s_vitis.vm_string (string, string_id) VALUES ('Onglet "Thèmes des couches" du mode "vmap"', 'vmap_36');
+				INSERT INTO s_vitis.vm_string (string, string_id) VALUES ('Onglet "Thèmes des calques" du mode "vmap"', 'vmap_36');
 				INSERT INTO s_vitis.vm_string (string, string_id) VALUES ('Titre de la section "general" de l''onglet "vmap_layer_theme"', 'vmap_37');
 				INSERT INTO s_vitis.vm_string (string, string_id) VALUES ('Button d''ajout de l''onglet vmap_layer_theme', 'vmap_38');
 				INSERT INTO s_vitis.vm_string (string, string_id) VALUES ('Button de suppression de l''onglet vmap_layer_theme', 'vmap_39');
 				INSERT INTO s_vitis.vm_string (string, string_id) VALUES ('Champ layertheme_id de l''onglet vmap_layer_theme', 'vmap_40');
 				INSERT INTO s_vitis.vm_string (string, string_id) VALUES ('Champ name de l''onglet vmap_layer_theme', 'vmap_41');
 				INSERT INTO s_vitis.vm_string (string, string_id) VALUES ('Champ description de l''onglet vmap_layer_theme', 'vmap_42');
-				INSERT INTO s_vitis.vm_translation (translation_id, lang, translation) VALUES ('vmap_36', 'fr', 'Thèmes des couches');
+				INSERT INTO s_vitis.vm_translation (translation_id, lang, translation) VALUES ('vmap_36', 'fr', 'Thèmes des calques');
 				INSERT INTO s_vitis.vm_translation (translation_id, lang, translation) VALUES ('vmap_36', 'en', 'Themes layers');
 				INSERT INTO s_vitis.vm_translation (translation_id, lang, translation) VALUES ('vmap_37', 'fr', 'Général');
 				INSERT INTO s_vitis.vm_translation (translation_id, lang, translation) VALUES ('vmap_37', 'en', 'General');
@@ -460,7 +460,7 @@
 				INSERT INTO s_vitis.vm_translation (translation_id, lang, translation) VALUES ('vmap_62', 'fr', 'Général');
 				INSERT INTO s_vitis.vm_translation (translation_id, lang, translation) VALUES ('vmap_62', 'en', 'General');
 				INSERT INTO s_vitis.vm_mode (mode_id, module_id) VALUES ('vmap_admin_module', 'vmap');
-				INSERT INTO s_vitis.vm_mode_rolname (rolname, mode_id, "index") VALUES ('vmap_admin', 'vmap_admin_module', 4);
+				INSERT INTO s_vitis.vm_mode_rolname (rolname, mode_id, "index") VALUES ('vmap_admin', 'vmap_admin_module', 60);
 				INSERT INTO s_vitis.vm_tab (mode_id, label_id, event, "index", ressource_id, edit_column, show_column, sorted_by, sorted_dir, name) VALUES ('vmap_admin_module', 'vmap_61', 'loadList()', 0, 'vmap/modules', NULL, 'showSectionForm', 'label', 'ASC', 'vmap_admin_module');
 				INSERT INTO s_vitis.vm_section (label_id, name, index, event, template, tab_id, section_id, module) VALUES ('vmap_62', 'general', 1, '', 'workspaceListTpl.html', (SELECT tab_id FROM s_vitis.vm_tab WHERE name='vmap_admin_module'), nextval('s_vitis.seq_vm'), 'vmap');
 				GRANT ALL ON TABLE s_vmap.module TO u_vitis;
@@ -485,7 +485,7 @@
 				INSERT INTO s_vitis.vm_translation (translation_id, lang, translation) VALUES ('vmap_67', 'fr', 'Général');
 				INSERT INTO s_vitis.vm_translation (translation_id, lang, translation) VALUES ('vmap_67', 'en', 'General');
 				INSERT INTO s_vitis.vm_mode (mode_id, module_id) VALUES ('vmap_admin_print', 'vmap');
-				INSERT INTO s_vitis.vm_mode_rolname (rolname, mode_id, "index") VALUES ('vmap_admin', 'vmap_admin_print', 5);
+				INSERT INTO s_vitis.vm_mode_rolname (rolname, mode_id, "index") VALUES ('vmap_admin', 'vmap_admin_print', 50);
 				INSERT INTO s_vitis.vm_tab (mode_id, label_id, event, "index", ressource_id, edit_column, show_column, sorted_by, sorted_dir, name) VALUES ('vmap_admin_print', 'vmap_66', 'loadList()', 0, 'vmap/printtemplates', 'editSectionForm', 'showSectionForm', 'name', 'ASC', 'vmap_admin_template');
 				INSERT INTO s_vitis.vm_section (label_id, name, index, event, template, tab_id, section_id, module) VALUES ('vmap_67', 'general', 1, '', 'workspaceListTpl.html', (SELECT tab_id FROM s_vitis.vm_tab WHERE name='vmap_admin_template'), nextval('s_vitis.seq_vm'), 'vmap');
 				INSERT INTO s_vitis.vm_string (string, string_id) VALUES ('Champ printtemplate_id de l''onglet vmap_admin_template', 'vmap_68');
@@ -637,7 +637,7 @@
 				INSERT INTO s_vitis.vm_string (string, string_id) VALUES ('Titre de la section vmap_config', 'vmap_95');
 				INSERT INTO s_vitis.vm_translation (translation_id, lang, translation) VALUES ('vmap_95', 'fr', 'Configuration vMap');
 				INSERT INTO s_vitis.vm_translation (translation_id, lang, translation) VALUES ('vmap_95', 'en', 'vMap config');
-				INSERT INTO s_vitis.vm_mode_rolname (index, mode_id, rolname) VALUES (7, 'configuration', 'vmap_admin');
+				INSERT INTO s_vitis.vm_mode_rolname (index, mode_id, rolname) VALUES (70, 'configuration', 'vmap_admin');
 				INSERT INTO s_vitis.vm_section (section_id, label_id, name, index, event, tab_id, template, ressource_id, module) VALUES ((select nextval('s_vitis.seq_vm'::regclass)), 'vmap_95', 'vmapConfig', 7, 'loadVmapConfig()', (select tab_id from s_vitis.vm_tab where name = 'vitis_configuration'), 'simpleFormTpl.html', NULL, 'vmap');
 				INSERT INTO s_vitis.vm_string (string, string_id) VALUES ('Onglet "Evènements" du mode "vmap_business_object"', 'vmap_96');
 				INSERT INTO s_vitis.vm_string (string, string_id) VALUES ('Titre de la section "general" de l''onglet "vmap_business_object_event"', 'vmap_97');
@@ -772,15 +772,15 @@
 			<version>2016.03.00</version>
 			<code>
 				<![CDATA[
-					ALTER TABLE s_vmap.business_object ADD COLUMN index integer;
-					UPDATE s_vmap.service SET thumbnail='osm.png' WHERE thumbnail='images/imagettes/osm.png';
-					UPDATE s_vmap.service SET thumbnail='seamap.png' WHERE thumbnail='images/imagettes/seamap.png';
-					UPDATE s_vmap.service SET thumbnail='opencyclemap.png' WHERE thumbnail='images/imagettes/opencyclemap.png';
-					UPDATE s_vmap.service SET thumbnail='transport-294.png' WHERE thumbnail='images/imagettes/transport-294.png';
-					UPDATE s_vmap.service SET thumbnail='landscape-294.png' WHERE thumbnail='images/imagettes/landscape-294.png';
-					UPDATE s_vmap.service SET thumbnail='outdoors-294.png' WHERE thumbnail='images/imagettes/outdoors-294.png';
-					UPDATE s_vmap.service SET thumbnail='transport-dark-294.png' WHERE thumbnail='images/imagettes/transport-dark-294.png';
-					UPDATE s_vmap.map SET thumbnail='geobret.png' WHERE thumbnail='images/imagettes/osm.png';
+				ALTER TABLE s_vmap.business_object ADD COLUMN index integer;
+				UPDATE s_vmap.service SET thumbnail='osm.png' WHERE thumbnail='images/imagettes/osm.png';
+				UPDATE s_vmap.service SET thumbnail='seamap.png' WHERE thumbnail='images/imagettes/seamap.png';
+				UPDATE s_vmap.service SET thumbnail='opencyclemap.png' WHERE thumbnail='images/imagettes/opencyclemap.png';
+				UPDATE s_vmap.service SET thumbnail='transport-294.png' WHERE thumbnail='images/imagettes/transport-294.png';
+				UPDATE s_vmap.service SET thumbnail='landscape-294.png' WHERE thumbnail='images/imagettes/landscape-294.png';
+				UPDATE s_vmap.service SET thumbnail='outdoors-294.png' WHERE thumbnail='images/imagettes/outdoors-294.png';
+				UPDATE s_vmap.service SET thumbnail='transport-dark-294.png' WHERE thumbnail='images/imagettes/transport-dark-294.png';
+				UPDATE s_vmap.map SET thumbnail='geobret.png' WHERE thumbnail='images/imagettes/osm.png';
 				]]>
 			</code>
 		</query>
@@ -789,9 +789,89 @@
 			<version>2016.03.01</version>
 			<code>
 				<![CDATA[
-					-- Utilisation du composant DocumentViewer (Vitis) pour l'apperçu des images dans les listes
-					UPDATE s_vitis.vm_table_field SET template='<div data-app-document-viewer data-path="signaletique/pictures" data-file="{{::row.entity[col.field]}}" data-max-popover="200" data-img-class="" data-popover-class="" ></div>' WHERE template='<div data-app-map-thumbnail-column="{{row.entity[col.field]}}"></div>';
-					UPDATE s_vitis.vm_table_field SET template='<div data-app-document-viewer data-path="signaletique/pictures" data-file="{{::row.entity[col.field]}}" data-max-popover="200" data-img-class="" data-popover-class="" ></div>' WHERE template='<div data-app-service-thumbnail-column="{{row.entity[col.field]}}"></div>';
+				-- Utilisation du composant DocumentViewer (Vitis) pour l'apperçu des images dans les listes
+				UPDATE s_vitis.vm_table_field SET template='<div data-app-document-viewer data-path="signaletique/pictures" data-file="{{::row.entity[col.field]}}" data-max-popover="200" data-img-class="" data-popover-class="" ></div>' WHERE template='<div data-app-map-thumbnail-column="{{row.entity[col.field]}}"></div>';
+				UPDATE s_vitis.vm_table_field SET template='<div data-app-document-viewer data-path="signaletique/pictures" data-file="{{::row.entity[col.field]}}" data-max-popover="200" data-img-class="" data-popover-class="" ></div>' WHERE template='<div data-app-service-thumbnail-column="{{row.entity[col.field]}}"></div>';
+				]]>
+			</code>
+		</query>
+		<query>
+			<type>update</type>
+			<version>2017.01.00</version>
+			<code>
+				<![CDATA[
+				INSERT INTO s_vmap.rt_service_type(service_type_id) VALUES ('wmts');
+				ALTER TABLE s_vmap.service ADD COLUMN service_type_type varchar(30);
+				ALTER TABLE s_vmap.service ADD COLUMN service_options text;
+				ALTER TABLE s_vmap.layer ADD COLUMN matrix_set varchar(255);
+				ALTER TABLE s_vmap.layer ADD COLUMN layer_style varchar(255);
+				ALTER TABLE s_vmap.layer ADD COLUMN layer_format varchar(30);
+				ALTER TABLE s_vmap.layer ADD COLUMN layer_options text;
+				CREATE OR REPLACE VIEW s_vmap.v_layer AS SELECT s_vmap.layertheme.name AS theme_name, s_vmap.service.name AS service_name, s_vmap.service.service_type_id, s_vmap.service.url AS service_url, s_vmap.service."key" AS service_key, s_vmap.service.service_type_version, s_vmap.service.thumbnail AS service_thumbnail, s_vmap.service.lang AS service_lang, s_vmap.service.imagery AS service_imagery, s_vmap.business_object.title AS bo_title, s_vmap.business_object.id_field AS bo_id_field, s_vmap.business_object."database" AS bo_database, s_vmap.business_object."schema" AS bo_schema, s_vmap.business_object."table" AS bo_table, s_vmap.business_object.sql_summary AS bo_sql_summary, s_vmap.business_object.sql_list AS bo_sql_list, s_vmap.business_object.sorted_by AS bo_sorted_by, s_vmap.business_object.geom_column AS bo_geom_column, s_vmap.business_object.search_field AS bo_search_field, s_vmap.business_object.result_field AS bo_result_field, s_vmap.business_object.search_use_strict AS bo_search_use_strict, s_vmap.layer.layer_id, s_vmap.layer.layertheme_id, s_vmap.layer.service_id, s_vmap.layer.name, s_vmap.layer.description, s_vmap.layer.layer_list, s_vmap.layer.crs_list, s_vmap.layer.bo_id, s_vmap.layer.is_dynamic, s_vmap.layer.is_filtered, s_vmap.layer.matrix_set, s_vmap.layer.layer_style, s_vmap.layer.layer_format, s_vmap.layer.layer_options, s_vmap.service.service_type_type, s_vmap.service.service_options FROM s_vmap.layer LEFT JOIN s_vmap.business_object ON s_vmap.layer.bo_id = s_vmap.business_object.business_object_id LEFT JOIN s_vmap.layertheme ON s_vmap.layer.layertheme_id = s_vmap.layertheme.layertheme_id INNER JOIN s_vmap.service ON s_vmap.layer.service_id = s_vmap.service.service_id;
+				GRANT ALL ON TABLE s_vmap.v_layer TO vmap_admin;
+				GRANT SELECT ON TABLE s_vmap.v_layer TO vmap_user;
+				INSERT INTO s_vmap.rt_service_type(service_type_id) VALUES ('xyz');
+				CREATE OR REPLACE VIEW s_vmap.v_map_layer AS SELECT v_layer.layer_id,v_layer.name,v_layer.theme_name,map_layer.layer_visible,map_layer.map_id,map_layer.layer_index,map_layer.layer_opacity,v_layer.layertheme_id,v_layer.service_id FROM s_vmap.v_layer,s_vmap.map_layer WHERE v_layer.layer_id=map_layer.layer_id;
+				GRANT ALL ON TABLE s_vmap.v_map_layer TO vmap_admin;
+				GRANT SELECT ON TABLE s_vmap.v_map_layer TO vmap_user;
+				GRANT ALL ON TABLE s_vmap.v_map_layer TO u_vitis;
+				GRANT ALL ON TABLE s_vmap.v_map_layer TO vmap_admin;
+				GRANT SELECT ON TABLE s_vmap.v_map_layer TO vmap_user;
+				ALTER TABLE s_vmap.v_map_layer  OWNER TO u_vitis;
+				-- Couche -> calque
+				UPDATE s_vitis.vm_string SET string = 'Onglet "Calques" du mode "vmap"' WHERE string_id = 'vmap_4';
+				UPDATE s_vitis.vm_string SET string = 'Titre de la section "calques de la carte" de l''onglet "vmap_map"' WHERE string_id = 'vmap_35';
+				UPDATE s_vitis.vm_string SET string = 'Onglet "Thèmes des calques" du mode "vmap"' WHERE string_id = 'vmap_36';
+				UPDATE s_vitis.vm_translation SET translation = 'Calques' WHERE translation_id = 'vmap_4' AND lang = 'fr';
+				UPDATE s_vitis.vm_translation SET translation = 'Ajouter un calque' WHERE translation_id = 'vmap_26' AND lang = 'fr';
+				UPDATE s_vitis.vm_translation SET translation = 'Supprimer les calques' WHERE translation_id = 'vmap_27' AND lang = 'fr';
+				UPDATE s_vitis.vm_translation SET translation = 'Calques de la carte' WHERE translation_id = 'vmap_35' AND lang = 'fr';
+				UPDATE s_vitis.vm_translation SET translation = 'Thèmes des calques' WHERE translation_id = 'vmap_36' AND lang = 'fr';
+				-- Armand le 30/01/2017 à 10:39
+				ALTER TABLE s_vmap.business_object ADD COLUMN add_form_size integer;
+				ALTER TABLE s_vmap.business_object ADD COLUMN edit_form_size integer;
+				ALTER TABLE s_vmap.business_object ADD COLUMN display_form_size integer;
+				UPDATE s_vmap.business_object SET add_form_size=1;
+				UPDATE s_vmap.business_object SET edit_form_size=1;
+				UPDATE s_vmap.business_object SET display_form_size=1;
+				]]>
+			</code>
+		</query>
+		<query>
+			<type>update</type>
+			<version>2017.02.00</version>
+			<code>
+				<![CDATA[
+				-- Armand le 01/03/2017
+				ALTER TABLE s_vmap.service ADD COLUMN service_vm4ms boolean;
+				-- Armand le 15/02/2017 à 17:31: ajout du bouton importer
+				UPDATE s_vitis.vm_table_field SET align='left', width=300 WHERE table_field_id=147;
+				INSERT INTO s_vitis.vm_string (string, string_id) VALUES ('Button d''ajout de l''onglet vmap_map', 'vmap_113');
+				INSERT INTO s_vitis.vm_translation (translation_id, lang, translation) VALUES ('vmap_113', 'fr', 'Importer');
+				INSERT INTO s_vitis.vm_translation (translation_id, lang, translation) VALUES ('vmap_113', 'en', 'Import');
+				INSERT INTO s_vitis.vm_table_button (button_class, event, label_id, ressource_id, tab_id) VALUES ('add_smallFlexigrid', 'importBusinessObject', 'vmap_113', 'vmap/businessobjects', (SELECT tab_id FROM s_vitis.vm_tab WHERE name = 'vmap_business_object'));
+				-- Armand le 17/03/2017: libéllés des coordsys
+				UPDATE s_vmap.rt_crs SET name='[EPSG:2154]-RGF93.Lambert-93' WHERE crs_id='EPSG:2154';
+				UPDATE s_vmap.rt_crs SET name='[EPSG:3857]-WGS84.Spherical Mercator' WHERE crs_id='EPSG:3857';
+				UPDATE s_vmap.rt_crs SET name='[EPSG:4326]-WGS84.LL' WHERE crs_id='EPSG:4326';
+				UPDATE s_vitis.vm_table_field SET width='240' WHERE name='crs_name' and ressource_id='vmap/maps';
+				-- Armand le 31/03/2017: revoke grant vitis_user vitis_admin
+				REVOKE ALL PRIVILEGES ON s_vmap.v_map FROM vitis_admin;
+				REVOKE ALL PRIVILEGES ON s_vmap.v_map FROM vitis_user;
+				ALTER TABLE s_vmap.v_printreport  OWNER TO u_vitis;
+				-- Armand le 31/03/2017
+				DELETE FROM s_vitis.vm_table_field WHERE tab_id=97 AND name='last_update_date';
+				DELETE FROM s_vitis.vm_table_field WHERE tab_id=97 AND name='last_update_author';
+                                -- Frédéric le 03/04/2017 à 10:06
+				INSERT INTO s_vitis.vm_string (string, string_id) VALUES ('Champ bo_id de l''onglet vmap_layer', 'vmap_114');
+				INSERT INTO s_vitis.vm_translation (translation_id, lang, translation) VALUES ('vmap_114', 'fr', 'Objet métier');
+				INSERT INTO s_vitis.vm_translation (translation_id, lang, translation) VALUES ('vmap_114', 'en', 'Business object');
+				INSERT INTO s_vitis.vm_table_field (name, sortable, resizeable, "index", width, align, label_id, ressource_id, tab_id) VALUES ('bo_id', true, true, 7,  200, 'left', 'vmap_114', 'vmap/layers' ,(SELECT tab_id FROM s_vitis.vm_tab WHERE name='vmap_layer'));
+                                -- Frédéric le 07/04/2017 à 11:41
+				CREATE OR REPLACE VIEW s_vmap.v_user_printstyle AS SELECT * FROM s_vmap.printstyle where printstyle_id IN (SELECT printstyle_id FROM s_vmap.user_printstyle where user_id = (SELECT user_id FROM s_vitis.user where login = current_user));
+				-- Armand le 19/04/2016
+				UPDATE s_vmap.service SET url='https://geobretagne.fr/geoserver/audelor/wms' WHERE url='http://geobretagne.fr/geoserver/audelor/wms?service=wms';
+				UPDATE s_vmap.service SET url='http://[veremap_serveur]/cgi-bin/wmsmap' WHERE url='http://[veremap_serveur]/cgi-bin/wmsmap?service=wms';
 				]]>
 			</code>
 		</query>

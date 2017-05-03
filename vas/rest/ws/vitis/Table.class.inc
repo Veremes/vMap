@@ -12,7 +12,7 @@ require_once 'Vitis.class.inc';
 * This class defines operation for one Action
 * 
 */
-class Table  extends Vitis{
+class Table extends Vitis{
     
     public $oError;
     /**
@@ -22,7 +22,7 @@ class Table  extends Vitis{
      * @param type $properties properties
      * @param type $oConnection connection object
      */
-    function Table ($aTable){
+    function __construct ($aTable){
         $this->aFields = $aTable;
         
     }

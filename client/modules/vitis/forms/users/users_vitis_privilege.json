@@ -73,7 +73,7 @@
                         "type":"textarea",
                         "name":"description",
                         "label":"FORM_GROUP_DESCRIPTION_USERS_PRIVILEGE",
-                        "size":8,
+                        "size":13,
                         "nb_cols":12
                     }
                 ]
@@ -97,7 +97,7 @@
                             },
                             "callback": "hideCurrentUserFromExcludedPrivileges('users')"
                         },
-                        "size":"6",
+                        "size":15,
                         "nb_cols":12
                     }
                 ]

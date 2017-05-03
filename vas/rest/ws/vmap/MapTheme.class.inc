@@ -25,7 +25,7 @@ class MapTheme extends Vmap {
      * @param type $properties properties
      * @param type $oConnection connection object
      */
-    function MapTheme($aPath, $aValues, $properties, $oConnection) {
+    function __construct($aPath, $aValues, $properties, $oConnection) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
@@ -52,8 +52,7 @@ class MapTheme extends Vmap {
      *     in="path",
      *     description="",
      *     required=true,
-     *     type="integer",
-     *   format="int32"
+     *     type="integer"
      *   ),
      *   @SWG\Response(
      *         response=200,
@@ -77,7 +76,7 @@ class MapTheme extends Vmap {
     function DELETE(){
         $this->oConnection->oBd->delete($this->aProperties['schema_vmap'], 'maptheme', 'maptheme_id', $this->aValues['my_vitis_id'], 'integer');
         if ($this->oConnection->oBd->enErreur()) {
-                $this->oError = new Error(1, $this->oConnection->oBd->getBDMessage());
+                $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
         } else {
                 $this->aFields['maptheme_id'] = $this->aValues['my_vitis_id'];
         }

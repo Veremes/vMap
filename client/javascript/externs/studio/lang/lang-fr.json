@@ -1,5 +1,24 @@
 {
     "Loader": {
+        "File": "Fichier",
+        "Edit": "Édition",
+        "ManageTabs": "Gestion des onglets",
+        "ManageWab": "Gestion Wab",
+        "Tab": "Onglet",
+        "WabGroup": "Groupe",
+        "WabState": "État wab",
+        "Validate": "Valider",
+        "Cancel": "Annuler",
+        "AddTab": "Ajouter un onglet",
+        "EditTab": "Éditer",
+        "RemoveTab": "Supprimer",
+        "MoveLeft": "Déplacer vers la gauche",
+        "MoveRight": "Déplacer vers la droite",
+        "SelectAllElements": "Sélectionner tout",
+        "SelectNoElements": "Désélectionner tout",
+        "AllowDisplayElement": "Élément en visualisation uniquement",
+        "AllowEditElement": "Élément éditable",
+        "AskRemoveTab": "Voulez vous supprimer onglet ?",
         "Title": "Formulaire",
         "SelectForm": {
             "Default": "Défaut",
@@ -22,6 +41,7 @@
                 "Reload": "Recharger le formulaire personnalisé (abandonner les modifications)",
                 "Publish": "Sauvegarder et publier le formulaire personnalisé",
                 "Reset": "Remplacer le formulaire personnalisé par le formulaire par défaut",
+                "ResetWab": "Regénérer le formulaire depuis la base",
                 "Button": "Afficher le formulaire par personnalisé",
                 "Button_gtf": "Afficher le formulaire par personnalisé"
             }
@@ -29,6 +49,8 @@
         "Form": {
             "Title": "Titre",
             "TitlePlaceholder": "Titre du formulaire",
+            "Event" : "Evénement",
+            "EventPlaceholder" : "Evénement appelé lors du submit",
             "SuggestedFields": "Champs suggérés",
             "SelectSize": {
                 "Label": "Largeur des éléments :",
@@ -69,7 +91,9 @@
             "PublishAndSave": " a été publié et sauvegardé",
             "Publish_Error": "Erreur lors de la publication : ",
             "no_form": "Aucun formulaire n'a été trouvé sur le serveur",
-            "generate_form": "Aucun formulaire n'a été trouvé sur le serveur, voulez vous tenter d'en générer un ?"
+            "generate_form": "Aucun formulaire n'a été trouvé sur le serveur, voulez vous tenter d'en générer un ?",
+            "generate_form_error": "Impossible de récupérer les colonnes de la table",
+            "generate_form_error_description": "La table n'existe pas ou vous n'avez pas les droits en consultation"
         }
     },
     "Element": {
@@ -88,7 +112,7 @@
             "date": "Date",
             "datetime": "Date et heure",
             "tinymce": "Texte en édition avec TyniMCE",
-            "codemirror": "Texte en édition avec CodeMirror",
+            "codemirror": "Editeur de code CodeMirror",
             "hidden": "Champ caché",
             "text": "Texte en édition - 1 ligne",
             "password": "Texte en édition - Mot de passe",
@@ -111,7 +135,9 @@
             "linkurl": "Lien",
             "string": "Texte en lecture seule - 1 ligne (NI)",
             "multistring": "Texte en lecture seule - Multiligne (NI)",
-            "treeview": "Fichier sur le serveur (NI)"
+            "treeview": "Fichier sur le serveur (NI)",
+            "bo_grid": "Grille - Objet métier",
+            "section_grid": "Grille - Section Vitis"
         },
         "Component": {
             "General": {
@@ -125,6 +151,18 @@
                 "displayOnly": "Uniquement en consultation",
                 "DefaultValue": "Valeur par défaut",
                 "Value": "Valeur"
+            },
+            "BusinessObject": {
+                "BusinessObject": "Objet métier",
+                "Link": "Lien avec l'objet métier",
+                "BoFilterAttr": "Attribut de l'objet métier",
+                "FormFilterValue": "Valeur du formulaire"
+            },
+            "Section": {
+                "Section": "Section Vitis",
+                "Link": "Lien avec la section",
+                "SectionFilterAttr": "Attribut de la section",
+                "FormFilterValue": "Valeur du formulaire"
             },
             "Button": {
                 "Type": "Type de bouton",
@@ -256,7 +294,7 @@
                 "ShowPreview":"Prévisualisation",
                 "ShowRemove":"Voir Bouton Suppression",
                 "ShowUpload":"Voir Bouton Upload",
-                "Formats":"Formats",
+                "Formats":"Extensions",
                 "Formats_PH":"ex: png|jpg|gif"
             },
             "TinyMce": {
@@ -264,9 +302,6 @@
                 "Name_PH": "Nom du composant",
                 "Row": "Lignes",
                 "Row_PH": "Nombre de lignes pour ce composant"
-            },
-            "CodeMirror": {
-                "Label_PH": "Texte de l'étiquette du composant"
             },
             "ColorPicker": {
                 "Label_PH": "Texte de l'étiquette du champ",
@@ -339,6 +374,16 @@
                     "OutRange": "Vous entrez une valeur qui dépasse une limite de la carte"
                 }
             },
+            "CM":{
+                "Language" : "Langage",
+                "Language_PH" : "Langage utilisé pour la coloration synthaxique",
+                "TabSize" : "Taille des tabulations",
+                "Separator" : "Separateur",
+                "Separator_PH" : "Caractère à utiliser comme separateur de lignes",
+                "ReadOnly" : "Lecture seule",
+                "LineNumber" : "Afficher les lignes",
+                "IndentTabs" : "Utiliser des tabulations pour indenter"
+            },
             "Number": {
                 "Label_PH": "Texte de l'étiquette du champ",
                 "Name_PH": "Nom du champ",
@@ -410,7 +455,8 @@
             "Up": "Déplace l'élément sélectionné vers le haut",
             "Down": "Déplace l'élément sélectionné vers le bas",
             "Add": "Ajoute une ligne vide",
-            "AddElement": "Ajoute un paramètre publié",
+            "AddElement": "Ajoute un attribut au formulaire",
+            "AddElement_gtf": "Ajoute un paramètre publié",
             "Delete": "Supprime un élément ou une ligne vide"
         },
         "Buttons": {

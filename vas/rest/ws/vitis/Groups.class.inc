@@ -36,7 +36,7 @@ class Groups extends Vitis {
      * @param type $aValues parameters of the request
      * @param type $properties properties
      */
-    function Groups($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
@@ -137,21 +137,21 @@ class Groups extends Vitis {
      *   produces={"application/xml", "application/json"},
      *   @SWG\Parameter(
      *     name="token",
-     *     in="query",
+     *     in="formData",
      *     description="group token",
      *     required=true,
      *     type="string"
      *   ),
      * * @SWG\Parameter(
      *     name="name",
-     *     in="query",
+     *     in="formData",
      *     description="Name of the group",
      *     required=true,
      *     type="string"
      *   ),
      * * @SWG\Parameter(
      *     name="users",
-     *     in="query",
+     *     in="formData",
      *     description="Users of the group",
      *     required=false,
      *     type="string"
@@ -268,14 +268,20 @@ class Groups extends Vitis {
      * @return id of the group if ok error object if ko
      */
     function PUT() {
-                $aValues = $this->aValues;
+        $aValues = $this->aValues;
+		// Recherche de l'ancien nom de groupe
+		$sSql = "SELECT name FROM " . $this->aProperties['schema_framework'] . ".group WHERE group_id = " . $aValues['my_vitis_id'] . ";";
+		$resultat = $this->oConnection->oBd->execute($sSql);
+		$aLigne=$this->oConnection->oBd->ligneSuivante ($resultat);
+		$sOldName = $aLigne['name'];
+
 		$bSframework = false;
 		$iFrameworkGroudId = 0;
 		$sSql = "select nspname from pg_catalog.pg_namespace where nspname = 's_framework';";
 		$resultat = $this->oConnection->oBd->execute($sSql);
 		if ($resultat->rowCount() > 0) {
 			$bSframework = true;
-			$sSql = "select group_id from s_framework.group where name = '".$this->aValues['name']."';";
+			$sSql = "select group_id from s_framework.group where name = '" . $sOldName . "';";
 			$resultat = $this->oConnection->oBd->execute($sSql);
 			if ($resultat->rowCount() > 0) {
 				while($aLigne=$this->oConnection->oBd->ligneSuivante ($resultat)) {
@@ -330,7 +336,7 @@ class Groups extends Vitis {
      *   tags={"Groups"},
      *   summary="delete Group",
      *   description="Request to delete Group",
-     *   operationId="PUT",
+     *   operationId="DELETE",
      *   produces={"application/xml", "application/json"},
      *   @SWG\Parameter(
      *     name="token",
@@ -358,7 +364,7 @@ class Groups extends Vitis {
      *   tags={"Groups"},
      *   summary="delete Group",
      *   description="Request to delete Group",
-     *   operationId="PUT",
+     *   operationId="DELETE",
      *   produces={"application/xml", "application/json"},
      *   @SWG\Parameter(
      *     name="token",
@@ -419,57 +425,54 @@ class Groups extends Vitis {
 	**	Import des groupes de l'A.D.
 	*/
 	Public function importLdapGroup(){
-                require $this->sRessourcesFile;
-				$bSframework = false;
-				$sSql = "select nspname from pg_catalog.pg_namespace where nspname = 's_framework';";
-				$resultat = $this->oConnection->oBd->execute($sSql);
-				if ($resultat->rowCount() > 0) {
-					$bSframework = true;
+		require $this->sRessourcesFile;
+		$bSframework = false;
+		$sSql = "select nspname from pg_catalog.pg_namespace where nspname = 's_framework';";
+		$resultat = $this->oConnection->oBd->execute($sSql);
+		if ($resultat->rowCount() > 0) {
+			$bSframework = true;
+		}
+		// Le groupe existe déja ?
+		$sSql = $aSql['getGroupId'];
+		$sSql = str_replace('[sSchemaFramework]', $this->aProperties["schema_framework"], $sSql);
+		$sSql = str_replace('[sName]', str_replace("'", "''", $this->aValues['name']), $sSql);
+		$resultat = $this->oConnection->oBd->execute ($sSql);
+		if ($this->oConnection->oBd->enErreur()) {
+			$oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
+			$aXmlRacineAttribute['status'] = 0;
+			$sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+		} else {
+			$oResult = $this->oConnection->oBd->objetSuivant ($resultat);
+			if($oResult){
+				if ($bSframework) {
+					$sSql = "select group_id from s_framework.group where name = '". $this->aValues['name']."';";
+					$resultat = $this->oConnection->oBd->execute($sSql);
+					if ($resultat->rowCount() > 0) {
+						while($aLigne=$this->oConnection->oBd->ligneSuivante ($resultat)) {
+							 $this->oConnection->oBd->update("s_framework",'group' , $this->aValues, "group_id", $aLigne["group_id"]);
+						}
+					}
 				}
-                // Le groupe existe déja ?
-                $sSql = $aSql['getGroupId'];
-                $sSql = str_replace('[sSchemaFramework]', $this->aProperties["schema_framework"], $sSql);
-                $sSql = str_replace('[sName]', str_replace("'", "''", $this->aValues['name']), $sSql);
-                $resultat = $this->oConnection->oBd->execute ($sSql);
-                if ($this->oConnection->oBd->enErreur()) {
-                    $oError = new Error(1, $this->oConnection->oBd->getBDMessage());
-                    $aXmlRacineAttribute['status'] = 0;
-                    $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
-                }
-                else {
-                        $oResult = $this->oConnection->oBd->objetSuivant ($resultat);
-                        if($oResult){
-							if ($bSframework) {
-								$sSql = "select group_id from s_framework.group where name = '". $this->aValues['name']."';";
-								$resultat = $this->oConnection->oBd->execute($sSql);
-								if ($resultat->rowCount() > 0) {
-									while($aLigne=$this->oConnection->oBd->ligneSuivante ($resultat)) {
-										 $this->oConnection->oBd->update("s_framework",'group' , $this->aValues, "group_id", $aLigne["group_id"]);
-									}
-								}
-							}
-							$this->oConnection->oBd->update($this->aProperties["schema_framework"],'group' , $this->aValues, "group_id", $oResult->group_id);
-							$this->aFields['group_id'] = $oResult->group_id;
-                        }
-                        else{
-								if ($bSframework) {
-									$this->oConnection->oBd->insert("s_framework",'group' , $this->aValues, "s_framework".'.seq_common', 'group_id');
-								}
-                                $iId = $this->oConnection->oBd->insert($this->aProperties["schema_framework"],'group' , $this->aValues, $this->aProperties['schema_framework'].'.seq_common', 'group_id');
-                                $this->aFields['group_id'] = $iId;
-                        }
-                        //
-                        if ($this->oConnection->oBd->enErreur()){
-                                $oError = new Error(1, $this->oConnection->oBd->getBDMessage());
-                                $aXmlRacineAttribute['status'] = 0;
-                                $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
-                        }
-                        else {
-                                $aXmlRacineAttribute['status'] = 1;
-                                $sMessage = $this->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
-                        }
-                }
-                return $sMessage;
+				$this->oConnection->oBd->update($this->aProperties["schema_framework"],'group' , $this->aValues, "group_id", $oResult->group_id);
+				$this->aFields['group_id'] = $oResult->group_id;
+			} else {
+					if ($bSframework) {
+						$this->oConnection->oBd->insert("s_framework",'group' , $this->aValues, "s_framework".'.seq_common', 'group_id');
+					}
+					$iId = $this->oConnection->oBd->insert($this->aProperties["schema_framework"],'group' , $this->aValues, $this->aProperties['schema_framework'].'.seq_common', 'group_id');
+					$this->aFields['group_id'] = $iId;
+			}
+			//
+			if ($this->oConnection->oBd->enErreur()){
+					$oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
+					$aXmlRacineAttribute['status'] = 0;
+					$sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+			} else {
+					$aXmlRacineAttribute['status'] = 1;
+					$sMessage = $this->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+			}
+		}
+		return $sMessage;
 	}
 }
 ?>

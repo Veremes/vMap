@@ -22,7 +22,7 @@ class VmapGroup  extends Vmap {
      * @param type $properties properties
      * @param type $oConnection connection object
      */
-    function vmapGroup ($aPath, $aValues, $properties, $oConnection){
+    function __construct ($aPath, $aValues, $properties, $oConnection){
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
@@ -48,8 +48,7 @@ class VmapGroup  extends Vmap {
      *     in="path",
      *     description="group id",
      *     required=true,
-     *     type="integer",
-       *   format="int32"
+     *     type="integer"
      *   ),
        * @SWG\Parameter(
      *     name="attributs",

@@ -1,0 +1,350 @@
+<div class="modal-body-with-footer">
+    <div class="stepwizard">
+        <div class="stepwizard-row setup-panel">
+            <div ng-repeat="step in steps" class="stepwizard-step" ng-style="{'width': (100 / steps.length) + '%'}">
+                <a href="#" 
+                   type="button" 
+                   class="btn btn-default btn-circle" 
+                   ng-class="{'btn-primary' : displayedStep === step}" 
+                   disabled>{{$index + 1}}</a>
+                <p data-translate="CTRL_IMPORT_BO_STEP_{{step}}"></p>
+            </div>
+        </div>
+    </div>
+
+    <!--import_folder-->
+    <div ng-show="displayedStep === 'import_folder'">
+        <div class="col-xs-6 col-md-offset-3">
+            <div class="col-md-12">
+                <!--<h3>Import du dossier</h3>-->
+                <h3 data-translate="CTRL_IMPORT_BO_IMPORT_FOLDER"></h3>
+                <br>
+                <div class="form-group form-group-sm">
+                    <label class="control-label" data-translate="CTRL_IMPORT_BO_SELECT_FILE"></label>
+                    <input id="import-bo-folder-input" type="file" class="file">
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--select_database-->
+    <div ng-show="displayedStep === 'select_database'">
+        <div class="col-xs-6 col-md-offset-3">
+            <div class="col-md-12">
+                <h3 data-translate="CTRL_IMPORT_BO_SELECT_DB"></h3>
+                <br>
+                <div class="form-group">
+                    <label class="control-label" data-translate="CTRL_IMPORT_BO_SELECT_EXISTING_DB"></label>
+                    <select class="form-control" 
+                            ng-model="usedDatabase" 
+                            ng-options="database as database for database in aDatabases">
+                        <option value=""></option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--import_schema-->
+    <div ng-show="displayedStep === 'import_schema'">
+        <div class="col-xs-6 col-md-offset-3">
+            <div class="col-md-12">
+                <h3 data-translate="CTRL_IMPORT_BO_SELECT_SCHEMA"></h3>
+                <br>
+                <div class="form-group">
+                    <label class="control-label" data-translate="CTRL_IMPORT_BO_SELECT_EXISTING_SCHEMA"></label>
+                    <select class="form-control" 
+                            ng-model="selectedExistingSchema" 
+                            ng-change="ctrl.setUsedSchema(selectedExistingSchema, false)"
+                            ng-options="schema as schema for schema in aSchemas">
+                        <option value=""></option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="control-label" data-translate="CTRL_IMPORT_BO_CREATE_SCHEMA"></label>
+                    <input ng-model="creatingNewSchema" 
+                           ng-change="ctrl.setUsedSchema(creatingNewSchema, true)" 
+                           type="text" 
+                           class="form-control"/>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--import_coordsys-->
+    <div ng-show="displayedStep === 'import_coordsys'">
+        <div class="col-xs-6 col-md-offset-3">
+            <div class="col-md-12">
+                <h3 data-translate="CTRL_IMPORT_BO_SELECT_COORDSYS"></h3>
+                <br>
+                <div class="form-group">
+                    <label class="control-label" data-translate="CTRL_IMPORT_BO_SELECT_EXISTING_COORDSYS"></label>
+                    <select class="form-control" 
+                            ng-model="oCoordsys" 
+                            ng-options="coordsys as coordsys.label for coordsys in aCoordsys">
+                        <option value=""></option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--import_sql-->
+    <div ng-show="displayedStep === 'import_sql'">
+        <div class="col-md-12">
+            <div class="text-center">
+                <h3 data-translate="CTRL_IMPORT_BO_SQL_DEFINITION"></h3>
+            </div>
+            <ui-codemirror ui-codemirror-opts="codemirrorSQLOptions" ui-refresh="sSql" ng-model="sSql"></ui-codemirror>
+        </div>
+    </div>
+    <!--import_layers-->
+    <div ng-show="displayedStep === 'import_layers'">
+        <div class="col-md-12 text-center">
+            <h3 data-translate="CTRL_IMPORT_BO_MAPSERVER_LAYERS"></h3>
+        </div>
+        <!--Onglets-->
+        <ul class="nav nav-tabs">
+            <li ng-repeat="oLayerDef in aLayersDef"
+                ng-class="{'active' : $index === 0}">
+                <a data-toggle="tab" 
+                   href="#import_bo_layer_{{$index}}"
+                   ng-click="refreshCodeMirror()">
+                    {{oLayerDef.title}}
+                </a>
+            </li>
+        </ul>
+        <!--Contenu Onglets-->
+        <div class="tab-content">
+            <div ng-repeat="oLayerDef in aLayersDef"
+                 id="import_bo_layer_{{$index}}" 
+                 class="tab-pane fade" 
+                 ng-class="{'in active' : $index === 0}">
+                <br>
+                <div class="col-md-4">
+                    <div class="form-group form-group-xs">
+                        <label class="control-label" data-translate="CTRL_IMPORT_BO_NAME"></label>
+                        <input ng-model="oLayerDef.name" type="text" class="form-control"/>
+                    </div>
+                    <div class="form-group form-group-xs">
+                        <label class="control-label" data-translate="CTRL_IMPORT_BO_DATABASE"></label>
+                        <input ng-model="oLayerDef.database" type="text" class="form-control" disabled/>
+                    </div>
+                    <div class="form-group form-group-xs" ng-class="{'has-error': oLayerDef.connection_id === ''}">
+                        <label class="control-label" data-translate="CTRL_IMPORT_BO_CONNECTION"></label>
+                        <select class="form-control" 
+                                ng-model="oLayerDef.connection_id" 
+                                ng-options="connection.connection_id as connection.name for connection in aConnections">
+                            <option value=""></option>
+                        </select>
+                    </div>
+                    <div class="form-group form-group-xs" ng-class="{'has-error': oLayerDef.wmsservice_id === ''}">
+                        <label class="control-label" data-translate="CTRL_IMPORT_BO_WMS_SERVICE"></label>
+                        <select class="form-control" 
+                                ng-model="oLayerDef.wmsservice_id" 
+                                ng-options="wmsservice.wmsservice_id as wmsservice.wmsservice_id for wmsservice in aWmsServices">
+                            <option value=""></option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group form-group-xs">
+                        <label class="control-label" data-translate="CTRL_IMPORT_BO_TITLE"></label>
+                        <input ng-model="oLayerDef.title" type="text" class="form-control"/>
+                    </div>
+                    <div class="form-group form-group-xs">
+                        <label class="control-label" data-translate="CTRL_IMPORT_BO_SCHEMA"></label>
+                        <input ng-model="oLayerDef.tableschema" type="text" class="form-control" disabled/>
+                    </div>
+                    <div class="form-group form-group-xs">
+                        <label class="control-label" data-translate="CTRL_IMPORT_BO_COORDSYS"></label>
+                        <input ng-model="oLayerDef.coordsys_id" type="text" class="form-control" disabled/>
+                    </div>
+
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group form-group-xs">
+                        <label class="control-label" data-translate="CTRL_IMPORT_BO_GEOM_TYPE"></label>
+                        <input ng-model="oLayerDef.ms_layertype_id" type="text" class="form-control"/>
+                    </div>
+                    <div class="form-group form-group-xs">
+                        <label class="control-label" data-translate="CTRL_IMPORT_BO_TABLE"></label>
+                        <input ng-model="oLayerDef.tablename" type="text" class="form-control" disabled/>
+                    </div>
+                    <div class="form-group form-group-xs">
+                        <label class="control-label" data-translate="CTRL_IMPORT_BO_TABLE_ID_FIELD"></label>
+                        <input ng-model="oLayerDef.tableidfield" type="text" class="form-control" disabled/>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <label class="control-label" data-translate="CTRL_IMPORT_BO_DEFINITION"></label>
+                    <ui-codemirror ui-codemirror-opts="codemirrorLayerDefOptions" ui-refresh="aLayersDef.length" ng-model="oLayerDef.definition"></ui-codemirror>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--import_bo-->
+    <div ng-show="displayedStep === 'import_bo'">
+        <div class="col-md-12 text-center">
+            <h3 data-translate="CTRL_IMPORT_BO_BO"></h3>
+        </div>
+        <br>
+        <ul class="nav nav-tabs">
+            <li class="active"><a data-toggle="tab" href="#import_bo_def" data-translate="CTRL_IMPORT_BO_DEFINITION"></a></li>
+            <li><a data-toggle="tab" href="#import_bo_event" ng-show="oEventDef" data-translate="CTRL_IMPORT_BO_EVENT"></a></li>
+            <li class="dropdown" ng-show="aReportsDef">
+                <a href="#" data-toggle="dropdown" data-translate="CTRL_IMPORT_BO_REPORTS "><span class="caret"></span></a>
+                <ul class="dropdown-menu" role="menu">
+                    <li ng-repeat="report in aReportsDef">
+                        <a href="#import_bo_reports_{{report.printreport_id}}" data-toggle="tab" ng-click="refreshCodeMirror()">{{report.name}}</a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+        <div class="tab-content">
+            <!--Définition-->
+            <div id="import_bo_def" class="tab-pane fade in active">
+                <br>
+                <!--Form reader-->
+                <div id="import_bo_def_formreader"
+                     app-form-reader 
+                     app-properties="ctrl.oProperties"
+                     app-token="ctrl.sToken"></div>
+
+            </div>
+            <!--Événement-->
+            <div id="import_bo_event" class="tab-pane fade">
+                <br>
+                <!--Form reader-->
+                <div id="import_bo_event_formreader"
+                     app-form-reader 
+                     app-properties="ctrl.oProperties"
+                     app-token="ctrl.sToken"></div>
+            </div>
+            <!--Rapports-->
+            <div id="import_bo_reports_{{report.printreport_id}}" 
+                 ng-repeat="report in aReportsDef"
+                 class="tab-pane fade">
+                <br>
+                <!--Form reader-->
+                <div id="import_bo_reports_{{report.printreport_id}}_formreader"
+                     app-form-reader 
+                     app-properties="ctrl.oProperties"
+                     app-token="ctrl.sToken"></div>
+            </div>
+        </div>
+    </div>
+    <!--execute_import-->
+    <div ng-show="displayedStep === 'execute_import'">
+        <div class="col-md-12">
+            <div class="text-center">
+                <h3 data-translate="CTRL_IMPORT_BO_IMPORT_EXECUTION"></h3>
+            </div>
+            <br>
+            <div class="col-xs-6 col-md-offset-4">
+                <ol>
+                    <li class="normal" ng-class="{'bold':oImportSteps.test !== null}">
+                        <span data-translate="CTRL_IMPORT_BO_VALIDITY_TEST"></span>
+                        <span class="glyphicon glyphicon-ok color-green" ng-show="oImportSteps.test === true"></span>
+                        <span class="glyphicon glyphicon-remove color-red" ng-show="oImportSteps.test === false"></span>
+                        <ol>
+                            <li class="normal" ng-class="{'bold':oTestSteps.business_objet !== null}">
+                                <span data-translate="CTRL_IMPORT_BO_BO"></span>
+                                <span class="glyphicon glyphicon-ok color-green" ng-show="oTestSteps.business_objet === true"></span>
+                                <span class="glyphicon glyphicon-remove color-red" ng-show="oTestSteps.business_objet === false"></span>
+                            </li>
+                            <li class="normal" ng-class="{'bold':oTestSteps.reports !== null}" ng-show="aReportsDef">
+                                <span data-translate="CTRL_IMPORT_BO_REPORTS"></span>
+                                <span class="glyphicon glyphicon-ok color-green" ng-show="oTestSteps.reports === true"></span>
+                                <span class="glyphicon glyphicon-remove color-red" ng-show="oTestSteps.reports === false"></span>
+                            </li>
+                            <li class="normal" ng-class="{'bold':oTestSteps.event !== null}" ng-show="oEventDef">
+                                <span data-translate="CTRL_IMPORT_BO_EVENT"></span>
+                                <span class="glyphicon glyphicon-ok color-green" ng-show="oTestSteps.event === true"></span>
+                                <span class="glyphicon glyphicon-remove color-red" ng-show="oTestSteps.event === false"></span>
+                            </li>
+                            <li class="normal" ng-class="{'bold':oTestSteps.layers !== null}">
+                                <span data-translate="CTRL_IMPORT_BO_LAYERS"></span>
+                                <span class="glyphicon glyphicon-ok color-green" ng-show="oTestSteps.layers === true"></span>
+                                <span class="glyphicon glyphicon-remove color-red" ng-show="oTestSteps.layers === false"></span>
+                            </li>
+                            <li class="normal" ng-class="{'bold':oTestSteps.schema !== null}">
+                                <span data-translate="CTRL_IMPORT_BO_SCHEMA"></span>
+                                <span class="glyphicon glyphicon-ok color-green" ng-show="oTestSteps.schema === true"></span>
+                                <span class="glyphicon glyphicon-remove color-red" ng-show="oTestSteps.schema === false"></span>
+                            </li>
+                            <li class="normal" ng-class="{'bold':oTestSteps.tables !== null}">
+                                <span data-translate="CTRL_IMPORT_BO_TABLES"></span>
+                                <span class="glyphicon glyphicon-ok color-green" ng-show="oTestSteps.tables === true"></span>
+                                <span class="glyphicon glyphicon-remove color-red" ng-show="oTestSteps.tables === false"></span>
+                            </li>
+                        </ol>  
+                    </li>
+                    <li class="normal" ng-class="{'bold':oImportSteps.business_object !== null}">
+                        <span data-translate="CTRL_IMPORT_BO_IMPORT_BO"></span>
+                        <span class="glyphicon glyphicon-ok color-green" ng-show="oImportSteps.business_object === true"></span>
+                        <span class="glyphicon glyphicon-remove color-red" ng-show="oImportSteps.business_object === false"></span>
+                    </li>
+                    <li class="normal" ng-class="{'bold':oImportSteps.business_object_reports !== null}" ng-show="aReportsDef">
+                        <span data-translate="CTRL_IMPORT_BO_IMPORT_REPORTS"></span>
+                        <span class="glyphicon glyphicon-ok color-green" ng-show="oImportSteps.business_object_reports === true"></span>
+                        <span class="glyphicon glyphicon-remove color-red" ng-show="oImportSteps.business_object_reports === false"></span>
+                    </li>
+                    <li class="normal" ng-class="{'bold':oImportSteps.business_object_events !== null}" ng-show="oEventDef">
+                        <span data-translate="CTRL_IMPORT_BO_IMPORT_EVENTS"></span>
+                        <span class="glyphicon glyphicon-ok color-green" ng-show="oImportSteps.business_object_events === true"></span>
+                        <span class="glyphicon glyphicon-remove color-red" ng-show="oImportSteps.business_object_events === false"></span>
+                    </li>
+                    <li class="normal" ng-class="{'bold':oImportSteps.layers !== null}">
+                        <span data-translate="CTRL_IMPORT_BO_IMPORT_LAYERS"></span>
+                        <span class="glyphicon glyphicon-ok color-green" ng-show="oImportSteps.layers === true"></span>
+                        <span class="glyphicon glyphicon-remove color-red" ng-show="oImportSteps.layers === false"></span>
+                    </li>
+                    <li class="normal" ng-class="{'bold':oImportSteps.sql !== null}">
+                        <span data-translate="CTRL_IMPORT_BO_IMPORT_SQL"></span>
+                        <span class="glyphicon glyphicon-ok color-green" ng-show="oImportSteps.sql === true"></span>
+                        <span class="glyphicon glyphicon-remove color-red" ng-show="oImportSteps.sql === false"></span>
+                    </li>
+                </ol>    
+            </div>
+        </div>
+    </div>
+    <!--finalize-->
+    <div ng-show="displayedStep === 'finalize'">
+        <div class="col-md-12">
+            <div class="text-center">
+                <h3 data-translate="CTRL_IMPORT_BO_TO_DO">: </h3>
+            </div>
+            <br>
+            <div class="col-md-offset-2">
+                <ul>
+                    <li class="bold">
+                        <span data-translate="CTRL_IMPORT_BO_TO_DO_PGADMIN"></span>
+                    </li>
+                    <li class="bold">
+                        <span data-translate="CTRL_IMPORT_BO_TO_DO_MAPSERVER_LAYERS"></span>
+                    </li>
+                    <li class="bold">
+                        <span data-translate="CTRL_IMPORT_BO_TO_DO_VMAP_LAYERS"></span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+    <a class="btn btn-primary btn pull-right margin-left-10" type="button" 
+       ng-click="ctrl.closeImportModal()" 
+       ng-show="displayedStep === 'finalize'" data-translate="CTRL_IMPORT_BO_FINISH"></a>
+    <a class="btn btn-primary btn pull-right margin-left-10" type="button" 
+       ng-click="ctrl.submitStep(displayedStep)" 
+       ng-show="(displayedStep !== 'execute_import' || bImportOk === true) && displayedStep !== 'finalize'" data-translate="CTRL_IMPORT_BO_NEXT"></a>
+    <a class="btn btn-primary btn pull-right margin-left-10" type="button" 
+       ng-click="ctrl.executeImport()" 
+       ng-show="displayedStep === 'execute_import' && bImportOk !== true" data-translate="CTRL_IMPORT_BO_EXECUTE"></a>
+    <a class="btn btn-danger btn pull-right margin-left-10 hidden" type="button" 
+       ng-click="ctrl.cancelImport()" 
+       ng-show="displayedStep === 'execute_import'" data-translate="CTRL_IMPORT_BO_CANCEL_IMPORT"></a>
+    <a class="btn btn-success btn pull-right margin-left-10 hidden" type="button" 
+       ng-click="ctrl.executeImport(true)" 
+       ng-show="displayedStep === 'execute_import'" data-translate="CTRL_IMPORT_BO_TEST"></a>
+    <a class="btn btn-default btn pull-right margin-left-10" type="button" 
+       ng-click="ctrl.prevStep()" 
+       ng-show="displayedStep !== 'import_folder' && displayedStep !== 'select_database' && displayedStep !== 'finalize'" data-translate="CTRL_IMPORT_BO_PREVIOUS"></a>
+</div>

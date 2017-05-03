@@ -25,7 +25,7 @@ class BusinessObjectEvent extends Vmap {
      * @param type $properties properties
      * @param type $oConnection connection object
      */
-    function BusinessObjectEvent($aPath, $aValues, $properties, $oConnection) {
+    function __construct($aPath, $aValues, $properties, $oConnection) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
@@ -52,8 +52,7 @@ class BusinessObjectEvent extends Vmap {
      *     in="path",
      *     description="event id",
      *     required=true,
-     *     type="string",
-     *   format="int32"
+     *     type="string"
      *   ),
      *   @SWG\Response(
      *         response=200,
@@ -70,18 +69,20 @@ class BusinessObjectEvent extends Vmap {
         require $this->sRessourcesFile;
         $this->aFields = $this->getFields($this->aProperties['schema_vmap'], 'event', 'event_id');
     }
-    
+
     /**
      * delete a businessobjectevent
      */
-    function DELETE(){
-        $this->oConnection->oBd->delete($this->aProperties['schema_vmap'], 'event', 'event_id', $this->aValues['my_vitis_id'], 'string');
+    function DELETE() {
+        $this->oConnection->oBd->delete($this->aProperties['schema_vmap'], 'event', 'event_id', $this->aValues['my_vitis_id'], 'text');
         if ($this->oConnection->oBd->enErreur()) {
-                $this->oError = new Error(1, $this->oConnection->oBd->getBDMessage());
+            $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
+            $this->oConnection->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
         } else {
-                $this->aFields['event_id'] = $this->aValues['my_vitis_id'];
+            $this->aFields['event_id'] = $this->aValues['my_vitis_id'];
         }
     }
+
 }
 
 ?>

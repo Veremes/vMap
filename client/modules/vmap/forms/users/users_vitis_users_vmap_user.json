@@ -32,7 +32,10 @@
                         "web_service":{
                             "ressource_id":"vmap/printstyles",
                             "id_key":"printstyle_id",
-                            "label_key":"name"
+                            "label_key":"name",
+                            "parameters":{
+                                "order_by":"name"
+                            }
                         },
                         "size":"6",
                         "nb_cols":12

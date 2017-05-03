@@ -32,9 +32,12 @@
                         "web_service":{
                             "ressource_id":"vmap/maps",
                             "id_key":"map_id",
-                            "label_key":"name"
+                            "label_key":"name",
+                            "parameters":{
+                                "order_by":"name"
+                            }
                         },
-                        "size":"6",
+                        "size":13,
                         "nb_cols":12
                     }
                 ]
@@ -52,9 +55,12 @@
                         "web_service":{
                             "ressource_id":"vmap/printtemplates",
                             "id_key":"printtemplate_id",
-                            "label_key":"name"
+                            "label_key":"name",
+                            "parameters":{
+                                "order_by":"name"
+                            }
                         },
-                        "size":"6",
+                        "size":13,
                         "nb_cols":12
                     }
                 ]

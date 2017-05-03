@@ -23,7 +23,7 @@ class Proprietaire extends Cadastre {
 	 * @param type $properties properties
 	 * @param type $oConnection connection object
 	 */
-	function Proprietaire($aPath, $aValues, $properties, $oConnection) {}
+	function __construct($aPath, $aValues, $properties, $oConnection) {}
 }
 
 ?>

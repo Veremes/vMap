@@ -36,7 +36,7 @@ class Domains extends Vitis {
      * @param type $aValues parameters of the request
      * @param type $properties properties
      */
-    function Domains($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
@@ -136,35 +136,35 @@ class Domains extends Vitis {
      *   produces={"application/xml", "application/json"},
      *   @SWG\Parameter(
      *     name="token",
-     *     in="query",
+     *     in="formData",
      *     description="user token",
      *     required=true,
      *     type="string"
      *   ),
      * * @SWG\Parameter(
      *     name="domain",
-     *     in="query",
+     *     in="formData",
      *     description="domain name",
      *     required=true,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="alias",
-     *     in="query",
+     *     in="formData",
      *     description="Domain alias",
      *     required=true,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="server",
-     *     in="query",
+     *     in="formData",
      *     description="Ad server",
      *     required=true,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="port",
-     *     in="query",
+     *     in="formData",
      *     description="Ad server port",
      *     required=true,
      *     type="integer",
@@ -172,49 +172,49 @@ class Domains extends Vitis {
      *   ),
      * @SWG\Parameter(
      *     name="dn_search_user",
-     *     in="query",
+     *     in="formData",
      *     description="Search DN base for users",
      *     required=false,
      *     type="string"
      *   ),
      *  @SWG\Parameter(
      *     name="filter_user",
-     *     in="query",
+     *     in="formData",
      *     description="Filter to search users",
      *     required=false,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="dn_search_group",
-     *     in="query",
+     *     in="formData",
      *     description="Search DN base for groups",
      *     required=false,
      *     type="string"
      *   ),
      *  @SWG\Parameter(
      *     name="filter_group",
-     *     in="query",
+     *     in="formData",
      *     description="Filter to search groups",
      *     required=false,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="login",
-     *     in="query",
+     *     in="formData",
      *     description="login to connect to ldap",
      *     required=false,
      *     type="string"
      *   ),
      *  @SWG\Parameter(
      *     name="password",
-     *     in="query",
+     *     in="formData",
      *     description="password to connect to ldap",
      *     required=false,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="type",
-     *     in="query",
+     *     in="formData",
      *     description="type of ldap server (AD or openldap supported)",
      *     required=false,
      *     type="array",
@@ -225,7 +225,7 @@ class Domains extends Vitis {
      *   ),
      *  @SWG\Parameter(
      *     name="verify_rights",
-     *     in="query",
+     *     in="formData",
      *     description="verify rights",
      *     required=false,
      *     type="string"
@@ -257,7 +257,7 @@ class Domains extends Vitis {
             if ($error['sStatus'] == 1){
                 $sMessage = $aReturn['sMessage'];
             }else{
-                $oError = new Error(1, $error['sMessage']);
+                $oError = new VitisError(1, $error['sMessage']);
                 $aXmlRacineAttribute['status'] = 0;
                 $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']); 
             }
@@ -454,7 +454,7 @@ class Domains extends Vitis {
 				}
             }else{
 				
-                $oError = new Error(1, $error['sMessage']);
+                $oError = new VitisError(1, $error['sMessage']);
                 $aXmlRacineAttribute['status'] = 0;
                 $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']); 
             }
@@ -558,7 +558,7 @@ class Domains extends Vitis {
             if ($error['sStatus'] == 1){
                 $sMessage = $aReturn['sMessage'];
             }else{
-                $oError = new Error(1, $error['sMessage']);
+                $oError = new VitisError(1, $error['sMessage']);
                 $aXmlRacineAttribute['status'] = 0;
                 $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']); 
             }

@@ -13,7 +13,7 @@ require_once __DIR__.'/../../class/vitis_lib/Connection.class.inc';
 * This class defines operation for one Action
 * 
 */
-class Action  extends Vitis{
+class Action extends Vitis{
     
     public $oError;
     /**
@@ -23,7 +23,7 @@ class Action  extends Vitis{
      * @param type $properties properties
      * @param type $oConnection connection object
      */
-    function Action ($aAction){
+    function __construct ($aAction){
         $this->aFields = $aAction;
         
     }

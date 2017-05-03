@@ -8,6 +8,8 @@
 
 goog.provide('nsVmap.nsMapManager.nsMapModal.MyMap');
 
+goog.require('oVmap');
+
 
 /**
  * @classdesc
@@ -18,12 +20,7 @@ goog.provide('nsVmap.nsMapManager.nsMapModal.MyMap');
  */
 nsVmap.nsMapManager.nsMapModal.MyMap = function () {
     oVmap.log("nsVmap.nsMapManager.nsMapModal.MyMap");
-
-    // Directives et controleurs Angular
-    oVmap.module.directive('appMymap', this.mymapDirective);
-    oVmap.module.controller('AppMymapController', this.mymapController);
-}
-
+};
 
 /************************************************
  ---------- DIRECTIVES AND CONTROLLERS -----------
@@ -77,6 +74,7 @@ nsVmap.nsMapManager.nsMapModal.MyMap.prototype.mymapController = function () {
      * @api stable
      */
     this.view = this['view'] = {};
+    this['displayedView'] = {};
 
     var isIE = false || !!document['documentMode'];
     var isEdge = !isIE && !!window['StyleMedia'];
@@ -99,6 +97,13 @@ nsVmap.nsMapManager.nsMapModal.MyMap.prototype.mymapController.prototype.reloadT
         'center': oVmap.getMap().getOLMap().getView().getCenter(),
         'projection': oVmap.getMap().getOLMap().getView().getProjection().getCode(),
         'extent': this['map'].getView().calculateExtent(this['map'].getSize())
+    };
+
+    this['displayedView'] = {
+        'zoom': this['view']['zoom'],
+        'center': this['view']['center'][0] + ', '+this['view']['center'][1],
+        'projection': oVmap['oProjections'][this['view']['projection']],
+        'extent': this['view']['extent'][0] + ', ' + this['view']['extent'][1] + ', ' + this['view']['extent'][3] + ', ' + this['view']['extent'][3]
     };
 
     this.reloadMapFile();
@@ -145,3 +150,7 @@ nsVmap.nsMapManager.nsMapModal.MyMap.prototype.mymapController.prototype.downloa
     var oBlob = new Blob([oVmap.getMapManager().getJSONLayersTree()]);
     window.navigator['msSaveBlob'](oBlob, 'map.json');
 };
+
+// Définit la directive et le controller
+oVmap.module.directive('appMymap', nsVmap.nsMapManager.nsMapModal.MyMap.prototype.mymapDirective);
+oVmap.module.controller('AppMymapController', nsVmap.nsMapManager.nsMapModal.MyMap.prototype.mymapController);

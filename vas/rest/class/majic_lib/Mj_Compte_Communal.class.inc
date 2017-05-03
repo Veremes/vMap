@@ -36,7 +36,7 @@ class Mj_Compte_Communal extends Mj {
 	* \param $sIdDnupro Identifiant national de compte communal
 	* \param $oBD Objet de connexion PDO_BD
 	*/
-	function Mj_Compte_Communal($sIdDnupro,$oBD, $sEncryptKey = ''){
+	function __construct($sIdDnupro,$oBD, $sEncryptKey = ''){
 		$this->sEncryptKey = $sEncryptKey;
 		include $this->sRessourcesFile;
 		$this->sSql=$aSql[$oBD->sgbd]['compte_communal'];

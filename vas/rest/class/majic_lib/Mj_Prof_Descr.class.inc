@@ -16,7 +16,7 @@ class Mj_Prof_Descr extends Mj {
 	* \param $sIdPev Identifiant de la partie d'Evaluation
 	* \param $oBD Objet de connexion PDO_BD
 	*/
-	function Mj_Prof_Descr($sIdPev,$oBD){
+	function __construct($sIdPev,$oBD){
 		include $this->sRessourcesFile;
 		$this->sSql=$aSql[$oBD->sgbd]['prof_descr'];
 		$this->sSql=str_replace('$sIdPev', $sIdPev, $this->sSql);

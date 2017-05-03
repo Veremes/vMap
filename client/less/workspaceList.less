@@ -29,6 +29,7 @@
 .workspacelist-grid-header {
     font-family: arial;
     font-size: 14px;
+    border-top: 0;
 }
 
 .workspacelist-grid-header-title {
@@ -41,6 +42,12 @@
     border-color: -moz-use-text-color #ccc;
     border-style: none solid;
     border-width: 0 1px 1px 0;
+}
+.workspacelist-grid-header-title > span {
+    float: left;
+}
+.workspacelist-grid-header-title > div {
+    float: right;
 }
 //
 // Formulaire de recherche.
@@ -226,7 +233,7 @@
     text-align: left;
 }
 .cell-align-center {
-    text-align: left;
+    text-align: center;
 }
 .cell-align-right {
     text-align: right;
@@ -244,4 +251,7 @@
     text-align: right;
     background-color: inherit;
 }
-//
+// Taille des icônes SVG dans les colonnes.
+.ui-grid-cell-svg-icon {
+    font-size: 1.25em   
+}

@@ -3,12 +3,12 @@
 <installer>
 	<schema>
 		<name>s_vmap</name>
-		<version>2016.03.01</version>
+		<version>2017.02.00</version>
 		<dependenciesCollection>
 			<dependency>
 				<nature>schema</nature>
 				<name>s_vitis</name>
-				<version>2016.05.00</version>
+				<version>2017.01.02</version>
 				<object>vas</object>
 			</dependency>
 			<dependency>
@@ -21,17 +21,12 @@
 	<dependenciesCollection>
 		<dependency>
 			<nature>vas</nature>
-			<version>2016.05.00</version>
-		</dependency>
-		<dependency>
-			<name>webSocket</name>
-			<version>1.0</version>
-			<nature>extern-pre</nature>
+			<version>2017.01.02</version>
 		</dependency>
 		<dependency>
 			<name>phantomjs</name>
 			<nature>extern-post</nature>
-			<location>\\roussillon\Ressources\vitis\phantomjs-2.1.1</location>
+			<location>phantomjs-2.1.1</location>
 		</dependency>
 	</dependenciesCollection>
 </installer>

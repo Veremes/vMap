@@ -25,7 +25,7 @@ class UserPrintTemplate extends Vmap {
      * @param type $properties properties
      * @param type $oConnection connection object
      */
-    function UserPrintTemplate($aPath, $aValues, $properties, $oConnection) {
+    function __construct($aPath, $aValues, $properties, $oConnection) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;

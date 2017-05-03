@@ -29,11 +29,11 @@ class MapCatalog extends Vmap {
      * @param type $properties properties
      * @param type $oConnection connection object
      */
-    function MapCatalog($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
-		$this->aValues['getGroup'] = true;
+        $this->aValues['getGroup'] = true;
         $this->oConnection = new Connection($this->aValues, $this->aProperties);
     }
 
@@ -71,7 +71,7 @@ class MapCatalog extends Vmap {
         $oConnection = $this->oConnection;
 
         // Récupère les groupes correspondants
-        $sGroup_id =  $this->oConnection->sesGroup;
+        $sGroup_id = $this->oConnection->sesGroup;
 
         // Récupère les cartes correspondante      
         $aMaps = $this->getMaps($sGroup_id);
@@ -88,22 +88,42 @@ class MapCatalog extends Vmap {
         $aXmlRacineAttribute['status'] = 1;
         $sMessage = $this->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
 
-        // Génération du flux wms privé
-        // 1- Récupère le token veremap 2015
-        $params = array(
-            "user" => $oConnection->oBd->login,
-            "password" => $oConnection->oBd->mdp,
-            "duration" => 600
-        );
-        $veremapToken = json_decode($this->httpPost($properties["api_veremap"] . "/vitis/privatetoken", $params))->token;
+        // Génération du flux wms privé.
+        if (!empty($properties["use_veremap_api"]) && $properties["use_veremap_api"] === true) {
+            // 1- Récupère le token veremap 2015
+            $params = array(
+                "user" => $oConnection->oBd->login,
+                "password" => $oConnection->oBd->mdp,
+                "duration" => 600
+            );
+            $oVeremap = json_decode($this->httpPost($properties["api_veremap"] . "/vitis/privatetoken", $params));
+            if (is_object($oVeremap)) {
+                $veremapToken = $oVeremap->token;
+                // 2- Génère le flux privé qui aura pour nom de mapFile le token de vitis 2016
+                $params = array(
+                    "token" => $veremapToken,
+                    "fileName" => $aValues['token']
+                );
+                $this->httpPost($properties["api_veremap"] . "/veremap/WMS", $params);
+            }
+        }
+        // Création du fichier ".map" du flux wms privé de Vmap4MapServer (nom du fichier = token de l'utilisateur connecté).
+        if (!empty($properties["use_vm4ms_api"]) && $properties["use_vm4ms_api"] === true && file_exists(__DIR__ . '/../vm4ms/WmsServices.class.inc')) {
+            require_once __DIR__ . '/../vm4ms/WmsServices.class.inc';
 
-        // 2- Génère le flux privé qui aura pour nom de mapFile le token de vitis 2016
-        $params = array(
-            "token" => $veremapToken,
-            "fileName" => $aValues['token']
-        );
-        $this->httpPost($properties["api_veremap"] . "/veremap/WMS", $params);
+            $aPath = array('vm4ms', 'wmsservices', 'private', 'MapFile');
 
+            $aValues = array(
+                'token' => $this->aValues['token'],
+                'my_vitis_id' => $properties['private_wms_service'],
+                'creation' => 'true',
+                'type' => 'prod'
+            );
+
+            $oWmsServices = new WmsServices($aPath, $aValues, $this->aProperties, $this->oConnection);
+            $oWmsServices->GET();
+            $oWmsServices->createMapFile();
+        }
         return $sMessage;
     }
 
@@ -112,28 +132,28 @@ class MapCatalog extends Vmap {
      * @param string $aValues
      * @return string group_id
      */
-    /*function getGroupId($aValues) {
+    /* function getGroupId($aValues) {
 
-        $user_id = $_SESSION['ses_user_id'];
+      $user_id = $_SESSION['ses_user_id'];
 
-        // Récupère les groupes liés à l'utilisateur    
-        $sGroup_id = '';
-        $sSql = "SELECT * FROM " . $this->aProperties['schema_framework'] . ".user_group WHERE \"user_id\" = '" . $user_id . "'";
-        $oResult = $this->oConnection->oBd->execute($sSql);
-        if (gettype($oResult) == 'object') {
-            while ($aLigne = $this->oConnection->oBd->ligneSuivante($oResult)) {
-                // stocke le layer id dans la chaine de caractères
-                if ($sGroup_id == '')
-                    $sGroup_id.=$aLigne['group_id'];
-                else
-                    $sGroup_id.=',' . $aLigne['group_id'];
-            }
-        } else {
-            return '';
-        }
+      // Récupère les groupes liés à l'utilisateur
+      $sGroup_id = '';
+      $sSql = "SELECT * FROM " . $this->aProperties['schema_framework'] . ".user_group WHERE \"user_id\" = '" . $user_id . "'";
+      $oResult = $this->oConnection->oBd->execute($sSql);
+      if (gettype($oResult) == 'object') {
+      while ($aLigne = $this->oConnection->oBd->ligneSuivante($oResult)) {
+      // stocke le layer id dans la chaine de caractères
+      if ($sGroup_id == '')
+      $sGroup_id.=$aLigne['group_id'];
+      else
+      $sGroup_id.=',' . $aLigne['group_id'];
+      }
+      } else {
+      return '';
+      }
 
-        return $sGroup_id;
-    }*/
+      return $sGroup_id;
+      } */
 
     /**
      * Get the maps for the group_id
@@ -142,22 +162,26 @@ class MapCatalog extends Vmap {
      */
     function getMaps($sGroup_id) {
 
+        if (empty($sGroup_id)) {
+            return array();
+        }
+
         $aValues = $this->aValues;
         $aPath = $this->aPath;
         $properties = $this->aProperties;
         $oConnection = $this->oConnection;
         $filterList = '';
 
-        $sSql = "SELECT map_id, group_id FROM ".$this->aProperties['schema_vmap'].".map_group WHERE \"group_id\" in (" . $sGroup_id . ")";
+        $sSql = "SELECT map_id, group_id FROM " . $this->aProperties['schema_vmap'] . ".map_group WHERE \"group_id\" in (" . $sGroup_id . ")";
         $oResult = $this->oConnection->oBd->execute($sSql);
         if (gettype($oResult) == 'object') {
             $aLayers_infos = Array();
             while ($aLigne = $this->oConnection->oBd->ligneSuivante($oResult)) {
                 // stocke le layer id dans la chaine de caractères
                 if ($filterList == '')
-                    $filterList.=$aLigne['map_id'];
+                    $filterList .= $aLigne['map_id'];
                 else
-                    $filterList.=',' . $aLigne['map_id'];
+                    $filterList .= ',' . $aLigne['map_id'];
             }
         } else {
             return Array();
@@ -200,12 +224,23 @@ class MapCatalog extends Vmap {
         $aServices['osm'] = Array();
         $aServices['bing'] = Array();
         $aServices['ign'] = Array();
+        $aServices['wmts'] = Array();
+        $aServices['xyz'] = Array();
         foreach ($oServices->aObjects as $oService) {
             switch ($oService->aFields['service_type_id']) {
                 case 'tilewms':
                 case 'imagewms':
                     $oService->aFields['url'] = str_replace('[token]', $aValues['token'], $oService->aFields['url']);
+                    if (isset($this->aProperties['ms_cgi_url'])) {
+                        $oService->aFields['url'] = str_replace('[ms_cgi_url]', $this->aProperties['ms_cgi_url'], $oService->aFields['url']);
+                    }
                     array_push($aServices['wms'], $oService->aFields);
+                    break;
+                case 'wmts':
+                    array_push($aServices['wmts'], $oService->aFields);
+                    break;
+                case 'xyz':
+                    array_push($aServices['xyz'], $oService->aFields);
                     break;
                 case 'osm':
                     array_push($aServices['osm'], $oService->aFields);

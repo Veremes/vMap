@@ -4,10 +4,12 @@
  */
 goog.provide("vitis.vitis");
 goog.require("vitis.controllers.logs");
+goog.require("vitis.controllers.websocketConfiguration");
 goog.require("vitis.controllers.versionConfiguration");
 goog.require("vitis.controllers.activeDirectoryTree");
 goog.require("vitis.controllers.webServiceHelp");
 goog.require("vitis.directives.logs");
+goog.require("vitis.directives.websocketConfiguration");
 goog.require("vitis.directives.versionConfiguration");
 goog.require("vitis.directives.phpInfo");
 goog.require("vitis.directives.activeDirectoryTree");

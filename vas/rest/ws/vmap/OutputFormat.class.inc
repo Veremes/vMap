@@ -24,7 +24,7 @@ class OutputFormat extends Vmap {
      * @param type $properties properties
      * @param type $oConnection connection object
      */
-    function OutputFormat ($aPath, $aValues, $properties, $oConnection){
+    function __construct ($aPath, $aValues, $properties, $oConnection){
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;

@@ -32,7 +32,7 @@
                         style="width: 80%"
                         ng-class="{'white color-gray': ctrl.currentAction === 'basicTools-select-insertPoint' || ctrl.currentAction === 'basicTools-select-insertLineString' || ctrl.currentAction === 'basicTools-select-insertPolygon' || ctrl.currentAction === 'basicTools-select-insertCircle'}"
                         ng-click="ctrl.addPartGeomType !== '' ? ctrl.startEdition('insert' + ctrl.addPartGeomType, ctrl.currentAction === 'basicTools-select-insert' + ctrl.addPartGeomType) : angular.noop">
-                        Ajouter une partie
+                    Ajouter une partie
                 </button>
                 <button type="button" 
                         class="btn btn-sm btn-default dropdown-toggle" 
@@ -40,7 +40,7 @@
                         data-toggle="dropdown" 
                         aria-haspopup="true" 
                         aria-expanded="false">
-                    <span class="caret" ng-show="ctrl.editableFeatureType === 'GEOMETRYCOLLECTION'"></span>
+                    <span class="caret" ng-show="ctrl.editableFeatureType === 'GEOMETRYCOLLECTION' || ctrl.editableFeatureType === 'GEOMETRY' && ctrl.addPartGeomType === ''"></span>
                     <span class="icon-point" ng-show="ctrl.addPartGeomType === 'Point'"></span>
                     <span class="icon-line" ng-show="ctrl.addPartGeomType === 'LineString'"></span>
                     <span class="icon-polygon" ng-show="ctrl.addPartGeomType === 'Polygon'"></span>
@@ -48,22 +48,22 @@
                 </button>
                 <ul class="dropdown-menu">
                     <li><a href="javascript:void(0)"
-                           ng-show="ctrl.editableFeatureType === 'GEOMETRYCOLLECTION' || ctrl.editableFeatureType === 'POINT' || ctrl.editableFeatureType === 'MULTIPOINT'"
+                           ng-show="ctrl.editableFeatureType === 'GEOMETRYCOLLECTION' || ctrl.editableFeatureType === 'GEOMETRY' || ctrl.editableFeatureType === 'POINT' || ctrl.editableFeatureType === 'MULTIPOINT'"
                            ng-click="ctrl.addPartGeomType = 'Point'; ctrl.startEdition('insertPoint', false)">
                             <span class="icon-point"></span> Point
                         </a></li>
                     <li><a href="javascript:void(0)"
-                           ng-show="ctrl.editableFeatureType === 'GEOMETRYCOLLECTION' || ctrl.editableFeatureType === 'LINESTRING' || ctrl.editableFeatureType === 'MULTILINESTRING'"
+                           ng-show="ctrl.editableFeatureType === 'GEOMETRYCOLLECTION' || ctrl.editableFeatureType === 'GEOMETRY' || ctrl.editableFeatureType === 'LINESTRING' || ctrl.editableFeatureType === 'MULTILINESTRING'"
                            ng-click="ctrl.addPartGeomType = 'LineString'; ctrl.startEdition('insertLineString', false)">
                             <span class="icon-line"></span> Ligne
                         </a></li>
                     <li><a href="javascript:void(0)"
-                           ng-show="ctrl.editableFeatureType === 'GEOMETRYCOLLECTION' || ctrl.editableFeatureType === 'POLYGON' || ctrl.editableFeatureType === 'MULTIPOLYGON'"
+                           ng-show="ctrl.editableFeatureType === 'GEOMETRYCOLLECTION' || ctrl.editableFeatureType === 'GEOMETRY' || ctrl.editableFeatureType === 'POLYGON' || ctrl.editableFeatureType === 'MULTIPOLYGON'"
                            ng-click="ctrl.addPartGeomType = 'Polygon'; ctrl.startEdition('insertPolygon', false)">
                             <span class="icon-polygon"></span> Polygone
                         </a></li>
                     <li><a href="javascript:void(0)"
-                           ng-show="ctrl.editableFeatureType === 'GEOMETRYCOLLECTION' || ctrl.editableFeatureType === 'POLYGON' || ctrl.editableFeatureType === 'MULTIPOLYGON'"
+                           ng-show="ctrl.editableFeatureType === 'GEOMETRYCOLLECTION' || ctrl.editableFeatureType === 'GEOMETRY' || ctrl.editableFeatureType === 'POLYGON' || ctrl.editableFeatureType === 'MULTIPOLYGON'"
                            ng-click="ctrl.addPartGeomType = 'Circle'; ctrl.startEdition('insertCircle', false)">
                             <span class="icon-circle"></span> Cercle
                         </a></li>
@@ -91,7 +91,7 @@
                 </li>
                 <li class="basic-tools-dropdown-btn">
                     <a class="btn-draw"
-                       ng-show="(ctrl.editableFeatureType === 'GEOMETRYCOLLECTION' || ctrl.editableFeatureType === 'POLYGON' || ctrl.editableFeatureType === 'MULTIPOLYGON')"
+                       ng-show="(ctrl.editableFeatureType === 'GEOMETRYCOLLECTION' || ctrl.editableFeatureType === 'GEOMETRY' || ctrl.editableFeatureType === 'POLYGON' || ctrl.editableFeatureType === 'MULTIPOLYGON')"
                        ng-class="{'active': ctrl.currentAction === 'basicTools-select-addHole'}"
                        ng-click="ctrl.startEdition('addHole', ctrl.currentAction === 'basicTools-select-addHole')">
                         <span class="icon-dot-circle-o"></span>
@@ -100,7 +100,7 @@
                 </li>
                 <li class="basic-tools-dropdown-btn">
                     <a class="btn-draw"
-                       ng-show="(ctrl.editableFeatureType === 'GEOMETRYCOLLECTION' || ctrl.editableFeatureType === 'POLYGON' || ctrl.editableFeatureType === 'MULTIPOLYGON')"
+                       ng-show="(ctrl.editableFeatureType === 'GEOMETRYCOLLECTION' || ctrl.editableFeatureType === 'GEOMETRY' || ctrl.editableFeatureType === 'POLYGON' || ctrl.editableFeatureType === 'MULTIPOLYGON')"
                        ng-class="{'active': ctrl.currentAction === 'basicTools-select-deleteHole'}"
                        ng-click="ctrl.startEdition('deleteHole', ctrl.currentAction === 'basicTools-select-deleteHole')">
                         <span class="icon-dot-circle-o"></span>
@@ -139,7 +139,8 @@
 
 <!--Select card modal-->
 <div class="modal fade" id="select-card-modal" role="dialog">
-    <div class="modal-dialog ">
+    <div class="modal-dialog"
+         ng-class="{'modal-60':ctrl.editSelection.display_form_size == 2, 'modal-90':ctrl.editSelection.display_form_size == 3}">
         <!--Modal content-->
         <div class="modal-content">
             <div class="modal-header">
@@ -159,7 +160,8 @@
 
 <!--Select edit modal-->
 <div class="modal fade" id="select-edit-modal" role="dialog">
-    <div class="modal-dialog ">
+    <div class="modal-dialog"
+         ng-class="{'modal-60':ctrl.editSelection.edit_form_size == 2, 'modal-90':ctrl.editSelection.edit_form_size == 3}">
         <!--Modal content-->
         <div class="modal-content" style="">
             <div class="modal-header">

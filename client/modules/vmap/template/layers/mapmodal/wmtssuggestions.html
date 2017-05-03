@@ -1,0 +1,135 @@
+<!-- Liste des cartes utilisables -->
+
+
+<h3>Ajouter une couche WMTS: </h3>
+<hr>
+
+<form ng-submit="ctrl.getCapabilities()">
+    <div class="row">
+        <div class="col-xs-3">
+            <b>Service: </b>
+            <select id="select-wmts-service" class="form-control" 
+                    ng-model="iServiceIndex" 
+                    ng-change="ctrl.selectService(iServiceIndex)">
+                <option value=""></option>
+                <option ng-repeat="node in ctrl.catalog.services.wmts" value="{{$index}}">{{node.name}}</option>
+            </select>
+        </div>
+        <div class="col-xs-3">
+            <b>Type: </b>
+            <select id="select-wmts-service" class="form-control" 
+                    ng-model="ctrl.sRequestType">
+                <option value="KVP">KVP</option>
+                <option value="REST">REST</option>
+            </select>
+        </div>
+        <div class="col-xs-3">
+            <b>Version: </b>
+            <input type="text" id="getCapabilities-wmts-version-field" class="form-control" placeholder="Version" aria-describedby="sizing-addon1" ng-model="ctrl.sRequestVersion">
+        </div>
+    </div>
+    <br>
+    <div class="row">
+        <div class="col-xs-12">
+            <b>URL: </b>
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="Service url" aria-describedby="sizing-addon1" ng-model="ctrl.sRequestUrl">
+                <span class="input-group-btn">
+                    <button type="submit" class="btn btn-success">Voir le contenu</button>
+                </span>
+            </div>
+        </div>
+    </div>    
+</form>
+
+<br>
+
+<div id="load-img-wmts" style="display: none; text-align: center"><img src="images/ajax-load-big.gif"></div>
+<div id="wmts-suggestions-list" style="display: none">
+    
+    <input class="form-control input-sm right margin-sides-10 margin-5" 
+           type="text" 
+           placeholder="Rechercher" 
+           style="width: 200px;"
+           ng-model="filter">
+    
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Titre</th>
+                <th>Nom</th>
+                <th>Matrice</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr ng-repeat="oLayer in ctrl.aLayersFiltered">
+                <td class="WMTSSuggestionTitle" title="{{oLayer.Title}}">{{oLayer.Title}}</td>
+                <td class="WMTSSuggestion" title="{{oLayer.Identifier}}">{{oLayer.Identifier}}</td>
+                <td class="WMSSuggestion">
+                    <div ng-repeat="oMatrix in oLayer.TileMatrixSetLink">{{oMatrix.TileMatrixSet}}</div>
+                </td>
+                <!-- Si la projeciton est bonne -->
+                <td class="WMTSSuggestionsButton">
+                    <button type="button" 
+                            class="btn btn-info"
+                            ng-click="ctrl.addLayer(oLayer)">Ajouter</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<button id="btn-reload-wmts" style="display: none" ng-click="ctrl.reload()">Reload map</button>
+
+<div id="wmts-select-matrix-modal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" onclick="$('#wmts-select-matrix-modal').modal('hide');" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">{{ctrl.oLayerToAdd.Title}}</h4>
+            </div>
+            <div class="modal-body">
+
+                <div class="row">
+                    <div class="col-xs-4">
+                        <label>Style</label>
+                        <select id="select-wmts-service" class="form-control" 
+                                ng-model="iSelectedStyleIndex"
+                                ng-change="ctrl.sLayerToAdd_style_name = ctrl.oLayerToAdd.Style[iSelectedStyleIndex].Identifier">
+                            <option value="?"></option>
+                            <option ng-repeat="oStyle in ctrl.oLayerToAdd.Style" value="{{$index}}">{{(oStyle.Title| isDef) ? oStyle.Title : oStyle.Identifier}}</option>
+                        </select>
+                        <br>
+                        <div ng-repeat="(key, value) in ctrl.oLayerToAdd.Style[iSelectedStyleIndex]" ng-if="(value | getType) == 'string'">
+                            <label>{{key}}: </label>{{value}}
+                        </div>
+                    </div>
+                    <div class="col-xs-4">
+                        <label>Format</label>
+                        <select id="select-wmts-service" class="form-control" 
+                                ng-model="ctrl.sLayerToAdd_format_name">
+                            <option value="?"></option>
+                            <option ng-repeat="sFormat in ctrl.oLayerToAdd.Format" value="{{sFormat}}">{{sFormat}}</option>
+                        </select>
+                    </div>
+                    <div class="col-xs-4">
+                        <label>Matrice</label>
+                        <select id="select-wmts-service" class="form-control" 
+                                ng-model="ctrl.sLayerToAdd_matrix_name">
+                            <option value="?"></option>
+                            <option ng-repeat="oMatrix in ctrl.oLayerToAdd.TileMatrixSetLink" value="{{oMatrix.TileMatrixSet}}">{{oMatrix.TileMatrixSet}}</option>
+                        </select>
+                        <br>
+                        <div ng-repeat="(key, value) in ctrl.oLayerToAdd_matrix_def" ng-if="(value | getType) == 'string'">
+                            <label>{{key}}: </label>{{value}}
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" ng-click="ctrl.addLayerToAdd()">Valider</button>
+            </div>
+        </div>
+    </div>
+</div>

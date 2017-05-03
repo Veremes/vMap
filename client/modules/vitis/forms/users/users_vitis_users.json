@@ -36,7 +36,7 @@
                         "nb_cols":3
                     },
                     {
-                        "type":"email",
+                        "type":"text",
                         "name":"email",
                         "label":"FORM_EMAIL_USERS_USER",
                         "required":false,
@@ -208,7 +208,7 @@
                                     "order_by":"name"
                             }
                         },
-                        "size":"6",
+                        "size":9,
                         "nb_cols":12
                     }
                 ]
@@ -244,7 +244,7 @@
                             }
                         },
                         "switch_event":"hideExcludedUserPrivileges('privileges')",
-                        "size":"6",
+                        "size":9,
                         "nb_cols":12
                     }
                 ]
@@ -289,6 +289,7 @@
                         "type":"title",
                         "name":"new_password_title",
                         "label":"FORM_NEW_PASSWORD_USERS_USER",
+                        "name":"title_user_password",
                         "nb_cols":12
                     }
                 ]
@@ -432,7 +433,7 @@
                                     "order_by":"name"
                             }
                         },
-                        "size":"6",
+                        "size":9,
                         "nb_cols":12
                     }
                 ]
@@ -455,7 +456,7 @@
                                     "order_by":"rolname"
                             }
                         },
-                        "size":"6",
+                        "size":9,
                         "nb_cols":12
                     }
                 ]
@@ -622,6 +623,16 @@
                 "fields":[
                     {
                         "type":"label",
+                        "name":"department",
+                        "label":"FORM_DEPARTMENT_USERS_USER",
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"label",
                         "name":"groups_label",
                         "label":"FORM_GROUPS_USERS_USER",
                         "nb_cols":12
@@ -634,6 +645,16 @@
                         "type":"label",
                         "name":"privileges_label",
                         "label":"FORM_PRIVILEGES_USERS_USER",
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"label",
+                        "name":"ip_constraint",
+                        "label":"FORM_IP_USERS_USER",
                         "nb_cols":12
                     }
                 ]

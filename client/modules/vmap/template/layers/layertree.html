@@ -22,7 +22,7 @@
             <div class="layerstree-phather">
                 <div class="tree-father-collapse-btn service-name left" data-toggle="collapse" data-target="#tree_element_{{$id}}" onclick="setTimeout(function () {
                                 oVmap.resizeLayerTools(true)
-                            }, 500)">
+                            }, 500)" title="{{node.name}}">
                     {{node.name}}
                 </div>
                 <div class="checkbox checkbox-info inline-checkbox right"
@@ -47,7 +47,7 @@
                     <ul class="list-group-item layertree-item auto-height">
 
                         <!-- Nom de la couche -->
-                        <div class="layer-name layer-name-tree">{{layer.name}}</div>
+                        <div class="layer-name layer-name-tree" title="{{layer.name}}">{{layer.name}}</div>
 
                         <div class="layer-checkboxes">
                             <button type="button" 

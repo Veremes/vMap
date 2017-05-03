@@ -16,6 +16,7 @@ module.exports = function (grunt) {
                         sHome + 'javascript/require/*.js',
                         sHome + 'javascript/app/**/*.js',
                         sHome + 'javascript/externs/formReader/**/*.js',
+                        sHome + 'javascript/externs/mapJSON/**/*.js',
                         sHome + 'modules/vitis/javascript/**/*.js',
                         // OpenLayers
                         sHome + 'javascript/externs/openLayers/**/*.js',
@@ -25,7 +26,9 @@ module.exports = function (grunt) {
                         sHome + 'modules/vmap/javascript/vitis/**/*.js',
                         // Fichiers Studio
                         sHome + 'javascript/externs/studio/properties/properties.js',
-                        sHome + 'javascript/externs/studio/javascript/app/**/*.js'
+                        sHome + 'javascript/externs/studio/javascript/app/**/*.js',
+                        // Fichiers vMap4MapServer
+                        sHome + 'modules/vm4ms/javascript/**/*.js'
                     ]
                 },
                 options: {
@@ -94,6 +97,7 @@ module.exports = function (grunt) {
                     '"' + sHome + 'javascript/app ' + sClosureDepsHome + 'javascript/app"',
                     '"' + sHome + 'modules/vitis/javascript ' + sClosureDepsHome + 'modules/vitis/javascript"',
                     '"' + sHome + 'javascript/externs/formReader ' + sClosureDepsHome + 'javascript/externs/formReader"',
+                    '"' + sHome + 'javascript/externs/mapJSON ' + sClosureDepsHome + 'javascript/externs/mapJSON"',
                     '"' + sHome + 'conf/requires ' + sClosureDepsHome + 'conf/requires"',
                     // OpenLayers
                     '"' + sHome + 'javascript/externs/openLayers ' + sClosureDepsHome + 'javascript/externs/openLayers"',
@@ -102,7 +106,9 @@ module.exports = function (grunt) {
                     '"' + sHome + 'modules/vmap/javascript/vitis ' + sClosureDepsHome + 'modules/vmap/javascript/vitis"',
                     // Fichiers Studio
                     '"' + sHome + 'javascript/externs/studio/properties ' + sClosureDepsHome + 'javascript/externs/studio/properties"',
-                    '"' + sHome + 'javascript/externs/studio/javascript ' + sClosureDepsHome + 'javascript/externs/studio/javascript"',
+                    '"' + sHome + 'javascript/externs/studio/javascript/app ' + sClosureDepsHome + 'javascript/externs/studio/javascript/app"',
+                    // Fichiers vMap4MapServer
+                    '"' + sHome + 'modules/vm4ms/javascript ' + sClosureDepsHome + 'modules/vm4ms/javascript"',
                     // Closure library
                     '"' + sHome + 'conf/node_modules/google-closure-library/closure/goog ' + sClosureDepsHome + 'conf/node_modules/google-closure-library/closure/goog"'
                 ]
@@ -117,7 +123,7 @@ module.exports = function (grunt) {
 
     // Tache par défaut 
     // cmd: grunt
-    grunt.registerTask('default', ['closureDepsWriter, closure-compiler:vMap']);
+    grunt.registerTask('default', ['closureDepsWriter', 'closure-compiler:vMap']);
     // cmd: grunt generate-deps
     grunt.registerTask('generate-deps', ['closureDepsWriter']);
     // cmd: grunt studio minify

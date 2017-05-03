@@ -1,0 +1,5 @@
+RewriteEngine On
+RewriteBase /wms[ENV]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)/(.*)$ mapserv.exe?map=[VAS_DIRECTORY]/ws_data/vm4ms/map/wms_$1/$2.map&%{QUERY_STRING} [L]

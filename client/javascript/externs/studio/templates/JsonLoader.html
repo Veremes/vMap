@@ -1,18 +1,159 @@
-<div class="panel panel-veremes" id="FilesURL" ng-class="{ 'studio-panel-collapsed': $parent.aCollapsed[0], 'studio-panel-expanded': (!$parent.aCollapsed[0] && $parent.aCollapsed[4])}">
-    <div class="panel-heading unselectable" ng-click="ctrl.resize()">{{::ctrl.text.Title}}
-        <span ng-if="collapsed" id="colapse_uploader_icon" class="fa fa-angle-right fa-lg" style="float:right"></span>
-        <span ng-if="!collapsed" id="colapse_uploader_icon" class="fa fa-angle-down fa-lg" style="float:right"></span>
+<div class="panel panel-veremes" id="FilesURL">
+    <!--    <div class="panel-heading unselectable" ng-click="ctrl.resize()">{{::ctrl.text.Title}}
+            <span ng-if="collapsed" id="colapse_uploader_icon" class="fa fa-angle-right fa-lg" style="float:right"></span>
+            <span ng-if="!collapsed" id="colapse_uploader_icon" class="fa fa-angle-down fa-lg" style="float:right"></span>
+        </div>-->
+    <div class="panel-heading unselectable">
+        <!--Fichier-->
+        <div class="btn-group dropdown margin-right-10">
+            <button class="btn btn-veremes dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                {{::ctrl.text.File}} <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenu2">
+                <li ng-show="FormSelected === 'Default'">
+                    <a title="{{::ctrl.text.InfoBulle.Default.Publish}}"
+                       href="javascript:void(0);"
+                       ng-click="ctrl.publish()">
+                        <span class="glyphicon glyphicon-copy" aria-hidden="true"></span>
+                        {{::ctrl.text.InfoBulle.Default.Publish}}
+                    </a>
+                </li>
+                <li ng-show="FormSelected === 'Default'">
+                    <a title="{{::ctrl.text.InfoBulle.Default.Reset}}"
+                       href="javascript:void(0);"
+                       ng-click="ctrl.reset()">
+                        <span class="fa fa-recycle" aria-hidden="true"></span>
+                        {{::ctrl.text.InfoBulle.Default.Reset}}
+                    </a>
+                </li>
+                <li ng-show="FormSelected === 'Perso'">
+                    <a title="{{::ctrl.text.InfoBulle.Perso.Save}}"
+                       href="javascript:void(0);"
+                       ng-click="ctrl.save()">
+                        <span class="glyphicon glyphicon-floppy-disk fa-x1" aria-hidden="true"></span>
+                        {{::ctrl.text.InfoBulle.Perso.Save}}
+                    </a>
+                </li>
+                <li ng-show="FormSelected === 'Perso'">
+                    <a title="{{::ctrl.text.InfoBulle.Perso.Reload}}"
+                       href="javascript:void(0);"
+                       ng-click="ctrl.loadWithEdit(false, 'Perso', 'load_Perso_button')">
+                        <span class="glyphicon glyphicon-refresh fa-x1" aria-hidden="true"></span>
+                        {{::ctrl.text.InfoBulle.Perso.Reload}}
+                    </a>
+                </li>
+                <li ng-hide="ctrl.buttonHide" ng-show="FormSelected === 'Perso'">
+                    <a title="{{::ctrl.text.InfoBulle.Perso.Publish}}"
+                       href="javascript:void(0);"
+                       ng-click="ctrl.publish()">
+                        <span class="glyphicon glyphicon-copy" aria-hidden="true"></span>
+                        {{::ctrl.text.InfoBulle.Perso.Publish}}
+                    </a>
+                </li>
+                <li ng-hide="ctrl.buttonHide" ng-show="FormSelected === 'Perso'">
+                    <a title="{{::ctrl.text.InfoBulle.Perso.Reset}}"
+                       href="javascript:void(0);"
+                       ng-click="ctrl.reset()">
+                        <span class="fa icon-recycle" aria-hidden="true"></span>
+                        {{::ctrl.text.InfoBulle.Perso.Reset}}
+                    </a>
+                </li>
+                <li ng-hide="!ctrl.buttonHide" ng-show="FormSelected === 'Perso'">
+                    <a title="{{::ctrl.text.InfoBulle.Perso.ResetWab}}"
+                       href="javascript:void(0);"
+                       ng-click="ctrl.suggestColumnsToGenerateForm()">
+                        <span class="fa icon-recycle" aria-hidden="true"></span>
+                        {{::ctrl.text.InfoBulle.Perso.ResetWab}}
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <!--Edition-->
+        <div class="btn-group dropdown margin-right-10"
+             ng-show="FormSelected === 'Perso'">
+            <button class="btn btn-veremes dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                {{::ctrl.text.Edit}} <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenu2">
+                <li>
+                    <a title="{{::ctrl.text.ManageTabs}}"
+                       href="javascript:void(0);"
+                       ng-click="$parent.ctrl.showTabsManagerModal()">
+                        <span class="icon-object-ungroup" aria-hidden="true"></span>
+                        {{::ctrl.text.ManageTabs}}
+                    </a>
+                </li>
+                <li ng-show="$parent.jsonOutput[$parent.selected_form_type].wab !== undefined">
+                    <a title="{{::ctrl.text.ManageWab}}"
+                       href="javascript:void(0);"
+                       ng-click="$parent.ctrl.showWabManagerModal()">
+                        <span class="icon-logo_wab" aria-hidden="true"></span>
+                        {{::ctrl.text.ManageWab}}
+                    </a>
+                </li>
+            </ul>
+        </div>
     </div>
+
     <div class="panel-body uploader-panel" ng-hide="collapsed">
+
+        <!--Actions fichier-->
         <div class="element-margin text-center">
-            <!-- <div class="input-group element-margin input-group-sm">
-                 <span class="input-group-addon" id="Workspace_id_label">ID</span>
-                 <input ng-model="iWorkspaceId" id="Workspace_id_input" type="number" class="form-control" placeholder="Workspace's id" aria-describedby="Workspace_id_label" required>
-             </div>
-             <div class="input-group element-margin input-group-sm">
-                 <span class="input-group-addon" id="Workspace_token_label">Token</span>
-                 <input ng-model="token" id="Workspace_token_input" type="text" class="form-control" placeholder="Session token" aria-describedby="Workspace_token_label" required>
-             </div>-->
+            <div class="btn-group btn-group-sm" role="group">
+                <button type="button" 
+                        class="btn btn-default" 
+                        title="{{::ctrl.text.InfoBulle.Default.Publish}}"
+                        ng-show="FormSelected === 'Default'"
+                        ng-click="ctrl.publish()">
+                    <span class="glyphicon glyphicon-copy" aria-hidden="true"></span>
+                </button>
+                <button type="button" 
+                        class="btn btn-default" 
+                        title="{{::ctrl.text.InfoBulle.Default.Reset}}"
+                        ng-show="FormSelected === 'Default'"
+                        ng-click="ctrl.reset()">
+                    <span class="fa fa-recycle" aria-hidden="true"></span>
+                </button>
+                <button type="button" 
+                        class="btn btn-default" 
+                        title="{{::ctrl.text.InfoBulle.Perso.Save}}"
+                        ng-show="FormSelected === 'Perso'"
+                        ng-click="ctrl.save()">
+                    <span class="glyphicon glyphicon-floppy-disk fa-x1" aria-hidden="true"></span>
+                </button>
+                <button type="button" 
+                        class="btn btn-default" 
+                        title="{{::ctrl.text.InfoBulle.Perso.Reload}}"
+                        ng-show="FormSelected === 'Perso'"
+                        ng-click="ctrl.loadWithEdit(false, 'Perso', 'load_Perso_button')">
+                    <span class="glyphicon glyphicon-refresh fa-x1" aria-hidden="true"></span>
+                </button>
+                <button type="button"
+                        class="btn btn-default" 
+                        title="{{::ctrl.text.InfoBulle.Perso.Publish}}"
+                        ng-show="FormSelected === 'Perso' && !ctrl.buttonHide"
+                        ng-click="ctrl.publish()">
+                    <span class="glyphicon glyphicon-copy" aria-hidden="true"></span>
+                </button>
+                <button type="button" 
+                        class="btn btn-default" 
+                        title="{{::ctrl.text.InfoBulle.Perso.Reset}}"
+                        ng-show="FormSelected === 'Perso' && !ctrl.buttonHide"
+                        ng-click="ctrl.reset()">
+                    <span class="fa icon-recycle" aria-hidden="true"></span>
+                </button>
+                <button type="button" 
+                        class="btn btn-default" 
+                        title="{{::ctrl.text.InfoBulle.Perso.ResetWab}}"
+                        ng-show="FormSelected === 'Perso' && ctrl.buttonHide"
+                        ng-click="ctrl.suggestColumnsToGenerateForm()">
+                    <span class="fa icon-recycle" aria-hidden="true"></span>
+                </button>
+            </div>
+        </div>
+
+        <!--Choix du formulaire-->
+        <div ng-hide="ctrl.buttonHide" class="element-margin text-center">
             <div class="btn-group btn-group-sm" id="json_loader_Mode_groupButton" role="group">
                 <button type="button" 
                         id="load_Default_button" 
@@ -40,48 +181,30 @@
                 </button>
             </div>
         </div>
-        <div class="text-center button_range element-margin" ng-switch on="FormSelected" >
-            <div ng-switch-when="Default" class="btn-group btn-group-sm" id="json_loader_Actions_groupButton" role="group" aria-label="...">
-                <button type="button" class="btn btn-success" ng-click="ctrl.publish()" title="{{::ctrl.text.InfoBulle.Default.Publish}}">
-                    <span class="glyphicon glyphicon-copy fa-lg" aria-hidden="true"></span>
-                </button>
-                <button type="button" id="reset_json_button" class="btn btn-success" ng-click="ctrl.reset()" title="{{::ctrl.text.InfoBulle.Default.Reset}}">
-                    <span class="fa fa-recycle fa-lg" aria-hidden="true"></span>
-                </button>
-            </div>
-            <div ng-switch-when="Published" id="json_loader_groupButton" role="group" aria-label="..."></div>
-            <div ng-switch-when="Perso" class="btn-group btn-group-sm" id="json_loader_Actions_groupButton" role="group" aria-label="...">
-                <!--btn sauvegrde formulaire personnalisé-->
-                <button type="button" class="btn btn-success" ng-click="ctrl.save()" title="{{::ctrl.text.InfoBulle.Perso.Save}}">
-                    <span class="glyphicon glyphicon-floppy-disk fa-x1" aria-hidden="true"></span>
-                </button>
-                <!--btn recharge les formulaires depuis les serveur-->
-                <button type="button" this="reset_Perso_button" class="btn btn-success" ng-click="ctrl.loadWithEdit(false, 'Perso', 'load_Perso_button')" title="{{::ctrl.text.InfoBulle.Perso.Reload}}">
-                    <span class="glyphicon glyphicon-refresh fa-x1" aria-hidden="true"></span>
-                </button>
-                <!--btn publier le formaulaire personnalisé-->
-                <button type="button" class="btn btn-success" ng-click="ctrl.publish()" title="{{::ctrl.text.InfoBulle.Perso.Publish}}">
-                    <span class="glyphicon glyphicon-copy fa-lg" aria-hidden="true"></span>
-                </button>
-                <!--btn remplacer le formulaire presonnalisé par le formulaire par défaut-->
-                <button type="button" id="reset_json_button" class="btn btn-success" ng-click="ctrl.reset()" title="{{::ctrl.text.InfoBulle.Perso.Reset}}">
-                    <span class="fa icon-recycle fa-lg" aria-hidden="true"></span>
+        <!--Display, Update, Insert..-->
+        <div class="element-margin text-center"
+             ng-if="json_forms.length > 1">
+            <div class="btn-group btn-group-sm" id="json_loader_Mode_groupButton" role="group">
+                <button type="button" 
+                        class="btn btn-primary" 
+                        ng-repeat="form_type in json_forms"
+                        ng-click="$root.selected_form_type = form_type" 
+                        ng-class="{'active':$root.selected_form_type === form_type}">
+                    {{form_type}}
                 </button>
             </div>
         </div>
-        <div class="input-group element-margin input-group-xs">
-            <span class="input-group-addon" id="Title_Form_label">{{::ctrl.text.Form.Title}}</span>
+        <!--Titre-->
+        <div class="element-margin input-group-xs">
+            <label class="input-xs" id="Title_Form_label">{{::ctrl.text.Form.Title}}</label>
             <input ng-model="title" id="Title_Form_input" type="text" class="form-control" placeholder="{{::ctrl.text.Form.TitlePlaceholder}}" aria-describedby="Title_Form_label" required>
         </div>
-
-        <div id="div_Select_Form" ng-if="json_forms.length > 1">
-            <label id="label_select_Form" class="input-xs" for="select_size_input">{{::ctrl.text.Form.SelectForm.Label}}</label>
-            <select id="select_form_type"
-                    class="form-control element-margin input-xs"
-                    ng-model="$root.selected_form_type">
-                <option ng-repeat="form_type in json_forms" ng-value="form_type">{{form_type}}</option>
-            </select>       
+        <!--Event-->
+        <div ng-show="ctrl.buttonHide" class="element-margin input-group-xs">
+            <label class="input-xs" id="Event_Form_label">{{::ctrl.text.Form.Event}}</label>
+            <input ng-model="event" id="Event_Form_input" type="text" class="form-control" placeholder="{{::ctrl.text.Form.EventPlaceholder}}" aria-describedby="Event_Form_label" required>
         </div>
+        <!--Slider largeur-->
         <div id="div_slider_Form" ng-show="ctrl.applicationName !== 'gtf'">
             <label id="label_slider_Form" class="input-xs" for="slider_Form">{{::ctrl.text.Form.Width}}</label>
             <input id="slider_Form" data-slider-id='slider_Form' type="text" data-slider-min="0" data-slider-max="12" data-slider-step="1" data-slider-value="10" required>
@@ -97,16 +220,20 @@
                 </div>
                 <div class="modal-body" style="height:calc(100% - 100px);overflow: auto;">
                     <div ng-repeat="node in ctrl.aSuggestedTableFields">
-                        <div class="checkbox checkbox-info margin-2">
+                        <div class="checkbox checkbox-info margin-2 col-xs-6">
                             <input id="aSuggestedTableFields_{{$index}}" 
                                    type="checkbox" 
                                    style="cursor:pointer; position: absolute"
                                    ng-model="node.fields[0].bUseForGenerate">
                             <label for="aSuggestedTableFields_{{$index}}" style="cursor:pointer">{{node.fields[0].name}} ({{node.fields[0].type}})</label>
                         </div>
+                        <div class="input-group element-margin input-group-xs col-xs-6">
+                            <span  class="input-group-addon ng-binding ng-scope" id="SuggestModal_label_label">Label</span>
+                            <input ng-model="node.fields[0].label" id="SuggestModal_label_input" type="text" class="form-control ng-pristine ng-untouched ng-valid ng-valid-required" placeholder="Label de ce champ" aria-describedby="SuggestModal_label_label" required="">
+                        </div>
                     </div>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer" style="padding: 3px 15px;">
                     <button type="button" class="btn btn-primary" ng-click="ctrl.generateFormByBusinessObject()">{{::ctrl.text.Confirmation.Confirm}}</button>
                 </div>
             </div>

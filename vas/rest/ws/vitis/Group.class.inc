@@ -13,7 +13,7 @@ require_once __DIR__.'/../../class/vitis_lib/Connection.class.inc';
 * This class defines operation for one Group
 * 
 */
-class Group  extends Vitis{
+class Group extends Vitis{
     
     public $oError;
     /**
@@ -23,7 +23,7 @@ class Group  extends Vitis{
      * @param type $properties properties
      * @param type $oConnection connection object
      */
-    function Group ($aPath, $aValues, $properties, $oConnection){
+    function __construct ($aPath, $aValues, $properties, $oConnection){
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
@@ -106,7 +106,7 @@ class Group  extends Vitis{
     function DELETE(){
         $this->oConnection->oBd->delete($this->aProperties['schema_framework'], 'v_group', 'group_id', $this->aValues['my_vitis_id'], 'integer');
         if ($this->oConnection->oBd->enErreur()) {
-                $this->oError = new Error(1, $this->oConnection->oBd->getBDMessage());
+                $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
         } else {
                 $this->aFields['group_id'] = $this->aValues['my_vitis_id'];
         }

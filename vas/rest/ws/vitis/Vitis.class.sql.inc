@@ -1,6 +1,6 @@
 <?php
 //Définition des requêtes de l'api Vitis
-$aSql['checkIP'] = "SELECT user_id, ip_constraint FROM [sSchemaFramework].user WHERE login ='[sLogin]'";
+$aSql['checkIP'] = "SELECT user_id, ip_constraint, restriction FROM [sSchemaFramework].user WHERE login ='[sLogin]'";
 $aSql['updateLastConnection'] = "update [sSchemaFramework].user set last_connection = '[date]' where user_id = [user_id]";
 $aSql['getGroups'] = "SELECT user_group.group_id, \"group\".name FROM [sSchemaFramework].user_group LEFT JOIN [sSchemaFramework].group ON user_group.group_id = \"group\".group_id WHERE user_group.user_id = [user_id]";
 $aSql['loginUnique'] = 'SELECT UPPER("login") FROM [sSchemaFramework]."user" where UPPER("login")=UPPER(\'[sLoginUser]\')';
@@ -28,7 +28,8 @@ $aSql['userCreateRole'] = 'ALTER ROLE "[login]" CREATEROLE';
 $aSql['userNoCreateRole'] = 'ALTER ROLE "[login]" NOCREATEROLE';
 $aSql['grantUser'] = 'GRANT "[sLdapName]" TO "[sLogin]"';
 $aSql['getLogin'] = 'SELECT login,user_id FROM [sSchemaName].[sName] WHERE lower(login) = \'[sLogin]\'';
-
+// Modes
+$aSql['updateModesIndex'] = "UPDATE [sSchemaName].vm_mode_rolname SET index=[index] WHERE mode_id='[mode_id]'";
 // Columns
 $aSql['getTableColumns'] = 'SELECT vm_table_field.table_field_id, name, translation as field_label, sortable, resizeable, "index",  width, align, template FROM [sSchemaFramework].vm_table_field INNER JOIN [sSchemaFramework].vm_translation ON vm_table_field.label_id = vm_translation.translation_id WHERE ressource_id=\'[sRessource]\' and lang=\'[language]\' ORDER BY "index"';
 $aSql['getTableActions'] = 'SELECT button_class, table_button_id, translation as button_label, event FROM [sSchemaFramework].vm_table_button INNER JOIN [sSchemaFramework].vm_translation ON vm_table_button.label_id = vm_translation.translation_id WHERE ressource_id=\'[sRessource]\' and lang=\'[language]\' ORDER BY table_button_id';

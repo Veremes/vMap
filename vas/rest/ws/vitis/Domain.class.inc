@@ -13,7 +13,7 @@ require_once __DIR__.'/../../class/vitis_lib/Connection.class.inc';
 * This class defines operation for one Domain
 * 
 */
-class Domain  extends Vitis{
+class Domain extends Vitis{
     
     public $oError;
     /**
@@ -23,7 +23,7 @@ class Domain  extends Vitis{
      * @param type $properties properties
      * @param type $oConnection connection object
      */
-    function Domain ($aPath, $aValues, $properties, $oConnection){
+    function __construct ($aPath, $aValues, $properties, $oConnection){
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
@@ -80,7 +80,7 @@ class Domain  extends Vitis{
     function DELETE(){
         $this->oConnection->oBd->delete($this->aProperties['schema_framework'], 'domain', 'domain_id', $this->aValues['my_vitis_id'], 'integer');
         if ($this->oConnection->oBd->enErreur()) {
-                $this->oError = new Error(1, $this->oConnection->oBd->getBDMessage());
+                $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
         } else {
                 $this->aFields['domain_id'] = $this->aValues['my_vitis_id'];
         }

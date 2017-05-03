@@ -21,7 +21,10 @@
                         "web_service": {
                             "ressource_id": "vmap/formats",
                             "id_key": "rt_format_id",
-                            "label_key": "rt_format_id"
+                            "label_key": "rt_format_id",
+                            "parameters":{
+                                "order_by":"rt_format_id"
+                            }
                         }
                     },
                     {
@@ -32,29 +35,38 @@
                         "web_service": {
                             "ressource_id": "vmap/orientations",
                             "id_key": "rt_orientation_id",
-                            "label_key": "rt_orientation_id"
+                            "label_key": "rt_orientation_id",
+                            "parameters":{
+                                "order_by":"rt_orientation_id"
+                            }
                         }
                     },
                     {
                         "type": "select",
-                        "name": "outputformat_id",
+                        "name": "outputformats_id",
                         "label": "FORM_OUTPUT_FORMATS_VMAP_PRINTREPORT",
                         "nb_cols": 2,
                         "web_service": {
                             "ressource_id": "vmap/outputformats",
                             "id_key": "outputformats_id",
-                            "label_key": "outputformats_id"
+                            "label_key": "outputformats_id",
+                            "parameters":{
+                                "order_by":"outputformats_id"
+                            }
                         }
                     },
                     {
                         "type": "select",
-                        "name": "business_object_title",
+                        "name": "business_object_id",
                         "label": "FORM_BUSINESS_OBJECT_VMAP_PRINTREPORT",
                         "nb_cols": 2,
                         "web_service": {
                             "ressource_id": "vmap/businessobjects",
                             "id_key": "business_object_id",
-                            "label_key": "business_object_id"
+                            "label_key": "business_object_id",
+                            "parameters":{
+                                "order_by":"business_object_id"
+                            }
                         }
                     }
                 ]
@@ -126,7 +138,10 @@
                         "web_service": {
                             "ressource_id": "vmap/formats",
                             "id_key": "rt_format_id",
-                            "label_key": "rt_format_id"
+                            "label_key": "rt_format_id",
+                            "parameters":{
+                                "order_by":"rt_format_id"
+                            }
                         }
                     }
                 ]
@@ -142,7 +157,10 @@
                         "web_service": {
                             "ressource_id": "vmap/orientations",
                             "id_key": "rt_orientation_id",
-                            "label_key": "rt_orientation_id"
+                            "label_key": "rt_orientation_id",
+                            "parameters":{
+                                "order_by":"rt_orientation_id"
+                            }
                         }
                     }
                 ]
@@ -158,7 +176,10 @@
                         "web_service": {
                             "ressource_id": "vmap/outputformats",
                             "id_key": "outputformats_id",
-                            "label_key": "outputformats_id"
+                            "label_key": "outputformats_id",
+                            "parameters":{
+                                "order_by":"outputformats_id"
+                            }
                         }
                     }
                 ]
@@ -174,7 +195,10 @@
                         "web_service": {
                             "ressource_id": "vmap/businessobjects",
                             "id_key": "business_object_id",
-                            "label_key": "business_object_id"
+                            "label_key": "business_object_id",
+                            "parameters":{
+                                "order_by":"business_object_id"
+                            }
                         }
                     }
                 ]
@@ -299,7 +323,10 @@
                         "web_service": {
                             "ressource_id": "vmap/formats",
                             "id_key": "rt_format_id",
-                            "label_key": "rt_format_id"
+                            "label_key": "rt_format_id",
+                            "parameters":{
+                                "order_by":"rt_format_id"
+                            }
                         },
                         "options": ["|"]
                     }
@@ -316,7 +343,10 @@
                         "web_service": {
                             "ressource_id": "vmap/orientations",
                             "id_key": "rt_orientation_id",
-                            "label_key": "rt_orientation_id"
+                            "label_key": "rt_orientation_id",
+                            "parameters":{
+                                "order_by":"rt_orientation_id"
+                            }
                         },
                         "options": ["|"]
                     }
@@ -333,7 +363,10 @@
                         "web_service": {
                             "ressource_id": "vmap/outputformats",
                             "id_key": "outputformats_id",
-                            "label_key": "outputformats_id"
+                            "label_key": "outputformats_id",
+                            "parameters":{
+                                "order_by":"outputformats_id"
+                            }
                         },
                         "default_value": "pdf"
                     }
@@ -350,7 +383,10 @@
                         "web_service": {
                             "ressource_id": "vmap/businessobjects",
                             "id_key": "business_object_id",
-                            "label_key": "business_object_id"
+                            "label_key": "business_object_id",
+                            "parameters":{
+                                "order_by":"business_object_id"
+                            }
                         }
                     }
                 ]

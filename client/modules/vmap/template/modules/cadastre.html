@@ -570,15 +570,15 @@
                         <div class="col-md-3">
                             <br>
                             <ul class="nav nav-pills nav-stacked" style="width: 180px">
-                                <li data-toggle="pill" href="#cadastre-rapport-parcelle" class="list-group-item list-group-item-modal active">Parcelle</li>
-                                <li data-toggle="pill" href="#cadastre-rapport-compte" class="list-group-item list-group-item-modal">Compte</li>
+                                <li ng-show="ctrl.show_veremes_cadastre_parcelle" data-toggle="pill" href="#cadastre-rapport-parcelle" class="list-group-item list-group-item-modal active">Parcelle</li>
+                                <li ng-show="ctrl.show_veremes_cadastre_compte" data-toggle="pill" href="#cadastre-rapport-compte" class="list-group-item list-group-item-modal">Compte</li>
                             </ul>
                         </div>
 
                         <div class="col-md-9" style="height: 100%;">
 
                             <!--Parcelle-->
-                            <div id="cadastre-rapport-parcelle" class="mapmodal-element fade active in">
+                            <div id="cadastre-rapport-parcelle" class="mapmodal-element fade active in" ng-show="ctrl.show_veremes_cadastre_parcelle">
                                 <br>
                                 <div class="cadastre-rapport-table-container">
                                     <table id="Cadastre-rapports-table-parcelle" 
@@ -661,7 +661,7 @@
                             </div>
 
                             <!--Compte-->
-                            <div id="cadastre-rapport-compte" class="mapmodal-element fade">
+                            <div id="cadastre-rapport-compte" class="mapmodal-element fade" ng-show="ctrl.show_veremes_cadastre_compte">
                                 <br>
                                 <div class="cadastre-rapport-table-container">
                                     <table id="Cadastre-rapports-table-comptes" data-toggle="table" data-sort-name="parcelle" data-show-header="true" data-click-to-select="true" class="font-11 pointer cadastre-table-list transparent">
@@ -682,9 +682,9 @@
                                         <div class="cadastre-rapports-fiche-btn" ng-click="ctrl.displayReleveDeProprieteSheetStandard('#Cadastre-rapports-table-comptes')" title="Relevé de propriété standard associé au compte">
                                             <span class="glyphicon glyphicon-download-alt"></span> Relevé de propriété standard
                                         </div>
-									  
+
                                     </div>
-									<div class="col-md-6">
+                                    <div class="col-md-6">
                                         <div class="cadastre-rapports-fiche-btn" ng-click="ctrl.displayReleveDeProprieteSheetTiers('#Cadastre-rapports-table-comptes')" title="Relevé de propriété tiers associé au compte">
                                             <span class="glyphicon glyphicon-download-alt"></span> Relevé de propriété vers un tiers
                                         </div>
@@ -766,7 +766,7 @@
                         <tbody>
                             <tr ng-repeat="proprietaire in ctrl.oParcelleInfos.aProprietaires">
                                 <td>{{proprietaire.DQUALP}} {{proprietaire.DDENOM}}</td>
-                                <td> <div ng-if="proprietaire.DLDNSS!=null && proprietaire.DLDNSS!=''">Né{{proprietaire.accordSexe}} le {{proprietaire.JDATNSS}} à {{proprietaire.DLDNSS}}</div></td>
+                                <td> <div ng-if="proprietaire.DLDNSS != null && proprietaire.DLDNSS != ''">Né{{proprietaire.accordSexe}} le {{proprietaire.JDATNSS}} à {{proprietaire.DLDNSS}}</div></td>
                                 <td>{{proprietaire.DLIGN3}} {{proprietaire.DLIGN4}} {{proprietaire.DLIGN6}}</td>
                                 <td>{{proprietaire.L_CCODEM}}</td>
                                 <td>{{proprietaire.L_CCODRO}}</td>
@@ -863,13 +863,15 @@
                             <thead>
                                 <!-- Noms des champs -->
                                 <tr class="blue color-white">
-                                    <th ng-repeat="(value, key) in node.data[0]">{{node[value]}}</th>
+                                    <!--<th ng-repeat="(value, key) in node.data[0]">{{node[value]}}</th>-->
+                                    <th ng-if="node[value]" ng-repeat="(key, value) in node.aFields">{{node[value]}}</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <!-- Valeurs des champs -->
                                 <tr ng-repeat="row in node.data">
-                                    <td ng-repeat="(value, key) in row">{{key}}</td>
+                                    <!--<td ng-repeat="(key, value) in row">{{value}}</td>-->
+                                    <td ng-if="row[value]" ng-repeat="(key, value) in node.aFields">{{row[value]}}</td>
                                 </tr>
                             </tbody>
                         </table>

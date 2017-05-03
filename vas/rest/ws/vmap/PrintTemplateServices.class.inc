@@ -39,7 +39,7 @@ class PrintTemplateServices extends PrintServices {
      * @param type $properties properties
      * @param type $oConnection connection object
      */
-    function printtemplateservices($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
@@ -51,46 +51,46 @@ class PrintTemplateServices extends PrintServices {
      *   tags={"PrintServices"},
      *   summary="Creates a map print",
      *   description="Creates a map print",
-     *   operationId="GET",
+     *   operationId="POST",
      *   produces={"application/json"},
      * @SWG\Parameter(
      *     name="token",
-     *     in="query",
+     *     in="formData",
      *     description="user token",
      *     required=true,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="printtemplate_id",
-     *     in="query",
+     *     in="formData",
      *     description="template to print out",
      *     required=true,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="maps_json",
-     *     in="query",
+     *     in="formData",
      *     description="target + map_definition",
      *     required=false,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="includes_json",
-     *     in="query",
+     *     in="formData",
      *     description="target + imageUrl|base64Image|html",
      *     required=false,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="scope_json",
-     *     in="query",
+     *     in="formData",
      *     description="scope to incorpore",
      *     required=false,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="quality",
-     *     in="query",
+     *     in="formData",
      *     description="image quality",
      *     required=false,
      *     type="string"

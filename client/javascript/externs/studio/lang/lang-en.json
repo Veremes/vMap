@@ -1,5 +1,24 @@
 {
     "Loader": {
+        "File": "File",
+        "Edit": "Edit",
+        "ManageTabs": "Manage tabs",
+        "ManageWab": "Manage Wab",
+        "Tab": "Tab",
+        "WabGroup": "Group",
+        "WabState": "State",
+        "Validate": "Validate",
+        "Cancel": "Cancel",
+        "AddTab": "Add tab",
+        "EditTab": "Edit",
+        "RemoveTab": "Remove",
+        "MoveLeft": "Move the tab to the left",
+        "MoveRight": "Move the tab to the right",
+        "SelectAllElements": "Select all elements",
+        "SelectNoElements": "Select no elements",
+        "AllowDisplayElement": "Display only element",
+        "AllowEditElement": "Editable element",
+        "AskRemoveTab": "Do you want to remove this tab ?",
         "Title": "Form",
         "SelectForm": {
             "Default": "Default",
@@ -28,6 +47,8 @@
         "Form": {
             "Title": "Title",
             "TitlePlaceholder": "Form title",
+            "Event" : "Evénement",
+            "EventPlaceholder" : "Evénement appelé lors du submit",
             "SuggestedFields": "Suggested fields",
             "SelectSize": {
                 "Label": "Input height :",
@@ -68,7 +89,9 @@
             "PublishAndSave": " Has been published and saved",
             "Publish_Error": "Error while publishing : ",
             "no_form": "Any form found on the server",
-            "generate_form": "Any form found on the server, try to generate one ?"
+            "generate_form": "Any form found on the server, try to generate one ?",
+            "generate_form_error": "Can't get the table columns",
+            "generate_form_error_description": "The table doesn't exists or you don't have select rights"
         }
     },
     "Element": {
@@ -124,6 +147,18 @@
                 "displayOnly": "Display only",
                 "DefaultValue": "Default value",
                 "Value": "Value"
+            },
+            "BusinessObject": {
+                "BusinessObject": "Business object",
+                "Link": "Link with the business object",
+                "BoFilterAttr": "Business object attribute",
+                "FormFilterValue": "Form value"
+            },
+            "Section": {
+                "Section": "Vitis section",
+                "Link": "Link with the Vitis section",
+                "SectionFilterAttr": "Section attribute",
+                "FormFilterValue": "Form value"
             },
             "Button": {
                 "Type": "Button type",
@@ -329,6 +364,16 @@
                 "Notify": {
                     "OutRange": "Your values are outside of the map"
                 }
+            },
+            "CM":{
+                "Language" : "Language",
+                "Language_PH" : "Language used for coloration",
+                "TabSize" : "Tabs size",
+                "Separator" : "Separator",
+                "Separator_PH" : "Character used like separator",
+                "ReadOnly" : "read only",
+                "LineNumber" : "Show lines",
+                "IndentTabs" : "Use tabs to indent"
             },
             "Number": {
                 "Label_PH": "Input label",

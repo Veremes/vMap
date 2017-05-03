@@ -47,7 +47,7 @@
         "title":"FORM_TITLE_VMAP_BUSINESS_OBJECT_EVENT",
         "input_size":"xs",
         "event":"sendSimpleForm()",
-        "nb_cols":6,
+        "nb_cols":12,
         "rows":[
             {
                 "fields":[
@@ -55,7 +55,12 @@
                         "type":"label",
                         "name":"event_id",
                         "label":"FORM_EVENT_ID_VMAP_BUSINESS_OBJECT_EVENT",
-                        "nb_cols":12
+                        "nb_cols":6,
+                        "tooltip": {
+                            "title": "",
+                            "content": "FORM_EVENT_ID_VMAP_BUSINESS_OBJECT_EVENT_TOOLTIP",
+                            "container": "body"
+                        }
                     }
                 ]
             },
@@ -65,8 +70,8 @@
                         "type":"textarea",
                         "name":"description",
                         "label":"FORM_DESCRIPTION_VMAP_BUSINESS_OBJECT_EVENT",
-                        "size":8,
-                        "nb_cols":12
+                        "size":13,
+                        "nb_cols":9
                     }
                 ]
             },
@@ -102,7 +107,7 @@
         "input_size":"xs",
         "event":"sendSimpleForm()",
         "afterEvent":"editSectionForm()",
-        "nb_cols":6,
+        "nb_cols":12,
         "rows":[
             {
                 "fields":[
@@ -111,7 +116,12 @@
                         "name":"event_id",
                         "label":"FORM_EVENT_ID_VMAP_BUSINESS_OBJECT_EVENT",
                         "required":true,
-                        "nb_cols":12
+                        "nb_cols":6,
+                        "tooltip": {
+                            "title": "",
+                            "content": "FORM_EVENT_ID_VMAP_BUSINESS_OBJECT_EVENT_TOOLTIP",
+                            "container": "body"
+                        }
                     }
                 ]
             },
@@ -121,8 +131,8 @@
                         "type":"textarea",
                         "name":"description",
                         "label":"FORM_DESCRIPTION_VMAP_BUSINESS_OBJECT_EVENT",
-                        "size":8,
-                        "nb_cols":12
+                        "size":12,
+                        "nb_cols":9
                     }
                 ]
             },
@@ -131,7 +141,7 @@
                     {
                         "type":"button",
                         "class":"btn-ungroup btn-group-sm",
-                        "nb_cols":12,
+                        "nb_cols":6,
                         "buttons":[
                             {
                                 "type":"submit",

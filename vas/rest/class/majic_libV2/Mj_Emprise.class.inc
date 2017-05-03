@@ -37,7 +37,7 @@ class Mj_Emprise extends Mj {
 	* \param $iCompteur
 	* \param $iTolerance Valeur minimum de surface intersecté à partir de laquelle le contenu d'un enregistrement est affiché.
 	*/
-	function Mj_Emprise($aField,$aRow,$iCompteur, $iTolerance) {
+	function __construct($aField,$aRow,$iCompteur, $iTolerance) {
 		$aEmpriseParcelle= array();
 		switch(strtoupper($aField["type"])) {
 			case "POINT" :

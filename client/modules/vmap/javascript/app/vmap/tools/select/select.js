@@ -6,6 +6,9 @@
  * cette classe permet l'interrogation de couches
  */
 goog.provide('nsVmap.nsToolsManager.Select');
+
+goog.require('oVmap');
+
 goog.require('nsVmap.nsToolsManager.BasicSelect');
 goog.require('nsVmap.nsToolsManager.AdvancedSelect');
 
@@ -21,10 +24,6 @@ nsVmap.nsToolsManager.Select = function () {
 
     this.oAdvancedSelect_ = new nsVmap.nsToolsManager.AdvancedSelect();
     this.oBasicSelect_ = new nsVmap.nsToolsManager.BasicSelect();
-
-    // Directives et controleurs Angular
-    oVmap.module.directive('appSelect', this.selectDirective);
-    oVmap.module.controller('AppSelectController', this.selectController);
 };
 
 /**
@@ -138,13 +137,16 @@ nsVmap.nsToolsManager.Select.prototype.updateBOValues = function (bo_type, boVal
 };
 
 /**
- * Get the values from oFormValues
+ * Get the form values to send
  * @param {object} oFormValues
- * @returns {object}
+ * @param {object} oFormDefinition
+ * @param {string} sFormDefinitionName
+ * @param {array|undefined} aParamsToSave
+ * @returns {object|null}
  */
-nsVmap.nsToolsManager.Select.prototype.getBOValuesFromFormValues = function (oFormValues) {
+nsVmap.nsToolsManager.Select.prototype.getFormData = function (oFormValues, oFormDefinition, sFormDefinitionName, aParamsToSave) {
     var scope = angular.element($('#vmap-select-tool')).scope();
-    return scope['ctrl'].getBOValuesFromFormValues(oFormValues);
+    return scope['ctrl'].getFormData(oFormValues, oFormDefinition, sFormDefinitionName, aParamsToSave);
 };
 
 /**
@@ -480,7 +482,8 @@ nsVmap.nsToolsManager.Select.prototype.selectController.prototype.queryByEWKTGeo
             'get_geom': get_geom,
             'get_image': get_geom,
             'result_srid': srid,
-            'limit': limit
+            'limit': limit,
+            'd': Date.now()
         },
         timeout: opt_options.canceler.promise
     }).then(function (response) {
@@ -580,7 +583,8 @@ nsVmap.nsToolsManager.Select.prototype.selectController.prototype.displayObjectC
         return 0;
 
     this['editSelection'] = {
-        'bo_title': selection['bo_title']
+        'bo_title': selection['bo_title'],
+        'display_form_size': selection['display_form_size']
     };
 
     // Récupere les informations du formuaire
@@ -646,6 +650,7 @@ nsVmap.nsToolsManager.Select.prototype.selectController.prototype.displayEditFro
                         "class": "btn-ungroup btn-group-sm",
                         "nb_cols": 12,
                         "buttons": [{
+                                "visibleAllTabs": true,
                                 "type": "submit",
                                 "label": "FORM_UPDATE",
                                 "name": "form_submit",
@@ -665,22 +670,34 @@ nsVmap.nsToolsManager.Select.prototype.selectController.prototype.displayEditFro
                 $('#select_edit_form_reader').find('button').attr('disabled', true);
                 showAjaxLoader();
 
-                var boValues = this_.getBOValuesFromFormValues(oFormValuesResulted['update']);
+                // Paramètres peut être non fournis dans le formulaire à sauvegarger
+                var aParamsToSave = [selection['bo_id_field']];
+                if (goog.isDefAndNotNull(this_['editableSelection'])) {
+                    if (goog.isDefAndNotNull(this_['editableSelection']['geom_column'])) {
+                        aParamsToSave.push(this_['editableSelection']['geom_column']);
+                    }
+                }
+
+                var boValues = this_.getFormData(oFormValuesResulted, oFormDefinition, 'update', aParamsToSave);
+
                 selection['bo_form'] = boValues;
 
                 this_.updateBOValues(selection['bo_type'], boValues, function () {
                     $('#select-edit-modal').modal('hide');
                     $('#select_edit_form_reader').find('button').attr('disabled', false);
                     this_.clearOverlays();
+                    if (goog.isDefAndNotNull(onsubmit)) {
+                        onsubmit.call(this, boValues);
+                    }
                 }, function () {
                     $('#select-edit-modal').modal('hide');
                     $('#select_edit_form_reader').find('button').attr('disabled', false);
                     this_.clearOverlays();
+                    if (goog.isDefAndNotNull(onsubmit)) {
+                        onsubmit.call(this, boValues);
+                    }
                 });
 
-                if (goog.isDefAndNotNull(onsubmit)) {
-                    onsubmit.call(this, boValues);
-                }
             };
 
 
@@ -715,7 +732,13 @@ nsVmap.nsToolsManager.Select.prototype.selectController.prototype.displayEditFro
                     loadExternalJs([sUrl], {
                         "callback": function () {
                             loadForm();
-                            constructor_form(editFormReaderScope, sUrl);
+                            try {
+                                if (goog.isDef(constructor_form)) {
+                                    constructor_form(editFormReaderScope, sUrl);
+                                }
+                            } catch (e) {
+                                oVmap.log("constructor_form does not exist");
+                            }
                         },
                         "async": true,
                         "scriptInBody": true
@@ -1106,43 +1129,48 @@ nsVmap.nsToolsManager.Select.prototype.selectController.prototype.updateBOValues
 };
 
 /**
- * Get the values from oFormValues
+ * Get the form values to send
  * @param {object} oFormValues
- * @returns {object}
+ * @param {object} oFormDefinition
+ * @param {string} sFormDefinitionName
+ * @param {array|undefined} aParamsToSave
+ * @returns {object|null}
  */
-nsVmap.nsToolsManager.Select.prototype.selectController.prototype.getBOValuesFromFormValues = function (oFormValues) {
-    oVmap.log('nsVmap.nsToolsManager.Select.prototype.selectController.prototype.getBOValuesFromFormValues');
+nsVmap.nsToolsManager.Select.prototype.selectController.prototype.getFormData = function (oFormValues, oFormDefinition, sFormDefinitionName, aParamsToSave) {
+    oVmap.log('nsVmap.nsToolsManager.Select.prototype.selectController.prototype.getFormData');
 
-    var oFormValuesValues = goog.object.clone(oFormValues);
+    if (!goog.isDefAndNotNull(oFormValues)) {
+        console.error('oFormValues is undefined or null');
+        return null;
+    }
+    if (!goog.isDefAndNotNull(oFormDefinition)) {
+        console.error('oFormDefinition is undefined or null');
+        return null;
+    }
+    if (!goog.isDefAndNotNull(sFormDefinitionName)) {
+        console.error('sFormDefinitionName is undefined or null');
+        return null;
+    }
+    if (!goog.isDefAndNotNull(aParamsToSave)) {
+        aParamsToSave = [];
+    }
 
-    for (var key in oFormValuesValues) {
-        if (goog.isObject(oFormValuesValues[key])) {
-            if (goog.isDefAndNotNull(oFormValuesValues[key]['selectedOption'])) {
-                if (goog.isDefAndNotNull(oFormValuesValues[key]['selectedOption']['value'])
-                        && oFormValuesValues[key]['selectedOption']['value'] !== "") {
-                    oFormValuesValues[key] = oFormValuesValues[key]['selectedOption']['value'];
-                } else
-                // Cas de liste à choix multiples    
-                if (goog.isArray(oFormValuesValues[key]['selectedOption'])) {
-                    var aValues = [];
-                    for (var i = 0; i < oFormValuesValues[key]['selectedOption'].length; i++) {
-                        if (goog.isDefAndNotNull(oFormValuesValues[key]['selectedOption'][i]['value'])
-                                && oFormValuesValues[key]['selectedOption'][i]['value'] !== "") {
-                            aValues.push(oFormValuesValues[key]['selectedOption'][i]['value']);
-                        }
-                    }
-                    oFormValuesValues[key] = angular.copy(aValues.join('|'));
-                    delete aValues;
-                } else {
-                    delete oFormValuesValues[key];
-                }
-            }
-        } else if (!goog.isDefAndNotNull(oFormValuesValues[key])) {
-            delete oFormValuesValues[key];
+    var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
+    var formSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["formSrvc"]);
+
+    envSrvc["oFormValues"] = oFormValues;
+    envSrvc["oFormDefinition"] = oFormDefinition;
+    envSrvc["sFormDefinitionName"] = sFormDefinitionName;
+
+    var oFormData = formSrvc['getFormData'](sFormDefinitionName, true);
+
+    for (var i = 0; i < aParamsToSave.length; i++) {
+        if (goog.isDefAndNotNull(oFormValues[sFormDefinitionName][aParamsToSave[i]])) {
+            oFormData[aParamsToSave[i]] = oFormValues[sFormDefinitionName][aParamsToSave[i]];
         }
     }
 
-    return oFormValuesValues;
+    return oFormData;
 };
 
 /**
@@ -1270,7 +1298,7 @@ nsVmap.nsToolsManager.Select.prototype.selectController.prototype.submitDeleteOb
  * @export
  */
 nsVmap.nsToolsManager.Select.prototype.selectController.prototype.addToCard = function (aSelection, bReplace) {
-    oVmap.log('nsVmap.nsToolsManager.Select.prototype.selectController.prototype.tableAddToCard');
+    oVmap.log('nsVmap.nsToolsManager.Select.prototype.selectController.prototype.addToCard');
 
     // Vide le panier
     if (bReplace) {
@@ -1293,6 +1321,10 @@ nsVmap.nsToolsManager.Select.prototype.selectController.prototype.addToCard = fu
                 var bo_type = aSelection[0]['bo_type'];
                 var bo_title = aSelection[0]['bo_title'];
 
+                var rowOptions = {
+                    invisibleColumns: ['selection', 'state']
+                };
+
                 // Extrait la data (qui cette fois ci contient la feature)
                 for (var i = 0; i < aSelection.length; i++) {
                     if (!goog.isDefAndNotNull(aSelection[i]['bo_list'])) {
@@ -1305,6 +1337,12 @@ nsVmap.nsToolsManager.Select.prototype.selectController.prototype.addToCard = fu
                     }
                     aData.push(aSelection[i]['bo_list']);
                     aData[i]['feature'] = aSelection[i]['olFeature'];
+
+                    // Si ne contient pas le champ identifiant
+                    if (!goog.isDefAndNotNull(aData[i][aSelection[i]['bo_id_field']])) {
+                        aData[i][aSelection[i]['bo_id_field']] = aSelection[i]['bo_id_value'];
+                        rowOptions.invisibleColumns.push(aSelection[i]['bo_id_field']);
+                    }
                 }
 
                 // Crée l'onglet correspondant
@@ -1312,10 +1350,7 @@ nsVmap.nsToolsManager.Select.prototype.selectController.prototype.addToCard = fu
                     oVmap.getToolsManager().getInfoContainer().addTab({tabCode: bo_type, tabName: bo_title, actions: ['zoom', 'delete']});
 
                 var tabOptions = {tabCode: bo_type};
-                var rowOptions = {
-                    data: aData,
-                    invisibleColumns: ['selection', 'state']
-                };
+                rowOptions.data = aData;
 
                 // Ajoute les inos au panier
                 oVmap.getToolsManager().getInfoContainer().addMultipleRows(tabOptions, rowOptions);
@@ -1677,7 +1712,7 @@ nsVmap.nsToolsManager.Select.prototype.selectController.prototype.putFeaturesOnT
     }
 
     // Cas de feature simple
-    if (this['editableFeatureType'].substr(0, 5) !== 'MULTI') {
+    if (this['editableFeatureType'].substr(0, 5) !== 'MULTI' && this['editableFeatureType'] !== 'GEOMETRYCOLLECTION') {
         // La nouvelle feature devient la feature de référence
         this['editableSelection']['olFeature'] = aFeatures[aFeatures.length - 1];
         // Supprime les aurtes features
@@ -1730,7 +1765,7 @@ nsVmap.nsToolsManager.Select.prototype.selectController.prototype.putElementFeat
     }
 
     // Cas de feature simple
-    if (this['editableFeatureType'].substr(0, 5) !== 'MULTI') {
+    if (this['editableFeatureType'].substr(0, 5) !== 'MULTI' && this['editableFeatureType'] !== 'GEOMETRYCOLLECTION') {
         this.oOverlayLayer_.getSource().clear;
         this.oOverlayLayer_.getSource().addFeature(this['editableSelection']['olFeature']);
     }
@@ -1849,3 +1884,9 @@ nsVmap.nsToolsManager.Select.prototype.selectController.prototype.finishEdition 
     // cache la palette d'édition
     oVmap.getToolsManager().getBasicTools().toggleOutTools();
 };
+
+
+
+// Définit la directive et le controller
+oVmap.module.directive('appSelect', nsVmap.nsToolsManager.Select.prototype.selectDirective);
+oVmap.module.controller('AppSelectController', nsVmap.nsToolsManager.Select.prototype.selectController);

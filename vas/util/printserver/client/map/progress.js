@@ -1,4 +1,6 @@
 
+/* global ol */
+
 /**
  * Renders a progress bar.
  * @param {object} oPrintMap The map object
@@ -57,6 +59,7 @@ Progress.prototype.followLayersProgress = function () {
 
         delete source;
     }
+    this.update();
 };
 
 /**
@@ -65,18 +68,35 @@ Progress.prototype.followLayersProgress = function () {
 Progress.prototype.getTotalTiles = function () {
 
     var totalTiles = 0;
+    var tileGrid;
 
     for (var i = 0; i < this.layers.length; i++) {
 
         var layer = this.layers[i];
-        var tileGrid = layer.getSource().getTileGrid();
+
+        if (goog.isDefAndNotNull(layer.getSource().getTileGrid)) {
+            tileGrid = layer.getSource().getTileGrid();
+        }else{
+            tileGrid = null;
+        }
 
         if (tileGrid === null) {
             callLog('tileGrid = null');
             continue;
         }
+        if (!layer.getVisible()) {
+            continue;
+        }
 
-        var sourceTileSize = tileGrid.getTileSize();
+        var sourceTileSize;
+
+        if (tileGrid instanceof ol.tilegrid.WMTS) {
+            var z = tileGrid.getZForResolution(this.map.getView().getResolution());
+            sourceTileSize = tileGrid.getTileSize(z);
+        } else {
+            sourceTileSize = tileGrid.getTileSize();
+        }
+
         var xTilesCount = 1;
         var yTilesCount = 1;
         var bCustomTileGrid = true;

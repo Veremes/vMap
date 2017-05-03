@@ -18,6 +18,10 @@ html, body {
 body {
     overflow: hidden;
 }
+.modal-backdrop.in {
+    filter: alpha(opacity=25);
+    opacity: .25;
+}
 .container {
     width: 100%;
     height: 100%;
@@ -40,7 +44,7 @@ body {
 #gtf_logo{
     width: auto;
     margin: 0px;
-    padding: 5px 37px 5px 7px;
+    padding: 5px 37px 3px 7px;
 }
 
 #mode_column_layout {
@@ -54,7 +58,7 @@ body {
     width: 50px;
     height: calc(~"100% - 40px");
     border-right: 1px solid #d4d4d4;
-    overflow-y: auto;
+    overflow: hidden;
 }
 
 .data_column {
@@ -88,6 +92,33 @@ body {
 }
 .h6{
     font-size: 12px !important;
+}
+.width-10{
+    width: 10% !important;
+}
+.width-20{
+    width: 20% !important;
+}
+.width-30{
+    width: 30% !important;
+}
+.width-40{
+    width: 40% !important;
+}
+.width-50{
+    width: 50% !important;
+}
+.width-60{
+    width: 60% !important;
+}
+.width-70{
+    width: 70% !important;
+}
+.width-80{
+    width: 80% !important;
+}
+.width-90{
+    width: 90% !important;
 }
 .width-100{
     width: 100% !important;
@@ -187,6 +218,48 @@ body {
     margin-right: 20px !important;
     margin-left: 20px !important;
 }
+.margin-right-0{
+    margin-right: 0px !important;
+}
+.margin-right-2{
+    margin-right: 2px !important;
+}
+.margin-right-3{
+    margin-right: 3px !important;
+}
+.margin-right-5{
+    margin-right: 5px !important;
+}
+.margin-right-10{
+    margin-right: 10px !important;
+}
+.margin-right-15{
+    margin-right: 15px !important;
+}
+.margin-right-20{
+    margin-right: 20px !important;
+}
+.margin-left-0{
+    margin-left: 0px !important;
+}
+.margin-left-2{
+    margin-left: 2px !important;
+}
+.margin-left-3{
+    margin-left: 3px !important;
+}
+.margin-left-5{
+    margin-left: 5px !important;
+}
+.margin-left-10{
+    margin-left: 10px !important;
+}
+.margin-left-15{
+    margin-left: 15px !important;
+}
+.margin-left-20{
+    margin-left: 20px !important;
+}
 .padding-0{
     padding-top: 0px !important;
     padding-bottom: 0px !important;
@@ -226,6 +299,13 @@ body {
 .padding-sides-10{
     padding-right: 10px !important;
     padding-left: 10px !important;
+}
+
+.normal{
+    font-weight: normal !important;
+}
+.bold{
+    font-weight: bold !important;
 }
 
 // Conteneurs des modes
@@ -588,6 +668,23 @@ body {
 .modal-dialog{
     height: ~"calc(100% - 60px)";
 }
+.modal-30{
+    width: 30vw !important;
+}
+.modal-60{
+    width: 60vw !important;
+}
+.modal-90{
+    width: 90vw !important;
+}
+.modal-l{
+    width: 70% !important;
+    margin: 0px auto !important;
+    padding: 30px 0px !important;
+}
+.modal-l>.modal-content{
+    height: 100% !important;
+}
 .modal-xl{
     width: 90% !important;
     height: 100% !important;
@@ -596,6 +693,27 @@ body {
 }
 .modal-xl>.modal-content{
     height: 100% !important;
+}
+.modal-body-with-header {
+    /*
+        100% - 60px: .modal-dialog height
+        30px: .modal-dialog margin
+        *0.9: .modal-content 90% height
+        56px: header height
+    */
+    height: ~"calc((100vh - 60px - 30px)*0.9 - 56px)";
+    overflow: auto;
+}
+.modal-body-with-footer {
+    /*
+        100% - 60px: .modal-dialog height
+        30px: .modal-dialog margin
+        *0.9: .modal-content 90% height
+        56px: header height
+        56px: footer height
+    */
+    height: ~"calc((100vh - 60px - 30px)*0.9 - 56px - 56px)";
+    overflow: auto;
 }
 .modal-body-big {
     height: ~"calc(100% - 56px)";
@@ -621,6 +739,38 @@ body {
     max-height: ~"calc(100vh - 164px)";
     overflow: auto;
 }
+.modal-body-big-with-footer-3-fixed {
+    height: ~"calc(100vh - 164px)";
+    overflow: auto;
+}
+
+// Sous modale
+div[app-form-reader]>.modal>.modal-dialog{
+    margin-top: 0px;
+}
+div[data-app-html-form]>div[app-form-reader]>.modal>.modal-dialog{
+    margin-top: 30px;
+}
+.modal-content>.modal-body>div[app-form-reader]>.modal{
+    overflow: visible;
+    position: fixed;
+}
+.modal-dialog>.modal-content>.modal-body>div[app-form-reader]>.modal>.modal-90{
+    left: -26vw;
+}
+.modal-dialog>.modal-content>.modal-body>div[app-form-reader]>.modal>.modal-60{
+    left: -11vw;
+}
+.modal-60>.modal-content>.modal-body>div[app-form-reader]>.modal>.modal-90{
+    left: -15vw;
+}
+.modal-60>.modal-content>.modal-body>div[app-form-reader]>.modal>.modal-60{
+    left: inherit;
+}
+.modal-90>.modal-content>.modal-body>div[app-form-reader]>.modal>.modal-90{
+    left: inherit;
+}
+
 .modal-footer-sm {
     padding: 3px 15px;
 }
@@ -665,4 +815,68 @@ body {
 .treeview>.list-group>.list-group-item{
     // En cas ou le texte à afficher dans la ligne soit plus grand que le <li>
     width: 8000px;
+}
+
+// Onglets d'un formulaire
+.vitis-nav-left {
+    margin-left: -15px !important;
+    margin-right: -15px !important;
+}
+.vitis-nav-left>li>a {
+    color: white !important;
+    background-color: @application-lighen-color-theme !important;
+    border-radius: 0px !important;
+    border: 1px solid @application-lighen-color-theme !important;
+}
+.vitis-nav-left>li>a:hover, .vitis-nav-left>li.active>a, .vitis-nav-left>li.active>a:hover {
+    color: @application-color-theme !important;
+    background-color: #ffffff !important;
+    font-weight: bold !important;
+}
+
+.vitis-nav-top>li>a:hover, .vitis-nav-top>li.active>a, .vitis-nav-top>li.active>a:hover {
+    color: @application-darken-color-theme !important;
+}
+.vitis-nav-top>li>a {
+    color: @application-color-theme !important;
+}
+
+.stepwizard-step p {
+    margin-top: 10px;
+}
+.stepwizard-row {
+    display: table-row;
+}
+.stepwizard {
+    display: table;
+    width: 100%;
+    position: relative;
+}
+.stepwizard-step>.btn[disabled] {
+    opacity: 1 !important;
+    filter: alpha(opacity=100) !important;
+}
+.stepwizard-row:before {
+    top: 14px;
+    bottom: 0;
+    position: absolute;
+    content: " ";
+    width: 100%;
+    height: 1px;
+    background-color: #ccc;
+    z-order: 0;
+}
+.stepwizard-step {
+    display: table-cell;
+    text-align: center;
+    position: relative;
+}
+.btn-circle {
+    width: 30px;
+    height: 30px;
+    text-align: center;
+    padding: 6px 0;
+    font-size: 12px;
+    line-height: 1.428571429;
+    border-radius: 15px;
 }

@@ -367,7 +367,7 @@
                                     </div>
                                 </div>
                                 <!--businessObject-->
-                                <div id="businessObjectDatasourceAddform" ng-if="newSource.dataType === 'businessObject'">
+                                <div id="businessObjectDatasourceAddform" ng-if="editedDatasource.dataType === 'businessObject'">
                                     <!--Business Object-->
                                     <div class="element-margin form-group-xxs col-xs-6">
                                         <label class="control-label">{{::ctrl.text.Element.Component.Select.BusinessObject}}</label>
@@ -381,11 +381,12 @@
                                         <label class="control-label">{{::ctrl.text.Element.Component.Select.BusinessObject_Request}}</label>
                                         <select class="form-control element-margin"
                                                 ng-model="editedDatasource.businessObjectRequest">
-                                            <option value="summary">sql_summary</option>
-                                            <option value="list">sql_list</option>
+                                            <option value="form">Form</option>
+                                            <option value="summary">SQL Summary</option>
+                                            <option value="list">SQL List</option>
                                         </select>
                                     </div>
-                                    <textarea style="width:calc(100% - 30px);height: 63px;margin-left: 15px;margin-right: 15px;" ng-model="newSource.businessObject['sql_' + newSource.businessObjectRequest]" disabled></textarea>
+                                    <textarea style="width:calc(100% - 30px);height: 63px;margin-left: 15px;margin-right: 15px;" ng-model="editedDatasource.businessObject['sql_' + editedDatasource.businessObjectRequest]" disabled></textarea>
                                 </div>
                                 <!--externalDatabase-->
                                 <div id="externalDatabaseDatasourceAddform" ng-if="editedDatasource.dataType === 'externalDatabase'">
@@ -671,8 +672,9 @@
                                         <label class="control-label">{{::ctrl.text.Element.Component.Select.BusinessObject_Request}}</label>
                                         <select class="form-control element-margin"
                                                 ng-model="newSource.businessObjectRequest">
-                                            <option value="summary">sql_summary</option>
-                                            <option value="list">sql_list</option>
+                                            <option value="form">Form</option>
+                                            <option value="summary">SQL Summary</option>
+                                            <option value="list">SQL List</option>
                                         </select>
                                     </div>
                                     <textarea style="width:calc(100% - 30px);height: 63px;margin-left: 15px;margin-right: 15px;" ng-model="newSource.businessObject['sql_' + newSource.businessObjectRequest]" disabled></textarea>
@@ -803,6 +805,198 @@
                     </div>
                 </div>
             </div>
+        </div>
+        <!--Modale gestion des onglets-->
+        <div id="studio-tabsmanager-modal" class="modal fade" role="dialog">
+            <div class="modal-dialog modal-l">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">{{::ctrl.text.Loader.ManageTabs}}</h4>
+                    </div>
+                    <div class="modal-body modal-body-big-with-footer">
+                        <div class="row height-100">
+                            <div class="col-xs-7 height-100" style="overflow-x: auto">
+                                <!--Sélection des attributs dans les onglets-->
+                                <table style="width:100%">
+                                    <tr>
+                                        <th class=""></th>
+                                        <th ng-repeat="tab in tabs.list">
+
+                                            <div class="input-group input-group-xs margin-right-20" ng-show="tab.studio_mode === 'edit'">
+                                                <input type="text" class="form-control" ng-model="tab.label">
+                                                <span class="input-group-addon btn btn-primary btn-xs glyphicon glyphicon-ok" 
+                                                      style="min-width: inherit;"
+                                                      ng-click="tab.studio_mode = 'display'"></span>
+                                            </div>
+
+                                            <div ng-show="tab.studio_mode !== 'edit'">
+                                                <div class="dropdown">
+                                                    <div class="dropdown-toggle pointer" id="sudio-tabsmanager-modal-table-{{$index}}-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                                                        {{tab.label}}
+                                                        <span class="caret"></span>
+                                                    </div>
+                                                    <ul class="dropdown-menu" aria-labelledby="sudio-tabsmanager-modal-table-{{$index}}-dropdown">
+                                                        <li>
+                                                            <a title="{{::ctrl.text.Loader.EditTab}}" href="javascript:void(0);" ng-click="tab.studio_mode = 'edit'">
+                                                                <span class="glyphicon glyphicon-pencil font-12" aria-hidden="true"></span>
+                                                                {{::ctrl.text.Loader.EditTab}}
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a title="{{::ctrl.text.Loader.RemoveTab}}" href="javascript:void(0);" ng-click="ctrl.askAndRemoveTab(tab)">
+                                                                <span class="glyphicon glyphicon-remove font-12" aria-hidden="true"></span>
+                                                                {{::ctrl.text.Loader.RemoveTab}}
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a title="{{::ctrl.text.Loader.SelectAllElements}}" href="javascript:void(0);" ng-click="ctrl.selectAllElems(tab)">
+                                                                <span class="glyphicon glyphicon-check font-12" aria-hidden="true"></span>
+                                                                {{::ctrl.text.Loader.SelectAllElements}}
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a title="{{::ctrl.text.Loader.SelectNoElements}}" href="javascript:void(0);" ng-click="tab.elements = []">
+                                                                <span class="glyphicon glyphicon-share font-12" aria-hidden="true"></span>
+                                                                {{::ctrl.text.Loader.SelectNoElements}}
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a title="{{::ctrl.text.Loader.MoveLeft}}" href="javascript:void(0);" ng-click="ctrl.moveTab(tab, 'left')">
+                                                                <span class="glyphicon glyphicon-arrow-left font-12" aria-hidden="true"></span>
+                                                                {{::ctrl.text.Loader.MoveLeft}}
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a title="{{::ctrl.text.Loader.MoveRight}}" href="javascript:void(0);" ng-click="ctrl.moveTab(tab, 'right')">
+                                                                <span class="glyphicon glyphicon-arrow-right font-12" aria-hidden="true"></span>
+                                                                {{::ctrl.text.Loader.MoveRight}}
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </th>
+                                    </tr>
+                                    <tr ng-repeat="(elemIndex, elem) in elems">
+                                        <td class="width-20" ng-class="{'bold': buttons.indexOf(elem) !== -1}">{{elem}}</td>
+                                        <td style="width:"
+                                            ng-repeat="(tabIndex, tab) in tabs.list">
+                                            <div class="checkbox margin-0">
+                                                <input id="studio-tabsmanager-modal-show-elem-checkbox-{{elemIndex}}-{{tabIndex}}" 
+                                                       type="checkbox"
+                                                       ng-checked="tab.elements.indexOf(elem) !== -1"
+                                                       ng-click="ctrl.toggleElemOnTab(elem, tab)">
+                                                <label for="studio-tabsmanager-modal-show-elem-checkbox-{{elemIndex}}-{{tabIndex}}" class="control-label"></label>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-xs-5 height-100" style="overflow-x: auto">
+                                <h4 class="modal-title ng-binding" style="margin-bottom: 15px;">Prévisualisation</h4>
+                                <!--Prévisualisation-->
+                                <div id="studio_test_tabs_form_reader"
+                                     app-form-reader 
+                                     app-form-definition-name="sTestTabFormDefinitionName" 
+                                     app-form-values="oTestTabFormValues" 
+                                     app-form-definition="oTestTabFormDefinition"
+                                     app-form-events-container="oFormScope"
+                                     app-properties="oProperties"
+                                     app-token="sToken"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary right margin-left-20" ng-click="ctrl.saveTabs(tabs)">{{::ctrl.text.Loader.Validate}}</button>
+                        <button type="button" class="btn btn-primary right margin-left-20" ng-click="ctrl.addTab()">{{::ctrl.text.Loader.AddTab}}</button>
+                        <button type="button" class="btn btn-default right margin-left-20" onclick="$('#studio-tabsmanager-modal').modal('hide');">{{::ctrl.text.Loader.Cancel}}</button>
+                    </div>
+                </div>
+            </div>  
+        </div>
+        <!--Modale gestion wab-->
+        <div id="studio-wabmanager-modal" class="modal fade" role="dialog">
+            <div class="modal-dialog modal-l">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">{{::ctrl.text.Loader.ManageWab}}</h4>
+                    </div>
+                    <div class="modal-body modal-body-big-with-footer">
+                        <div class="row" style="height:50px">
+                            <div class="col-xs-3">
+                                <label>{{::ctrl.text.Loader.WabGroup}}</label>
+                                <select ng-model="wabSelectedGroup" class="form-control input-xs">
+                                    <option ng-repeat="group in wabGroups" value="{{group}}">{{group}}</option>
+                                </select>
+                            </div>
+                            <div class="col-xs-4">                                
+                            </div>
+                            <div class="col-xs-3 margin-left-15">
+                                <label>{{::ctrl.text.Loader.WabState}}</label>
+                                <select ng-model="wabSelectedState" class="form-control input-xs">
+                                    <option ng-repeat="(stateName, oState) in wab" value="{{stateName}}">{{stateName}}</option>
+                                </select>
+                            </div>
+                        </div>
+                        <br>
+                        <div class="row" 
+                             style="height: calc(100% - 70px);"
+                             ng-if="wabSelectedGroup !== ''">
+                            <div class="col-xs-7 height-100" style="overflow-x: auto">
+                                <!--Sélection des attributs dans les onglets-->
+                                <table style="width:100%">
+                                    <tr>
+                                        <th class=""></th>
+                                        <th ng-repeat="(stateName, oState) in wab">
+                                            {{stateName}}
+                                        </th>
+                                    </tr>
+                                    <tr ng-repeat="(elemIndex, elem) in elems">
+                                        <td class="width-20" ng-class="{'bold': buttons.indexOf(elem) !== -1}">{{elem}}</td>
+                                        <td style="width:"
+                                            ng-repeat="(stateName, oState) in wab">
+                                            <span class="checkbox margin-0 left checkbox-info"
+                                                  title="{{::ctrl.text.Loader.AllowDisplayElement}}">
+                                                <input id="studio-wabmanager-modal-display-elem-checkbox-{{elemIndex}}-{{stateName}}" 
+                                                       type="checkbox"
+                                                       ng-checked="oState[wabSelectedGroup][elem] === 'r' || oState[wabSelectedGroup][elem] === 'rw'"
+                                                       ng-click="ctrl.toggleElemOnWab(elem, oState, wabSelectedGroup, 'r')">
+                                                <label for="studio-wabmanager-modal-display-elem-checkbox-{{elemIndex}}-{{stateName}}" class="control-label"></label>
+                                            </span>
+                                            <span class="checkbox margin-0 left checkbox-primary"
+                                                  title="{{::ctrl.text.Loader.AllowEditElement}}">
+                                                <input id="studio-wabmanager-modal-edit-elem-checkbox-{{elemIndex}}-{{stateName}}" 
+                                                       type="checkbox"
+                                                       ng-checked="oState[wabSelectedGroup][elem] === 'rw'"
+                                                       ng-click="ctrl.toggleElemOnWab(elem, oState, wabSelectedGroup, 'rw')">
+                                                <label for="studio-wabmanager-modal-edit-elem-checkbox-{{elemIndex}}-{{stateName}}" class="control-label"></label>
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-xs-5 height-100" style="overflow-x: auto">
+                                <!--Prévisualisation-->
+                                <div id="studio_test_wab_form_reader"
+                                     app-form-reader 
+                                     app-form-definition-name="sTestWabFormDefinitionName" 
+                                     app-form-values="oTestWabFormValues" 
+                                     app-form-definition="oTestWabFormDefinition"
+                                     app-form-events-container="oTestWabFormScope"
+                                     app-properties="oProperties"
+                                     app-token="sToken"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary right margin-left-20" ng-click="ctrl.saveWab(wab)">{{::ctrl.text.Loader.Validate}}</button>
+                        <!--<button type="button" class="btn btn-primary right margin-left-20" ng-click="ctrl.addTab()">{{::ctrl.text.Loader.AddTab}}</button>-->
+                        <button type="button" class="btn btn-default right margin-left-20" onclick="$('#studio-wabmanager-modal').modal('hide');">{{::ctrl.text.Loader.Cancel}}</button>
+                    </div>
+                </div>
+            </div>  
         </div>
     </div>
 </div>

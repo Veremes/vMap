@@ -16,7 +16,7 @@ class Mj_Depend_Descr extends Mj {
 	* \param $sIdDep Identifiant de la dépendance
 	* \param $oBD Objet de connexion PDO_BD
 	*/
-	function Mj_Depend_Descr($sIdDep,$oBD){
+	function __construct($sIdDep,$oBD){
 		include $this->sRessourcesFile;
 		$this->sSql=$aSql[$oBD->sgbd]['depend_descr'];
 		$this->sSql=str_replace('$sIdDep',$sIdDep,$this->sSql);

@@ -36,7 +36,7 @@ class PrintStyles extends Vmap {
      * @param type $aValues parameters of the request
      * @param type $properties properties
      */
-    function PrintStyles($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
@@ -77,16 +77,14 @@ class PrintStyles extends Vmap {
      *     in="query",
      *     description="number of element",
      *     required=false,
-     *     type="integer",
-     *     format="int32"
+     *     type="integer"
      *   ),
      * @SWG\Parameter(
      *     name="offset",
      *     in="query",
      *     description="index of first element",
      *     required=false,
-     *     type="string",
-     *     format="int32"
+     *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="attributs",
@@ -135,21 +133,21 @@ class PrintStyles extends Vmap {
      *   produces={"application/xml", "application/json"},
      *   @SWG\Parameter(
      *     name="token",
-     *     in="query",
+     *     in="formData",
      *     description="user token",
      *     required=true,
      *     type="string"
      *   ),
      *  @SWG\Parameter(
      *     name="name",
-     *     in="query",
+     *     in="formData",
      *     description="",
      *     required=true,
      *     type="string"
      *   ),
      *  @SWG\Parameter(
      *     name="definition",
-     *     in="query",
+     *     in="formData",
      *     description="",
      *     required=true,
      *     type="string"
@@ -187,8 +185,8 @@ class PrintStyles extends Vmap {
                     $sSql = str_replace('[sSchemaVmap]', $this->aProperties['schema_vmap'], $sSql);
                     $resultat = $this->oConnection->oBd->execute($sSql);
                     if ($this->oConnection->oBd->enErreur()) {
-                        $this->oError = new Error(1, $this->oConnection->oBd->getBDMessage());
-                        $oError = new Error(1, $this->oConnection->oBd->getBDMessage());
+                        $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
+                        $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                         $aXmlRacineAttribute['status'] = 0;
                         $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
                     }
@@ -233,7 +231,7 @@ class PrintStyles extends Vmap {
      *     name="definition",
      *     in="query",
      *     description="",
-     *     required=true,
+     *     required=false,
      *     type="string"
      *   ),
      *   @SWG\Response(
@@ -267,8 +265,8 @@ class PrintStyles extends Vmap {
                     $sSql = str_replace('[sSchemaVmap]', $this->aProperties['schema_vmap'], $sSql);
                     $resultat = $this->oConnection->oBd->execute($sSql);
                     if ($this->oConnection->oBd->enErreur()) {
-                        $this->oError = new Error(1, $this->oConnection->oBd->getBDMessage());
-                        $oError = new Error(1, $this->oConnection->oBd->getBDMessage());
+                        $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
+                        $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                         $aXmlRacineAttribute['status'] = 0;
                         $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
                     }

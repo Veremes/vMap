@@ -7,6 +7,8 @@
  */
 goog.provide('nsVmap.nsToolsManager.InfoContainer');
 
+goog.require('oVmap');
+
 goog.require('goog.array');
 goog.require('goog.object');
 
@@ -19,10 +21,6 @@ goog.require('goog.object');
  */
 nsVmap.nsToolsManager.InfoContainer = function () {
     oVmap.log('nsVmap.nsToolsManager.InfoContainer');
-
-    // Directives et controleurs Angular
-    oVmap.module.directive('appInfocontainer', this.infocontainerDirective);
-    oVmap.module.controller('AppInfocontainerController', this.infocontainerController);
 };
 
 
@@ -223,7 +221,8 @@ nsVmap.nsToolsManager.InfoContainer.prototype.displayTabByCode = function (tabCo
  * @param {integer} index Unique index of the tab
  * @export
  */
-nsVmap.nsToolsManager.InfoContainer.prototype.displayTabByIndex = function (index) {console.log("1");
+nsVmap.nsToolsManager.InfoContainer.prototype.displayTabByIndex = function (index) {
+    console.log("1");
     oVmap.log('nsVmap.nsToolsManager.InfoContainer.displayTabByIndex');
 
     var scope = angular.element($("#infocontainer-info-container")).scope();
@@ -359,7 +358,7 @@ nsVmap.nsToolsManager.InfoContainer.prototype.removeTabByCode = function (tabCod
  */
 nsVmap.nsToolsManager.InfoContainer.prototype.removeAll = function () {
     oVmap.log('nsVmap.nsToolsManager.InfoContainer.removeAll');
-    
+
     // Vide la couche sélection
     oVmap.getMap().getSelectionOverlayFeatures().clear();
 
@@ -570,7 +569,8 @@ nsVmap.nsToolsManager.InfoContainer.Tab = function (opt_options) {
     };
     columns.push({
         'checkbox': true,
-        'clickToSelect': true
+        'clickToSelect': true,
+        'class': 'info-container-checkbox-column'
     });
     columns.push({
         'formatter': actionFormatter,
@@ -593,7 +593,7 @@ nsVmap.nsToolsManager.InfoContainer.Tab = function (opt_options) {
 
     var tableParams = {
         'search': true,
-        'clickToSelect': true,
+//        'clickToSelect': true,
         'checkboxHeader': true,
         'data': opt_options.data,
         'columns': opt_options.columns
@@ -655,6 +655,11 @@ nsVmap.nsToolsManager.InfoContainer.prototype.infocontainerController = function
     this['selectedTabIndex'] = 0;
 
     this['avaliablePrintReports'] = [];
+
+    // Vide la panier quand on change de carte
+    oVmap['scope'].$on('mapChanged', function () {
+        oVmap.getToolsManager().getInfoContainer().removeAll();
+    });
 };
 
 /**
@@ -681,7 +686,8 @@ nsVmap.nsToolsManager.InfoContainer.prototype.infocontainerController.prototype.
  * @param {number} tabIndex index of the tab
  * @export
  */
-nsVmap.nsToolsManager.InfoContainer.prototype.infocontainerController.prototype.displayTabByIndex = function (tabIndex) {console.log("2");
+nsVmap.nsToolsManager.InfoContainer.prototype.infocontainerController.prototype.displayTabByIndex = function (tabIndex) {
+    console.log("2");
     oVmap.log('nsVmap.nsToolsManager.InfoContainer.infocontainerController.displayTabByIndex');
     this['selectedTabIndex'] = tabIndex;
 };
@@ -794,7 +800,7 @@ nsVmap.nsToolsManager.InfoContainer.prototype.infocontainerController.prototype.
 
     // Paramétrage de l'onglet correspondant
     var tab = goog.isDef(tab_options.tabCode) ? this.getTabByCode(tab_options.tabCode) : this['infos'][tab_options.tabIndex];
-    
+
     if (!goog.isDefAndNotNull(tab)) {
         cosnole.error('impossible de trouver la tab, tab_options:', tab_options);
         return 0;
@@ -1022,6 +1028,16 @@ nsVmap.nsToolsManager.InfoContainer.prototype.infocontainerController.prototype.
         delete featureExtent;
     }
 
+    // En cas de simple point par exemple
+    if (totalExtent[0] === totalExtent[2]) {
+        totalExtent[0] = totalExtent[0] - totalExtent[0] * 0.0001;
+        totalExtent[2] = totalExtent[2] + totalExtent[2] * 0.0001;
+    }
+    if (totalExtent[1] === totalExtent[3]) {
+        totalExtent[1] = totalExtent[1] - totalExtent[1] * 0.0001;
+        totalExtent[3] = totalExtent[3] + totalExtent[3] * 0.0001;
+    }
+
     setTimeout(function () {
 
         // Zoom sur l'étendue totale
@@ -1108,7 +1124,7 @@ nsVmap.nsToolsManager.InfoContainer.prototype.infocontainerController.prototype.
         this['avaliablePrintReports'].length = 0;
     else
         this['avaliablePrintReports'] = [];
-    
+
     if (!goog.isDefAndNotNull(business_object_id)) {
         $.notify('Aucun rapport disponible', 'warning');
         return 0;
@@ -1177,7 +1193,7 @@ nsVmap.nsToolsManager.InfoContainer.prototype.infocontainerController.prototype.
             aIds.push(aSelection[i][printreport['business_object_id_field']]);
         }
     }
-    
+
     if (!aIds.length > 0) {
         $.notify('Génération du document impossible');
         console.error('generated aIds is empty');
@@ -1189,3 +1205,7 @@ nsVmap.nsToolsManager.InfoContainer.prototype.infocontainerController.prototype.
         'ids': aIds
     });
 };
+
+// Définit la directive et le controller
+oVmap.module.directive('appInfocontainer', nsVmap.nsToolsManager.InfoContainer.prototype.infocontainerDirective);
+oVmap.module.controller('AppInfocontainerController', nsVmap.nsToolsManager.InfoContainer.prototype.infocontainerController);

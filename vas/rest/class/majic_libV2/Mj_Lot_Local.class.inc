@@ -25,7 +25,7 @@ class Mj_Lot_Local extends Mj {
 	* \param $sKlot Identifiant d'un lot
 	* \param $oBD Objet de connexion PDO_BD
 	*/
-	function Mj_Lot_Local($sIdBat,$sKlot,$oBD){
+	function __construct($sIdBat,$sKlot,$oBD){
 		include $this->sRessourcesFile;
 		$this->sSql=$aSql[$oBD->sgbd]['lot_local'];
 		$this->sSql=str_replace('$sIdBat', $sIdBat, $this->sSql);

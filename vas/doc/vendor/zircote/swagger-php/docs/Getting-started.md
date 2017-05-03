@@ -29,7 +29,7 @@ Note that Doctrine annotation supports arrays, but uses the `{` and `}` instead 
 
 And although doctrine also supports objects, but also uses `{` and `}` and requires the properties to be surrounded with `"`.
 
-DON'T write:
+**DON'T** write:
 
 ```php
 /**
@@ -48,7 +48,7 @@ But use the annotation with the same name as the property, such as `@SWG\Info` f
 /**
  * @SWG\Swagger(
  *   @SWG\Info(
- *     titel="My first swagger documented API",
+ *     title="My first swagger documented API",
  *     version="1.0.0"
  *   )
  * )
@@ -56,7 +56,7 @@ But use the annotation with the same name as the property, such as `@SWG\Info` f
 ```
 
 This adds validation, so when you misspell a property or forget a required property it will trigger a php warning.  
-For example the snippet above would generate a notice with "Unexpected field "titel" for @SWG\Info(), expecting "title", ..."
+For example if you'd write `titel="My first ...` swagger-php whould generate a notice with "Unexpected field "titel" for @SWG\Info(), expecting "title", ..."
 
 ## Using variables in annotations
 
@@ -83,12 +83,12 @@ $ swagger --bootstrap constants.php
 You shouldn't place all annotations inside one big @SWG\Swagger() annotation block, but scatter them throughout your codebase.
 swagger-php will scan your project and merge all annotations into one @SWG\Swagger annotation.
 
-The big benefit swagger-php provides is that the documentation lives close the the code implementing the api.
+The big benefit swagger-php provides is that the documentation lives close to the code implementing the api.
 
 ### Arrays and Objects
 
-Placing multiple annotation of the same type will result in an array or object.
-For objects, the convension for properties, is to use the same field name as the annotation: `response` in a `@SWG\Response`, `property` in a `@SWG\Property`, etc.
+Placing multiple annotations of the same type will result in an array of objects.
+For objects, the convention for properties, is to use the same field name as the annotation: `response` in a `@SWG\Response`, `property` in a `@SWG\Property`, etc.
 
 ```php
 /**
@@ -121,7 +121,7 @@ Generates:
             "description": "A list with products"
           },
           "default": {
-            "description": "unexpected error"
+            "description": "an \"unexpected\" error"
           }
         }
       }
@@ -133,7 +133,7 @@ Generates:
 
 ### Swagger-PHP detects values based on context
 
-swagger-php looks at context of the comment which reduces duplication.
+swagger-php looks at the context of the comment which reduces duplication.
 
 ```php
 /**

@@ -1,0 +1,81 @@
+.wms-service-tests {
+    width: 100%;
+    height: 100%;
+    padding: 13px 0;
+    margin: 0;
+}
+.wms-service-tests > div, .wms-service-tests .tab-pane {
+    height: 100%;
+}
+.wms-service-tests .tab-content {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-top: none;
+    border-radius: 0 4px 4px 4px;
+}
+// GetCapabilities
+#wms_service_tests_get_capabilities_textarea {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+// Test du flux WMS (OpenLayers).
+#wms_service_tests_wms_service_ol_map {
+    width: 100%;
+    height: 100%;
+}
+// 
+.wms-service-tests a[role='tab'] {
+    padding: 5px 5px 5px 10px;
+}
+// Boutons de raffraichissement des onglets.
+.wms-service-tests .btn-refresh-tab {
+    display: none;
+}
+.wms-service-tests .active .btn-refresh-tab {
+    display: initial;
+}
+//
+.wms-service-tests .nav-tabs > li > a {
+    line-height: 34px;
+}
+// Test du flux WMS (MapServer).
+#wms_service_tests_wms_service_ms_iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+// Tous les parents de la carte vmap (formulaire) : hauteur à 100%.
+#wms_service_tests_wms_service_ol_map > div,
+#wms_service_tests_wms_service_ol_map > div > div,
+#wms_service_tests_wms_service_ol_map > div > div > form,
+#wms_service_tests_wms_service_ol_map > div > div > form > div,
+#wms_service_tests_wms_service_ol_map > div > div > form > div > div:last-child,
+#wms_service_tests_wms_service_ol_map > div > div > form > div > div > div,
+#wms_service_tests_wms_service_ol_map > div > div > form > div > div > div > div,
+#wms_service_tests_wms_service_ol_map > div > div > form > div > div > div > div > div,
+#wms_service_tests_wms_service_ol_map > div > div > form > div > div > div > div > div > div,
+#wms_service_tests_wms_service_ol_map > div > div > form > div > div > div > div > div > div > div,
+#wms_service_tests_wms_service_ol_map > div > div > form > div > div > div > div > div > div > div > div,
+#wms_service_tests_wms_service_ol_map > div > div > form > div > div > div > div > div > div > div > div > div,
+#wms_service_tests_wms_service_ol_map > div > div > form > div > div > div > div > div > div > div > div > div > div {
+    height: 100%;
+}
+// Pas de marge dans le form.
+#wms_service_openlayers_test_update_form {
+    margin: 0 !important;
+}
+
+// Pas de label pour la carte vmap.
+#wms_service_test_map_label {
+    display: none;
+}
+
+// Onglet des logs de MapServer.
+.wms_service-mapserver-log > textarea{
+    width: 100%;
+    height: 100%;
+    resize: none;
+    font-size: 11px;
+}

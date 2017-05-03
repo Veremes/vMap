@@ -21,7 +21,10 @@
                         "web_service":{
                             "ressource_id":"vmap/printparameters",
                             "id_key":"printparameter_id",
-                            "label_key":"name"
+                            "label_key":"name",
+                            "parameters":{
+                                "order_by":"name"
+                            }
                         }
                     }
                 ]
@@ -32,7 +35,6 @@
                         "type":"radio",
                         "name":"editable",
                         "label":"FORM_EDITABLE_VMAP_PRINT_PARAMETER",
-                        "default_value": false,
                         "options": {
                             "choices": [{
                                     "label": "FORM_EDITABLE_YES_VMAP_PRINT_PARAMETER",
@@ -123,7 +125,10 @@
                         "web_service":{
                             "ressource_id":"vmap/printtemplates",
                             "id_key":"printtemplate_id",
-                            "label_key":"name"
+                            "label_key":"name",
+                            "parameters":{
+                                "order_by":"name"
+                            }
                         }
                     }
                 ]
@@ -155,7 +160,7 @@
                         "name":"placeholder",
                         "label":"FORM_PLACEHOLDER_VMAP_PRINT_PARAMETER",
                         "size":8,
-                        "nb_cols":8
+                        "nb_cols":6
                     }
                 ]
             },
@@ -165,8 +170,8 @@
                         "type":"textarea",
                         "name":"defaultvalue",
                         "label":"FORM_DEFAULTVALUE_VMAP_PRINT_PARAMETER",
-                        "size":8,
-                        "nb_cols":8
+                        "size":12,
+                        "nb_cols":9
                     }
                 ]
             },
@@ -236,7 +241,10 @@
                         "web_service":{
                             "ressource_id":"vmap/printtemplates",
                             "id_key":"printtemplate_id",
-                            "label_key":"name"
+                            "label_key":"name",
+                            "parameters":{
+                                "order_by":"name"
+                            }
                         },
                         "options":["|"]
                     }
@@ -270,7 +278,7 @@
                         "name":"placeholder",
                         "label":"FORM_PLACEHOLDER_VMAP_PRINT_PARAMETER",
                         "size":8,
-                        "nb_cols":8
+                        "nb_cols":6
                     }
                 ]
             },
@@ -280,8 +288,8 @@
                         "type":"textarea",
                         "name":"defaultvalue",
                         "label":"FORM_DEFAULTVALUE_VMAP_PRINT_PARAMETER",
-                        "size":8,
-                        "nb_cols":8
+                        "size":12,
+                        "nb_cols":9
                     }
                 ]
             },

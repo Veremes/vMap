@@ -30,25 +30,28 @@ vitisApp.logsCtrl = function ($rootScope, $log, $scope, $translate, Restangular,
     /**
      * getFileContent function.
      * Charge le contenu d'un fichier.
-     * @param {string} sPath Chemin du fichier
+     * @param {object} oLogFile
+     * @param {string} size
      **/
-    $rootScope["getFileContent"] = function (sPath, size) {
-        if (typeof (sPath) != "undefined") {
+    $rootScope["getFileContent"] = function (oLogFile, size) {
+        if (typeof (oLogFile) != "undefined") {
             var iLogSize = propertiesSrvc["log_size"];
             // 1Mo max par défaut.
-            if (isNaN(iLogSize))
+            if (isNaN(iLogSize)) {
                 iLogSize = 1024;
+            }
             iLogSize *= 1024;
             if (size < iLogSize) {
-                var oWebServiceBase = Restangular["one"](propertiesSrvc["services_alias"] + "/vitis", "Logs");
+                var oWebServiceBase = Restangular["one"](propertiesSrvc["services_alias"] + "/vitis", "logs");
                 var oParams = {
-                    "token": sessionSrvc["token"]
+                    "token": sessionSrvc["token"],
+                    "folder": oLogFile['folder']
                 };
-                oWebServiceBase["customGET"]("File/" + sPath, oParams)
+                oWebServiceBase["customGET"](oLogFile['log_directory'] + "/file/" + oLogFile['name'], oParams)
                         .then(function (data) {
                             if (data["status"] == 1) {
                                 $scope["sLogContent"] = data["file"];
-                                $rootScope["sLogPath"] = sPath;
+                                $rootScope["sLogPath"] = oLogFile['path'];
                                 if (typeof ($scope["sLogContent"]) != "undefined") {
                                     // Redimensionne et affiche le <textarea> du log.
                                     $("#logs-content-container").show();
@@ -68,9 +71,9 @@ vitisApp.logsCtrl = function ($rootScope, $log, $scope, $translate, Restangular,
                         });
 
             } else {
-                 $rootScope["sLogPath"] = sPath;
-                  $("#logs-content-container").show();
-                  $scope["sLogContent"] = ""
+                $rootScope["sLogPath"] = oLogFile['path'];
+                $("#logs-content-container").show();
+                $scope["sLogContent"] = ""
                 var itextAreaContainerheight = $("#logs-content-container").height() - document.getElementById("logs-content-container").children[0].offsetHeight;
                 document.getElementById("logs-content-container").children[1].style.height = itextAreaContainerheight + "px";
                 // Affichage de la fenêtre modale d'erreur.
@@ -88,36 +91,30 @@ vitisApp.logsCtrl = function ($rootScope, $log, $scope, $translate, Restangular,
      * Supprime un fichier.
      * @param {string} aPath Chemin du fichier
      **/
-    $rootScope["deleteFile"] = function (aPath) {
-        if (typeof (aPath) != "undefined" && aPath.length > 0) {
-            var oWebServiceBase = Restangular["one"](propertiesSrvc["services_alias"] + "/vitis", "Logs");
+    $rootScope["deleteFile"] = function (oLogFile) {
+        if (goog.isDefAndNotNull(oLogFile)) {
+            var oWebServiceBase = Restangular["one"](propertiesSrvc["services_alias"] + "/vitis", "logs");
             var oParams = {
                 "token": sessionSrvc["token"],
-                "files_paths_list": aPath.join("|")
+                "folder": oLogFile['folder']
             };
-            oWebServiceBase["customDELETE"]("", oParams)
+            oWebServiceBase["customDELETE"](oLogFile['log_directory'] + '/file/' + oLogFile['name'], oParams)
                     .then(function (data) {
                         var sTitle, sMessage;
                         var oOptions = {};
                         if (data["status"] == 1) {
                             // Affichage du message de succés.
-                            if (aPath.length > 1)
-                                sTitle = "DELETE_FILES_SUCCESS_LOGS";
-                            else
-                                sTitle = "DELETE_FILE_SUCCESS_LOGS";
+                            sTitle = "DELETE_FILE_SUCCESS_LOGS";
                             $translate(sTitle).then(function (sTranslation) {
                                 $.notify(sTranslation, "success");
                             });
                             // Raffraîchissement de l'arborescence.
                             setTimeout(function () {
                                 $scope["loadTreeview"]();
-                            }, 2000);
+                            });
                         } else {
                             // Paramètres de la fenêtre modale.
-                            if (aPath.length > 1)
-                                sTitle = "DELETE_FILES_ERROR_LOGS";
-                            else
-                                sTitle = "DELETE_FILE_ERROR_LOGS";
+                            sTitle = "DELETE_FILE_ERROR_LOGS";
                             // Affichage de la fenêtre modale.
                             oOptions["className"] = "modal-danger";
                             oOptions["message"] = data["errorMessage"];
@@ -126,7 +123,7 @@ vitisApp.logsCtrl = function ($rootScope, $log, $scope, $translate, Restangular,
                     });
         }
     };
-    
+
     /**
      * resizeLogsContainer  function.
      * Redimensionne le conteneur des logs.

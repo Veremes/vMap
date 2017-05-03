@@ -25,12 +25,12 @@ class Map extends Vmap {
      * @param type $properties properties
      * @param type $oConnection connection object
      */
-    function Map($aPath, $aValues, $properties, $oConnection) {
+    function __construct($aPath, $aValues, $properties, $oConnection) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
         $this->oConnection = $oConnection;
-	$this->aSelectedFields = Array("map_id", "crs_id", "name", "description", "crs_name", "extent", "catalog_index", "thumbnail", "theme_name", "theme_description", "maptheme_id", "groups");
+		$this->aSelectedFields = Array("map_id", "crs_id", "name", "description", "crs_name", "extent", "catalog_index", "thumbnail", "theme_name", "theme_description", "maptheme_id", "groups");
     }
 
     /**
@@ -52,8 +52,7 @@ class Map extends Vmap {
      *     in="path",
      *     description="map id",
      *     required=true,
-     *     type="integer",
-     *   format="int32"
+     *     type="integer"
      *   ),
      *   @SWG\Response(
      *         response=200,
@@ -112,7 +111,7 @@ class Map extends Vmap {
         }
         $this->oConnection->oBd->delete($this->aProperties['schema_vmap'], 'map', 'map_id', $this->aValues['my_vitis_id'], 'integer');
         if ($this->oConnection->oBd->enErreur()) {
-                $this->oError = new Error(1, $this->oConnection->oBd->getBDMessage());
+                $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
         } else {
                 $this->aFields[map_id] = $this->aValues['my_vitis_id'];
         }

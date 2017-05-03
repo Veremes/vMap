@@ -30,7 +30,7 @@ class Mj_Proprietaire extends Mj {
 	* \param $sIdPro Identifiant d'un propriétaire pour le département et le CDIF
 	* \param $oBD Objet de connexion PDO_BD
 	*/
-	function Mj_Proprietaire($sIdDnupro,$sIdPro,$oBD, $sEncryptedKey=''){
+	function __construct($sIdDnupro,$sIdPro,$oBD, $sEncryptedKey=''){
 		$this->sEncryptKey = $sEncryptedKey;
 		include $this->sRessourcesFile;
 		$this->sSql = $aSql[$oBD->sgbd]['proprietaire'];

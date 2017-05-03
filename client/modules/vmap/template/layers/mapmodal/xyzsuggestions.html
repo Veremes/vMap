@@ -1,0 +1,71 @@
+<!-- Liste des couches utilisables -->
+
+
+<h3>Ajouter une couche XYZ: </h3>
+<i>
+    Services tuilés définis par XYZ dans l'URL exemple: http://tile.stamen.com/toner/{z}/{x}/{y}.png.
+    Par défaut, cela suit le modèle le plus utilisé où X(0) et Y(0) sont en haut à gauche.
+    Les grilles de type TMS où ces coordonnées se trouvent en bas à gauche peuvent
+    être utilisées en utilisant {-y} dans l'URL
+</i>
+<hr>
+
+<form ng-submit="ctrl.addLayer()">
+    <div class="row">
+        <div class="col-xs-3">
+            <b>Service:</b>
+            <input type="text" class="form-control" placeholder="Nom du service" aria-describedby="sizing-addon1" ng-model="ctrl.oLayerToAdd.sService" required>
+        </div>
+        <div class="col-xs-3">
+            <b>Couche:</b>
+            <input type="text" class="form-control" placeholder="Nom de la couche" aria-describedby="sizing-addon1" ng-model="ctrl.oLayerToAdd.sLayer" required>
+        </div>
+    </div>
+    <br>
+    <div class="row">
+        <div class="col-xs-10">
+            <b>URL: </b>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-10">
+            <input type="text" class="form-control" placeholder="Service url" aria-describedby="sizing-addon1" ng-model="ctrl.oLayerToAdd.sUrl" required>
+        </div>
+        <div class="col-xs-2">
+            <button type="submit" class="btn btn-success right">Ajouter</button>
+        </div>
+    </div>
+</form>
+
+<hr>
+
+<div ng-repeat="node in ctrl.catalog.services.xyz">
+    <div class="row">
+        <div class="col-xs-3" ng-if="(node.thumbnail | getType) == 'string'">
+            <img src="{{node.thumbnail}}" 
+                 class="img-responsive pointer opacity-hover" 
+                 ng-click="ctrl.addLayer(node)">
+        </div>
+        <div class="col-xs-9">
+            <b>{{node.name}}</b>
+            <p>
+                <i>
+                    {{node.description}}
+                </i>
+            </p>
+        </div>
+    </div>
+    <div class="row" style="margin-bottom: -15px">
+        <div class="col-xs-3" ng-if="(node.thumbnail | getType) == 'string'"></div>
+        <div class="auto-overflow" ng-class="{ 'col-xs-7': (node.thumbnail | getType) == 'string', 'col-xs-10': (node.thumbnail | getType) != 'string' }">
+            <div>
+                <b>url</b>: <i>{{node.url}}</i>
+            </div>
+        </div>
+        <div class="col-xs-2">
+            <button type="button" class="btn btn-primary right" ng-click="ctrl.addLayer(node)">Ajouter</button>
+        </div>
+    </div>
+    <hr>
+</div>
+<button id="btn-reload-xyz" style="display: none" ng-click="ctrl.reload()">Reload map</button>

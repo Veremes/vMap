@@ -5,11 +5,40 @@
               +                                                                                   +
               +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-
-|b21080|AMELIORATION|BETA	|   Généralisation du dossier conteneur de fichiers à objets métier ou vitis
-|b21001|AMELIORATION|BETA	|   Reprojection Auto des géométries en genericGet quand on spécifie aValues['result_srid']
-|b20074|BUG         |BETA	|   Correction d'un bug sur le changement de mot de passe d'un utilisateur qui n'a pas le rôle "vitis_admin".
-|b20027|BUG         |BETA	|   Suppression du paramètre "$(FME_MF_DIR)" à la création d'un projet FME.
-|b20008|BUG         |BETA	|   Web service Vitis/Logs : token valide et privilège "vitis_admin" obligatoires pour supprimes des fichiers de logs.
-|b20000|BUG         |BETA	|   Web service Vitis/Logs : suppression des fichiers avec l'extension ".log" et qui sont uniquement dans les répertoires de logs.
-|b19970|AMELIORATION|BETA	|   Protocole http ou https dans le paramètre "web_server_name" du fichier "properties_server.inc".
+b21193|RELEASE	    |vas|	Version 2017.01.02
+b23218|BUG          |vas|	La requête ne s'exécutait pas si le groupe contenait une apostrophe
+b23200|BUG          |vas|	Sans token il faut envoyer la version de l'application
+b23146|BUG			|vas|	les modifications sur la restriction communale ne sont pas appliquées tant que l'utilisateur ne se reconnecte pas
+b23039|BUG			|vas|	logs
+b22646|EVOLUTION    |vas|	Tous les constructeurs des classes PHP ont été renommé en __construct
+b22592|BUG          |vas|	Empêcher d'exécuter du php dans les répertoires public et ws_data
+b22573|EVOLUTION    |vas|	swagger 2.0.9
+b22522|EVOLUTION	|vas|	mise en place d'un suivi de connexion (connexion.log)
+b22521|BUG			|vas|	Sécurité : permettre d'ouvrir seulement des url http ou https par le proxy
+b22519|BUG			|vas|	Sécurité:upload de fichiers sensibles
+b22488|BUG			|vas|	Corrections des libellés des modes
+b22355|EVOLUTION    |vas|	Affichage des properties définies dans les fichiers properties_selected.inc
+b22347|EVOLUTION    |vas|	Affichage des properties définies dans les fichiers properties_selected.inc
+b22299|EVOLUTION    |vas|	order by case insensitive
+b22216|EVOLUTION    |vas|	Utilisation des fonctions natives de PHP pour compresser et décompresser les fichiers zip
+b22174|EVOLUTION    |vas|	Création du service WebSocket
+b22169|EVOLUTION    |vas|	rafraichissement des grilles par evenements websocket
+b21193|RELEASE	    |vas|	Version 2017.01.00
+b22036|BUG			|vas|	Il est impossible d'enlever touts les groupes ou tous les privilèges d´un utilisateur
+b21892|EVOLUTION	|vas|	Possibilité de pouvoir ordonner les modes depuis le mode configuration
+b21867|BUG			|vas|   Paramètre manquant à la création d'un objet de la classe "WebService" (WebServices.class.inc).
+b21783|BUG			|vas|	Modification du nom d'un groupe dans vMap entraine maintenant la modification du groupe dans Veremap.
+b21634|EVOLUTION	|vas|	Ajout mapserver
+b21619|EVOLUTION	|vas|	EVOLUTION Vérification de la validité du certificat SSL (Paramètre "proxy_check_ssl" configurable dans les properties).
+b21269|BUG			|vas|	BUG Adresse des vignettes
+b21212|AMELIORATION |vas|	Bug upload fichiers avec le même nom
+b21121|AMELIORATION |vas|	Edition des dépendances sortie vmap 2016.03
+b21088|AMELIORATION |vas|	image carte par défaut
+b21087|AMELIORATION |vas|	Ajout des images des services par défaut
+b21080|AMELIORATION |vas|   Généralisation du dossier conteneur de fichiers à objets métier ou vitis
+b21001|AMELIORATION |vas|   Reprojection Auto des géométries en genericGet quand on spécifie aValues['result_srid']
+b20074|BUG          |vas|   Correction d'un bug sur le changement de mot de passe d'un utilisateur qui n'a pas le rôle "vitis_admin".
+b20027|BUG          |vas|   Suppression du paramètre "$(FME_MF_DIR)" à la création d'un projet FME.
+b20008|BUG          |vas|   Web service Vitis/Logs : token valide et privilège "vitis_admin" obligatoires pour supprimes des fichiers de logs.
+b20000|BUG          |vas|   Web service Vitis/Logs : suppression des fichiers avec l'extension ".log" et qui sont uniquement dans les répertoires de logs.
+b19970|AMELIORATION |vas|   Protocole http ou https dans le paramètre "web_server_name" du fichier "properties_server.inc".

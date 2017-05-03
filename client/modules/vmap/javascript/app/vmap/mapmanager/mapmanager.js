@@ -85,7 +85,6 @@ nsVmap.nsMapManager.MapManager = function () {
         }).done(function (oMapCatalog) {
             if (goog.isDef(oMapCatalog['mapcatalogs']))
                 oMapCatalog = oMapCatalog['mapcatalogs'][0];
-
             this_.loadMapTools(oMapCatalog);
         }).fail(function () {
             var oMapCatalog = {
@@ -127,7 +126,7 @@ nsVmap.nsMapManager.MapManager.prototype.loadMapTools = function (oMapCatalog) {
             "description": "",
             "thumbnail": "",
             "projection": "EPSG:3857",
-            "url": ""
+            "url": null
         });
 
         // Si status === 1 cela veut dire que le chargement c'est bien effectué, 
@@ -158,7 +157,7 @@ nsVmap.nsMapManager.MapManager.prototype.loadMapTools = function (oMapCatalog) {
         }
     }
 
-    if (goog.isDefAndNotNull(usedMap)) {
+    if (goog.isDefAndNotNull(usedMap) && goog.isDefAndNotNull(oMapCatalog['maps'][usedMap]['url'])) {
 
         // Signale la carte utilisée
         this.setUsedMap();
@@ -202,24 +201,26 @@ nsVmap.nsMapManager.MapManager.prototype.loadLayersTools = function (sUrl) {
 
     var MapManager = this;
 
-    $.ajax({
-        url: sUrl,
-        async: false,
-        context: document.body
-    }).done(function (oLayersTree) {
+    if (goog.isDefAndNotNull(sUrl)) {
+        $.ajax({
+            url: sUrl,
+            async: false,
+            context: document.body
+        }).done(function (oLayersTree) {
 
-        if (goog.isDef(oLayersTree['mapjsons']))
-            oLayersTree = oLayersTree['mapjsons'][0];
+            if (goog.isDef(oLayersTree['mapjsons']))
+                oLayersTree = oLayersTree['mapjsons'][0];
 
-        oVmap.log(oLayersTree);
+            oVmap.log(oLayersTree);
 
-        MapManager.oLayersTree_ = oLayersTree;
+            MapManager.oLayersTree_ = oLayersTree;
 
-        // Instanciation des objets
-        MapManager.oLayersTreeTool_ = new nsVmap.nsMapManager.LayersTree();
-        MapManager.oLayersOrderTool_ = new nsVmap.nsMapManager.LayersOrder();
-        MapManager.oMapLegendTool_ = new nsVmap.nsMapManager.MapLegend();
-    });
+            // Instanciation des objets
+            MapManager.oLayersTreeTool_ = new nsVmap.nsMapManager.LayersTree();
+            MapManager.oLayersOrderTool_ = new nsVmap.nsMapManager.LayersOrder();
+            MapManager.oMapLegendTool_ = new nsVmap.nsMapManager.MapLegend();
+        });
+    }
 };
 
 /**
@@ -258,6 +259,9 @@ nsVmap.nsMapManager.MapManager.prototype.loadMap = function (element) {
             this.oMapCatalog_['usedMap'] = i;
     }
     this.setUsedMap();
+    
+    oVmap.log("oVmap.event: mapChanged");
+    oVmap['scope'].$broadcast('mapChanged');
 };
 
 /**
@@ -287,6 +291,7 @@ nsVmap.nsMapManager.MapManager.prototype.setUsedMap = function () {
  * oLayer.queryable : true if the layer is queryable
  * oLayer.key : use key
  * oLayer.culture : language to use
+ * oLayer.style : style to use
  *
  * @export
  * @experimental
@@ -360,6 +365,7 @@ nsVmap.nsMapManager.MapManager.prototype.addLayer = function (oLayer) {
                 "name": oLayer.serviceName,
                 "children": [{
                         "name": oLayer.layerTitle,
+                        "index": 1000000,
                         "layerType": "tilewms",
                         "visible": "true",
                         "legend": "true",
@@ -367,7 +373,8 @@ nsVmap.nsMapManager.MapManager.prototype.addLayer = function (oLayer) {
                         "url": oLayer.url,
                         "params": {
                             "LAYERS": oLayer.layerName,
-                            "VERSION": oLayer.version
+                            "VERSION": oLayer.version,
+                            "STYLES": goog.isDefAndNotNull(oLayer.style) ? oLayer.style : ''
                         }
                     }]
             };
@@ -375,6 +382,7 @@ nsVmap.nsMapManager.MapManager.prototype.addLayer = function (oLayer) {
         } else {
             newLayer = {
                 "name": oLayer.layerTitle,
+                "index": 1000000,
                 "layerType": "tilewms",
                 "visible": "true",
                 "legend": "true",
@@ -382,7 +390,8 @@ nsVmap.nsMapManager.MapManager.prototype.addLayer = function (oLayer) {
                 "url": oLayer.url,
                 "params": {
                     "LAYERS": oLayer.layerName,
-                    "VERSION": oLayer.version
+                    "VERSION": oLayer.version,
+                    "STYLES": goog.isDefAndNotNull(oLayer.style) ? oLayer.style : ''
                 }
             };
 
@@ -409,6 +418,7 @@ nsVmap.nsMapManager.MapManager.prototype.addLayer = function (oLayer) {
             newLayer = {
                 "name": oLayer.serviceName,
                 "children": [{
+                        "index": 1000000,
                         "name": oLayer.layerTitle,
                         "visible": "true",
                         "layerType": "osm",
@@ -419,8 +429,45 @@ nsVmap.nsMapManager.MapManager.prototype.addLayer = function (oLayer) {
         } else {
             newLayer = {
                 "name": oLayer.layerTitle,
+                "index": 1000000,
                 "visible": "true",
                 "layerType": "osm",
+                "url": oLayer.url
+            };
+
+            oTree['children'][doesServiceExist]['children'].push(newLayer);
+        }
+    } else if (oLayer.layerType === "xyz") {
+        // Test si la couche est déjà incluse
+        for (var i = 0; i < oTree['children'].length; i++) {
+            if (oTree['children'][i]['children']) {
+                for (var ii = 0; ii < oTree['children'][i]['children'].length; ii++) {
+                    if (oTree['children'][i]['children'][ii]['url'] === oLayer.url) {
+                        $.notify('La couche est déjà présente', 'error');
+                        return 0;
+                    }
+                }
+            }
+        }
+        // Ajout de la couche dans oTree
+        if (doesServiceExist === false) {
+            newLayer = {
+                "name": oLayer.serviceName,
+                "children": [{
+                        "index": 1000000,
+                        "name": oLayer.layerTitle,
+                        "visible": "true",
+                        "layerType": "xyz",
+                        "url": oLayer.url
+                    }]
+            };
+            oTree['children'].push(newLayer);
+        } else {
+            newLayer = {
+                "name": oLayer.layerTitle,
+                "index": 1000000,
+                "visible": "true",
+                "layerType": "xyz",
                 "url": oLayer.url
             };
 
@@ -444,6 +491,7 @@ nsVmap.nsMapManager.MapManager.prototype.addLayer = function (oLayer) {
                 "name": oLayer.serviceName,
                 "children": [{
                         "name": oLayer.layerName,
+                        "index": 1000000,
                         "imagerySet": oLayer.layerName,
                         "visible": "true",
                         "layerType": "bing",
@@ -455,6 +503,7 @@ nsVmap.nsMapManager.MapManager.prototype.addLayer = function (oLayer) {
         } else {
             newLayer = {
                 "name": oLayer.layerName,
+                "index": 1000000,
                 "imagerySet": oLayer.layerName,
                 "visible": "true",
                 "layerType": "bing",
@@ -482,9 +531,16 @@ nsVmap.nsMapManager.MapManager.prototype.addLayer = function (oLayer) {
                 "name": oLayer.serviceName,
                 "children": [{
                         "name": oLayer.layerTitle,
+                        "index": 1000000,
                         "layer": oLayer.layerName,
                         "visible": "true",
-                        "layerType": "tilewmts",
+                        "layerType": "wmts",
+                        "matrixSet": oLayer.matrixSet,
+                        "style": oLayer.style,
+                        "format": oLayer.format,
+                        "requestEncoding": oLayer.requestEncoding,
+                        "service_options": oLayer.service_options,
+                        "version": oLayer.version,
                         "url": oLayer.url
                     }]
             };
@@ -492,9 +548,16 @@ nsVmap.nsMapManager.MapManager.prototype.addLayer = function (oLayer) {
         } else {
             newLayer = {
                 "name": oLayer.layerTitle,
+                "index": 1000000,
                 "layer": oLayer.layerName,
                 "visible": "true",
-                "layerType": "tilewmts",
+                "layerType": "wmts",
+                "matrixSet": oLayer.matrixSet,
+                "style": oLayer.style,
+                "format": oLayer.format,
+                "requestEncoding": oLayer.requestEncoding,
+                "service_options": oLayer.service_options,
+                "version": oLayer.version,
                 "url": oLayer.url
             };
 
@@ -522,6 +585,7 @@ nsVmap.nsMapManager.MapManager.prototype.addLayer = function (oLayer) {
                 "name": oLayer.serviceName,
                 "children": [{
                         "name": oLayer.layerTitle,
+                        "index": 1000000,
                         "visible": "true",
                         "layerType": "imagevector",
                         "url": oLayer.url,
@@ -533,6 +597,7 @@ nsVmap.nsMapManager.MapManager.prototype.addLayer = function (oLayer) {
         } else {
             newLayer = {
                 "name": oLayer.layerTitle,
+                "index": 1000000,
                 "visible": "true",
                 "layerType": "imagevector",
                 "url": oLayer.url,
@@ -599,239 +664,6 @@ nsVmap.nsMapManager.MapManager.prototype.removeLayer = function (olLayer) {
 };
 
 /**
- * Add a new wms layer (get the url from getCapabilities-url-field)
- * @param {object} element Html element witch contains the layerName, layerTitle, queryable attributes
- * @export
- */
-nsVmap.nsMapManager.MapManager.prototype.addWMSLayerFromHTML = function (element) {
-    oVmap.log('nsVmap.nsMapManager.MapManager.addWMSLayerFromHTML');
-
-    // Récupère le nom de la couche
-    var sLayerName = element.getAttribute("layerName");
-    var version = element.getAttribute("version");
-    var sLayerTitle = element.getAttribute("layerTitle");
-    var bQueryable = element.getAttribute("queryable");
-    var isProjectionCompatible = element.getAttribute("isProjectionCompatible");
-
-    var sUrl = $("#getCapabilities-url-field").val();
-    if (sUrl.indexOf("?") === -1)
-        sUrl += "?service=wms";
-
-    if (isProjectionCompatible === "false") {
-        var r = confirm("Attention: la projection de la couche semble incompatible avec celle de la carte en cours.\n\nCela peut engendrer des errreurs d'affichage \n\nContinuer quand même ?");
-        if (r !== true) {
-            return 0;
-        }
-    }
-
-    // le nom du service
-    var x = document.getElementById("select-wms-service").selectedIndex;
-    var y = document.getElementById("select-wms-service").options;
-    var sServiceName = y[x].text;
-    if ($("#select-wms-service").val() !== $("#getCapabilities-url-field").val())
-        sServiceName = element.getAttribute("serviceTitle");
-    ;
-
-    var oLayer = {};
-    oLayer.url = sUrl;
-    oLayer.layerType = "imagewms";
-    oLayer.serviceName = sServiceName;
-    oLayer.layerName = sLayerName;
-    oLayer.layerTitle = sLayerTitle;
-    oLayer.queryable = bQueryable;
-    oLayer.version = version;
-
-    this.addLayer(oLayer);
-};
-
-/**
- * Add a new osm layer
- * @param {object} element Html element witch contains the name, url attributes
- * @export
- */
-nsVmap.nsMapManager.MapManager.prototype.addOSMLayerFromHTML = function (element) {
-    oVmap.log('nsVmap.nsMapManager.MapManager.addOSMLayerFromHTML');
-
-    var sName = element.getAttribute("name");
-    var sUrl = element.getAttribute("url");
-    var error = false;
-
-    $("#osm-log-message").empty();
-
-    if (sUrl === null)
-        sUrl = $("#osm-url-field").val();
-    if (sName === null)
-        sName = $("#osm-service-field").val();
-
-    if (sName === "") {
-        $.notify('Veuillez renseigner un nom à la couche', 'error');
-        error = true;
-    }
-
-    if (error === true)
-        return 0;
-
-    var oLayer = {};
-    oLayer.url = sUrl;
-    oLayer.layerType = "osm";
-    oLayer.serviceName = 'Open Street Map';
-    oLayer.layerTitle = sName;
-
-    this.addLayer(oLayer);
-
-};
-
-/**
- * Add a new bing layer
- * @param {object} element Html element witch contains the name, url attributes
- * @export
- */
-nsVmap.nsMapManager.MapManager.prototype.addBingLayerFromHTML = function (element) {
-    oVmap.log('nsVmap.nsMapManager.MapManager.addBingLayerFromHTML');
-
-    var sKey = element.getAttribute("key");
-    var sImagerySet = element.getAttribute("imagerySet");
-    var sCulture = element.getAttribute("culture");
-    var error = false;
-
-    if (sKey === null)
-        sKey = $("#bing-key-field").val();
-    if (sImagerySet === null)
-        sImagerySet = $("#bing-imagerySet-field").val();
-    if (sCulture === null)
-        sCulture = $("#bing-culture-select").val();
-
-    $("#osm-log-message").empty();
-    if (sKey === "") {
-        $.notify('Veuillez renseigner la clé Bing Maps', 'error');
-        error = true;
-    }
-    if (sImagerySet === "") {
-        $.notify('Veuillez renseigner une couche à utiliser', 'error');
-        error = true;
-    }
-    if (sCulture === "") {
-        $.notify('Veuillez renseigner une langue à utiliser', 'error');
-        error = true;
-    }
-    if (error === true)
-        return 0;
-
-    var oLayer = {};
-    oLayer.layerType = "bing";
-    oLayer.serviceName = 'Bing Maps';
-    oLayer.key = sKey;
-    oLayer.layerName = sImagerySet;
-    oLayer.culture = sCulture;
-
-    this.addLayer(oLayer);
-
-};
-
-/**
- * Add a new ign layer
- * @param {object} element Html element witch contains the name, url attributes
- * @export
- */
-nsVmap.nsMapManager.MapManager.prototype.addIGNLayerFromHTML = function (element) {
-    oVmap.log('nsVmap.nsMapManager.MapManager.addIGNLayerFromHTML');
-
-    var layer = element.getAttribute("layer");
-    var name = element.getAttribute("name");
-    var key = element.getAttribute("key");
-    var error = false;
-
-    if (layer === null)
-        layer = $("#ign-layer-field").val();
-    if (name === null)
-        name = $("#ign-name-field").val();
-    if (key === null)
-        key = $("#ign-key-select").val();
-
-    if (layer === "") {
-        $.notify('Veuillez renseigner la ressource IGN à utiliser', 'error');
-        error = true;
-    }
-    if (name === "") {
-        $.notify('Veuillez renseigner un nom de couche', 'error');
-        error = true;
-    }
-    if (key === "") {
-        $.notify('Veuillez renseigner une clé IGN à utiliser', 'error');
-        error = true;
-    }
-    if (error === true)
-        return 0;
-
-    var oLayer = {};
-    oLayer.layerType = "wmts";
-    oLayer.serviceName = 'Géoportail';
-    oLayer.layerName = layer;
-    oLayer.layerTitle = name;
-    oLayer.url = "http://wxs.ign.fr/" + key + "/wmts";
-
-    this.addLayer(oLayer);
-
-};
-
-/**
- * Add a layer from a file
- * @param {object} element Html element witch contains url, file-container, name
- * @export
- * @api experimental
- */
-nsVmap.nsMapManager.MapManager.prototype.addLayerFromFileFromHTML = function (element) {
-    oVmap.log('nsVmap.nsMapManager.MapManager.prototype.addLayerFromFileFromHTML');
-
-    var fileContainer = element.getAttribute("file-container");
-    var url = element.getAttribute("url");
-    var serviceName = $("#upload-geometry-serviceName").val();
-    var layerTitle = $("#upload-geometry-layerTitle").val();
-    var this_ = this;
-
-    $("#geometry-log-message").empty();
-
-    serviceName = serviceName !== '' ? serviceName : 'Local';
-    layerTitle = layerTitle !== '' ? layerTitle : 'Local';
-
-    if (serviceName === "" || layerTitle === "") {
-        $.notify('Veuillez renseigner les noms du service et de la couche', 'error');
-        return;
-    }
-
-    if (url !== "") {// si on utilise l'url        
-        $.get(url).done(function (data) {
-            this_.addLayerFromVectorContent(data, serviceName, layerTitle);
-        }).error(function (data) {
-            $.notify('impossible de charger le contenu de l\'URL');
-        });
-    } else if (fileContainer !== "") {// si on utilise le fichier uploadé
-
-        var files = document.getElementById(fileContainer).files;
-        if (!files.length) {
-            $.notify('Veuillez sélectionner un fichier ou une url', 'error');
-            return;
-        }
-        var file = files[0];
-        var reader = new FileReader();
-
-        layerTitle = layerTitle !== 'Local' ? layerTitle : file['name'];
-
-        // If we use onloadend, we need to check the readyState.
-        reader.onloadend = function (evt) {
-            if (evt.target.readyState === FileReader.DONE) { // DONE == 2
-                this_.addLayerFromVectorContent(evt.target.result, serviceName, layerTitle);
-            }
-        };
-        reader.readAsText(file);
-    } else {
-        $.notify('Veuillez sélectionner un fichier ou une URL', 'error');
-        return;
-    }
-    oVmap.simuleClick('close-modal-button');
-};
-
-/**
  * Add a Layer from a vector content
  * @param {string|object} content
  * @param {string} serviceName
@@ -872,24 +704,31 @@ nsVmap.nsMapManager.MapManager.prototype.addLayerFromVectorContent = function (c
         }
     }
 
-    // Ajoute la couche
-    var oLayer = {
-        layerType: 'imagevector',
-        serviceName: serviceName,
-        layerTitle: layerTitle,
-        features: oFeaturesReaded,
-        style: new ol.style.Style({
-            fill: new ol.style.Fill({
-                color: 'rgba(255, 255, 255, 0.1)'
-            }),
-            stroke: new ol.style.Stroke({
-                color: '#319FD3',
-                width: 2
-            })
-        })
-    };
+    if (goog.isDefAndNotNull(oFeaturesReaded)) {
 
-    this.addLayer(oLayer);
+        // Ajoute la couche
+        var oLayer = {
+            layerType: 'imagevector',
+            serviceName: serviceName,
+            layerTitle: layerTitle,
+            features: oFeaturesReaded,
+            style: new ol.style.Style({
+                fill: new ol.style.Fill({
+                    color: 'rgba(255, 255, 255, 0.1)'
+                }),
+                stroke: new ol.style.Stroke({
+                    color: '#319FD3',
+                    width: 2
+                })
+            })
+        };
+        this.addLayer(oLayer);
+        return true;
+    } else {
+        $.notify('Impossible de lire les géométries', 'error');
+        console.error('Impossible de lire les géométries: ', content);
+        return false;
+    }
 };
 
 /**
@@ -1357,6 +1196,9 @@ nsVmap.nsMapManager.MapManager.prototype.getJSONLayersTree = function () {
         }
         if (goog.isDef(node['$$hashKey'])) {
             delete node['$$hashKey'];
+        }
+        if (goog.isDef(node['visibleLayers'])) {
+            delete node['visibleLayers'];
         }
         if (goog.isDef(node['view'])) {
             node['view']['extent'] = oMap.getView().calculateExtent(oMap.getSize());

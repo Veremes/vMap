@@ -40,12 +40,12 @@ class VitisSections extends Vitis {
      * @param type $aValues parameters of the request
      * @param type $properties properties
      */
-    function VitisSections($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
         $this->oConnection = new Connection($this->aValues, $this->aProperties);
-        $this->aSelectedFields = Array("section_id", "tab_id", "event", "index", "label", "name", "link_table_name", "template", "ressource_id");
+        $this->aSelectedFields = Array("section_id", "tab_id", "event", "index", "label", "name", "link_table_name", "template", "ressource_id", "tab_name", "mode_id");
     }
     
     /**

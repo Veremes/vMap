@@ -53,7 +53,7 @@ vitisApp.sectionFormCtrl = function ($scope, $compile, $templateRequest, $log, $
         // Supprime le "watch";
         clearWatch();
     }, false);
-
+    
     // Chargement de la section sélectionnée.
     $scope["selectSection"] = function (iSectionIndex, oObjectSectionForm) {
         if (envSrvc["sMode"] != "insert") {
@@ -67,7 +67,8 @@ vitisApp.sectionFormCtrl = function ($scope, $compile, $templateRequest, $log, $
             $("#container_section_" + envSrvc["oSelectedObject"]["name"] + "_" + oObjectSectionForm["name"]).show();
             // Chargement du template de la section.
             $scope["loadObjectSectionTemplate"]();
-            $scope.$root.$broadcast("updateStudio_" + propertiesSrvc["app_name"] , {"index": iSectionIndex, "oSectionForm": oObjectSectionForm});
+            //console.log(envSrvc["oSelectedObject"]["name"]);
+            $scope.$root.$broadcast("updateStudio_" + envSrvc["oSelectedObject"]["name"] , {"index": iSectionIndex, "oSectionForm": oObjectSectionForm});
         }
     };
 

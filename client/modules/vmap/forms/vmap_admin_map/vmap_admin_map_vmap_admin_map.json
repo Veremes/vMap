@@ -21,7 +21,10 @@
                         "web_service":{
                             "ressource_id":"vmap/mapthemes",
                             "id_key":"maptheme_id",
-                            "label_key":"name"
+                            "label_key":"name",
+                            "parameters":{
+                                "order_by":"name"
+                            }
                         }
                     },
                     {
@@ -33,7 +36,9 @@
                             "ressource_id":"vmap/crss",
                             "id_key":"crs_id",
                             "label_key":"name",
-                            "callback": "concatSelectAttributes('crs_id', ' : ')"
+                            "parameters":{
+                                "order_by":"name"
+                            }
                         }
                     }
                 ]
@@ -71,6 +76,7 @@
         "input_size":"xs",
         "initEvent":"initOLMapExtent()",
         "event":"sendSimpleForm()",
+        "afterEvent":"editSectionForm()",
         "nb_cols":8,
         "rows":[
             {
@@ -106,7 +112,9 @@
                             "ressource_id":"vmap/crss",
                             "id_key":"crs_id",
                             "label_key":"name",
-                            "callback": "concatSelectAttributes('crs_id', ' : ')"
+                            "parameters":{
+                                "order_by":"name"
+                            }
                         }
                     }
                 ]
@@ -132,7 +140,7 @@
                         "nb_cols": 12,
                         "id": "vmap_map_map_extent",
                         "style": {
-                            "height": "300px",
+                            "height": "ratio",
                             "margin-bottom": "-20px"
                         },
                         "map_options": {
@@ -202,7 +210,12 @@
                         "type": "image_wsdata",
                         "name": "thumbnail",
                         "label": "FORM_THUMBNAIL_VMAP_MAP_MAP",
-                        "nb_cols": 6
+                        "nb_cols": 6,
+                        "tooltip": {
+                            "title": "",
+                            "content": "FORM_THUMBNAIL_VMAP_MAP_MAP_TOOLTIP",
+                            "container": "body"
+                        }
                     }
                 ]
             },
@@ -216,7 +229,10 @@
                         "web_service":{
                             "ressource_id":"vmap/mapthemes",
                             "id_key":"maptheme_id",
-                            "label_key":"name"
+                            "label_key":"name",
+                            "parameters":{
+                                "order_by":"name"
+                            }
                         }
                     }
                 ]
@@ -234,9 +250,12 @@
                         "web_service":{
                             "ressource_id":"vitis/groups",
                             "id_key":"group_id",
-                            "label_key":"name"
+                            "label_key":"name",
+                            "parameters":{
+                                "order_by":"name"
+                            }
                         },
-                        "size":"6",
+                        "size":9,
                         "nb_cols":12
                     }
                 ]
@@ -253,6 +272,13 @@
                                 "name":"form_submit",
                                 "label":"FORM_UPDATE",
                                 "class":"btn-primary"
+                            },
+                            {
+                                "type": "button",
+                                "name": "clone_form",
+                                "label": "FORM_CLONE",
+                                "class": "btn-primary",
+                                "event": "cloneSectionForm(['name'])"
                             },
                             {
                                 "type":"button",
@@ -299,7 +325,9 @@
                             "ressource_id":"vmap/crss",
                             "id_key":"crs_id",
                             "label_key":"name",
-                            "callback": "concatSelectAttributes('crs_id', ' : ')"
+                            "parameters":{
+                                "order_by":"name"
+                            }
                         },
                         "default_value": "EPSG:3857"
                     }
@@ -326,7 +354,7 @@
                         "nb_cols": 12,
                         "id": "vmap_map_map_extent",
                         "style": {
-                            "height": "300px",
+                            "height": "ratio",
                             "margin-bottom": "-20px"
                         },
                         "map_options": {
@@ -415,7 +443,10 @@
                         "web_service":{
                             "ressource_id":"vmap/mapthemes",
                             "id_key":"maptheme_id",
-                            "label_key":"name"
+                            "label_key":"name",
+                            "parameters":{
+                                "order_by":"name"
+                            }
                         }
                     }
                 ]
@@ -433,9 +464,12 @@
                         "web_service":{
                             "ressource_id":"vitis/groups",
                             "id_key":"group_id",
-                            "label_key":"name"
+                            "label_key":"name",
+                            "parameters":{
+                                "order_by":"name"
+                            }
                         },
-                        "size":"6",
+                        "size":9,
                         "nb_cols":12
                     }
                 ]

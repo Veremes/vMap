@@ -37,7 +37,7 @@ class FicheDescriptiveParcelle extends Cadastre {
      * @param type $properties properties
      * @param type $oConnection connection object
      */
-    function fichedescriptiveparcelle($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
@@ -78,6 +78,13 @@ class FicheDescriptiveParcelle extends Cadastre {
      * @return the token
      */
     function GET() {
+        
+        if (!in_array('vmap_cadastre_user', $this->oConnection->aPrivileges)) {
+            $oError = new VitisError(0, 'INSUFFICIENT_PRIVILEGES');
+            $aXmlRacineAttribute['status'] = 0;
+            $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+            return $sMessage;
+        }
 
         $ID_PAR = $this->aPath[2];
        
@@ -148,6 +155,11 @@ class FicheDescriptiveParcelle extends Cadastre {
             $oIntersect = $this->vmapIntersectGet($sSchema, $sTable, $parcelleGeom, $aAttributs);
 
             $value['data'] = $oIntersect;
+            if (isset($value['data'][0]) && !empty($value['data'][0])) {
+                $value['aFields'] = array_keys($value['data'][0]);
+            } else {
+                $value['aFields'] = array();
+            }
 
             array_push($oParcelleInfos['data']['aIntersections'], $value);
         }

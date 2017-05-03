@@ -1,0 +1,46 @@
+<div data-app-websocket-configuration="" class="row version-configuration">
+    <div class="col-xs-12 no_bs_padding">
+
+        <!--Serveur-->
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title" data-translate="WEBSOCKET_SERVER_TITLE_CONFIGURATION"></h3>
+            </div>
+            <ul class="list-group">
+                <li class="list-group-item" ng-class="{'install-state-error': oServerInfos === null, 'install-state-ok': oServerInfos !== null}"><span data-translate="WEBSOCKET_SERVER_STATE_CONFIGURATION"></span> : </li>
+                <li ng-if="ctrl.propertiesSrvc.websocket_server" class="list-group-item"><span data-translate="WEBSOCKET_SERVER_CONFIGURATION"></span> : {{ctrl.propertiesSrvc.websocket_server}}</li>
+                <li ng-if="ctrl.propertiesSrvc.websocket_port" class="list-group-item"><span data-translate="WEBSOCKET_PORT_CONFIGURATION"></span> : {{ctrl.propertiesSrvc.websocket_port}}</li>
+                <li ng-if="ctrl.propertiesSrvc.websocket_alias" class="list-group-item"><span data-translate="WEBSOCKET_ALIAS_CONFIGURATION"></span> : {{ctrl.propertiesSrvc.websocket_alias}}</li>
+                <li ng-if="sWebSocketUrl" class="list-group-item"><span data-translate="WEBSOCKET_URL_CONFIGURATION"></span> : {{sWebSocketUrl}}</li>
+                <li ng-if="oServerInfos.maxClients" class="list-group-item"><span data-translate="WEBSOCKET_SERVER_MAX_CLIENTS_CONFIGURATION"></span> : {{oServerInfos.maxClients}}</li>
+                <li ng-if="oServerInfos.maxRequetsPerMinute" class="list-group-item"><span data-translate="WEBSOCKET_SERVER_MAX_REQUESTS_PER_MINUTE_CONFIGURATION"></span> : {{oServerInfos.maxRequetsPerMinute}}</li>
+            </ul> 
+        </div>
+
+        <!--Utilisateurs-->
+        <div ng-if="oServerInfos !== null" class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title" data-translate="WEBSOCKET_USERS_NUMBER_TITLE_CONFIGURATION"></h3>
+            </div>
+            <ul class="list-group">
+                <li class="list-group-item"><span data-translate="WEBSOCKET_USERS_APPLICATION_CONFIGURATION"></span> : {{oServerInfos.clientCount}}</li>
+                <li ng-if="oService.clientCount" ng-repeat="(sServiceName, oService) in oServerInfos.activeServices" class="list-group-item"><span>{{sServiceName}}</span> : {{oService.clientCount}}</li>
+            </ul> 
+        </div>
+
+        <!--Actions-->
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title" data-translate="WEBSOCKET_ACTIONS_TITLE_CONFIGURATION"></h3>
+            </div>
+            <ul class="list-group">
+                <li class="list-group-item height-100">
+                    <button class="btn btn-primary" ng-click="ctrl.reloadWebsocketStatus()"><span data-translate="WEBSOCKET_ACTIONS_REFRESH_INFOS_CONFIGURATION"></span></button>
+                    <button class="btn btn-primary" ng-click="ctrl.refreshClients()"><span data-translate="WEBSOCKET_ACTIONS_REFRESH_USERS_CONFIGURATION"></span></button>
+                    <button class="btn btn-primary hidden"><span data-translate="WEBSOCKET_ACTIONS_RESTART_SERVER_CONFIGURATION"></span></button>
+                </li>
+            </ul> 
+        </div>
+
+    </div>
+</div>

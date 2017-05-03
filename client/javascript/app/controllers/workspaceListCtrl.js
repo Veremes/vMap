@@ -30,7 +30,6 @@ vitisApp.workspaceListCtrl = function ($scope, $log, Restangular, envSrvc, sessi
     // Boutons d'actions à afficher pour chaque enregistrement (modifier, visualiser)
     $scope["edit_column"] = envSrvc["oSelectedObject"]["edit_column"];
     $scope["show_column"] = envSrvc["oSelectedObject"]["show_column"];
-
     // Vérifie si un précédent filtre de recherche existe (si le mode ne doit pas être rechargé automatiquement).
     var aFilter, oUrlParams;
     /*
@@ -74,6 +73,9 @@ vitisApp.workspaceListCtrl = function ($scope, $log, Restangular, envSrvc, sessi
             "appShowActions": true // Affichage des boutons d'actions.
         };
     }
+    // Sauve la définition originale de la liste.
+    if (typeof(envSrvc["oDefaultGridOptions"][envSrvc["oSelectedObject"]["name"]]) == "undefined")
+        envSrvc["oDefaultGridOptions"][envSrvc["oSelectedObject"]["name"]] = angular.copy($scope["gridOptions"]);
     // Récupère un filtre et les valeurs de formulaires sauvegardés.
     if (typeof(envSrvc["oWorkspaceList"][envSrvc["oSelectedObject"]["name"]]) == "undefined")
         envSrvc["oWorkspaceList"][envSrvc["oSelectedObject"]["name"]] = {};
@@ -83,12 +85,12 @@ vitisApp.workspaceListCtrl = function ($scope, $log, Restangular, envSrvc, sessi
         if (typeof(envSrvc["oWorkspaceList"][envSrvc["oSelectedObject"]["name"]]["oFormValue"]) != "undefined")
             envSrvc["oFormValues"][envSrvc["sFormDefinitionName"]] = angular.copy(envSrvc["oWorkspaceList"][envSrvc["oSelectedObject"]["name"]]["oFormValue"]);
     }
-    //
+    // Paramètres des filtres
     if (typeof (aFilter) !== "undefined")
         $scope["gridOptions"]["aFilter"] = aFilter;
-    //
-    if (typeof (oUrlParams) !== "undefined")
-        $scope["gridOptions"]["oUrlParams"] = oUrlParams;
+    // Paramètres de tri.
+    if (typeof(envSrvc["oGridOptionsCopy"][envSrvc["oSelectedObject"]["name"]]) != "undefined")
+        $scope["gridOptions"]["oUrlParams"] = angular.copy(envSrvc["oGridOptionsCopy"][envSrvc["oSelectedObject"]["name"]]["oUrlParams"]);
 
     // Template pour activer le drag'n drop.
     if ($scope["gridOptions"]["appEnableDragAndDrop"] === true)

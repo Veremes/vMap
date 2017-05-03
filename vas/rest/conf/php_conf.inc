@@ -2,7 +2,7 @@
 //Définition de l'include path
 set_include_path(get_include_path() . PATH_SEPARATOR . $properties['vas_home']."/rest/class");
 //Définition de l'utilisation de cookies pour les variables de sessions
-ini_set("session.use_cookies", 1);
+ini_set("session.use_cookies", 0);
 ini_set("upload_tmp_dir", $properties["extract_dir"]);
 //Définition de la portée des cookies et de leur durée de vie
 if (isset($properties["cookie_path"]))

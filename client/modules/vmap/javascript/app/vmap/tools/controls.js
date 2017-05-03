@@ -7,7 +7,8 @@
  */
 goog.provide('nsVmap.nsToolsManager.Controls');
 
-goog.require('nsVmap.nsToolsManager.VmapWebsocket');
+goog.require('oVmap');
+
 goog.require('ol.Map');
 goog.require('ol.control');
 goog.require('ol.control.Attribution');
@@ -109,40 +110,6 @@ nsVmap.nsToolsManager.Controls = function (aControls) {
     };
 
     this.DragAndDrop = false;
-
-    // WebSocket
-    if (goog.isDefAndNotNull(oVmap['properties']['websocket_alias']) &&
-            goog.isDefAndNotNull(oVmap['properties']['websocket_port']) &&
-            goog.isDefAndNotNull(oVmap['properties']['websocket_server'])) {
-
-        // Connection à la web socket
-        oVmap.log('VmapWebsocket: Connecting');
-        this.oVmapWebsocket = new VmapWebsocket('ws://' + oVmap['properties']['websocket_server'] + ':' + oVmap['properties']['websocket_port'] + '/' + oVmap['properties']['websocket_alias']);
-
-        // Connection réussie
-        this.oVmapWebsocket.bind('open', function () {
-            oVmap.log('VmapWebsocket: Connected');
-        });
-
-        // Déconnection
-        this.oVmapWebsocket.bind('close', function () {
-            oVmap.log('VmapWebsocket: Disconnected');
-        });
-
-        // Réception d'un message
-        this.oVmapWebsocket.bind('message', function (message) {
-            if (this_.oVmapWebsocket['isActive'] === true) {
-                oVmap.log('VmapWebsocket: ' + message);
-                oVmap.getMap().getMapManager().reloadEventLayers(message['data']);
-            }
-        });
-
-//        this.oVmapWebsocket.connect();
-    }
-
-    // Directives et controleurs Angular
-    oVmap.module.directive('appControls', this.controlsDirective);
-    oVmap.module.controller('AppControlsController', this.controlsController);
 };
 // Obligatoire pour instancier dans nsVmap.nsToolsManager.ToolsManager
 goog.exportProperty(nsVmap.nsToolsManager, 'Controls', nsVmap.nsToolsManager.Controls);
@@ -239,18 +206,23 @@ nsVmap.nsToolsManager.Controls.prototype.addControl = function (control) {
             this.map_.on('click', function () {
                 $('#scale-list').hide();
             }, this);
-            
+
+            var i = 0;
             this.map_.on('moveend', function () {
-                $("#current-scale").html(oVmap.getMap().getScale({
-                    'pretty': true
-                }));
+                i++;
+                var ii = angular.copy(i);
+                setTimeout(function () {
+                    if (i === ii) {
+                        $("#current-scale").html(oVmap.getMap().getScale({
+                            'pretty': true
+                        }));
+                    }
+                }, 100);
             }, this);
 
             break;
         case 'RefreshSocket':
-            if (goog.isDefAndNotNull(this.oVmapWebsocket)) {
-                this.oVmapWebsocket['isActive'] = true;
-            }
+            oVmap['bRefreshWebsockets'] = true;
             break;
         default:
             console.error("Warning : control (" + control + ") is not available");
@@ -272,18 +244,15 @@ nsVmap.nsToolsManager.Controls.prototype.setToolActive = function (control, bAct
     var aControls = oMap.getControls().getArray();
     bActive = goog.isDef(bActive) ? bActive : true;
 
-    // Si il s'agit d'un controle OpenLayers
-    if (goog.isFunction(ol.control[control])) {
-        if (bActive === true) {
-            // Ajout du controle
-            this.addControl(control);
-        } else {
-            // Suppression du controls
-            for (var i = 0; i < aControls.length; i++) {
-                if (aControls[i].get('type') === control) {
-                    oMap.removeControl(aControls[i]);
-                    return 0;
-                }
+    if (bActive === true) {
+        // Ajout du controle
+        this.addControl(control);
+    } else {
+        // Suppression du controls
+        for (var i = 0; i < aControls.length; i++) {
+            if (aControls[i].get('type') === control) {
+                oMap.removeControl(aControls[i]);
+                return 0;
             }
         }
     }
@@ -305,11 +274,7 @@ nsVmap.nsToolsManager.Controls.prototype.setToolActive = function (control, bAct
         }
 
     } else if (control === 'RefreshSocket') {
-
-        if (goog.isDefAndNotNull(this.oVmapWebsocket)) {
-            this.oVmapWebsocket['isActive'] = bActive;
-        }
-
+        oVmap['bRefreshWebsockets'] = bActive;
     }
 };
 
@@ -412,3 +377,7 @@ nsVmap.nsToolsManager.Controls.prototype.getAvaliableControls = function () {
 nsVmap.nsToolsManager.Controls.prototype.getOverviewMap = function () {
     return this.overviewMap_;
 };
+
+// Définit la directive et le controller
+oVmap.module.directive('appControls', nsVmap.nsToolsManager.Controls.prototype.controlsDirective);
+oVmap.module.controller('AppControlsController', nsVmap.nsToolsManager.Controls.prototype.controlsController);

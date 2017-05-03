@@ -35,12 +35,12 @@ class MapLayers extends Vmap {
      * @param type $aValues parameters of the request
      * @param type $properties properties
      */
-    function MapLayers($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
         $this->oConnection = new Connection($this->aValues, $this->aProperties);
-	$this->aSelectedFields = Array("layer_id", "name", "theme_name", "layer_visible", "map_id", "layer_opacity");
+		$this->aSelectedFields = Array("layer_id", "name", "theme_name", "layer_visible", "map_id", "layer_opacity", "layer_index");
     }
     
     /**
@@ -76,16 +76,14 @@ class MapLayers extends Vmap {
      *     in="query",
      *     description="number of element",
      *     required=false,
-     *     type="integer",
-     *     format="int32"
+     *     type="integer"
      *   ),
      * @SWG\Parameter(
      *     name="offset",
      *     in="query",
      *     description="index of first element",
      *     required=false,
-     *     type="string",
-     *     format="int32"
+     *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="attributs",
@@ -293,7 +291,7 @@ class MapLayers extends Vmap {
         require $this->sRessourcesFile;
         if (!empty($this->aPath[3])) {
             if ($this->aPath[3] == "visibility") {
-                // Couches dont la définition doit changer ?
+                // Calques dont la définition doit changer ?
                 if (!empty($this->aValues['map_layers'])) {
                     $sSql = str_replace('[map_id]', $this->aValues["my_vitis_id"], $aSql['updateMapLayersVisibility']);
                     $sSql = str_replace('[map_layers]', str_replace('|', ',', $this->aValues['map_layers']), $sSql);
@@ -301,8 +299,8 @@ class MapLayers extends Vmap {
                     $sSql = str_replace('[sSchemaVmap]', $this->aProperties['schema_vmap'], $sSql);
                     $resultat = $this->oConnection->oBd->execute($sSql);
                     if ($this->oConnection->oBd->enErreur()) {
-                        $this->oError = new Error(1, $this->oConnection->oBd->getBDMessage());
-                        $oError = new Error(1, $this->oConnection->oBd->getBDMessage());
+                        $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
+                        $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                         $aXmlRacineAttribute['status'] = 0;
                         $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
                     }
@@ -325,8 +323,8 @@ class MapLayers extends Vmap {
                         $sSql = str_replace('[sSchemaVmap]', $this->aProperties['schema_vmap'], $sSql);
                         $resultat = $this->oConnection->oBd->execute($sSql);
                         if ($this->oConnection->oBd->enErreur()) {
-                            $this->oError = new Error(1, $this->oConnection->oBd->getBDMessage());
-                            $oError = new Error(1, $this->oConnection->oBd->getBDMessage());
+                            $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
+                            $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                             $aXmlRacineAttribute['status'] = 0;
                             $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
                             break;
@@ -344,15 +342,15 @@ class MapLayers extends Vmap {
                 $sSql = str_replace('[sSchemaVmap]', $this->aProperties['schema_vmap'], $sSql);
                 $resultat = $this->oConnection->oBd->execute($sSql);
                 if ($this->oConnection->oBd->enErreur()) {
-                    $this->oError = new Error(1, $this->oConnection->oBd->getBDMessage());
-                    $oError = new Error(1, $this->oConnection->oBd->getBDMessage());
+                    $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
+                    $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                     $aXmlRacineAttribute['status'] = 0;
                     $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
                 }
             }
         }
         else {
-            // Couches à rattacher à la carte ?
+            // Calques à rattacher à la carte ?
             if (!empty($this->aValues['map_layers'])) {
                 $aLayers = explode('|', $this->aValues['map_layers']);
                 foreach ($aLayers as $iLayerId) {
@@ -361,8 +359,8 @@ class MapLayers extends Vmap {
                     $sSql = str_replace('[sSchemaVmap]', $this->aProperties['schema_vmap'], $sSql);
                     $resultat = $this->oConnection->oBd->execute($sSql);
                     if ($this->oConnection->oBd->enErreur()) {
-                        $this->oError = new Error(1, $this->oConnection->oBd->getBDMessage());
-                        $oError = new Error(1, $this->oConnection->oBd->getBDMessage());
+                        $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
+                        $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                         $aXmlRacineAttribute['status'] = 0;
                         $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
                     }
@@ -419,15 +417,15 @@ class MapLayers extends Vmap {
      */
     function DELETE() {
         require $this->sRessourcesFile;
-        // Couches à supprimer ?
+        // Calques à supprimer ?
         if (!empty($this->aValues['idList'])) {
             $sSql = str_replace('[map_id]', $this->aValues["my_vitis_id"], $aSql['deleteMapLayers']);
             $sSql = str_replace('[idList]', str_replace('|', ',', $this->aValues['idList']), $sSql);
             $sSql = str_replace('[sSchemaVmap]', $this->aProperties['schema_vmap'], $sSql);
             $resultat = $this->oConnection->oBd->execute($sSql);
             if ($this->oConnection->oBd->enErreur()) {
-                $this->oError = new Error(1, $this->oConnection->oBd->getBDMessage());
-                $oError = new Error(1, $this->oConnection->oBd->getBDMessage());
+                $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
+                $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                 $aXmlRacineAttribute['status'] = 0;
                 $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
             }

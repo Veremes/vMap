@@ -44,7 +44,7 @@ class Mj_Emprises extends Mj {
 	*/
 	var $aEmprisesParcellesSuf=array();
 
-	function Mj_Emprises($oBD, $sIdPar, $sView, $iTolerance, $aField, $sLayerType) {
+	function __construct($oBD, $sIdPar, $sView, $iTolerance, $aField, $sLayerType) {
                 
 		$sFunction = "";
 		switch(strtoupper($aField["type"])) {

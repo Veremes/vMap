@@ -7,6 +7,8 @@
  */
 goog.provide('nsVmap.nsToolsManager.AdvancedSelect');
 
+goog.require('oVmap');
+
 goog.require('ol.layer.Vector');
 goog.require('ol.format.GeoJSON');
 goog.require('ol.style.Style');
@@ -24,10 +26,7 @@ goog.require('goog.object');
  * @export
  */
 nsVmap.nsToolsManager.AdvancedSelect = function () {
-
-    // Directives et controleurs Angular
-    oVmap.module.directive('appAdvancedselect', this.AdvancedSelectDirective);
-    oVmap.module.controller('AppAdvancedselectController', this.AdvancedSelectController);
+    oVmap.log('nsVmap.nsToolsManager.AdvancedSelect');
 };
 
 /**
@@ -216,6 +215,11 @@ nsVmap.nsToolsManager.AdvancedSelect.prototype.AdvancedSelectController = functi
         if (e.keyCode === 27) {
             this_.canceler_.resolve();
         }
+    });
+
+    // Vide les selections quand on change de carte
+    oVmap['scope'].$on('mapChanged', function () {
+        this_.removeSelections();
     });
 };
 
@@ -480,6 +484,16 @@ nsVmap.nsToolsManager.AdvancedSelect.prototype.AdvancedSelectController.prototyp
             return 0;
         }
 
+        // Sauvegarde la géométrie (pour faire re-apparaitre la popup lors de l'édition du formulaire)
+        if (goog.isDefAndNotNull(aSelection[0])) {
+            if (goog.isDefAndNotNull(aSelection[0]['olFeature'])) {
+                var olGeom = aSelection[0]['olFeature'].getGeometry();
+                var EWKTGeometry = oVmap.getEWKTFromGeom(olGeom);
+                basicScope['ctrl'].EWKTGeometry = EWKTGeometry;
+                basicScope['ctrl'].olPoint = olGeom;
+            }
+        }
+
         basicScope['ctrl'].centerMapOnPopup(aSelection[0]);
         basicScope['ctrl'].replaceSelectionPopup(aSelection);
 
@@ -673,6 +687,17 @@ nsVmap.nsToolsManager.AdvancedSelect.prototype.AdvancedSelectController.prototyp
             oTableSelection[aSelection[i]['bo_type']].push(tmp);
     }
 
+    // Prévient des injections JavaScript
+    for (var bo_id in oTableSelection) {
+        for (var i = 0; i < oTableSelection[bo_id].length; i++) {
+            for (var key in oTableSelection[bo_id][i]) {
+                if (goog.isString(oTableSelection[bo_id][i][key])) {
+                    oTableSelection[bo_id][i][key] = oTableSelection[bo_id][i][key].replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                }
+            }
+        }
+    }
+
     return oTableSelection;
 };
 
@@ -745,6 +770,7 @@ nsVmap.nsToolsManager.AdvancedSelect.prototype.AdvancedSelectController.prototyp
                 "class": "btn-ungroup btn-group-xs",
                 "nb_cols": 12,
                 "buttons": [{
+                        "visibleAllTabs": true,
                         "id": "select_search_form_reader_" + bo_type + "_submit_buton",
                         "type": "submit",
                         "label": "Rechercher",
@@ -762,6 +788,7 @@ nsVmap.nsToolsManager.AdvancedSelect.prototype.AdvancedSelectController.prototyp
     var geomField = {
         "fields": [
             {
+                "visibleAllTabs": true,
                 "type": "text",
                 "name": geom_column,
                 "label": "Géométrie",
@@ -776,7 +803,10 @@ nsVmap.nsToolsManager.AdvancedSelect.prototype.AdvancedSelectController.prototyp
 
     // Evènement submit
     oFormDefinition['search']['event'] = function (oFormValuesResulted) {
-        var boValues = this_.oSelect.getBOValuesFromFormValues(oFormValuesResulted['search']);
+
+//        var boValues = this_.oSelect.getBOValuesFromFormValues(oFormValuesResulted['search']);
+        var boValues = this_.oSelect.getFormData(oFormValuesResulted, oFormDefinition, 'search');
+
         this_.updateSelectionTable(angular.copy(bo_type), boValues, angular.copy(geom_column));
     };
 
@@ -1159,3 +1189,8 @@ nsVmap.nsToolsManager.AdvancedSelect.prototype.AdvancedSelectController.prototyp
         }
     }
 };
+
+
+// Définit la directive et le controller
+oVmap.module.directive('appAdvancedselect', nsVmap.nsToolsManager.AdvancedSelect.prototype.AdvancedSelectDirective);
+oVmap.module.controller('AppAdvancedselectController', nsVmap.nsToolsManager.AdvancedSelect.prototype.AdvancedSelectController);

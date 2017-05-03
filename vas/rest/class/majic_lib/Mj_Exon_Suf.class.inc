@@ -26,7 +26,7 @@ class Mj_Exon_Suf extends Mj {
 	* \param $sRnuexn Numéro d'ordre d'exoneration temporaire
 	* \param $oBD Objet de connexion PDO_BD
 	*/
-	function Mj_Exon_Suf($sIdSuf,$sRnuexn,$oBD){
+	function __construct($sIdSuf,$sRnuexn,$oBD){
 		include $this->sRessourcesFile;
 		$this->sSql = $aSql[$oBD->sgbd]['exon_suf'];
 		$this->sSql = str_replace('$sIdSuf', $sIdSuf, $this->sSql);

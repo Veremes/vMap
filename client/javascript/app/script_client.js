@@ -1,21 +1,83 @@
 
-/* global goog, vitisApp, angular */
+/* global goog, vitisApp, angular, bootbox, moment */
 
 goog.provide('vitis.script_client');
 goog.require('vitis');
 goog.require('vitis.directives.main');
 goog.require('vitis.directives.workspaceList');
+goog.require('vitis.VitisWebsocket');
 
 vitisApp.on('appMainDrtvLoaded', function () {
+
+    // Injection des services.
+    var $q = angular.element(vitisApp.appHtmlFormDrtv).injector().get(["$q"]);
+    var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
+    var $http = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["$http"]);
+    var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
+    var formSrvc = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["formSrvc"]);
+    var $timeout = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["$timeout"]);
+    var $compile = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["$compile"]);
+    var modesSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["modesSrvc"]);
+    var $translate = angular.element(vitisApp.appMainDrtv).injector().get(["$translate"]);
+    var sessionSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["sessionSrvc"]);
+    var Restangular = angular.element(vitisApp.appMainDrtv).injector().get(["Restangular"]);
+    var propertiesSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["propertiesSrvc"]);
+    var uiGridConstants = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["uiGridConstants"]);
+    var $templateRequest = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["$templateRequest"]);
+    var externFunctionSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["externFunctionSrvc"]);
+
+    // WebSocket
+    if (goog.isDefAndNotNull(propertiesSrvc['websocket_alias'])) {
+
+        var sWebSocketUrl = 'wss://' + location.host + '/' + propertiesSrvc['websocket_alias'] + '/';
+
+        vitisApp['oWebsocket'] = new VitisWebsocket(sWebSocketUrl);
+
+        // Espace de stockage pour le refraichissement des grilles lors d'evenements
+        vitisApp['oWebsocket']['oGridRefreshEvents'] = {};
+
+        // Connection réussie
+        vitisApp['oWebsocket'].on('connect', function (sReturn) {
+            $log.info('VitisWebsocket: Connected to ' + sWebSocketUrl + ' with ' + sReturn);
+        });
+
+        // Déconnection
+        vitisApp['oWebsocket'].on('disconnect', function () {
+            $log.info('VitisWebsocket: Disconnected');
+        });
+
+        // Souscription
+        vitisApp['oWebsocket'].on('subscribe', function (sReturn) {
+            $log.info('VitisWebsocket: Subscribed to ' + sReturn);
+        });
+
+        // Réception d'un message echo
+        vitisApp['oWebsocket'].on('echo', function (message) {
+            $log.info('VitisWebsocket echo: ' + message);
+            $.notify('VitisWebsocket: ' + message, 'success');
+        });
+
+        // Réception d'un événement
+        vitisApp['oWebsocket'].on('event', function (event) {
+            $log.info('VitisWebsocket event: ', event);
+        });
+
+        // Test si la connection a pu être faite
+        setTimeout(function () {
+            if (!vitisApp['oWebsocket'].isConnected()) {
+                $log.error('VitisWebsocket was not able to connect');
+                $translate(["INACCESSIBLE_WEBSOCKET"]).then(function (oTranslations) {
+                    $.notify(oTranslations["INACCESSIBLE_WEBSOCKET"], 'error');
+                });
+            }
+        }, 5000);
+    }
+
     /**
      * loadSimpleForm function.
      * Paramétrage avant la compilation du template simpleForm (vm_tab.event).
-     * @expose
      **/
-    angular.element(vitisApp.appMainDrtv).scope().loadSimpleForm = function () {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
-        var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
+    angular.element(vitisApp.appMainDrtv).scope()['loadSimpleForm'] = function () {
         // Passage en mode "Update" (pour le formulaire).
         envSrvc["sMode"] = "update";
         $log.info("loadSimpleForm");
@@ -26,11 +88,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * Evaluation d'une chaine de caractère dans un scope.
      * @param {angular.$scope} scope Angular scope.
      * @param {string} sStringToEval chaine de caractère à évaluer.
-     * @expose
      **/
-    angular.element(vitisApp.appMainDrtv).scope().scopeEval = function (scope, sStringToEval) {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["$log"]);
+    angular.element(vitisApp.appMainDrtv).scope()['scopeEval'] = function (scope, sStringToEval) {
         $log.info(sStringToEval);
         scope.$eval(sStringToEval);
     };
@@ -38,12 +97,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
     /**
      * AddDoubleForm function.
      * Création d'un enregistrement (doubleForm).
-     * @expose
      **/
-    angular.element(vitisApp.appWorkspaceListDrtv).scope().AddDoubleForm = function () {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["$log"]);
-        var envSrvc = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["envSrvc"]);
+    angular.element(vitisApp.appWorkspaceListDrtv).scope()['AddDoubleForm'] = function () {
         // Compilation et affichage du template doubleForm en mode "insert".
         envSrvc["addDoubleForm"]();
         $log.info("AddDoubleForm");
@@ -52,13 +107,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
     /**
      * AddSectionForm function.
      * Création d'un enregistrement (simpleForm ou sectionForm).
-     * @expose
      **/
-    angular.element(vitisApp.appWorkspaceListDrtv).scope().AddSectionForm = function () {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["$log"]);
-        var envSrvc = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["envSrvc"]);
-        //
+    angular.element(vitisApp.appWorkspaceListDrtv).scope()['AddSectionForm'] = function () {
         $log.info("AddSectionForm");
         // Fonction à appeler avant la création d'un enregistrement ?
         var scope = this;
@@ -73,14 +123,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * setMode function.
      * Change le mode d'action (update,display...).
      * @param {string} sMode Mode d'action.
-     * @expose
      **/
-    angular.element(vitisApp.appMainDrtv).scope().setMode = function (sMode) {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
-        var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
-        var modesSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["modesSrvc"]);
-        //
+    angular.element(vitisApp.appMainDrtv).scope()['setMode'] = function (sMode) {
         $log.info("setMode: " + sMode);
         //formSrvc["clearFormData"](envSrvc["sFormDefinitionName"]);
         // Changement de mode d'action.
@@ -98,11 +142,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * setFullScreen function.
      * Affichage en plein écran.
      * @param {boolean} bFullScreen Activer ou annuler le plein écran.
-     * @expose
      **/
     angular.element(vitisApp.appMainDrtv).scope()["setFullScreen"] = function (bFullScreen) {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
         $log.info("setFullScreen", bFullScreen);
 
         var headerLineHeight = $('#header_line').height();
@@ -123,12 +164,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
     /**
      * reloadSection function.
      * Recharge l'onglet.
-     * @expose
      **/
-    angular.element(vitisApp.appMainDrtv).scope().reloadSection = function () {         // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
-        var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
-        //
+    angular.element(vitisApp.appMainDrtv).scope()['reloadSection'] = function () {
         $log.info("reloadSection : " + envSrvc["sMode"]);
         envSrvc["setSectionForm"](envSrvc["sMode"], envSrvc["sId"]);
     };
@@ -137,13 +174,10 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * getProperty function.
      * Retourne la valeur d'une des "properties".
      * @param {string} sPropertieName Nom de la propriété.
+     * @param {object} oOptions Paramètres optionnels.
      * @return {string}
-     * @expose
      **/
-    angular.element(vitisApp.appMainDrtv).scope().getProperty = function (sPropertieName) {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
-        var propertiesSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["propertiesSrvc"]);
+    angular.element(vitisApp.appMainDrtv).scope()['getProperty'] = function (sPropertieName, oOptions) {
         // Edition d'un enregistrement.
         $log.info("getProperty : " + sPropertieName);
         var sValue;
@@ -151,6 +185,13 @@ vitisApp.on('appMainDrtvLoaded', function () {
             eval("sValue = propertiesSrvc." + sPropertieName);
         else
             sValue = propertiesSrvc[sPropertieName];
+        // Paramères optionnels.
+        if (typeof (oOptions) != "undefined") {
+            if (typeof (oOptions["concatBefore"]) != "undefined")
+                sValue = oOptions["concatBefore"] + sValue;
+            if (typeof (oOptions["concatAfter"]) != "undefined")
+                sValue = sValue + oOptions["concatAfter"];
+        }
         return sValue;
     };
 
@@ -160,10 +201,9 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * Retourne la valeur d'une "propertie".
      * @param {string} sPropertieName Nom de la "propertie".
      * @return {string}
-     * @expose
      **/
-    angular.element(vitisApp.appMainDrtv).scope().getPropertie = function (sPropertieName) {
-        return angular.element(vitisApp.appMainDrtv).scope().getProperty(sPropertieName);
+    angular.element(vitisApp.appMainDrtv).scope()['getPropertie'] = function (sPropertieName) {
+        return angular.element(vitisApp.appMainDrtv).scope()["getProperty"](sPropertieName);
     };
 
     /**
@@ -229,13 +269,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * @param {string} sTitle Titre de la fenêtre.
      * @param {object} oOptions Paramètres du composant et autres (appDuration, appBootstrapStyle).
      * @return {promise}
-     * @expose
      **/
-    angular.element(vitisApp.appMainDrtv).scope().modalWindow = function (sType, sTitle, oOptions) {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
-        var externFunctionSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["externFunctionSrvc"]);
-        // 
+    angular.element(vitisApp.appMainDrtv).scope()['modalWindow'] = function (sType, sTitle, oOptions) {
         $log.info("modalWindow");
         return externFunctionSrvc["modalWindow"](sType, sTitle, oOptions);
     };
@@ -245,13 +280,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * Sélectionne la 1ere option d'un <select>.
      * @param {string} sFormElementName Nom du <select>.
      * @param {boolean} bEmptyOption Ajoute une <option> vide si le <select> est vide.
-     * @expose
      **/
-    angular.element(vitisApp.appMainDrtv).scope().selectFirstOption = function (sFormElementName, bEmptyOption) {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
-        var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
-        //
+    angular.element(vitisApp.appMainDrtv).scope()['selectFirstOption'] = function (sFormElementName, bEmptyOption) {
         $log.info("selectFirstOption");
         // Création de la structure du <select> si non existante.
         oFormValues = envSrvc["oFormValues"][envSrvc["sFormDefinitionName"]];
@@ -272,67 +302,103 @@ vitisApp.on('appMainDrtvLoaded', function () {
 
     /**
      * loadSection function.
-     * @expose
      **/
-    angular.element(vitisApp.appMainDrtv).scope().loadSection = function () {         // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
-        //
+    angular.element(vitisApp.appMainDrtv).scope()['loadSection'] = function () {
         $log.info("loadSection");
     };
 
     /**
      * reloadSectionForm function.
-     * @expose
      **/
-    angular.element(vitisApp.appMainDrtv).scope().reloadSectionForm = function () {         // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
-        //
+    angular.element(vitisApp.appMainDrtv).scope()['reloadSectionForm'] = function () {
         $log.info("reloadSectionForm");
     };
 
     /**
-     * refreshWorkspaceListByPeriod function.
-     * Actualise une liste "ui-grid" (timer) en fonction de la propriété "refresh_period".
-     * @expose
-     **/
-    angular.element(vitisApp.appWorkspaceListDrtv).scope().refreshWorkspaceListByPeriod = function () {         // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
-        var propertiesSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["propertiesSrvc"]);
-        var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
-        //
-        $log.info("refreshWorkspaceListByPeriod");
-        // Sauve le nom de l'onglet qui doit être raffraîchit.
-        var sSelectedObject = envSrvc["oSelectedObject"]["name"];
-        // Supprime le précédent timer de l'onglet.
-        if (typeof (envSrvc["oWorkspaceListRefreshTimer"][sSelectedObject]) == "number")
-            clearInterval(envSrvc["oWorkspaceListRefreshTimer"][sSelectedObject]);
-        //
-        if (typeof (propertiesSrvc["refresh_period"]) != "number")
-            propertiesSrvc["refresh_period"] = 30;
-        // Création du timer.
-        var scope = this;
-        envSrvc["oWorkspaceListRefreshTimer"][sSelectedObject] = setInterval(function () {             // Recharge la liste uniquement si l'onglet actuel est celui qui contient le timer.
-            if (envSrvc["oSelectedObject"]["name"] == sSelectedObject && envSrvc["sMode"] == "search") {
-                // Sauve la sélection
-                scope["saveGridSelection"](scope.$root["gridApi"][envSrvc["oSelectedObject"]["name"]]["grid"]["appScope"], scope.$root["gridApi"][envSrvc["oSelectedObject"]["name"]]["grid"]["options"]);
-                // Recharge la liste.
-                var iPaginationCurrentPage = envSrvc["oGridOptions"][envSrvc["oSelectedObject"]["name"]]["paginationCurrentPage"];
-                var iPaginationPageSize = envSrvc["oGridOptions"][envSrvc["oSelectedObject"]["name"]]["paginationPageSize"];
-                scope.$root["refreshGrid"](scope.$root["gridApi"][envSrvc["oSelectedObject"]["name"]]["grid"]["appScope"], envSrvc["oGridOptions"][envSrvc["oSelectedObject"]["name"]]);
+     * Refresh the grid defined by sRefreshObjectId when the event definid by sEvent is listened
+     * Uses properties.minimum_refresh_period to prevent refreshing too fast
+     * @param {string} sRefreshObjectId
+     * @param {string} sEvent
+     * @param {function} condition
+     */
+    angular.element(vitisApp.appMainDrtv).scope()['refreshGridByEvent'] = function (sRefreshObjectId, sEvent, condition) {
+        $log.info("refreshGridByEvent");
+
+        if (!goog.isDefAndNotNull(vitisApp['oWebsocket'])) {
+            return null;
+        }
+
+        // Période minimum entre deux rafraichissements
+        var minimumRefreshTime = goog.isDefAndNotNull(propertiesSrvc["minimum_refresh_period"]) ? propertiesSrvc["minimum_refresh_period"] * 1000 : 10000;
+
+        if (!goog.isDefAndNotNull(sRefreshObjectId)) {
+            return null;
+        }
+        if (!goog.isDefAndNotNull(sEvent)) {
+            return null;
+        }
+
+        // Vérifie si l'évènement existe pas déjà
+        if (goog.isDefAndNotNull(vitisApp['oWebsocket']['oGridRefreshEvents'][sRefreshObjectId])) {
+            if (goog.isDefAndNotNull(vitisApp['oWebsocket']['oGridRefreshEvents'][sRefreshObjectId]['events'][sEvent])) {
+                return null;
             }
-        }, propertiesSrvc["refresh_period"] * 1000);
+        }
+
+        // Stocke les infos sur l'evenement
+        if (!goog.isDefAndNotNull(vitisApp['oWebsocket']['oGridRefreshEvents'][sRefreshObjectId])) {
+            vitisApp['oWebsocket']['oGridRefreshEvents'][sRefreshObjectId] = {
+                'events': [],
+                'lastUpdateDate': new Date().getTime()
+            };
+        }
+        if (!goog.isDefAndNotNull(vitisApp['oWebsocket']['oGridRefreshEvents'][sRefreshObjectId]['events'][sEvent])) {
+            vitisApp['oWebsocket']['oGridRefreshEvents'][sRefreshObjectId]['events'].push(sEvent);
+        }
+
+        var scope = this;
+        vitisApp['oWebsocket'].on('event', function (data) {
+
+            // Conditions
+            if (data['event'] !== sEvent) {
+                return null;
+            }
+            if (envSrvc["oSelectedObject"]["name"] !== sRefreshObjectId) {
+                return null;
+            }
+
+            // cas où l'event est lancé trop de fois simulanément
+            var iNow = new Date().getTime();
+            var iLastUpdateDate = vitisApp['oWebsocket']['oGridRefreshEvents'][sRefreshObjectId]['lastUpdateDate'];
+            var iLastUpdateTime = iNow - iLastUpdateDate;
+            if (iLastUpdateTime < minimumRefreshTime) {
+                return null;
+            }
+
+            // Condition perso
+            if (goog.isDefAndNotNull(condition)) {
+                if (!condition.call(this, data)) {
+                    console.log("not loaded");
+                    return null;
+                }
+                console.log("loaded");
+            }
+
+            vitisApp['oWebsocket']['oGridRefreshEvents'][sRefreshObjectId]['lastUpdateDate'] = iNow;
+
+            // Sauve la sélection
+            scope['saveGridSelection'](scope.$root['gridApi'][envSrvc['oSelectedObject']['name']]['grid']['appScope'], scope.$root['gridApi'][envSrvc['oSelectedObject']['name']]['grid']['options']);
+
+            // Recharge la liste.
+            scope.$root['refreshGrid'](scope.$root['gridApi'][envSrvc['oSelectedObject']['name']]['grid']['appScope'], envSrvc['oGridOptions'][envSrvc['oSelectedObject']['name']]);
+        });
     };
 
     /**
      * resetForm function.
      * Remise à zéro d'un formulaire.
-     * @expose
      **/
-    angular.element(vitisApp.appMainDrtv).scope().resetForm = function (sFormDefinitionName) {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
-        var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
-        //
+    angular.element(vitisApp.appMainDrtv).scope()['resetForm'] = function (sFormDefinitionName) {
         $log.info("resetForm");
         var sFormName;
         if (typeof (sFormDefinitionName) == "undefined")
@@ -349,13 +415,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * editSectionForm function.
      * Edition d'un enregistrement (template simpleForm / sectionForm).
      * @param {object} sId Id de l'enregistrement sélectionné dans la liste.
-     * @expose
      **/
-    angular.element(vitisApp.appWorkspaceListDrtv).scope().editSectionForm = function (sId) {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["$log"]);
-        var envSrvc = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["envSrvc"]);
-        //
+    angular.element(vitisApp.appWorkspaceListDrtv).scope()['editSectionForm'] = function (sId) {
         $log.info("editSectionForm");
         //
         var scope = this;
@@ -373,13 +434,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * showSectionForm function.
      * Visualisation d'un enregistrement (template simpleForm / sectionForm).
      * @param {object} sId Id de l'enregistrement sélectionné dans la liste.
-     * @expose
      **/
-    angular.element(vitisApp.appWorkspaceListDrtv).scope().showSectionForm = function (sId) {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["$log"]);
-        var envSrvc = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["envSrvc"]);
-        //
+    angular.element(vitisApp.appWorkspaceListDrtv).scope()['showSectionForm'] = function (sId) {
         $log.info("showSectionForm");
         if (typeof (sId) == "undefined")
             sId = envSrvc["sId"];
@@ -390,13 +446,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * editDoubleForm function.
      * Edition d'un enregistrement (template doubleForm).
      * @param {object} sId Id de l'enregistrement sélectionné dans la liste.
-     * @expose
      **/
-    angular.element(vitisApp.appWorkspaceListDrtv).scope().editDoubleForm = function (sId) {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["$log"]);
-        var envSrvc = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["envSrvc"]);
-        //
+    angular.element(vitisApp.appWorkspaceListDrtv).scope()['editDoubleForm'] = function (sId) {
         $log.info("editDoubleForm");
         if (typeof (sId) == "undefined")
             sId = envSrvc["sId"];
@@ -409,13 +460,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * showDoubleForm function.
      * Visualisation d'un enregistrement (template doubleForm).
      * @param {object} sId Id de l'enregistrement sélectionné dans la liste.
-     * @expose
      **/
-    angular.element(vitisApp.appWorkspaceListDrtv).scope().showDoubleForm = function (sId) {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["$log"]);
-        var envSrvc = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["envSrvc"]);
-        //
+    angular.element(vitisApp.appWorkspaceListDrtv).scope()['showDoubleForm'] = function (sId) {
         $log.info("showDoubleForm");
         if (typeof (sId) == "undefined")
             sId = envSrvc["sId"];
@@ -427,17 +473,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
     /**
      * showCredits function.
      * Affichage de la fenêtre modale des crédits.
-     * @expose
      **/
-    angular.element(vitisApp.appMainDrtv).scope().showCredits = function () {         // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
-        var $compile = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["$compile"]);
-        var $templateRequest = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["$templateRequest"]);
-        var $http = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["$http"]);
-        var propertiesSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["propertiesSrvc"]);
-        var modesSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["modesSrvc"]);
-        var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
-        //
+    angular.element(vitisApp.appMainDrtv).scope()['showCredits'] = function () {
         $log.info("showCredits");
         // Crée un nouveau scope.
         var scope = this.$new();
@@ -479,12 +516,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * setTagsInput function.
      * Mise en forme d'un ou plusieurs tag (tagsinput).
      * @param {array} aElementsId Tableau d'id d'éléments utilisants "tagsinput".
-     * @expose
      **/
-    angular.element(vitisApp.appMainDrtv).scope().setTagsInput = function (aElementsId) {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
-        //
+    angular.element(vitisApp.appMainDrtv).scope()['setTagsInput'] = function (aElementsId) {
         $log.info("setTagsInput");
         var i, aTags;
         aElementsId.forEach(function (sElementId) {
@@ -504,13 +537,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * Raffraichît une liste "ui-grid".
      * @param {angular.scope} scope Scope de la liste.
      * @param {object} gridOptions Liste ui-grid.
-     * @expose
      **/
     angular.element(vitisApp.appWorkspaceListDrtv).scope()["refreshGrid"] = function (scope, oGridOptions) {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["$log"]);
-        var envSrvc = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["envSrvc"]);
-        //
         $log.info("refreshGrid");
         // Sauve la sélection
         scope["saveGridSelection"](scope, oGridOptions);
@@ -523,13 +551,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * Sauve la sélection d'une liste "ui-grid".
      * @param {angular.scope} scope Scope de la liste.
      * @param {object} gridOptions Liste ui-grid.
-     * @expose
      **/
-    angular.element(vitisApp.appWorkspaceListDrtv).scope().saveGridSelection = function (scope, oGridOptions) {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["$log"]);
-        var envSrvc = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["envSrvc"]);
-        //
+    angular.element(vitisApp.appWorkspaceListDrtv).scope()['saveGridSelection'] = function (scope, oGridOptions) {
         $log.info("saveGridSelection");
         // Sauve la sélection
         var aSelectedRows = oGridOptions["appSelectedRows"] = scope.$root["gridApi"][scope["sSelectedObjectName"]]["selection"]["getSelectedRows"]();
@@ -547,14 +570,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
     /**
      * setGridFilter function.
      * Définition des filtres pour la liste ui-grid.
-     * @expose
      **/
     angular.element(vitisApp.appWorkspaceListDrtv).scope()["setGridFilter"] = function () {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["$log"]);
-        var envSrvc = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["envSrvc"]);
-        var formSrvc = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["formSrvc"]);
-        //
         $log.info("setGridFilter");
         // Sauve le formulaire des filtres avec les nouvelles valeurs.
         envSrvc["oWorkspaceList"][envSrvc["oSelectedObject"]["name"]]["oValues"] = angular.copy(envSrvc["oFormValues"][envSrvc["sFormDefinitionName"]]);
@@ -604,7 +621,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
                         }
                         switch (oFormElement["comparator"][j]) {
                             case 'LIKE' :
-                                aFilter.push('lower(' + sFormElement + ") LIKE lower('%" + sValue + "%')");
+                                aFilter.push('lower("' + sFormElement + '") LIKE lower(\'%' + sValue + '%\')');
                                 break;
                             case 'SQL' :
                                 aFilter.push(sFormElement.replace(/<VALUE_TO_REPLACE>/g, sValue));
@@ -621,11 +638,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
                     }
                 } else {
                     if (oFormElement["type"] == "text") {
-                        // Paramétrage  suivant le type de valeur à filtrer (texte ou numérique).
-                        if (isNaN(sValue))
-                            aFilter.push('lower(' + aFormElementsKeys[i] + ") LIKE lower('%" + sValue + "%')");
-                        else
-                            aFilter.push(aFormElementsKeys[i] + "=" + sValue);
+                        aFilter.push('lower("' + aFormElementsKeys[i] + '") LIKE lower(\'%' + sValue + '%\')');
                     } else if (oFormElement["type"] == "date" || oFormElement["type"] == "datetime") {
                         aFilter.push(aFormElementsKeys[i] + "::text LIKE'%" + sValue + "%'");
                     } else {
@@ -637,11 +650,40 @@ vitisApp.on('appMainDrtvLoaded', function () {
             }
             i++;
         }
-        // Sauve et charge la 1ere page avec les filtres.
-        envSrvc["oGridOptions"][envSrvc["oSelectedObject"]["name"]]["aFilter"] = aFilter;
+        // Filtres sauvés après changement d'onglet.
+        var oSavedFilter = {};
+        if (typeof (envSrvc["oGridOptionsCopy"][envSrvc["oSelectedObject"]["name"]]["aFilter"]) != "undefined") {
+            envSrvc["oGridOptionsCopy"][envSrvc["oSelectedObject"]["name"]]["aFilter"].forEach(function (sFilter) {
+                var aOneFilter = sFilter.split("=");
+                var bAddFilter = true;
+                if (aFormElementsKeys.indexOf(aOneFilter[0]) == -1) {
+                    aFormElementsKeys.forEach(function (sValue) {
+                        if (aOneFilter[0].indexOf("lower(" + sValue + ")") != -1)
+                            bAddFilter = false;
+                    })
+                } else
+                    bAddFilter = false;
+                if (bAddFilter)
+                    oSavedFilter[aOneFilter[0]] = aOneFilter[1];
+            });
+        }
+        // Dédoublonnage des filtres
+        aFilter.forEach(function (sFilter) {
+            var aOneFilter = sFilter.split("=");
+            if (typeof (oSavedFilter[aOneFilter[0]]) == "undefined")
+                oSavedFilter[aOneFilter[0]] = aOneFilter[1];
+        });
+        var aFilterDistinct = [];
+        Object.keys(oSavedFilter).forEach(function (sFilterKey) {
+            if (typeof (oSavedFilter[sFilterKey]) == "undefined")
+                aFilterDistinct.push(sFilterKey)
+            else
+                aFilterDistinct.push(sFilterKey + "=" + oSavedFilter[sFilterKey])
+        });
         // Sauve le filtre dans la définition de l'onglet.
+        envSrvc["oGridOptions"][envSrvc["oSelectedObject"]["name"]]["aFilter"] = angular.copy(aFilterDistinct);
         if (envSrvc["sMode"] == "search")
-            envSrvc["oWorkspaceList"][envSrvc["oSelectedObject"]["name"]]["aFilter"] = angular.copy(aFilter);
+            envSrvc["oWorkspaceList"][envSrvc["oSelectedObject"]["name"]]["aFilter"] = angular.copy(aFilterDistinct);
         //        
         scope.$root.$broadcast("aFilterLoaded_" + envSrvc["oSelectedObject"]["name"], envSrvc["oGridOptions"][envSrvc["oSelectedObject"]["name"]]["aFilter"]);
         // Charge la 1ere page avec les filtres.
@@ -654,14 +696,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
     /**
      * resetGridFilter function.
      * Suppression des filtres pour la liste ui-grid / valeurs par défaut du formulaire de filtre.
-     * @expose
      **/
     angular.element(vitisApp.appWorkspaceListDrtv).scope()["resetGridFilter"] = function () {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["$log"]);
-        var envSrvc = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["envSrvc"]);
-        var formSrvc = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["formSrvc"]);
-        //
         $log.info("resetGridFilter");
         var scope = this;
         var oFormData = formSrvc["getFormData"](envSrvc["sFormDefinitionName"], true);
@@ -670,28 +706,42 @@ vitisApp.on('appMainDrtvLoaded', function () {
         //si il y a des champs date on les reset pour une nouvelle utilisation (sinon conservation de la date précédente)
         while (i < aFormElementsKeys.length) {
             var oFormElement = formSrvc["getFormElementDefinition"](aFormElementsKeys[i], envSrvc["sFormDefinitionName"]);
-            if (oFormElement["type"] === "date" || oFormElement["type"] === "datetime") {
+            if (oFormElement["type"] === "date" || oFormElement["type"] === "datetime")
                 angular.element("#" + oFormElement["id"]).data("DateTimePicker").clear();
-            }
             i++;
         }
         // Valeurs par défaut du formulaire.
         envSrvc["oFormValues"][envSrvc["sFormDefinitionName"]] = angular.copy(envSrvc["oWorkspaceList"][envSrvc["oSelectedObject"]["name"]]["oDefaultValues"]);
         // Supprime et charge la 1ere page sans filtre.
+        envSrvc["oGridOptionsCopy"][envSrvc["oSelectedObject"]["name"]]["aFilter"] = envSrvc["oDefaultGridOptions"][envSrvc["oSelectedObject"]["name"]]["aFilter"];
         scope["setGridFilter"]();
+        // 1 seul élément <options> sélectionné.
+        $timeout(function () {
+            aFormElementsKeys.forEach(function (sFormElementKey) {
+                var oFormElementDef = formSrvc["getFormElementDefinition"](sFormElementKey, envSrvc["sFormDefinitionName"]);
+                if (oFormElementDef["type"] === "select") {
+                    document.querySelectorAll("#" + oFormElementDef["id"]).forEach(function (oFormElement) {
+                        if (typeof (oFormElement["options"]) != "undefined") {
+                            Array.from(oFormElement["options"]).forEach(function (oOptions) {
+                                var oSelectValue = envSrvc["oFormValues"][envSrvc["sFormDefinitionName"]][sFormElementKey];
+                                oOptions.selected = false;
+                                if (typeof (oSelectValue) == "object" && typeof (oSelectValue["selectedOption"]) == "object") {
+                                    if (oOptions.value == oSelectValue["selectedOption"]["value"])
+                                        oOptions.selected = true;
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        });
     };
 
     /**
      * setPaginationStatus function.
      * Affichage du statut dans la barre de pagination.
-     * @expose
      **/
-    angular.element(vitisApp.appWorkspaceListDrtv).scope().setPaginationStatus = function () {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["$log"]);
-        var $translate = angular.element(vitisApp.appMainDrtv).injector().get(["$translate"]);
-        var envSrvc = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["envSrvc"]);
-        //
+    angular.element(vitisApp.appWorkspaceListDrtv).scope()['setPaginationStatus'] = function () {
         $log.info("setPaginationStatus");
         var scope = this, sTranslationId;
         if (envSrvc["oGridOptions"][envSrvc["oSelectedObject"]["name"]]["totalItems"] > 0) {
@@ -720,16 +770,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * @param {integer} iPageSize Nb lignes par page.
      * @param {array} aFilter Filtre de recherche.
      * @param {object} oUrlParams Paramètres optionnels pour le web service.
-     * @expose
      **/
-    angular.element(vitisApp.appWorkspaceListDrtv).scope().setGridPage = function (iPageNumber, iPageSize, aFilter, oUrlParams) {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["$log"]);
-        var Restangular = angular.element(vitisApp.appMainDrtv).injector().get(["Restangular"]);
-        var sessionSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["sessionSrvc"]);
-        var propertiesSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["propertiesSrvc"]);
-        var envSrvc = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["envSrvc"]);
-        //         $log.info("setGridPage");
+    angular.element(vitisApp.appWorkspaceListDrtv).scope()['setGridPage'] = function (iPageNumber, iPageSize, aFilter, oUrlParams) {
         if (typeof (iPageNumber) != "number")
             iPageNumber = 1;
         var scope = angular.element(vitisApp.appWorkspaceListDrtv).scope();
@@ -797,13 +839,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * Formatte des colonnes pour la liste ui-grid.
      * @param {array} aColumns Tableau des colonnes.
      * @param {string} sSelectedObjectName id de l'objet (onglet).
-     * @expose
      **/
-    angular.element(vitisApp.appWorkspaceListDrtv).scope().formatGridColumn = function (aColumns, sSelectedObjectName) {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["$log"]);
-        var envSrvc = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["envSrvc"]);
-        var uiGridConstants = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["uiGridConstants"]);         //
+    angular.element(vitisApp.appWorkspaceListDrtv).scope()['formatGridColumn'] = function (aColumns, sSelectedObjectName) {
         $log.info("formatGridColumn");
         var aGridColumns = [], aGridColumn;
         var i = 0;
@@ -844,12 +881,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * @param {array} aAction Tableau des actions.
      * @param {string} sSelectedObjectName id de l'objet (onglet).
      * @return {array}
-     * @expose
      **/
     angular.element(vitisApp.appWorkspaceListDrtv).scope()["formatGridAction"] = function (aAction, sSelectedObjectName) {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["$log"]);
-        //
         $log.info("formatGridAction");
         var aGridActions = [];
         var i = 0;
@@ -873,13 +906,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * Appel de la fonction liée au bouton d'action (modifier, visualiser...).
      * @param {object} oRow Element html de l'enregistrement sélectionné dans la liste.
      * @param {string} sEvent Fonction à appeler.
-     * @expose
      **/
-    angular.element(vitisApp.appWorkspaceListDrtv).scope().executeActionButtonEvent = function (oRow, sEvent) {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["$log"]);
-        var envSrvc = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["envSrvc"]);
-        //
+    angular.element(vitisApp.appWorkspaceListDrtv).scope()['executeActionButtonEvent'] = function (oRow, sEvent) {
         $log.info("executeActionButtonEvent");
         var scope = angular.element(vitisApp.appWorkspaceListDrtv).scope();
         scope.$root[sEvent](oRow["entity"][envSrvc["oSelectedObject"]["sIdField"]]);
@@ -889,16 +917,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * DeleteSelection function.
      * Supprime les enregistrements sélectionnés.
      * @param {object} oOptions Paramètres optionnels.
-     * @expose
      **/
-    angular.element(vitisApp.appWorkspaceListDrtv).scope().DeleteSelection = function (oOptions) {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["$log"]);
-        var Restangular = angular.element(vitisApp.appMainDrtv).injector().get(["Restangular"]);
-        var sessionSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["sessionSrvc"]);
-        var propertiesSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["propertiesSrvc"]);
-        var envSrvc = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["envSrvc"]);
-        //
+    angular.element(vitisApp.appWorkspaceListDrtv).scope()['DeleteSelection'] = function (oOptions) {
         $log.info("DeleteSelection");
         var scope = angular.element(vitisApp.appWorkspaceListDrtv).scope();
         var aSelectedRows = scope.$root["gridApi"][envSrvc["oSelectedObject"]["name"]]["selection"]["getSelectedRows"]();
@@ -969,14 +989,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * toGarbageCollection function.
      * Supprime un tableau / objet et toutes ses références.
      * @param {} reference Référence à supprimer (tableau ou objet).
-     * @expose
      **/
-    angular.element(vitisApp.appMainDrtv).scope().toGarbageCollection = function (reference) {
-        // Injection des services.
-        //var $log = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["$log"]);
-        var envSrvc = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["envSrvc"]);
-        //
-        //$log.info("toGarbageCollection");
+    angular.element(vitisApp.appMainDrtv).scope()['toGarbageCollection'] = function (reference) {
         envSrvc["toGarbageCollection"](reference);
     };
 
@@ -985,12 +999,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * Concatène l'id et le libéllé des options d'un <select>.
      * @param {string} sFormElementName Nom du <select>.
      * @param {string} sDelimiter Caractère délimiteur (un espace par défaut).
-     * @expose
      **/
-    angular.element(vitisApp.appMainDrtv).scope().concatSelectAttributes = function (sFormElementName, sDelimiter) {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
-        var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);         //
+    angular.element(vitisApp.appMainDrtv).scope()['concatSelectAttributes'] = function (sFormElementName, sDelimiter) {
         $log.info("concatSelectAttributes");
         if (typeof (sDelimiter) == "undefined")
             sDelimiter = " ";
@@ -1001,7 +1011,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
             if (!goog.object.isEmpty(oSelect)) {
                 if (!goog.object.isEmpty(oSelect["options"])) {
                     oSelect["options"].forEach(function (oOption) {
-                        oOption["label"] = oOption["value"] + sDelimiter + oOption["label"];
+                        if (oOption["label"] != "" && oOption["value"] != "")
+                            oOption["label"] = oOption["value"] + sDelimiter + oOption["label"];
                     });
                 }
             }
@@ -1013,12 +1024,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * Retourne la valeur du paramètre "placement" d'un tooltip suivant sa position horizontale (avant ou après le milieu de l'écran).
      * @param {object} oElementNode DOM node element.
      * @return {string}
-     * @expose
      **/
-    angular.element(vitisApp.appMainDrtv).scope().workspaceTooltipPlacement = function (oElementNode) {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["$log"]);
-        //
+    angular.element(vitisApp.appMainDrtv).scope()['workspaceTooltipPlacement'] = function (oElementNode) {
         $log.info("workspaceTooltipPlacement");
         if ($(oElementNode).offset().left < (window.innerWidth / 2))
             return "right";
@@ -1029,12 +1036,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
     /**
      * hideAllModalWindow function.
      * Ferme toutes les fenêtres modales.
-     * @expose
      **/
-    angular.element(vitisApp.appMainDrtv).scope().hideAllModalWindow = function (oElementNode) {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["$log"]);
-        //
+    angular.element(vitisApp.appMainDrtv).scope()['hideAllModalWindow'] = function (oElementNode) {
         $log.info("hideAllModalWindow");
         bootbox["hideAll"]();
     };
@@ -1043,13 +1046,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * addSelectEmptyOption function.
      * Ajoute une <option> vide dans un <select> et la sélectionne (si aucune option est sélectionné).
      * @param {string} sFormElementName Nom du <select>.
-     * @expose
      **/
-    angular.element(vitisApp.appMainDrtv).scope().addSelectEmptyOption = function (sFormElementName) {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
-        var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
-        //
+    angular.element(vitisApp.appMainDrtv).scope()['addSelectEmptyOption'] = function (sFormElementName) {
         $log.info("addSelectEmptyOption");
         // Création de la structure du <select> si non existante.
         oFormValues = envSrvc["oFormValues"][envSrvc["sFormDefinitionName"]];
@@ -1098,14 +1096,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * Retourne la traduction d'une valeur booléenne.
      * @param {boolean} bValue Valeur à traduire.
      * @return {promise}
-     * @expose
      **/
-    angular.element(vitisApp.appMainDrtv).scope().getBooleanTranslation = function (bValue) {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
-        var $q = angular.element(vitisApp.appHtmlFormDrtv).injector().get(["$q"])
-        var $translate = angular.element(vitisApp.appMainDrtv).injector().get(["$translate"]);
-        //
+    angular.element(vitisApp.appMainDrtv).scope()['getBooleanTranslation'] = function (bValue) {
         $log.info("getBooleanTranslation");
         var deferred = $q.defer();
         var promise = deferred.promise;
@@ -1126,14 +1118,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * loadSectionList function.
      * Paramétrage d'une liste ui-grid pour l'affichage dans une section.
      * @param {object} oOptions Paramètres optionnels pour ui-grid (surcharge ceux par défaut).
-     * @expose
      **/
-    angular.element(vitisApp.appMainDrtv).scope().loadSectionList = function (oOptions) {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
-        var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
-        var propertiesSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["propertiesSrvc"]);
-        //
+    angular.element(vitisApp.appMainDrtv).scope()['loadSectionList'] = function (oOptions) {
         $log.info("loadSectionList");
         var scope = this;
         // Attend l'initialisation du contrôleur workspaceListCtrl.
@@ -1185,13 +1171,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * getTabIdFieldValue function.
      * Retourne la valeur du champ ID d'un onglet.
      * @return {}
-     * @expose
      **/
-    angular.element(vitisApp.appMainDrtv).scope().getTabIdFieldValue = function () {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
-        var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
-        //
+    angular.element(vitisApp.appMainDrtv).scope()['getTabIdFieldValue'] = function () {
         $log.info("getTabIdFieldValue");
         return envSrvc["sId"];
     };
@@ -1200,52 +1181,53 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * setRadioTranslation function.
      * Change la valeur d'un champ radio par sa traduction (oui / non).
      * @param {string} sFormElementName Nom du champ de form. à traduire.
-     * @expose
      **/
-    angular.element(vitisApp.appMainDrtv).scope().setRadioTranslation = function (sFormElementName) {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
-        var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
-        //
+    angular.element(vitisApp.appMainDrtv).scope()['setRadioTranslation'] = function (sFormElementName) {
         $log.info("setRadioTranslation");
         angular.element(vitisApp.appMainDrtv).scope().$root["getBooleanTranslation"](envSrvc["oFormValues"][envSrvc["sFormDefinitionName"]][sFormElementName]).then(function (sTranslation) {
             envSrvc["oFormValues"][envSrvc["sFormDefinitionName"]][sFormElementName] = sTranslation;
         });
     };
-    
-    /**
-     * Concats all the arguments passed
-     */
-    angular.element(vitisApp.appMainDrtv).scope()['concat'] = function () {
-        var sResult = '';
-        for (var i = 0; i < arguments.length; i++) {
-            if (goog.isString(arguments[i])) {
-                sResult += arguments[i];
-            }
-        }
-        return sResult;
-    };
-    
+
     /**
      * cloneSectionForm function.
      * Clone un enregistrement.
-     * @expose
+     * @param {array} aFormField Nom des champs de form. à vider.
      **/
-    angular.element(vitisApp.appMainDrtv).scope().cloneSectionForm = function () {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["$log"]);
-        var envSrvc = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["envSrvc"]);
-        //
+    angular.element(vitisApp.appMainDrtv).scope()['cloneSectionForm'] = function (aFormField) {
         $log.info("cloneSectionForm");
         var scope = this;
         var oFormValuesCopy = angular.copy(envSrvc["oFormValues"][envSrvc["sFormDefinitionName"]]);
+        // Vide les champs spécifiés.
+        if (typeof(aFormField) != "undefined") {
+            for (var i = 0; i < aFormField.length; i++) {
+                delete oFormValuesCopy[aFormField[i]];
+            }
+        }
+        // Mode "insert".
         this["AddSectionForm"]();
-        var clearListener = scope.$root.$on('formExtracted', function (event, scope) {
-            // Supprime le "listener".
-            clearListener();
-            // Valeurs de l'enregistrement à cloner.
-            envSrvc["oFormValues"][envSrvc["sFormDefinitionName"]] = angular.copy(oFormValuesCopy);
-            console.log(envSrvc);
+        var clearListener = scope.$root.$on('formExtracted', function (event, sFormDefinitionName) {
+            if (sFormDefinitionName === envSrvc["sFormDefinitionName"]) {
+                // Supprime le "listener".
+                clearListener();
+                // Valeurs de l'enregistrement à cloner.
+                envSrvc["oFormValues"][envSrvc["sFormDefinitionName"]] = angular.copy(oFormValuesCopy);
+            }
         });
+    };
+
+    /**
+     * copyFormElemContentToClipboard function.
+     * Copie le contenu d'un champ de form. dans le presse papier.
+     * @param {string} sFormElementName Nom du champ de formulaire.
+     **/
+    angular.element(vitisApp.appMainDrtv).scope()["copyFormElemContentToClipboard"] = function (sFormElementName) {
+        $log.info("copyFormElemContentToClipboard");
+        var oTempElem = document.createElement("textarea");
+        document.getElementsByTagName("body")[0].appendChild(oTempElem);
+        oTempElem.innerHTML = envSrvc["oFormValues"][envSrvc["sFormDefinitionName"]][sFormElementName];
+        oTempElem.select();
+        document.execCommand("copy");
+        document.getElementsByTagName("body")[0].removeChild(oTempElem);
     };
 });

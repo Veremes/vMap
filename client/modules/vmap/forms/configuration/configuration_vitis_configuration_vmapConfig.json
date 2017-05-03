@@ -31,6 +31,7 @@
                     {
                         "type": "title",
                         "label": "TITLE_PROPERTIES_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
+                        "name":"title_properties",
                         "nb_cols": 12
                     }
                 ]
@@ -84,6 +85,7 @@
                     {
                         "type": "title",
                         "label": "TITLE_DISPLAY_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
+                        "name":"title_properties_display",
                         "nb_cols": 12
                     }
                 ]
@@ -240,6 +242,7 @@
                     {
                         "type": "title",
                         "label": "TITLE_TOOLS_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
+                        "name":"title_properties_tools",
                         "nb_cols": 12
                     }
                 ]
@@ -269,6 +272,7 @@
                     {
                         "type": "title",
                         "label": "TITLE_SELECTION_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
+                        "name":"title_properties_section",
                         "nb_cols": 12
                     }
                 ]

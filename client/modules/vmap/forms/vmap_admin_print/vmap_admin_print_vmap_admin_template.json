@@ -21,7 +21,10 @@
                         "web_service":{
                             "ressource_id":"vmap/formats",
                             "id_key":"rt_format_id",
-                            "label_key":"rt_format_id"
+                            "label_key":"rt_format_id",
+                            "parameters":{
+                                "order_by":"rt_format_id"
+                            }
                         }
                     },
                     {
@@ -32,7 +35,10 @@
                         "web_service":{
                             "ressource_id":"vmap/orientations",
                             "id_key":"rt_orientation_id",
-                            "label_key":"rt_orientation_id"
+                            "label_key":"rt_orientation_id",
+                            "parameters":{
+                                "order_by":"rt_orientation_id"
+                            }
                         }
                     }
                 ]
@@ -47,9 +53,12 @@
                         "web_service":{
                             "ressource_id":"vmap/outputformats",
                             "id_key":"outputformats_id",
-                            "label_key":"outputformats_id"
+                            "label_key":"outputformats_id",
+                            "parameters":{
+                                "order_by":"outputformats_id"
+                            }
                         }
-                        }
+                    }
                 ]
             },
             {
@@ -119,7 +128,10 @@
                         "web_service":{
                             "ressource_id":"vmap/formats",
                             "id_key":"rt_format_id",
-                            "label_key":"rt_format_id"
+                            "label_key":"rt_format_id",
+                            "parameters":{
+                                "order_by":"rt_format_id"
+                            }
                         }
                     }
                 ]
@@ -135,7 +147,10 @@
                         "web_service":{
                             "ressource_id":"vmap/orientations",
                             "id_key":"rt_orientation_id",
-                            "label_key":"rt_orientation_id"
+                            "label_key":"rt_orientation_id",
+                            "parameters":{
+                                "order_by":"rt_orientation_id"
+                            }
                         }
                     }
                 ]
@@ -153,7 +168,10 @@
                         "web_service":{
                             "ressource_id":"vmap/outputformats",
                             "id_key":"outputformats_id",
-                            "label_key":"outputformats_id"
+                            "label_key":"outputformats_id",
+                            "parameters":{
+                                "order_by":"outputformats_id"
+                            }
                         },
                         "default_value": "pdf"
                     }
@@ -172,9 +190,12 @@
                         "web_service":{
                             "ressource_id":"vitis/groups",
                             "id_key":"group_id",
-                            "label_key":"name"
+                            "label_key":"name",
+                            "parameters":{
+                                "order_by":"name"
+                            }
                         },
-                        "size":"6",
+                        "size":9,
                         "nb_cols":6
                     }
                 ]
@@ -259,7 +280,10 @@
                         "web_service":{
                             "ressource_id":"vmap/formats",
                             "id_key":"rt_format_id",
-                            "label_key":"rt_format_id"
+                            "label_key":"rt_format_id",
+                            "parameters":{
+                                "order_by":"rt_format_id"
+                            }
                         },
                         "options":["|"]
                         }
@@ -276,7 +300,10 @@
                         "web_service":{
                             "ressource_id":"vmap/orientations",
                             "id_key":"rt_orientation_id",
-                            "label_key":"rt_orientation_id"
+                            "label_key":"rt_orientation_id",
+                            "parameters":{
+                                "order_by":"rt_orientation_id"
+                            }
                         },
                         "options":["|"]
                         }
@@ -295,7 +322,10 @@
                         "web_service":{
                             "ressource_id":"vmap/outputformats",
                             "id_key":"outputformats_id",
-                            "label_key":"outputformats_id"
+                            "label_key":"outputformats_id",
+                            "parameters":{
+                                "order_by":"outputformats_id"
+                            }
                         },
                         "default_value": "pdf"
                     }
@@ -314,9 +344,12 @@
                         "web_service":{
                             "ressource_id":"vitis/groups",
                             "id_key":"group_id",
-                            "label_key":"name"
+                            "label_key":"name",
+                            "parameters":{
+                                "order_by":"name"
+                            }
                         },
-                        "size":"6",
+                        "size":9,
                         "nb_cols":6
                     }
                 ]

@@ -66,7 +66,7 @@ class PgsqlDataAccess {
      * \param $sRoleAdmin Nom du rôle pour les droits d'administration.
      * \param $sSchema Nom du schéma ou sont stockées les tables.
      */
-    function PgsqlDataAccess($oBd, $sDatabase, $sServer, $sRoleUser = "veremap_pro_user", $sRoleAdmin = "veremap_pro_admin", $sSchema = "veremap_pro") {
+    function __construct($oBd, $sDatabase, $sServer, $sRoleUser = "veremap_pro_user", $sRoleAdmin = "veremap_pro_admin", $sSchema = "veremap_pro") {
         $this->oBd = $oBd;
         $this->sDatabase = $sDatabase;
         $this->sServer = $sServer;

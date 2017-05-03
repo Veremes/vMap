@@ -25,7 +25,7 @@ class PrintReport extends Vmap {
      * @param type $properties properties
      * @param type $oConnection connection object
      */
-    function PrintReport($aPath, $aValues, $properties, $oConnection) {
+    function __construct($aPath, $aValues, $properties, $oConnection) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
@@ -52,8 +52,7 @@ class PrintReport extends Vmap {
      *     in="path",
      *     description="printreport id",
      *     required=true,
-     *     type="integer",
-     *   format="int32"
+     *     type="integer"
      *   ),
      *   @SWG\Response(
      *         response=200,
@@ -74,9 +73,9 @@ class PrintReport extends Vmap {
      * delete a printreport
      */
     function DELETE(){
-        $this->oConnection->oBd->delete($this->aProperties['schema_vmap'], 'printreport', 'printreport_id', $this->aValues['id'], 'integer');
+        $this->oConnection->oBd->delete($this->aProperties['schema_vmap'], 'printreport', 'printreport_id', $this->aValues['my_vitis_id'], 'integer');
         if ($this->oConnection->oBd->enErreur()) {
-                $this->oError = new Error(1, $this->oConnection->oBd->getBDMessage());
+                $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
         } else {
                 $this->aFields[printreport_id] = $this->aValues['id'];
         }

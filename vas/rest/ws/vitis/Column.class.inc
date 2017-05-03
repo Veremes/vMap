@@ -13,7 +13,7 @@ require_once __DIR__.'/../../class/vitis_lib/Connection.class.inc';
 * This class defines operation for one Column
 * 
 */
-class Column  extends Vitis{
+class Column extends Vitis{
     
     public $oError;
     /**
@@ -23,7 +23,7 @@ class Column  extends Vitis{
      * @param type $properties properties
      * @param type $oConnection connection object
      */
-    function Column ($aColumn){
+    function __construct ($aColumn){
         $this->aFields = $aColumn;
         
     }

@@ -6,6 +6,7 @@
  * cette classe permet l'initialisation des outils de locatlisation
  */
 goog.provide('nsVmap.nsToolsManager.Print');
+goog.require('oVmap');
 goog.require('nsVmap.nsToolsManager.PrintBox');
 
 /**
@@ -17,10 +18,6 @@ goog.require('nsVmap.nsToolsManager.PrintBox');
  */
 nsVmap.nsToolsManager.Print = function () {
     oVmap.log('nsVmap.nsToolsManager.Print');
-
-    // Directives et controleurs Angular
-    oVmap.module.directive('appPrint', this.printDirective);
-    oVmap.module.controller('AppprintController', this.printController);
 };
 goog.exportProperty(nsVmap.nsToolsManager, 'Print', nsVmap.nsToolsManager.Print);
 
@@ -45,7 +42,6 @@ nsVmap.nsToolsManager.Print.prototype.print = function (opt_options) {
         scope['ctrl'].print(opt_options);
     });
 };
-
 
 /**
  * App-specific directive wrapping the print tools. The directive's
@@ -231,13 +227,21 @@ nsVmap.nsToolsManager.Print.prototype.printController.prototype.listenScaleChang
     oVmap.log('nsVmap.nsToolsManager.Print.printController.listenScaleChanges');
 
     // Vérifie si la résolution (niveau de zoom) change
+    var i = 0;
+    var this_ = this;
     this.scaleListener_ = this['map'].on('moveend', function () {
-        if (this['currentAction'] !== 'print-modifyPrintZone') {
-            this['scale'] = 'auto';
-            this['currentScale'] = oVmap.getMap().getPrettyScale(oVmap.getMap().getScale() / this.resizeCoeff_);
-            this.$scope_.$apply();
-        }
-    }, this);
+        i++;
+        var ii = angular.copy(i);
+        setTimeout(function () {
+            if (i === ii) {
+                if (this_['currentAction'] !== 'print-modifyPrintZone') {
+                    this_['scale'] = 'auto';
+                    this_['currentScale'] = oVmap.getMap().getPrettyScale(oVmap.getMap().getScale() / this_.resizeCoeff_);
+                    this_.$scope_.$apply();
+                }
+            }
+        }, 100);
+    });
 };
 
 /**
@@ -712,3 +716,7 @@ nsVmap.nsToolsManager.Print.prototype.printController.prototype.getLegendTemplat
 
     return sTemplate;
 };
+
+// Définit la directive et le controller
+oVmap.module.directive('appPrint', nsVmap.nsToolsManager.Print.prototype.printDirective);
+oVmap.module.controller('AppprintController', nsVmap.nsToolsManager.Print.prototype.printController);

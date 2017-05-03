@@ -12,7 +12,7 @@ require_once __DIR__.'/../../class/vitis_lib/Connection.class.inc';
 * This class defines operation for one Privilege
 * 
 */
-class Privilege  extends Vitis{
+class Privilege extends Vitis{
     
     public $oError;
     /**
@@ -22,7 +22,7 @@ class Privilege  extends Vitis{
      * @param type $properties properties
      * @param type $oConnection connection object
      */
-    function Privilege ($aPath, $aValues, $properties, $oConnection){
+    function __construct ($aPath, $aValues, $properties, $oConnection){
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;

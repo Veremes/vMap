@@ -35,7 +35,7 @@ class Mj_Bati extends Mj {
 	* \param $sIdBat Identifiant de bâti
 	* \param $oBD Objet de connexion PDO_BD
 	*/
-	function Mj_Bati($sIdBat,$oBD, $sEncryptedKey=''){
+	function __construct($sIdBat,$oBD, $sEncryptedKey=''){
 		$this->sEncryptKey = $sEncryptedKey;
 		include $this->sRessourcesFile;
 		$this->sSql=$aSql[$oBD->sgbd]['bati'];

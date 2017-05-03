@@ -37,7 +37,7 @@ vitisApp.sessionSrvc = function ($http, $window, envSrvc) {
          **/
         "disconnect": function () {
             // Supprime le cookie (session php).
-            document.cookie.split(";").forEach(function(sCookie) {
+            document.cookie.split(";").forEach(function (sCookie) {
                 aCookie = sCookie.split("=");
                 if (aCookie[1] == sessionStorage.getItem("session_token"))
                     document.cookie = aCookie[0] + "=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
@@ -51,15 +51,14 @@ vitisApp.sessionSrvc = function ($http, $window, envSrvc) {
                 delete oUrlParams["password"];
                 aUrlParamsKeys = Object.keys(oUrlParams);
                 var aUrlParams = [], sUrlParam;
-                aUrlParamsKeys.forEach(function(sUrlParamKey){
+                aUrlParamsKeys.forEach(function (sUrlParamKey) {
                     sUrlParam = sUrlParamKey;
-                    if (typeof(oUrlParams[sUrlParamKey]) != "undefined")
+                    if (typeof (oUrlParams[sUrlParamKey]) != "undefined")
                         sUrlParam += oUrlParams[sUrlParamKey];
                     aUrlParams.push(sUrlParam);
                 });
                 $window.location.search = "?" + aUrlParams.join("&");
-            }
-            else
+            } else
                 $window.location.reload();
         },
         /**
@@ -157,6 +156,8 @@ vitisApp.envSrvc = function ($rootScope, $injector, Restangular, propertiesSrvc)
         "oFormValues": {},
         "oFormDefaultValues": {},
         "oGridOptions": {},
+        "oGridOptionsCopy": {},
+        "oDefaultGridOptions": {},
         "sTemplateFolder": "templates/",
         "oWorkspaceList": {},
         "oWorkspaceListRefreshTimer": {},
@@ -177,9 +178,9 @@ vitisApp.envSrvc = function ($rootScope, $injector, Restangular, propertiesSrvc)
                     envSrvc["sId"] = "";
                 else if (sMode == "search") {
                     // Remise à zéro de l'index sélectionné.
-                    if (typeof(envSrvc["oSectionForm"]) != "undefined") {
+                    if (typeof (envSrvc["oSectionForm"]) != "undefined") {
                         var oSectionForm = envSrvc["oSectionForm"][envSrvc["oSelectedObject"]["name"]];
-                        if (typeof(oSectionForm) != "undefined")
+                        if (typeof (oSectionForm) != "undefined")
                             oSectionForm["iSelectedSectionIndex"] = 0;
                     }
                 }
@@ -255,8 +256,8 @@ vitisApp.envSrvc = function ($rootScope, $injector, Restangular, propertiesSrvc)
                                         envSrvc["setFormDefinitionName"]();
                                         // Compile le template de l'onglet (vm_tab.template).
                                         $rootScope["compileObjectTemplate"](sTemplateUrl);
-                                        
-                                        $rootScope.$broadcast($rootScope["sSelectedObjectName"]+'_form', {});
+
+                                        $rootScope.$broadcast($rootScope["sSelectedObjectName"] + '_form', {});
                                     }
                                 });
                     } else {
@@ -715,11 +716,13 @@ vitisApp.modesSrvc = function ($translate, $translatePartialLoader, $q, $rootSco
          **/
         "clearObjectData": function (sObjectId, sModeId) {
             // Supprime tous les scopes utilisés par l'onglet.
-            oObject = this["getObject"](sObjectId, this["getMode"](sModeId));
-            oObject["aScope"].forEach(function (scope) {
-                scope.$destroy();
-            });
-            oObject["aScope"].length = 0;
+            var oObject = this["getObject"](sObjectId, this["getMode"](sModeId));
+            if (goog.isDefAndNotNull(oObject["aScope"])) {
+                oObject["aScope"].forEach(function (scope) {
+                    scope.$destroy();
+                });
+                oObject["aScope"].length = 0;
+            }
         },
         /**
          * addScopeToObject function.
@@ -936,7 +939,7 @@ vitisApp.propertiesSrvc = function (Restangular, $http) {
                         // Dit à l'application que les properties on étés chargées
                         vitisApp.broadcast('properties_loaded');
                     }
-            );
+                    );
         },
         /**
          * getFromClient function.
@@ -956,7 +959,7 @@ vitisApp.propertiesSrvc = function (Restangular, $http) {
                         // Sauve le token.
                         propertiesSrvc['session_token'] = sessionStorage['session_token'];
                     }
-            );
+                    );
         }
     }
 };

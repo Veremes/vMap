@@ -18,7 +18,7 @@ class Mj_Bati_Parcelles extends Mj {
 	* \param $aIdPar Identifiant de la parcelle
 	* \param $oBD Objet de connexion
 	*/
-	function Mj_Bati_Parcelles($aIdPar,$oBD){
+	function __construct($aIdPar,$oBD){
 		$i=0;
 		while ($aIdPar[$i]){
 			array_push ($this->aObjects, new Mj_Bati_Parcelle($aIdPar[$i],$oBD));

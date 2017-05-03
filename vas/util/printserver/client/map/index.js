@@ -11,8 +11,6 @@
  * @param {array} opt_options.features
  */
 var initMap = function (opt_options) {
-
-    callLog('test');
     
     // Convertit en float l'étendue
     if (isDef(opt_options.extent)) {
@@ -39,8 +37,6 @@ var initMap = function (opt_options) {
 
     // Ajoute la définition OpenLayers des projections 
     window.projections = new Projections();
-
-    callLog('opt_options.resolutionCoeff: ' + opt_options.resolutionCoeff);
 
     // Initialise la carte
     window.oPrintMap = new PrintMap({

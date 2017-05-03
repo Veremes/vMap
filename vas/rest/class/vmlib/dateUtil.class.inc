@@ -67,7 +67,7 @@ class dateOp {
     var $sFolderLib = "vmlib";
     var $lang;
 
-    function dateOp($dat, $format = "jj/mm/aaaa hh:ii:ss", $lang = "fr") {
+    function __construct($dat, $format = "jj/mm/aaaa hh:ii:ss", $lang = "fr") {
         $this->lang = $lang;
         loadLang($this->sFolderLib, $this->lang);
         $this->errno = array();

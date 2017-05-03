@@ -5,7 +5,7 @@
 		<dependency>
 			<name>jre</name>
 			<nature>extern-pre</nature>
-			<location>\\roussillon\Ressources\vitis\jre-8u101</location>
+			<location>jre-8u101</location>
 		</dependency>
 	</dependenciesCollection>
 </installer>

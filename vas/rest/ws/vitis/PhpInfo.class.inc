@@ -14,7 +14,7 @@ require_once(__DIR__.'/../../class/vmlib/BdDataAccess.inc');
 * This class defines the rest api for phpinfo
 * 
 */
-class Phpinfo  extends Vitis{
+class Phpinfo extends Vitis{
     
     /**
      * @SWG\Definition(
@@ -34,7 +34,7 @@ class Phpinfo  extends Vitis{
      * @param type $aValues parameters of the request
      * @param type $phpinfo ptroperties
      */
-    function Phpinfo($aPath, $aValues, $properties){
+    function __construct($aPath, $aValues, $properties){
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
@@ -67,27 +67,37 @@ class Phpinfo  extends Vitis{
      * @return phpinfo
      */
     function GET(){
-	define('STYLE_START', '<style');
-	define('STYLE_END', '</style>');
-	
-	ob_start();
-	phpinfo();
-	$sPhpInfo = ob_get_contents();
+        if ($this->oConnection->oError == null && in_array("vitis_admin", $this->oConnection->aPrivileges)) {
+            define('STYLE_START', '<style');
+            define('STYLE_END', '</style>');
+            
+            ob_start();
+            phpinfo();
+            $sPhpInfo = ob_get_contents();
 
-        // Supprime les styles des éléments
-	if (stripos($sPhpInfo, STYLE_START)!== false && stripos($sPhpInfo, STYLE_END)!== false)
-	{
-		$sPhpInfoNoStyle = substr($sPhpInfo, 0, stripos($sPhpInfo, STYLE_START));
-		$sPhpInfoNoStyle .= substr($sPhpInfo, stripos($sPhpInfo, STYLE_END) + strlen(STYLE_END));
-	}
-	ob_end_clean();
-	//echo $sPhpInfoNoStyle;
-        //
-        $this->aFields['phpinfo'] = $sPhpInfoNoStyle;
-        $aXmlRacineAttribute['status']=1;
-        $sMessage = $this->asDocument('','vitis',$this->aValues['sEncoding'],True,$aXmlRacineAttribute,$this->aValues['sSourceEncoding'],$this->aValues['output']);
-        return $sMessage;
+                // Supprime les styles des éléments
+            if (stripos($sPhpInfo, STYLE_START)!== false && stripos($sPhpInfo, STYLE_END)!== false)
+            {
+                $sPhpInfoNoStyle = substr($sPhpInfo, 0, stripos($sPhpInfo, STYLE_START));
+                $sPhpInfoNoStyle .= substr($sPhpInfo, stripos($sPhpInfo, STYLE_END) + strlen(STYLE_END));
+            }
+            ob_end_clean();
+            //echo $sPhpInfoNoStyle;
+                //
+            $this->aFields['phpinfo'] = $sPhpInfoNoStyle;
+            $aXmlRacineAttribute['status']=1;
+            $sMessage = $this->asDocument('','vitis',$this->aValues['sEncoding'],True,$aXmlRacineAttribute,$this->aValues['sSourceEncoding'],$this->aValues['output']);
+            return $sMessage;
+        }else{
+            http_response_code(403); 
+            $aXmlRacineAttribute['status']=0;
+            $this->aFields['phpinfo'] = "ERROR : invalid token";
+            $sMessage = $this->asDocument('','vitis',$this->aValues['sEncoding'],True,$aXmlRacineAttribute,$this->aValues['sSourceEncoding'],$this->aValues['output']);
+            return $sMessage;
+        }
     }
+
+	
 }
  
 ?>

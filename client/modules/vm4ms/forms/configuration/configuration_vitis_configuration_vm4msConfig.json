@@ -1,0 +1,93 @@
+{
+    "search": {},
+    "update": {
+        "name": "configuration_vm4ms_config_update_form",
+        "title": "",
+        "input_size": "xs",
+        "event": "updateVm4msProperties()",
+        "nb_cols": 12,
+        "rows": [
+            {
+                "fields": [
+                    {
+                        "type": "title",
+                        "label": "TITLE_PROPERTIES_CONFIGURATION_CONFIGURATION_VM4MS_CONFIG",
+                        "name":"title_properties",
+                        "nb_cols": 7
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "mapserver_alias",
+                        "label": "FORM_MAPSERVER_ALIAS_CONFIGURATION_CONFIGURATION_VM4MS_CONFIG",
+                        "required": true,
+                        "nb_cols": 5
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type":"select",
+                        "name":"test_wms_service",
+                        "label":"FORM_TEST_WMS_SERVICE_CONFIGURATION_CONFIGURATION_VM4MS_CONFIG",
+                        "nb_cols":3,
+                        "web_service":{
+                            "ressource_id":"vm4ms/publicwmsservices",
+                            "id_key":"wmsservice_id",
+                            "label_key":"wmsservice_id",
+                            "parameters":{
+                                    "order_by":"wmsservice_id"
+                            }
+                        },
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"codemirror",
+                        "name":"test_wms_service_default_content",
+                        "label":"FORM_TEST_WMS_SERVICE_DEFAULT_CONTENT_CONFIGURATION_CONFIGURATION_VM4MS_CONFIG",
+                        "nb_cols":12,
+                        "codemirrorOptions":{
+                            "lineSeparator": "<return>",
+                            "runnable":true,
+                            "lineNumbers":true,
+                            "matchBrackets":true,
+                            "mode":"map",
+                            "indentUnit":4,
+                            "indentWithTabs":true,
+                            "enterMode":"keep",
+                            "tabMode":"shift",
+                            "appHeight":"30%"
+                        }
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "button",
+                        "class": "btn-ungroup btn-group-sm",
+                        "nb_cols": 7,
+                        "buttons": [
+                            {
+                                "type": "submit",
+                                "name": "form_submit",
+                                "label": "FORM_UPDATE",
+                                "class": "btn-primary"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "insert": {},
+    "display": {}
+}

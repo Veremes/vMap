@@ -11,23 +11,94 @@
                 "FORM_SEARCH_USE_STRICT_2|left",
                 "FORM_SEARCH_USE_STRICT_3|right"
             ]
+        },
+        "form_size": {
+            "type": "object",
+            "dataType": "text",
+            "name": "form_size",
+            "description": "",
+            "options": [
+                "FORM_SIZE_1|1",
+                "FORM_SIZE_2|2",
+                "FORM_SIZE_3|3"
+            ]
         }
     },
     "search": {
+        "name": "vmap_business_object_search_form",
+        "title": "",
+        "input_size": "xxs",
+        "nb_cols": 12,
+        "rows": [
+            {
+                "fields": [{
+                        "type": "text",
+                        "name": "business_object_id",
+                        "label": "FORM_BUSINESS_OBJET_ID_DEVELOPMENT_0",
+                        "nb_cols": 2
+                    },{
+                        "type": "text",
+                        "name": "database",
+                        "label": "FORM_DATABASE_DEVELOPMENT_0",
+                        "nb_cols": 2
+                    },{
+                        "type": "text",
+                        "name": "schema",
+                        "label": "FORM_SCHEMA_DEVELOPMENT_0",
+                        "nb_cols": 2
+                    },{
+                        "type": "text",
+                        "name": "table",
+                        "label": "FORM_TABLE_DEVELOPMENT_0",
+                        "nb_cols": 2
+                    },{
+                        "type": "text",
+                        "name": "id_field",
+                        "label": "FORM_ID_FIELD_DEVELOPMENT_0",
+                        "nb_cols": 2
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "button",
+                        "class": "btn-ungroup btn-group-xs",
+                        "nb_cols": 12,
+                        "buttons": [
+                            {
+                                "type": "button",
+                                "name": "search",
+                                "label": "FORM_SEARCH_BUTTON",
+                                "class": "btn-primary",
+                                "event": "setGridFilter()"
+                            },
+                            {
+                                "type": "reset",
+                                "name": "reset",
+                                "label": "FORM_RESET_BUTTON",
+                                "class": "btn-primary",
+                                "event": "resetGridFilter()"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
     },
     "update": {
-        "name": "vitis_user_update_form",
+        "name": "vmap_business_object_update_form",
         "title": "Paramètres de l'objet métier",
         "input_size": "xs",
         "event": "sendSimpleForm()",
         "afterEvent": "editSectionForm()",
-        "nb_cols": 6,
+        "nb_cols": 12,
         "rows": [{
                 "fields": [{
                         "type": "label",
                         "name": "business_object_id",
                         "label": "FORM_BUSINESS_OBJET_ID_DEVELOPMENT_0",
-                        "nb_cols": 12,
+                        "nb_cols": 6,
                         "id": "ééé_1_1"
                     }]
             },
@@ -38,7 +109,7 @@
                         "label": "FORM_TITLE_DEVELOPMENT_0",
                         "required": true,
                         "pattern": "",
-                        "nb_cols": 12,
+                        "nb_cols": 6,
                         "id": "éé_2_1"
                     }]
             },
@@ -49,7 +120,7 @@
                         "label": "FORM_ID_FIELD_DEVELOPMENT_0",
                         "required": true,
                         "pattern": "",
-                        "nb_cols": 12,
+                        "nb_cols": 6,
                         "id": "New_el_1_3_1",
                         "tooltip": {
                             "title": "",
@@ -65,7 +136,7 @@
                         "label": "FORM_DATABASE_DEVELOPMENT_0",
                         "required": true,
                         "pattern": "",
-                        "nb_cols": 12,
+                        "nb_cols": 6,
                         "id": "New_el_2_4_1"
                     }]
             },
@@ -76,7 +147,7 @@
                         "label": "FORM_SCHEMA_DEVELOPMENT_0",
                         "required": true,
                         "pattern": "",
-                        "nb_cols": 12,
+                        "nb_cols": 6,
                         "id": "New_el_3_5_1"
                     }]
             },
@@ -87,7 +158,7 @@
                         "label": "FORM_TABLE_DEVELOPMENT_0",
                         "required": true,
                         "pattern": "",
-                        "nb_cols": 12,
+                        "nb_cols": 6,
                         "id": "New_el_4_6_1"
                     }]
             },
@@ -97,8 +168,8 @@
                         "name": "sql_summary",
                         "label": "FORM_SQL_SUMMARY_DEVELOPMENT_0",
                         "id": "New_el_6_8_1",
-                        "nb_cols": 12,
-                        "size": 5,
+                        "nb_cols": 9,
+                        "size": 8,
                         "tooltip": {
                             "title": "",
                             "content": "FORM_SQL_SUMMARY_DEVELOPMENT_0_TOOLTIP",
@@ -112,8 +183,8 @@
                         "name": "sql_list",
                         "label": "FORM_SQL_LIST_DEVELOPMENT_0",
                         "required": true,
-                        "nb_cols": 12,
-                        "size": 5,
+                        "nb_cols": 9,
+                        "size": 8,
                         "id": "New_el_7_9_1",
                         "tooltip": {
                             "title": "",
@@ -129,7 +200,7 @@
                         "label": "FORM_SORTED_BY_DEVELOPMENT_0",
                         "required": false,
                         "pattern": "",
-                        "nb_cols": 12,
+                        "nb_cols": 6,
                         "id": "New_el_9_11_1"
                     }]
             },
@@ -140,7 +211,7 @@
                         "label": "FORM_GEOM_COLUMN_DEVELOPMENT_0",
                         "required": true,
                         "pattern": "",
-                        "nb_cols": 12,
+                        "nb_cols": 6,
                         "id": "New_el_10_12_1"
                     }]
             },
@@ -149,8 +220,13 @@
                         "type": "text",
                         "name": "search_field",
                         "label": "FORM_SEARCH_FIELD_0",
-                        "nb_cols": 12,
-                        "id": "New_el_11_13_1"
+                        "nb_cols": 6,
+                        "id": "New_el_11_13_1",
+                        "tooltip": {
+                            "title": "",
+                            "content": "FORM_SEARCH_FIELD_0_TOOLTIP",
+                            "container": "body"
+                        }
                     }]
             },
             {
@@ -158,8 +234,13 @@
                         "type": "text",
                         "name": "result_field",
                         "label": "FORM_RESULT_FIELD_0",
-                        "nb_cols": 12,
-                        "id": "New_el_12_14_1"
+                        "nb_cols": 6,
+                        "id": "New_el_12_14_1",
+                        "tooltip": {
+                            "title": "",
+                            "content": "FORM_RESULT_FIELD_0_TOOLTIP",
+                            "container": "body"
+                        }
                     }]
             },
             {
@@ -169,7 +250,7 @@
                         "name": "search_use_strict",
                         "label": "FORM_SEARCH_USE_STRICT_0",
                         "required": false,
-                        "nb_cols": 12,
+                        "nb_cols": 6,
                         "id": "Element_0_2_1",
                         "default_value": "false",
                         "datasource": {
@@ -181,25 +262,77 @@
             {
                 "fields": [
                     {
-                        "type":"select",
-                        "name":"event_id",
-                        "label":"FORM_EVENT_VMAP_BUSINESS_OBJECT",
-                        "nb_cols":6,
-                        "web_service":{
-                            "ressource_id":"vmap/businessobjectevents",
-                            "id_key":"event_id",
-                            "label_key":"event_id"
+                        "type": "select",
+                        "name": "edit_form_size",
+                        "label": "EDIT_FORM_SIZE",
+                        "required": false,
+                        "nb_cols": 6,
+                        "id": "Element_0_2_2",
+                        "default_value": "1",
+                        "datasource": {
+                            "datasource_id": "form_size"
                         }
                     }
                 ]
             },
             {
-                "fields":[
+                "fields": [
                     {
-                        "type":"number",
-                        "name":"index",
-                        "label":"FORM_INDEX_VMAP_BUSINESS_OBJECT",
-                        "nb_cols":12
+                        "type": "select",
+                        "name": "display_form_size",
+                        "label": "DISPLAY_FORM_SIZE",
+                        "required": false,
+                        "nb_cols": 6,
+                        "id": "Element_0_2_2",
+                        "default_value": "1",
+                        "datasource": {
+                            "datasource_id": "form_size"
+                        }
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "select",
+                        "name": "add_form_size",
+                        "label": "ADD_FORM_SIZE",
+                        "required": false,
+                        "nb_cols": 6,
+                        "id": "Element_0_2_2",
+                        "default_value": "1",
+                        "datasource": {
+                            "datasource_id": "form_size"
+                        }
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "select",
+                        "name": "event_id",
+                        "label": "FORM_EVENT_VMAP_BUSINESS_OBJECT",
+                        "nb_cols": 3,
+                        "web_service": {
+                            "ressource_id": "vmap/businessobjectevents",
+                            "id_key": "event_id",
+                            "label_key": "event_id",
+                            "parameters":{
+                                "order_by":"event_id"
+                            }
+                        }
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "number",
+                        "name": "index",
+                        "label": "FORM_INDEX_VMAP_BUSINESS_OBJECT",
+                        "required": true,
+                        "nb_cols": 6
                     }
                 ]
             },
@@ -208,7 +341,7 @@
                     {
                         "type": "button",
                         "class": "btn-ungroup btn-group-sm",
-                        "nb_cols": 12,
+                        "nb_cols": 6,
                         "buttons": [
                             {
                                 "type": "submit",
@@ -229,12 +362,13 @@
             }]
     },
     "insert": {
-        "name": "framework_v_user_insert_form",
+        "name": "vmap_business_object_insert_form",
         "title": "Création Objet métier",
         "input_size": "xs",
+        "beforeEvent": "checkBoSchema()",
         "event": "sendSimpleForm()",
         "afterEvent": "editSectionForm()",
-        "nb_cols": 6,
+        "nb_cols": 12,
         "rows": [
             {
                 "fields": [{
@@ -243,7 +377,7 @@
                         "label": "FORM_BUSINESS_OBJET_ID_DEVELOPMENT_0",
                         "required": true,
                         "pattern": "^[A-Za-z0-9_]{1,32}$",
-                        "nb_cols": 12,
+                        "nb_cols": 6,
                         "id": "ééé_1_1",
                         "tooltip": {
                             "title": "",
@@ -259,7 +393,7 @@
                         "label": "FORM_TITLE_DEVELOPMENT_0",
                         "required": true,
                         "pattern": "",
-                        "nb_cols": 12,
+                        "nb_cols": 6,
                         "id": "éé_2_1"
                     }]
             },
@@ -270,7 +404,7 @@
                         "label": "FORM_ID_FIELD_DEVELOPMENT_0",
                         "required": true,
                         "pattern": "",
-                        "nb_cols": 12,
+                        "nb_cols": 6,
                         "id": "New_el_1_3_1",
                         "tooltip": {
                             "title": "",
@@ -286,7 +420,7 @@
                         "label": "FORM_DATABASE_DEVELOPMENT_0",
                         "required": true,
                         "pattern": "",
-                        "nb_cols": 12,
+                        "nb_cols": 6,
                         "id": "New_el_2_4_1"
                     }]
             },
@@ -297,7 +431,7 @@
                         "label": "FORM_SCHEMA_DEVELOPMENT_0",
                         "required": true,
                         "pattern": "",
-                        "nb_cols": 12,
+                        "nb_cols": 6,
                         "id": "New_el_3_5_1"
                     }]
             },
@@ -308,7 +442,7 @@
                         "label": "FORM_TABLE_DEVELOPMENT_0",
                         "required": true,
                         "pattern": "",
-                        "nb_cols": 12,
+                        "nb_cols": 6,
                         "id": "New_el_4_6_1"
                     }]
             },
@@ -318,8 +452,8 @@
                         "name": "sql_summary",
                         "label": "FORM_SQL_SUMMARY_DEVELOPMENT_0",
                         "id": "New_el_6_8_1",
-                        "nb_cols": 12,
-                        "size": 5,
+                        "nb_cols": 9,
+                        "size": 8,
                         "tooltip": {
                             "title": "",
                             "content": "FORM_SQL_SUMMARY_DEVELOPMENT_0_TOOLTIP",
@@ -333,8 +467,8 @@
                         "name": "sql_list",
                         "label": "FORM_SQL_LIST_DEVELOPMENT_0",
                         "required": true,
-                        "nb_cols": 12,
-                        "size": 5,
+                        "nb_cols": 9,
+                        "size": 8,
                         "id": "New_el_7_9_1",
                         "tooltip": {
                             "title": "",
@@ -350,7 +484,7 @@
                         "label": "FORM_SORTED_BY_DEVELOPMENT_0",
                         "required": false,
                         "pattern": "",
-                        "nb_cols": 12,
+                        "nb_cols": 6,
                         "id": "New_el_9_11_1"
                     }]
             },
@@ -361,7 +495,7 @@
                         "label": "FORM_GEOM_COLUMN_DEVELOPMENT_0",
                         "required": true,
                         "pattern": "",
-                        "nb_cols": 12,
+                        "nb_cols": 6,
                         "id": "New_el_10_12_1"
                     }]
             },
@@ -370,8 +504,13 @@
                         "type": "text",
                         "name": "search_field",
                         "label": "FORM_SEARCH_FIELD_0",
-                        "nb_cols": 12,
-                        "id": "New_el_11_13_1"
+                        "nb_cols": 6,
+                        "id": "New_el_11_13_1",
+                        "tooltip": {
+                            "title": "",
+                            "content": "FORM_SEARCH_FIELD_0_TOOLTIP",
+                            "container": "body"
+                        }
                     }]
             },
             {
@@ -379,8 +518,13 @@
                         "type": "text",
                         "name": "result_field",
                         "label": "FORM_RESULT_FIELD_0",
-                        "nb_cols": 12,
-                        "id": "New_el_12_14_1"
+                        "nb_cols": 6,
+                        "id": "New_el_12_14_1",
+                        "tooltip": {
+                            "title": "",
+                            "content": "FORM_RESULT_FIELD_0_TOOLTIP",
+                            "container": "body"
+                        }
                     }]
             },
             {
@@ -391,7 +535,7 @@
                         "label": "FORM_SEARCH_USE_STRICT_0",
                         "required": false,
                         "default_value": "false",
-                        "nb_cols": 12,
+                        "nb_cols": 6,
                         "id": "Element_0_2_1",
                         "datasource": {
                             "datasource_id": "use_strict"
@@ -402,24 +546,76 @@
             {
                 "fields": [
                     {
-                        "type":"select",
-                        "name":"event_id",
-                        "label":"FORM_EVENT_VMAP_BUSINESS_OBJECT",
-                        "nb_cols":6,
-                        "web_service":{
-                            "ressource_id":"vmap/businessobjectevents",
-                            "id_key":"event_id",
-                            "label_key":"event_id"
+                        "type": "select",
+                        "name": "edit_form_size",
+                        "label": "EDIT_FORM_SIZE",
+                        "required": false,
+                        "nb_cols": 6,
+                        "id": "Element_0_2_2",
+                        "default_value": "1",
+                        "datasource": {
+                            "datasource_id": "form_size"
+                        }
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "select",
+                        "name": "display_form_size",
+                        "label": "DISPLAY_FORM_SIZE",
+                        "required": false,
+                        "nb_cols": 6,
+                        "id": "Element_0_2_2",
+                        "default_value": "1",
+                        "datasource": {
+                            "datasource_id": "form_size"
+                        }
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "select",
+                        "name": "add_form_size",
+                        "label": "ADD_FORM_SIZE",
+                        "required": false,
+                        "nb_cols": 6,
+                        "id": "Element_0_2_2",
+                        "default_value": "1",
+                        "datasource": {
+                            "datasource_id": "form_size"
+                        }
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "select",
+                        "name": "event_id",
+                        "label": "FORM_EVENT_VMAP_BUSINESS_OBJECT",
+                        "nb_cols": 3,
+                        "web_service": {
+                            "ressource_id": "vmap/businessobjectevents",
+                            "id_key": "event_id",
+                            "label_key": "event_id",
+                            "parameters":{
+                                "order_by":"event_id"
+                            }
                         }
                     }]
             },
             {
-                "fields":[
+                "fields": [
                     {
-                        "type":"number",
-                        "name":"index",
-                        "label":"FORM_INDEX_VMAP_BUSINESS_OBJECT",
-                        "nb_cols":12
+                        "type": "number",
+                        "name": "index",
+                        "label": "FORM_INDEX_VMAP_BUSINESS_OBJECT",
+                        "required": true,
+                        "nb_cols": 6
                     }
                 ]
             },
@@ -428,7 +624,7 @@
                     {
                         "type": "button",
                         "class": "btn-ungroup btn-group-sm",
-                        "nb_cols": 12,
+                        "nb_cols": 6,
                         "buttons": [
                             {
                                 "type": "submit",
@@ -449,7 +645,7 @@
             }]
     },
     "display": {
-        "name": "framework_v_user_display_form",
+        "name": "vmap_business_object_display_form",
         "title": "Paramètres de l'objet métier",
         "input_size": "xs",
         "nb_cols": 6,
@@ -573,6 +769,33 @@
             {
                 "fields": [{
                         "type": "label",
+                        "name": "edit_form_size",
+                        "label": "EDIT_FORM_SIZE",
+                        "id": "New_el_12_14_2",
+                        "nb_cols": 12
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "label",
+                        "name": "display_form_size",
+                        "label": "DISPLAY_FORM_SIZE",
+                        "id": "New_el_12_14_2",
+                        "nb_cols": 12
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "label",
+                        "name": "add_form_size",
+                        "label": "ADD_FORM_SIZE",
+                        "id": "New_el_12_14_2",
+                        "nb_cols": 12
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "label",
                         "name": "event_id",
                         "label": "FORM_EVENT_VMAP_BUSINESS_OBJECT",
                         "nb_cols": 12
@@ -581,7 +804,7 @@
             {
                 "fields": [{
                         "type": "label",
-                        "name": "indez",
+                        "name": "index",
                         "label": "FORM_INDEX_VMAP_BUSINESS_OBJECT",
                         "nb_cols": 12
                     }]

@@ -9,13 +9,6 @@
                 "fields":[
                     {
                         "type":"text",
-                        "name":"domain_id",
-                        "label":"FORM_ID_USERS_DOMAIN",
-                        "required":false,
-                        "nb_cols":3
-                    },
-                    {
-                        "type":"text",
                         "name":"alias",
                         "label":"FORM_ALIAS_USERS_DOMAIN",
                         "required":false,

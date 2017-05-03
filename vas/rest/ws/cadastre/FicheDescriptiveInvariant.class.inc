@@ -37,7 +37,7 @@ class FicheDescriptiveInvariant extends Cadastre {
      * @param type $properties properties
      * @param type $oConnection connection object
      */
-    function fichedescriptiveinvariant($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
@@ -78,6 +78,13 @@ class FicheDescriptiveInvariant extends Cadastre {
      * @return the token
      */
     function GET() {
+        
+        if (!in_array('vmap_cadastre_user', $this->oConnection->aPrivileges)) {
+            $oError = new VitisError(0, 'INSUFFICIENT_PRIVILEGES');
+            $aXmlRacineAttribute['status'] = 0;
+            $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+            return $sMessage;
+        }
 
         // Infos sur l'invariant
         $ID_BAT = $this->aPath[2];

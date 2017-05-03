@@ -1,41 +1,41 @@
 {
-    "search":{
-        "name":"framework_group_search_form",
-        "title":"",
-        "input_size":"xxs",
-        "nb_cols":12,
-        "rows":[
+    "search": {
+        "name": "framework_group_search_form",
+        "title": "",
+        "input_size": "xxs",
+        "nb_cols": 12,
+        "rows": [
             {
-                "fields":[
+                "fields": [
                     {
-                        "type":"text",
-                        "name":"name",
-                        "label":"FORM_NAME_USERS_GROUP",
-                        "required":false,
-                        "nb_cols":3
+                        "type": "text",
+                        "name": "name",
+                        "label": "FORM_NAME_USERS_GROUP",
+                        "required": false,
+                        "nb_cols": 3
                     }
                 ]
             },
             {
-                "fields":[
+                "fields": [
                     {
-                        "type":"button",
-                        "class":"btn-ungroup btn-group-xs",
-                        "nb_cols":12,
-                        "buttons":[
+                        "type": "button",
+                        "class": "btn-ungroup btn-group-xs",
+                        "nb_cols": 12,
+                        "buttons": [
                             {
-                                "type":"button",
-                                "name":"search",
-                                "label":"FORM_SEARCH_BUTTON",
-                                "class":"btn-primary",
-                                "event":"setGridFilter()"
+                                "type": "button",
+                                "name": "search",
+                                "label": "FORM_SEARCH_BUTTON",
+                                "class": "btn-primary",
+                                "event": "setGridFilter()"
                             },
                             {
-                                "type":"reset",
-                                "name":"reset",
-                                "label":"FORM_RESET_BUTTON",
-                                "class":"btn-primary",
-                                "event":"resetGridFilter()"
+                                "type": "reset",
+                                "name": "reset",
+                                "label": "FORM_RESET_BUTTON",
+                                "class": "btn-primary",
+                                "event": "resetGridFilter()"
                             }
                         ]
                     }
@@ -43,79 +43,79 @@
             }
         ]
     },
-    "update":{
-        "name":"framework_group_update_form",
-        "title":"FORM_TITLE_USERS_GROUP",
-        "input_size":"xs",
-        "event":"sendSimpleForm()",
-        "nb_cols":8,
-        "rows":[
+    "update": {
+        "name": "framework_group_update_form",
+        "title": "FORM_TITLE_USERS_GROUP",
+        "input_size": "xs",
+        "event": "sendSimpleForm()",
+        "nb_cols": 8,
+        "rows": [
             {
-                "fields":[
+                "fields": [
                     {
-                        "type":"label",
-                        "name":"group_id",
-                        "label":"FORM_ID_USERS_GROUP",
-                        "nb_cols":12
+                        "type": "label",
+                        "name": "group_id",
+                        "label": "FORM_ID_USERS_GROUP",
+                        "nb_cols": 12
                     }
                 ]
             },
             {
-                "fields":[
+                "fields": [
                     {
-                        "type":"text",
-                        "name":"name",
-                        "label":"FORM_NAME_USERS_GROUP",
-                        "required":true,
-                        "nb_cols":12
+                        "type": "text",
+                        "name": "name",
+                        "label": "FORM_NAME_USERS_GROUP",
+                        "required": true,
+                        "nb_cols": 12
                     }
                 ]
             },
             {
-                "fields":[
+                "fields": [
                     {
-                        "type":"double_select",
-                        "name":"users",
-                        "name_from":"user",
-                        "name_to":"users",
-                        "label":"FORM_USER_USERS_GROUP",
-                        "label_from":"FORM_AVAILABLE_USER_USERS_GROUP",
-                        "label_to":"FORM_LINKED_USER_USERS_GROUP",
-                        "web_service":{
-                            "ressource_id":"vitis/users",
-                            "id_key":"user_id",
-                            "label_key":"login",
-                            "parameters":{
-                                    "filter":{
-                                            "domain":"getUsers2DomainFilter()"
-                                    },
-                                    "order_by":"login"
+                        "type": "double_select",
+                        "name": "users",
+                        "name_from": "user",
+                        "name_to": "users",
+                        "label": "FORM_USER_USERS_GROUP",
+                        "label_from": "FORM_AVAILABLE_USER_USERS_GROUP",
+                        "label_to": "FORM_LINKED_USER_USERS_GROUP",
+                        "web_service": {
+                            "ressource_id": "vitis/users",
+                            "id_key": "user_id",
+                            "label_key": "user_string",
+                            "parameters": {
+                                "filter": {
+                                    "domain": "getUsers2DomainFilter()"
+                                },
+                                "order_by": "user_string"
                             }
                         },
-                        "size":"6",
-                        "nb_cols":12
+                        "size": 18,
+                        "nb_cols": 12
                     }
                 ]
             },
             {
-                "fields":[
+                "fields": [
                     {
-                        "type":"button",
-                        "class":"btn-ungroup btn-group-sm",
-                        "nb_cols":12,
-                        "buttons":[
+                        "type": "button",
+                        "class": "btn-ungroup btn-group-sm",
+                        "nb_cols": 12,
+                        "buttons": [
                             {
-                                "type":"submit",
-                                "name":"form_submit",
-                                "label":"FORM_UPDATE",
-                                "class":"btn-primary"
+                                "type": "submit",
+                                "name": "form_submit",
+                                "label": "FORM_UPDATE",
+                                "class": "btn-primary"
                             },
                             {
-                                "type":"button",
-                                "name":"return_list",
-                                "label":"FORM_RETURN_LIST",
-                                "class":"btn-primary",
-                                "event":"setMode(\"search\")"
+                                "type": "button",
+                                "name": "return_list",
+                                "label": "FORM_RETURN_LIST",
+                                "class": "btn-primary",
+                                "event": "setMode(\"search\")"
                             }
                         ]
                     }
@@ -123,70 +123,70 @@
             }
         ]
     },
-    "insert":{
-        "name":"framework_group_insert_form",
-        "title":"FORM_TITLE_USERS_GROUP",
-        "input_size":"xs",
-        "event":"sendSimpleForm()",
-        "afterEvent":"editSectionForm()",
-        "nb_cols":8,
-        "rows":[
+    "insert": {
+        "name": "framework_group_insert_form",
+        "title": "FORM_TITLE_USERS_GROUP",
+        "input_size": "xs",
+        "event": "sendSimpleForm()",
+        "afterEvent": "editSectionForm()",
+        "nb_cols": 8,
+        "rows": [
             {
-                "fields":[
+                "fields": [
                     {
-                        "type":"text",
-                        "name":"name",
-                        "label":"FORM_NAME_USERS_GROUP",
-                        "required":true,
-                        "nb_cols":12
+                        "type": "text",
+                        "name": "name",
+                        "label": "FORM_NAME_USERS_GROUP",
+                        "required": true,
+                        "nb_cols": 12
                     }
                 ]
             },
             {
-                "fields":[
+                "fields": [
                     {
-                        "type":"double_select",
-                        "name":"users",
-                        "name_from":"user",
-                        "name_to":"users",
-                        "label":"FORM_USER_USERS_GROUP",
-                        "label_from":"FORM_AVAILABLE_USER_USERS_GROUP",
-                        "label_to":"FORM_LINKED_USER_USERS_GROUP",
-                        "web_service":{
-                            "ressource_id":"vitis/users",
-                            "id_key":"user_id",
-                            "label_key":"login",
-                            "parameters":{
-                                    "filter":{
-                                            "domain":"getUsers2DomainFilter()"
-                                    },
-                                    "order_by":"login"
+                        "type": "double_select",
+                        "name": "users",
+                        "name_from": "user",
+                        "name_to": "users",
+                        "label": "FORM_USER_USERS_GROUP",
+                        "label_from": "FORM_AVAILABLE_USER_USERS_GROUP",
+                        "label_to": "FORM_LINKED_USER_USERS_GROUP",
+                        "web_service": {
+                            "ressource_id": "vitis/users",
+                            "id_key": "user_id",
+                            "label_key": "user_string",
+                            "parameters": {
+                                "filter": {
+                                    "domain": "getUsers2DomainFilter()"
+                                },
+                                "order_by": "user_string"
                             }
                         },
-                        "size":"6",
-                        "nb_cols":12
+                        "size": 18,
+                        "nb_cols": 12
                     }
                 ]
             },
             {
-                "fields":[
+                "fields": [
                     {
-                        "type":"button",
-                        "class":"btn-ungroup btn-group-sm",
-                        "nb_cols":12,
-                        "buttons":[
+                        "type": "button",
+                        "class": "btn-ungroup btn-group-sm",
+                        "nb_cols": 12,
+                        "buttons": [
                             {
-                                "type":"submit",
-                                "name":"form_submit",
-                                "label":"FORM_CREATE",
-                                "class":"btn-primary"
+                                "type": "submit",
+                                "name": "form_submit",
+                                "label": "FORM_CREATE",
+                                "class": "btn-primary"
                             },
                             {
-                                "type":"button",
-                                "name":"return_list",
-                                "label":"FORM_RETURN_LIST",
-                                "class":"btn-primary",
-                                "event":"setMode(\"search\")"
+                                "type": "button",
+                                "name": "return_list",
+                                "label": "FORM_RETURN_LIST",
+                                "class": "btn-primary",
+                                "event": "setMode(\"search\")"
                             }
                         ]
                     }
@@ -194,55 +194,55 @@
             }
         ]
     },
-    "display":{
-        "name":"framework_group_display_form",
-        "title":"FORM_TITLE_USERS_GROUP",
-        "input_size":"xs",
-        "nb_cols":6,
-        "rows":[
+    "display": {
+        "name": "framework_group_display_form",
+        "title": "FORM_TITLE_USERS_GROUP",
+        "input_size": "xs",
+        "nb_cols": 6,
+        "rows": [
             {
-                "fields":[
+                "fields": [
                     {
-                        "type":"label",
-                        "name":"group_id",
-                        "label":"FORM_ID_USERS_GROUP",
-                        "nb_cols":12
+                        "type": "label",
+                        "name": "group_id",
+                        "label": "FORM_ID_USERS_GROUP",
+                        "nb_cols": 12
                     }
                 ]
             },
             {
-                "fields":[
+                "fields": [
                     {
-                        "type":"label",
-                        "name":"name",
-                        "label":"FORM_NAME_USERS_GROUP",
-                        "nb_cols":12
+                        "type": "label",
+                        "name": "name",
+                        "label": "FORM_NAME_USERS_GROUP",
+                        "nb_cols": 12
                     }
                 ]
             },
             {
-                "fields":[
+                "fields": [
                     {
-                        "type":"label",
-                        "name":"users_label",
-                        "label":"FORM_USER_USERS_GROUP",
-                        "nb_cols":12
+                        "type": "label",
+                        "name": "users_label",
+                        "label": "FORM_USER_USERS_GROUP",
+                        "nb_cols": 12
                     }
                 ]
             },
             {
-                "fields":[
+                "fields": [
                     {
-                        "type":"button",
-                        "class":"btn-ungroup btn-group-sm",
-                        "nb_cols":12,
-                        "buttons":[
+                        "type": "button",
+                        "class": "btn-ungroup btn-group-sm",
+                        "nb_cols": 12,
+                        "buttons": [
                             {
-                                "type":"button",
-                                "name":"return_list",
-                                "label":"FORM_RETURN_LIST",
-                                "class":"btn-primary",
-                                "event":"setMode(\"search\")"
+                                "type": "button",
+                                "name": "return_list",
+                                "label": "FORM_RETURN_LIST",
+                                "class": "btn-primary",
+                                "event": "setMode(\"search\")"
                             }
                         ]
                     }

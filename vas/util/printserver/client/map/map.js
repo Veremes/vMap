@@ -7,6 +7,8 @@
 PrintMap = function (opt_options) {
 
     var this_ = this;
+    
+    this.mapSize = [document.getElementById('map').offsetWidth, document.getElementById('map').offsetHeight];
 
     this.tileSize = (isDef(window.oProperties.print.tile_size) && window.oProperties.print.features_zoom >= 0) ? window.oProperties.print.tile_size : 2048;
 
@@ -24,18 +26,26 @@ PrintMap = function (opt_options) {
 
     this.mapDefinition = isDef(opt_options.mapJSON) ? opt_options.mapJSON : this.getMapDefinition(opt_options.mapId);
 
-    this.view = this.getViewFromDefinition(this.mapDefinition);
+    this.mapJsonParser = new MapJSON({
+        'properties': window.oProperties
+    });
+        
+    this.view = this.mapJsonParser.getViewFromDef(this.mapDefinition, {
+        'size': this.mapSize,
+        'tileSize': [this.tileSize, this.tileSize]
+    });
 
     this.features = isDef(opt_options.features) ? this.getFeaturesFromEWKT(opt_options.features) : null;
 
     this.extent = this.getExtent(opt_options);
 
-    this.tileGrid = this.getTileGridFromDefinition(this.tileSize);
-
-    this.layersDefinition = this.getLayersDefinition(this.mapDefinition);
-
-    this.layers = this.getLayersFromDefinition(this.layersDefinition);
-
+    this.tileGrid = this.getTileGridFromDefinition(this.tileSize);    
+    
+    this.layers = this.mapJsonParser.getLayersFromDef(this.mapDefinition, {
+        'size': this.mapSize,
+        'tileSize': [this.tileSize, this.tileSize]
+    });
+    
     this.map = this.setMap(this.layers, this.view);
 
     this.featuresOverlay = this.setFeaturesOverlay(this.map);
@@ -168,150 +178,6 @@ PrintMap.prototype.getTileGridFromDefinition = function (tileSize) {
 };
 
 /**
- * Get the layers definition from the map definition
- * @param {object} oMapDefinition
- * @returns {Array}
- */
-PrintMap.prototype.getLayersDefinition = function (oMapDefinition) {
-
-    var aServices = oMapDefinition['children'];
-    var aLayersDefinition = [];
-
-    // Ne prend pas le premier element (il s'agit de la vue)
-    for (var i = 1; i < aServices.length; i++) {
-        var aLayers = aServices[i]['children'];
-        for (var ii = 0; ii < aLayers.length; ii++) {
-            aLayersDefinition.push(aLayers[ii]);
-        }
-        delete aLayers;
-    }
-
-    // Ordonne les couches suivant leur index
-    aLayersDefinition = this.sortLayersDefinition(aLayersDefinition);
-
-    return aLayersDefinition;
-};
-
-/**
- * Create the layers from their definition
- * @param {array} aLayersDefinition
- * @returns {Array}
- */
-PrintMap.prototype.getLayersFromDefinition = function (aLayersDefinition) {
-
-    var olLayers = [];
-
-    for (var i = 0; i < aLayersDefinition.length; i++) {
-        var oLayerDef = aLayersDefinition[i];
-
-        if (oLayerDef.visible !== true)
-            continue;
-
-        if (oLayerDef.layerType === 'osm') {
-
-            // URL par défaut
-            if (typeof oLayerDef.url !== 'string')
-                oLayerDef.url = "https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png";
-
-            olLayers.push(new ol.layer.Tile({
-                source: new ol.source.OSM({
-                    url: oLayerDef.url
-                })
-            }));
-        }
-        if (oLayerDef.layerType === 'bing') {
-            olLayers.push(new ol.layer.Tile({
-                source: new ol.source.BingMaps({
-                    key: oLayerDef["key"],
-                    culture: oLayerDef["culture"],
-                    imagerySet: oLayerDef["imagerySet"]
-                })
-            }));
-        }
-        if (oLayerDef.layerType === 'imagevector') {
-
-            var vectorSource;
-
-            if (oLayerDef["features"]) {
-                vectorSource = new ol.source.Vector({
-                    features: oLayerDef["features"]
-                });
-            } else if (oLayerDef["url"]) {
-                vectorSource = new ol.source.GeoJSON({
-                    url: oLayerDef["url"]
-                });
-            } else {
-                console.error("Error imagevector: veuillez renseinger une url ou une feature");
-                return;
-            }
-            olLayers.push(new ol.layer.Tile({
-                source: new ol.source.ImageVector({
-                    style: oLayerDef["style"],
-                    source: vectorSource
-                })
-            }));
-        }
-        if (oLayerDef.layerType === 'tilewms' || oLayerDef.layerType === 'imagewms') {
-            olLayers.push(new ol.layer.Tile({
-                source: new ol.source.TileWMS({
-                    tileGrid: this.tileGrid,
-                    cacheSize: this.cacheSize,
-                    url: oLayerDef.url,
-                    params: oLayerDef.params
-                })
-            }));
-        }
-
-        delete oLayerDef;
-    }
-
-    return olLayers;
-};
-
-/**
- * Get the projections definition from the map definition
- * @param {object} oMapDefinition
- * @returns {string}
- */
-PrintMap.prototype.getViewFromDefinition = function (oMapDefinition) {
-
-    if (!isDef(oMapDefinition))
-        callError('oMapDefinition is not defined: ' + oMapDefinition);
-
-    if (!isDef(oMapDefinition['children']))
-        callError('oMapDefinition.children is not defined: ' + oMapDefinition);
-
-    if (!isDef(oMapDefinition['children'][0]))
-        callError('oMapDefinition.children[0] is not defined: ' + oMapDefinition);
-
-    if (!isDef(oMapDefinition['children'][0]['view']))
-        callError('oMapDefinition.children[0].view is not defined: ' + oMapDefinition);
-
-    var oViewDef = oMapDefinition['children'][0]['view'];
-
-    return new ol.View({
-        projection: oViewDef['projection']
-    });
-};
-
-/**
- * Sort the layers by index
- * @param {array} aLayersDefinition
- * @returns {array}
- */
-PrintMap.prototype.sortLayersDefinition = function (aLayersDefinition) {
-    function compare(a, b) {
-        if (a.index < b.index)
-            return -1;
-        if (a.index > b.index)
-            return 1;
-        return 0;
-    }
-    aLayersDefinition.sort(compare);
-    return aLayersDefinition;
-};
-
-/**
  * Get SYNCHRONELY the map definition from API URL
  * @param {string} mapId
  * @returns {Array|Object}
@@ -339,7 +205,6 @@ PrintMap.prototype.getMapDefinition = function (mapId) {
         url: apiUrl + '/vmap/mapjsons/' + mapId + '?token=' + token,
         async: false,
         successCallback: function (response) {
-            callLog(2);
             if (!isDef(response)) {
                 callError("getMapDefinition: Can't get the response");
             }

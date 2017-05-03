@@ -5,57 +5,94 @@
 <hr>
 
 <form ng-submit="ctrl.getCapabilities()">
-	<div class="row">
-	    <div class="col-md-3">
-			<select id="select-wms-service" class="form-control">
-			  <option value="">Service</option>
-			  <option ng-repeat="node in ctrl.catalog.services.wms" value="{{node.url}}">{{node.name}}</option>
-			</select>
-	    </div>
-	    <div class="col-md-9">
-	    	<input type="text" id="getCapabilities-url-field" class="form-control" placeholder="Service url" aria-describedby="sizing-addon1">
-		</div>
-	</div>
-	<br>
-	<button type="submit" class="btn btn-success right">Voir le contenu</button>
+    <div class="row">
+        <div class="col-xs-3">
+            <b>Service: </b>
+            <select class="form-control" ng-model="ctrl.sRequestUrl">
+                <option value=""></option>
+                <option ng-repeat="node in ctrl.catalog.services.wms" value="{{node.url}}">{{node.name}}</option>
+            </select>
+        </div>
+        <div class="col-xs-9">
+            <b>URL: </b>
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="Service url" aria-describedby="sizing-addon1" ng-model="ctrl.sRequestUrl">
+                <span class="input-group-btn">
+                    <button type="submit" class="btn btn-success">Voir le contenu</button>
+                </span>
+            </div>
+        </div>
+    </div>
 </form>
-			
-<br><br>
-<div id="wms-log-message"></div>
+
 <br>
 
-<div id="load-img" style="display: none; text-align: center"><img src="images/ajax-load-big.gif"></div>
+<div id="load-img-wms" style="display: none; text-align: center"><img src="images/ajax-load-big.gif"></div>
 <div id="wms-suggestions-list" style="display: none">
-	<table class="table table-striped">
-		<thead>
-		  <tr>
-		    <th>Description</th>
-		    <th>Nom</th>
-		    <th>Projection</th>
-		    <th></th>
-		  </tr>
-		</thead>
-		<tbody>
-			
-		  <tr ng-repeat="node in ctrl.aLayers">
-		    <td class="WMSSuggestionTitle">{{node.Title}}</td>
-		    <td class="WMSSuggestion" title="{{node.Name}}">{{node.Name}}</td>
-		    <td class="WMSSuggestion">{{node.projections}}</td>
-		    <!-- Si la projeciton est bonne -->
-		    <td class="WMSSuggestionsButton">
-				<button type="button" 
-						class="btn btn-info"
-						ng-class="{'btn-danger': node.projections.indexOf(ctrl.proj) === -1}"
-						layerName="{{node.Name}}" 
-						layerTitle="{{node.Title}}" 
-						version="{{ctrl.aLayers.version}}" 
-						serviceTitle="{{ctrl.aLayers.serviceTitle}}" 
-						queryable="{{node.queryable}}" 
-						isProjectionCompatible="true" 
-						onclick="oVmap.getMapManager().addWMSLayerFromHTML(this)">Ajouter</button>
-			</td>
-		  </tr>
-		</tbody>
-	</table>
+
+    <input class="form-control input-sm right margin-sides-10 margin-5" 
+           type="text" 
+           placeholder="Rechercher" 
+           style="width: 200px;"
+           ng-model="filter">
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Titre</th>
+                <th>Nom</th>
+                <th>Projection</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr ng-repeat="node in ctrl.aLayersFiltered">
+                <td class="WMSSuggestionTitle">{{node.Title}}</td>
+                <td class="WMSSuggestion" title="{{node.Name}}">{{node.Name}}</td>
+                <td class="WMSSuggestion">{{node.projections}}</td>
+                <!-- Si la projeciton est bonne -->
+                <td class="WMSSuggestionsButton">
+                    <button type="button" 
+                            class="btn btn-info"
+                            ng-class="{'btn-danger': node.projections.indexOf(ctrl.proj) === -1}"
+                            ng-click="ctrl.addLayer(node)">Ajouter</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
 </div>
 <button id="btn-reload-wms" style="display: none" ng-click="ctrl.reload()">Reload map</button>
+
+
+<div id="wms-select-style-modal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" onclick="$('#wms-select-style-modal').modal('hide');" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">{{ctrl.oLayerToAdd.Title}}</h4>
+            </div>
+            <div class="modal-body">
+
+                <div class="row">
+                    <div class="col-xs-4">
+                        <label>Style</label>
+                        <select class="form-control" 
+                                ng-model="iSelectedStyleIndex"
+                                ng-change="ctrl.sLayerToAdd_style_name = ctrl.oLayerToAdd.Style[iSelectedStyleIndex].Name">
+                            <option value="?"></option>
+                            <option ng-repeat="oStyle in ctrl.oLayerToAdd.Style" value="{{$index}}">{{(oStyle.Title| isDef) ? oStyle.Title : oStyle.Name}}</option>
+                        </select>
+                        <br>
+                        <div ng-repeat="(key, value) in ctrl.oLayerToAdd.Style[iSelectedStyleIndex]" ng-if="(value | getType) == 'string'">
+                            <label>{{key}}: </label>{{value}}
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" ng-click="ctrl.addLayer(ctrl.oLayerToAdd, ctrl.sLayerToAdd_style_name)">Valider</button>
+            </div>
+        </div>
+    </div>
+</div>

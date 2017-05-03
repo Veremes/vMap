@@ -25,7 +25,7 @@ class Mode extends Vitis {
      * @param type $properties properties
      * @param type $oConnection connection object
      */
-    function Mode($aPath, $aValues, $properties, $oConnection) {
+    function __construct($aPath, $aValues, $properties, $oConnection) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
@@ -74,14 +74,12 @@ class Mode extends Vitis {
      * get informations about mode
      */
     function GET() {
-        require $this->sRessourcesFile;
+        require $this->sRessourcesFile;        
         $this->aFields = $this->getFields($this->aProperties['schema_framework'], "v_mode", "mode_id");
         $aValues = array("filter" => "mode_id='" . $this->aFields["mode_id"]."'", "token" => $this->aValues['token']);
         require_once'Tabs.class.inc';
         $oTabs = new Tabs($this->aPath, $aValues, $this->aProperties);
         $oTabs->GET();
-
-
         array_push($this->aObjects, $oTabs);
     }
 

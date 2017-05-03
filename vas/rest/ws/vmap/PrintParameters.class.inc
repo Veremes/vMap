@@ -36,7 +36,7 @@ class PrintParameters extends Vmap {
      * @param type $aValues parameters of the request
      * @param type $properties properties
      */
-    function PrintParameters($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
@@ -77,16 +77,14 @@ class PrintParameters extends Vmap {
      *     in="query",
      *     description="number of element",
      *     required=false,
-     *     type="integer",
-     *     format="int32"
+     *     type="integer"
      *   ),
      * @SWG\Parameter(
      *     name="offset",
      *     in="query",
      *     description="index of first element",
      *     required=false,
-     *     type="string",
-     *     format="int32"
+     *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="attributs",
@@ -135,49 +133,49 @@ class PrintParameters extends Vmap {
      *   produces={"application/xml", "application/json"},
      *   @SWG\Parameter(
      *     name="token",
-     *     in="query",
+     *     in="formData",
      *     description="user token",
      *     required=true,
      *     type="string"
      *   ),
      *  @SWG\Parameter(
      *     name="printtemplate_id",
-     *     in="query",
+     *     in="formData",
      *     description="Print template id",
      *     required=true,
      *     type="string"
      *   ),
      *  @SWG\Parameter(
      *     name="name",
-     *     in="query",
+     *     in="formData",
      *     description="Name",
      *     required=false,
      *     type="string"
      *   ),
      *  @SWG\Parameter(
      *     name="editable",
-     *     in="query",
+     *     in="formData",
      *     description="editable",
      *     required=false,
      *     type="boolean"
      *   ),
      *  @SWG\Parameter(
      *     name="label",
-     *     in="query",
+     *     in="formData",
      *     description="Label",
      *     required=false,
      *     type="string"
      *   ),
      *  @SWG\Parameter(
      *     name="placeholder",
-     *     in="query",
+     *     in="formData",
      *     description="Placeholder",
      *     required=false,
      *     type="string"
      *   ),
      *  @SWG\Parameter(
      *     name="defaultvalue",
-     *     in="query",
+     *     in="formData",
      *     description="Default Value",
      *     required=false,
      *     type="string"
@@ -227,7 +225,7 @@ class PrintParameters extends Vmap {
      *     name="printtemplate_id",
      *     in="query",
      *     description="Print template id",
-     *     required=true,
+     *     required=false,
      *     type="string"
      *   ),
      *  @SWG\Parameter(

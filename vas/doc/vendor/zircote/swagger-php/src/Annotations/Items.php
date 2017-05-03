@@ -17,6 +17,9 @@ class Items extends Schema
     /** @inheritdoc */
     public static $_nested = [
         'Swagger\Annotations\Items' => 'items',
+        'Swagger\Annotations\Property' => ['properties', 'property'],
+        'Swagger\Annotations\ExternalDocumentation' => 'externalDocs',
+        'Swagger\Annotations\Xml' => 'xml'
     ];
 
     /** @inheritdoc */
@@ -25,7 +28,8 @@ class Items extends Schema
         'Swagger\Annotations\Property',
         'Swagger\Annotations\Schema',
         'Swagger\Annotations\Definition',
-        'Swagger\Annotations\Items'
+        'Swagger\Annotations\Items',
+        'Swagger\Annotations\Header',
     ];
 
     /** @inheritdoc */

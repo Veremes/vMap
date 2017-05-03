@@ -1,17 +1,11 @@
-/* global goog, angular, nsVmap, less, bootbox, ol */
+/* global goog, angular, nsVmap, less, bootbox, ol, vitisApp */
 /**
  * @author: Armand Bahi
  */
 //less.refresh();
 //G_testRunner.setStrict(false);
 
-goog.provide('vmap');
-goog.require('nsVmap.Map');
-goog.require('nsVmap.Map.MapTooltip');
-goog.require('nsVmap.Map.MapPopup');
-goog.require('nsVmap.nsMapManager.MapManager');
-goog.require('nsVmap.nsToolsManager.ToolsManager');
-
+goog.provide('oVmap');
 
 /**
  * Vmap Object
@@ -59,6 +53,28 @@ oVmap.object2Array = function () {
     };
 };
 oVmap.module.filter('object2Array', oVmap.object2Array);
+
+/**
+ * Filtre angular permettant de connaitre le type d'un élément
+ * @returns {Function}
+ */
+oVmap.getType = function () {
+    return function (obj) {
+        return typeof obj;
+    };
+};
+oVmap.module.filter('getType', oVmap.getType);
+
+/**
+ * Filtre angular permettant de savoir si un élément est défini
+ * @returns {Function}
+ */
+oVmap.isDef = function () {
+    return function (obj) {
+        return goog.isDefAndNotNull(obj);
+    };
+};
+oVmap.module.filter('isDef', oVmap.isDef);
 
 /**
  * Properties
@@ -111,6 +127,17 @@ oVmap.init = function () {
     oVmap.log("oVmap.init");
 
     vitisApp.broadcast('vmapLoaded');
+
+    var vMapLoaderScope = angular.element($('#app-vmap-loader')).scope();
+
+    if (goog.isDefAndNotNull(vMapLoaderScope)) {
+        angular.element($('#app-vmap-loader')).scope()['compileVmapTemplates']();
+    } else {
+        // Charge les template
+        vitisApp.on('vmapLoaderOk', function () {
+            angular.element($('#app-vmap-loader')).scope()['compileVmapTemplates']();
+        });
+    }
 
     var url = window.location.href;
     var indexOfLastFolder = url.lastIndexOf('/');
@@ -180,6 +207,11 @@ oVmap.init = function () {
     // Incrémenté lors de l'appel à la fonction oVmap.displayNoTokenMessage
     oVmap.noTokenMessage_ = 0;
 
+    // S'inscrit au service WebSocket VmapEvents    
+    if (goog.isDefAndNotNull(vitisApp['oWebsocket'])) {
+        vitisApp['oWebsocket'].subscribeService('VmapEvents');
+    }
+
 };
 
 /**
@@ -210,6 +242,8 @@ oVmap.vmapDirective = function () {
  */
 oVmap.vmapController = function ($http) {
     oVmap.log("oVmap.vmapController");
+
+    var this_ = this;
 
     this.$http_ = $http;
 
@@ -298,6 +332,17 @@ oVmap.vmapController = function ($http) {
     oVmap['scope']['isDef'] = function (obj) {
         return goog.isDefAndNotNull(obj);
     };
+
+    // Ferme le panier et le bandeau de droite quand on change de carte
+    oVmap['scope'].$on('mapChanged', function () {
+        // Ferme le panier
+        oVmap['scope'].$applyAsync(function () {
+            oVmap['scope']['ctrl']['bottom_open'] = false;
+            oVmap.minResizeBottomBar();
+        });
+        // Ferme le bandeau de droite
+        oVmap.simuleClickOnClass('tool-btn-active');
+    });
 };
 
 /************************************************
@@ -1109,10 +1154,39 @@ oVmap.generatePrintReport = function (opt_options) {
     });
 };
 
+/**
+ * appVmapLoaderDrtv directive.
+ * Charge les template vMap en utilisant compileVmapTemplates
+ * @param {service} $compile
+ * @param {service} $log
+ * @ngInject
+ */
+oVmap.appVmapLoaderDrtv = function ($compile, $log) {
+    return {
+        link: function (scope, element, attrs) {
+            $log.log("formReader.appSubformDrtv.link");
 
+            var content;
+            var template = '<div app-vmap id="app-vmap"></div>';
 
-// Lance les directive et controller de app-vmap
+            scope['compileVmapTemplates'] = function () {
+                $log.log("compileVmapTemplates");
+
+                scope.$applyAsync(function () {
+                    // compile the provided template against the current scope
+                    content = $compile(template)(scope);
+                    // add the template content
+                    element.html("");
+                    element.append(content);
+
+                });
+            };
+            vitisApp.broadcast('vmapLoaderOk');
+        }
+    };
+};
+oVmap.module.directive("appVmapLoader", oVmap.appVmapLoaderDrtv);
+
+// Définit la directive et le controller
 oVmap.module.directive('appVmap', oVmap.vmapDirective);
 oVmap.module.controller('AppVmapController', oVmap.vmapController);
-
-oVmap.init();

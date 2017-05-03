@@ -12,6 +12,5 @@ $properties['convert_utf8'] = false;
 $properties['dir_export'] = $properties['vas_home'] . '/public';
 $properties['url_export'] = $properties['web_server_name'] . '/' . $properties['public_alias'];
 $properties['ws_data_dir'] = $properties['vas_home'] . '/ws_data';
-$properties['sevenzip_root_dir'] = $properties['vas_home'] . '/util/7zip/7za';
 
 ?>

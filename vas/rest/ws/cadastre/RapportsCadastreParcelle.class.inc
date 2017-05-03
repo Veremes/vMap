@@ -37,7 +37,7 @@ class RapportsCadastreParcelle extends Cadastre {
      * @param type $properties properties
      * @param type $oConnection connection object
      */
-    function rapportscadastreparcelle($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
@@ -83,6 +83,13 @@ class RapportsCadastreParcelle extends Cadastre {
      */
     function GET() {
 
+        if (!in_array('vmap_cadastre_user', $this->oConnection->aPrivileges)) {
+            $oError = new VitisError(0, 'INSUFFICIENT_PRIVILEGES');
+            $aXmlRacineAttribute['status'] = 0;
+            $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+            return $sMessage;
+        }
+
         /**
          * Tableau contenant les id_par des parcelles à utiliser
          * @type array
@@ -100,7 +107,7 @@ class RapportsCadastreParcelle extends Cadastre {
          * @type object
          */
         $oBD = new BD($this->aProperties["cadastre"]["rp"]["login"], $this->aProperties["cadastre"]["rp"]["pass"], $this->aProperties["database"], $this->aProperties["server"], $this->aProperties["port"], $this->aProperties["sgbd"], $this->aProperties["page_encoding"]);
-		$this->oConnection->oBd = $oBD;
+        $this->oConnection->oBd = $oBD;
         /**
          * Properties
          * @type array
@@ -119,13 +126,13 @@ class RapportsCadastreParcelle extends Cadastre {
         $DebutPdf = date("G") . 'h ' . date("i") . 'min ' . date("s") . 's';
 
         // Connexion avec uVitis pour récupérer les données majic
-       
+
         $oBD = new BD($properties["cadastre"]["rp"]["login"], $properties["cadastre"]["rp"]["pass"], $properties["database"], $properties["server"], $properties["port"], $properties["sgbd"], $properties["page_encoding"]);
         $this->oConnection->oBd = $oBD;
-        
+
         // Récupère l'année
         $sYear = $this->vmapGet('majic', '"ANNEE_REFERENCE"', array('ANNEE'), '', 'LIMIT 1')[0]['ANNEE'];
-        
+
         // Charge les données
         if ($rapportType != 'Locaux' && $rapportType != 'ProprietaireLocaux') {
             require_once("majic_lib/Mj_Compte_Communal_Parcelles.class.inc");
@@ -138,9 +145,9 @@ class RapportsCadastreParcelle extends Cadastre {
             $oRapport = new Mj_Bati_Parcelles($aParcelles, $oBD);
         }
 
-		if (!file_exists($properties["cadastre"]["rp"]["rp_dir"])){
-			mkdir($properties["cadastre"]["rp"]["rp_dir"]);
-		}
+        if (!file_exists($properties["cadastre"]["rp"]["rp_dir"])) {
+            mkdir($properties["cadastre"]["rp"]["rp_dir"]);
+        }
         // Crée les dossiers correspondants
         if (!file_exists($properties["cadastre"]["rp"]["rp_dir"] . "/" . $sYear))
             @mkdir($properties["cadastre"]["rp"]["rp_dir"] . "/" . $sYear);
@@ -155,10 +162,12 @@ class RapportsCadastreParcelle extends Cadastre {
             writeToErrorLog($sMessage);
         } else {
             // Création du fichier XML.
-//            $sFile = UniqFileName();
             $sFile = "";
             foreach ($aParcelles as $parcelle) {
                 $sFile .= $parcelle;
+            }
+            if (count($aParcelles) > 2) {
+                $sFile = UniqFileName();
             }
 
             $sXmlFileName = $properties["cadastre"]["rp"]["rp_dir"] . "/" . $sYear . "/Rapport_Parcelle_" . $rapportType . "/" . $sFile . ".xml";

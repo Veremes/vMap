@@ -44,7 +44,7 @@ class Mj_Parcelle extends Mj {
 	* \param $sIdPar Identifiant de la parcelle
 	* \param $sIdDnupro Identifiant du propriétaire
 	*/
-	function Mj_Parcelle($oBD,$sIdPar,$sIdDnupro,$sEncryptedKey='', $bAllSuf=false){
+	function __construct($oBD,$sIdPar,$sIdDnupro,$sEncryptedKey='', $bAllSuf=false){
 		include $this->sRessourcesFile;
 		$this->sSql=$aSql[$oBD->sgbd]['parcelle'];
 		$this->sSql=str_replace('$sIdPar', $sIdPar, $this->sSql);

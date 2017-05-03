@@ -1,0 +1,242 @@
+{
+  "display": {
+    "name": "custom-form",
+    "title": "veremes_commune_point",
+    "input_size": "xxs",
+    "nb_cols": 12,
+    "javascript": false,
+    "rows": [
+      {
+        "fields": [
+          {
+            "type": "label",
+            "name": "code",
+            "label": "Code INSEE",
+            "disabled": false,
+            "required": false,
+            "nb_cols": 12,
+            "id": "code_1_1"
+          }
+        ]
+      },
+      {
+        "fields": [
+          {
+            "type": "label",
+            "name": "nom",
+            "label": "Nom de la commune",
+            "disabled": false,
+            "required": false,
+            "nb_cols": 12,
+            "id": "nom_2_1"
+          }
+        ]
+      },
+      {
+        "fields": [
+          {
+            "type": "label",
+            "pattern": "[-+]?(\\d*[.])?\\d+",
+            "name": "pop90",
+            "label": "Population en 1990",
+            "disabled": false,
+            "required": false,
+            "nb_cols": 12,
+            "id": "pop90_3_1"
+          }
+        ]
+      }
+    ],
+    "tabs": {
+      "position": "top",
+      "list": [
+        {
+          "label": "Tab 0",
+          "elements": [
+            "code",
+            "nom",
+            "pop90"
+          ]
+        }
+      ]
+    }
+  },
+  "search": {
+    "name": "custom-form",
+    "title": "veremes_commune_point",
+    "input_size": "xxs",
+    "nb_cols": 12,
+    "javascript": false,
+    "rows": [
+      {
+        "fields": [
+          {
+            "type": "text",
+            "name": "nom",
+            "label": "Nom de la commune",
+            "required": false,
+            "pattern": "",
+            "nb_cols": 4,
+            "id": "Element_0_2_1"
+          },
+          {
+            "type": "text",
+            "name": "code",
+            "label": "Code INSEE",
+            "required": false,
+            "pattern": "",
+            "nb_cols": 4,
+            "id": "Element_0_1_1"
+          },
+          {
+            "type": "text",
+            "name": "pop90",
+            "label": "Population en 1990",
+            "required": false,
+            "pattern": "",
+            "nb_cols": 4,
+            "id": "Element_0_3_1"
+          }
+        ]
+      }
+    ],
+    "tabs": {
+      "position": "top",
+      "list": [
+        {
+          "label": "Tab 0",
+          "elements": [
+            "code",
+            "nom",
+            "pop90"
+          ]
+        }
+      ]
+    }
+  },
+  "insert": {
+    "name": "custom-form",
+    "title": "veremes_commune_point",
+    "input_size": "xxs",
+    "nb_cols": 12,
+    "javascript": false,
+    "rows": [
+      {
+        "fields": [
+          {
+            "type": "text",
+            "name": "code",
+            "label": "Code INSEE",
+            "disabled": false,
+            "required": false,
+            "nb_cols": 12,
+            "id": "code_1_1"
+          }
+        ]
+      },
+      {
+        "fields": [
+          {
+            "type": "text",
+            "name": "nom",
+            "label": "Nom de la commune",
+            "disabled": false,
+            "required": false,
+            "nb_cols": 12,
+            "id": "nom_2_1"
+          }
+        ]
+      },
+      {
+        "fields": [
+          {
+            "type": "text",
+            "pattern": "[-+]?(\\d*[.])?\\d+",
+            "name": "pop90",
+            "label": "Population en 1990",
+            "disabled": false,
+            "required": false,
+            "nb_cols": 12,
+            "id": "pop90_3_1"
+          }
+        ]
+      }
+    ],
+    "tabs": {
+      "position": "top",
+      "list": [
+        {
+          "label": "Tab 0",
+          "elements": [
+            "code",
+            "nom",
+            "pop90"
+          ]
+        }
+      ]
+    }
+  },
+  "update": {
+    "name": "custom-form",
+    "title": "veremes_commune_point",
+    "input_size": "xxs",
+    "nb_cols": 12,
+    "javascript": false,
+    "rows": [
+      {
+        "fields": [
+          {
+            "type": "text",
+            "name": "code",
+            "label": "Code INSEE",
+            "disabled": false,
+            "required": false,
+            "nb_cols": 12,
+            "id": "code_1_1"
+          }
+        ]
+      },
+      {
+        "fields": [
+          {
+            "type": "text",
+            "name": "nom",
+            "label": "Nom de la commune",
+            "disabled": false,
+            "required": false,
+            "nb_cols": 12,
+            "id": "nom_2_1"
+          }
+        ]
+      },
+      {
+        "fields": [
+          {
+            "type": "text",
+            "pattern": "[-+]?(\\d*[.])?\\d+",
+            "name": "pop90",
+            "label": "Population en 1990",
+            "disabled": false,
+            "required": false,
+            "nb_cols": 12,
+            "id": "pop90_3_1"
+          }
+        ]
+      }
+    ],
+    "tabs": {
+      "position": "top",
+      "list": [
+        {
+          "label": "Tab 0",
+          "elements": [
+            "code",
+            "nom",
+            "pop90"
+          ]
+        }
+      ]
+    }
+  },
+  "datasources": {}
+}

@@ -8,6 +8,8 @@
 
 goog.provide('nsVmap.nsMapManager.MapLegend');
 
+goog.require('oVmap');
+
 /**
  * @classdesc
  * Class {@link nsVmap.nsMapManager.MapLegend}: Map legend tool
@@ -16,10 +18,6 @@ goog.provide('nsVmap.nsMapManager.MapLegend');
  */
 nsVmap.nsMapManager.MapLegend = function () {
     oVmap.log("nsVmap.nsMapManager.MapLegend");
-
-    // Directives et controleurs Angular
-    oVmap.module.directive('appMaplegend', this.maplegendDirective);
-    oVmap.module.controller('AppMaplegendController', this.maplegendController);
 };
 
 /************************************************
@@ -30,6 +28,7 @@ nsVmap.nsMapManager.MapLegend = function () {
  * map legend directive
  * @return {angular.Directive} The directive specs.
  * @constructor
+ * @ngInject
  * @export
  */
 nsVmap.nsMapManager.MapLegend.prototype.maplegendDirective = function () {
@@ -44,6 +43,54 @@ nsVmap.nsMapManager.MapLegend.prototype.maplegendDirective = function () {
         controllerAs: 'ctrl',
         bindToController: true,
         templateUrl: oVmap['properties']['vmap_folder'] + '/' + 'template/layers/maplegend.html'
+    };
+};
+
+/**
+ * map legend image node directive (Allow th onmouseover)
+ * @return {angular.Directive} The directive specs.
+ * @constructor
+ * @ngInject
+ * @export
+ */
+nsVmap.nsMapManager.MapLegend.prototype.maplegendImageDirective = function () {
+    oVmap.log("nsVmap.nsMapManager.MapLegend.prototype.maplegendImageDirective");
+    return {
+        link: function (scope, element) {
+            var timeout = 500;
+            var i = 0;
+            $(element).mouseenter(function () {
+                i++;
+                var ii = angular.copy(i);
+
+                // Si la souris est dedans depuis timeout ms
+                setTimeout(function () {
+                    if (ii === i) {
+                        var myPopover;
+                        $('[app-maplegend]').popover({
+                            'html': true,
+                            'content': '<img src="' + scope['node']['legendURL'] + '" class="img-responsive">',
+                            'placement': function (popover) {
+                                myPopover = popover;
+                                return 'right';
+                            }
+                        });
+                        $('[app-maplegend]').popover('show');
+
+                        // Place la popover
+                        setTimeout(function () {
+                            var iElementBottomOffset = $(element).offset()['top'];
+                            var iElementHeight = $(element).find('img').height();
+                            var iElementMiddleOffset = iElementBottomOffset - iElementHeight / 2;
+                            $(myPopover).css('top', iElementMiddleOffset + 'px');
+                        });
+                    }
+                }, timeout);
+            }).mouseleave(function () {
+                i++;
+                $('[app-maplegend]').popover('destroy');
+            });
+        }
     };
 };
 
@@ -106,6 +153,9 @@ nsVmap.nsMapManager.MapLegend.prototype.maplegendController.prototype.loadLegend
                 for (var ii = 0; ii < aLayers[i].getSource().getUrls().length; ii++) {
                     var aLayerParam = aLayers[i].getSource().getParams()['LAYERS'].split(',');
                     for (var iii = 0; iii < aLayerParam.length; iii++) {
+                        
+                        var separator = aLayers[i].getSource().getUrls()[ii].indexOf('?') !== -1 ? '&' : '?';
+                        
                         oUrls[sLayerName].push({
                             'layerId': i,
                             'collapsed': false,
@@ -113,7 +163,7 @@ nsVmap.nsMapManager.MapLegend.prototype.maplegendController.prototype.loadLegend
                             'layer': aLayerParam[iii],
                             'olLayer': aLayers[i],
                             'layerName': aLayers[i].get('name'),
-                            'legendURL': aLayers[i].getSource().getUrls()[ii] + '&request=GetLegendGraphic&LAYER=' + aLayerParam[iii] + '&FORMAT=image/png&VERSION=1.1.0'
+                            'legendURL': aLayers[i].getSource().getUrls()[ii] + separator +'request=GetLegendGraphic&LAYER=' + aLayerParam[iii] + '&FORMAT=image/png&VERSION=1.1.0&service=wms'
                         });
                     }
                 }
@@ -124,6 +174,9 @@ nsVmap.nsMapManager.MapLegend.prototype.maplegendController.prototype.loadLegend
                 oUrls[sLayerName] = [];
 
                 for (var iii = 0; iii < aLayerParam.length; iii++) {
+                    
+                    var separator = aLayers[i].getSource().getUrl().indexOf('?') !== -1 ? '&' : '?';
+                    
                     oUrls[sLayerName].push({
                         'layerId': i,
                         'collapsed': false,
@@ -131,7 +184,7 @@ nsVmap.nsMapManager.MapLegend.prototype.maplegendController.prototype.loadLegend
                         'layer': aLayerParam[iii],
                         'olLayer': aLayers[i],
                         'layerName': aLayers[i].get('name'),
-                        'legendURL': aLayers[i].getSource().getUrl() + '&request=GetLegendGraphic&LAYER=' + aLayerParam[iii] + '&FORMAT=image/png&VERSION=1.1.0'
+                        'legendURL': aLayers[i].getSource().getUrl() + separator + 'request=GetLegendGraphic&LAYER=' + aLayerParam[iii] + '&FORMAT=image/png&VERSION=1.1.0&service=wms'
                     });
                 }
             }
@@ -140,3 +193,8 @@ nsVmap.nsMapManager.MapLegend.prototype.maplegendController.prototype.loadLegend
 
     this['oUrls'] = oUrls;
 };
+
+// Définit la directive et le controller
+oVmap.module.directive('appMaplegend', nsVmap.nsMapManager.MapLegend.prototype.maplegendDirective);
+oVmap.module.directive('legendImageNode', nsVmap.nsMapManager.MapLegend.prototype.maplegendImageDirective);
+oVmap.module.controller('AppMaplegendController', nsVmap.nsMapManager.MapLegend.prototype.maplegendController);

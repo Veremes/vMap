@@ -1,4 +1,4 @@
-/* global goog, nsVmap, oVmap, ol, angular, scope, bootbox, destructor_form */
+/* global goog, nsVmap, oVmap, ol, angular, scope, bootbox, destructor_form, constructor_form, vitisApp */
 
 /**
  * @author: Armand Bahi
@@ -6,6 +6,8 @@
  * cette classe permet l'insertion de données danns les objets métier
  */
 goog.provide('nsVmap.nsToolsManager.Insert');
+
+goog.require('oVmap');
 
 goog.require('nsVmap.olFunctions');
 goog.require('ol.layer.Vector');
@@ -25,11 +27,7 @@ goog.require('goog.object');
  * @export
  */
 nsVmap.nsToolsManager.Insert = function () {
-
-
-    // Directives et controleurs Angular
-    oVmap.module.directive('appInsert', this.inserttoolDirective);
-    oVmap.module.controller('AppInsertController', this.inserttoolController);
+    oVmap.log('nsVmap.nsToolsManager.Insert');
 };
 
 /**
@@ -204,6 +202,7 @@ nsVmap.nsToolsManager.Insert.prototype.inserttoolController = function ($http, $
         'sGeomColumn': null,
         'sGeomType': null,
         'oFormDefinition': {},
+        'add_form_size': 1,
         'oFormValues': {
             'insert': {}
         }
@@ -363,7 +362,13 @@ nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.displayEdi
             oVmap.log("initHtmlForm : javascript assoc. to : " + sUrl);
             loadExternalJs([sUrl], {
                 "callback": function () {
-                    constructor_form(editFormReaderScope, sUrl);
+                    try {
+                        if (goog.isDef(constructor_form)) {
+                            constructor_form(editFormReaderScope, sUrl);
+                        }
+                    } catch (e) {
+                        oVmap.log("constructor_form does not exist");
+                    }
                 },
                 "async": true,
                 "scriptInBody": true
@@ -393,7 +398,7 @@ nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.validateFo
         setTimeout(function () {
             if ($scope.isFormValid_) {
                 // Récupère les valeurs sous un format propice à l'insertion (sans "selectedOption")
-                $scope['oInsertObject']['oResult'] = this_.getBOValuesFromFormValues($scope['oInsertObject']['oFormValues']['insert']);
+                $scope['oInsertObject']['oResult'] = this_.getBOValuesFromFormValues($scope['oInsertObject']['oFormValues']);
                 $('#basictools-insert-form-reader-modal').modal('hide');
             }
         });
@@ -407,36 +412,18 @@ nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.validateFo
  */
 nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.getBOValuesFromFormValues = function (oFormValues) {
     oVmap.log('nsVmap.nsToolsManager.Insert.inserttoolController.getBOValuesFromFormValues');
-
+    
+    var $scope = this.$scope_;
+    var formSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["formSrvc"]);
+    
     var oFormValuesValues = goog.object.clone(oFormValues);
-
-    for (var key in oFormValuesValues) {
-        if (goog.isObject(oFormValuesValues[key])) {
-            if (goog.isDefAndNotNull(oFormValuesValues[key]['selectedOption'])) {
-                if (goog.isDefAndNotNull(oFormValuesValues[key]['selectedOption']['value'])
-                        && oFormValuesValues[key]['selectedOption']['value'] !== "") {
-                    oFormValuesValues[key] = oFormValuesValues[key]['selectedOption']['value'];
-                } else
-                // Cas de liste à choix multiples    
-                if (goog.isArray(oFormValuesValues[key]['selectedOption'])) {
-                    var aValues = [];
-                    for (var i = 0; i < oFormValuesValues[key]['selectedOption'].length; i++) {
-                        if (goog.isDefAndNotNull(oFormValuesValues[key]['selectedOption'][i]['value'])
-                                && oFormValuesValues[key]['selectedOption'][i]['value'] !== "") {
-                            aValues.push(oFormValuesValues[key]['selectedOption'][i]['value']);
-                        }
-                    }
-                    oFormValuesValues[key] = angular.copy(aValues);
-                    delete aValues;
-                } else {
-                    delete oFormValuesValues[key];
-                }
-            }
-        } else if (!goog.isDefAndNotNull(oFormValuesValues[key])) {
-            delete oFormValuesValues[key];
-        }
-    }
-
+        
+    var oFormValuesValues = formSrvc['getFormData']('insert', true, {
+        'oFormDefinition': $scope['oInsertObject']['oFormDefinition'],
+        'oFormValues': oFormValuesValues,
+        'aParamsToSave': ['geom']
+    });
+    
     return oFormValuesValues;
 };
 
@@ -573,6 +560,7 @@ nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.updateInse
         // Formulaire
         $scope['oInsertObject']['oFormDefinition'] = response['data']['data'][0]['json_form'][0];
         $scope['oInsertObject']['oFormDefinition_js'] = response['data']['data'][0]['json_form_js'];
+        $scope['oInsertObject']['add_form_size'] = response['data']['data'][0]['add_form_size'];
 
         // sBusinessObjectID
         $scope['oInsertObject']['sBusinessObjectID'] = boId;
@@ -600,6 +588,7 @@ nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.updateInse
                     "class": "btn-ungroup btn-group-sm",
                     "nb_cols": 12,
                     "buttons": [{
+                            "visibleAllTabs": true,
                             "type": "submit",
                             "label": "Sauvegarder",
                             "name": "form_submit",
@@ -1028,6 +1017,18 @@ nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.sendInsert
             bootbox.alert("response['data'] undefined");
             return 0;
         }
+        if (response['status'] !== 200) {
+            if (response['status'] === 500) {
+                $.notify("Erreur interne du serveur", "error");
+            } else {
+                if (goog.isDefAndNotNull(response['statusText'])) {
+                    $.notify(response['statusText'], "error");
+                } else {
+                    $.notify("Erreur " + response['status'], "error");
+                }
+            }
+            return 0;
+        }
         if (goog.isDef(response['data']['errorMessage'])) {
             bootbox.alert(response['data']['errorType'] + ': ' + response['data']['errorMessage']);
             return 0;
@@ -1071,3 +1072,9 @@ nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.getFormDat
 
     return oFormData_;
 };
+
+
+
+// Définit la directive et le controller
+oVmap.module.directive('appInsert', nsVmap.nsToolsManager.Insert.prototype.inserttoolDirective);
+oVmap.module.controller('AppInsertController', nsVmap.nsToolsManager.Insert.prototype.inserttoolController);

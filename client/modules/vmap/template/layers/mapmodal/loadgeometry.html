@@ -2,32 +2,45 @@
 <h3>Ajouter une géométrie: </h3>
 <hr>
 
+
 <div>
-    <p class="hidden">
-        <b>Service</b>
-        <input type="text" id="upload-geometry-serviceName" class="form-control" placeholder="Nom à donner au service">
-    </p><p>
-        <b>Couche</b>
-        <input type="text" id="upload-geometry-layerTitle" class="form-control" placeholder="Nom à donner à la couche">
-    </p><p>
-        <b>Fichier ou URL</b>
-    <div class="input-group">
-        <input type="text" id="upload-geometry-file-info" class="form-control" ng-model="ctrl.newMapUrl" placeholder="http://www.ma-carte.com/get-geometry.php">
-        <span class="input-group-btn">
-            <span class="btn btn-success btn-file">
-                Chercher&hellip; <input type="file" id="browse-geometry-button" onchange='$("#upload-geometry-file-info").val($(this).val().substr(12));$("#upload-geometry-file-add-button").attr("url", "");$("#upload-geometry-file-add-button").attr("file-container", this.id);'>
-            </span>
-        </span>
+    <div class="row">
+        <div class="col-xs-3">
+            <b>Service</b>
+            <input type="text" ng-model="sServiceName" class="form-control" placeholder="Nom du service">
+        </div>
+        <div class="col-xs-3">
+            <b>Couche</b>
+            <input type="text" ng-model="sLayerTitle" class="form-control" placeholder="Nom de la couche">
+        </div>
     </div>
-</p><p>
-    <b>Ou vous pouvez simplement déplacer le fichier ci-dessous</b>
-<div class="upload-drop-zone" id="upload-geometry-file-drop-zone">Déplacer le fichier ici</div>
-</p><p>
-<div class="right"><i>Formats supportés: GPX, GeoJSON, IGC, KML, TopoJSON</i></div><br>
-</p><p>
-<div id="geometry-log-message"></div>
-</p><p>
-    <button type="button" id="upload-geometry-file-add-button" url="{{ctrl.newMapUrl}}" file-container="" class="btn btn-success" onclick="oVmap.getMapManager().addLayerFromFileFromHTML(this)">Ajouter</button>
-</p>
+    <br>
+    <div class="row">
+        <div class="col-xs-12">
+            <b>Fichier ou URL</b>
+            <div class="input-group">
+                <input type="text" id="upload-geometry-file-info" class="form-control" ng-change="bIsUrl = true" ng-model="sFileName" placeholder="http://www.ma-carte.com/get-geometry.php">
+                <span class="input-group-btn">
+                    <span class="btn btn-success btn-file">                       
+                        Chercher&hellip; <input type="file" id="browse-geometry-button"/>
+                    </span>
+                </span>
+            </div>
+        </div>
+    </div>
+    <br>
+    <div class="row">
+        <div class="col-xs-12">
+            <b>Ou vous pouvez simplement déplacer le fichier ci-dessous</b>
+            <div class="upload-drop-zone" id="upload-geometry-file-drop-zone">Déplacer le fichier ici</div>
+            <div class="right"><i>Formats supportés: GPX, GeoJSON, IGC, KML, TopoJSON</i></div><br>
+        </div>
+    </div>
+    <br>
+    <div class="row">
+        <div class="col-xs-12">
+            <button type="button" class="btn btn-success right" ng-click="ctrl.addLayer()">Ajouter</button>
+        </div>
+    </div>
 </div>
 <button id="btn-reload-geometry" style="display: none" ng-click="ctrl.reload()"></button>

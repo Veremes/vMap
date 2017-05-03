@@ -25,12 +25,12 @@ class Service extends Vmap {
      * @param type $properties properties
      * @param type $oConnection connection object
      */
-    function Service($aPath, $aValues, $properties, $oConnection) {
+    function __construct($aPath, $aValues, $properties, $oConnection) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
         $this->oConnection = $oConnection;
-        $this->aSelectedFields = Array("service_id", "name", "service_type_id", "description", "url", "key", "thumbnail", "lang", "imagery", "service_type_version");
+        $this->aSelectedFields = Array("service_id", "name", "service_type_id", "description", "url", "key", "thumbnail", "lang", "imagery", "service_type_version", "service_type_type", "service_options", "service_vm4ms");
     }
 
     /**
@@ -52,8 +52,7 @@ class Service extends Vmap {
      *     in="path",
      *     description="",
      *     required=true,
-     *     type="integer",
-     *   format="int32"
+     *     type="integer"
      *   ),
      *   @SWG\Response(
      *         response=200,
@@ -69,12 +68,15 @@ class Service extends Vmap {
     function GET() {
         require $this->sRessourcesFile;
         $this->aFields = $this->getFields($this->aProperties['schema_vmap'], 'service', 'service_id');
+
+        // Remplace les balises
+        $this->aFields['url'] = str_replace('[ms_cgi_url]', $this->aProperties['ms_cgi_url'], $this->aFields['url']);
     }
-    
+
     /**
      * delete a theme
      */
-    function DELETE(){
+    function DELETE() {
         // Supprime la vignette.
         $oService = new Service($this->aPath, $this->aValues, $this->aProperties, $this->oConnection);
         $oService->GET();
@@ -85,11 +87,12 @@ class Service extends Vmap {
         }
         $this->oConnection->oBd->delete($this->aProperties['schema_vmap'], 'service', 'service_id', $this->aValues['my_vitis_id'], 'integer');
         if ($this->oConnection->oBd->enErreur()) {
-                $this->oError = new Error(1, $this->oConnection->oBd->getBDMessage());
+            $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
         } else {
-                $this->aFields['theme_id'] = $this->aValues['my_vitis_id'];
+            $this->aFields['theme_id'] = $this->aValues['my_vitis_id'];
         }
     }
+
 }
 
 ?>

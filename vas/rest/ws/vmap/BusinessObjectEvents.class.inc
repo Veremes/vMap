@@ -36,7 +36,7 @@ class BusinessObjectEvents extends Vmap {
      * @param type $aValues parameters of the request
      * @param type $properties properties
      */
-    function BusinessObjectEvents($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
@@ -77,16 +77,14 @@ class BusinessObjectEvents extends Vmap {
      *     in="query",
      *     description="number of element",
      *     required=false,
-     *     type="integer",
-     *     format="int32"
+     *     type="integer"
      *   ),
      * @SWG\Parameter(
      *     name="offset",
      *     in="query",
      *     description="index of first element",
      *     required=false,
-     *     type="string",
-     *     format="int32"
+     *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="attributs",
@@ -135,21 +133,21 @@ class BusinessObjectEvents extends Vmap {
      *   produces={"application/xml", "application/json"},
      *   @SWG\Parameter(
      *     name="token",
-     *     in="query",
+     *     in="formData",
      *     description="user token",
      *     required=true,
      *     type="string"
      *   ),
      * * @SWG\Parameter(
      *     name="event_id",
-     *     in="query",
+     *     in="formData",
      *     description="event id",
      *     required=true,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="description",
-     *     in="query",
+     *     in="formData",
      *     description="event description",
      *     required=false,
      *     type="string"
@@ -192,7 +190,7 @@ class BusinessObjectEvents extends Vmap {
      *     name="event_id",
      *     in="path",
      *     description="event id",
-     *     required=false,
+     *     required=true,
      *     type="string"
      *   ),
      * @SWG\Parameter(
@@ -282,7 +280,7 @@ class BusinessObjectEvents extends Vmap {
      * delete businessobjectevent
      * @return id of businessobjectevent deleted or error object if a businessobjectevent is not deleted
      */
-    function DELETE() {
+    function DELETE() {        
         $aReturn = $this->genericDelete($this->aProperties['schema_vmap'], 'event', 'event_id');
         return $aReturn['sMessage'];
     }

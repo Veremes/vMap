@@ -24,7 +24,7 @@ class Mj_Exone_Pev extends Mj {
 	* \param $sIdEx Identifiant de l'exonération de la partie d'évaluation
 	* \param $oBD Objet de connexion PDO_BD
 	*/
-	function Mj_Exone_Pev($sIdEx,$oBD){
+	function __construct($sIdEx,$oBD){
 		include $this->sRessourcesFile;
 		$this->sSql = $aSql[$oBD->sgbd]['exone_pev'];
 		$this->sSql = str_replace('$sIdEx', $sIdEx, $this->sSql);

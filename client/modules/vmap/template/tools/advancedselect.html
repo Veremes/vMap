@@ -121,6 +121,7 @@
                                        class="select_modal_table"
                                        data-toggle="table"
                                        data-search="false"
+                                       data-escape="true"
                                        data-show-columns="false"
                                        data-classes="table table-hover table-condensed"
                                        data-striped="true"
@@ -133,6 +134,7 @@
                                             <th ng-repeat="(key, value) in bo.list_fields"
                                                 ng-if="value !== 'selection'"
                                                 data-field="{{value}}"
+                                                data-escape="true"
                                                 data-sortable="true">{{value}}</th>
                                             <th data-field="selection" data-visible="false"></th>
                                         </tr>

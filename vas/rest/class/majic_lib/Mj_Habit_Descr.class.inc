@@ -16,7 +16,7 @@ class Mj_Habit_Descr extends Mj {
 	* \param $aIdDescrHab Identifiants de la partie Description Habitation (id_pev et dnudes) 
 	* \param $oBD Objet de connexion PDO_BD
 	*/
-	function Mj_Habit_Descr($aIdDescrHab,$oBD){
+	function __construct($aIdDescrHab,$oBD){
 		include $this->sRessourcesFile;
 		$this->sSql=$aSql[$oBD->sgbd]['habit_descr'];
 		$this->sSql=str_replace('$sIdPev',$aIdDescrHab['id_pev'],$this->sSql);

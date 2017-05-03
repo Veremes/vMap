@@ -8,6 +8,8 @@
 
 goog.provide('nsVmap.nsToolsManager.ToolsManager');
 
+goog.require('oVmap');
+
 goog.require('nsVmap.nsToolsManager.BasicTools');
 goog.require('nsVmap.nsToolsManager.InfoContainer');
 goog.require('nsVmap.nsToolsManager.requireModules');
@@ -49,11 +51,6 @@ nsVmap.nsToolsManager.ToolsManager = function () {
 
     // Instancie les classes des modules
     this.instanciateAvaliableModules();
-    
-    // Directives et controleurs Angular
-    oVmap.module.directive('appVmaptools', this.vmapToolsDirective);
-    oVmap.module.directive('toolsContainer', this.vmapToolsContainerDirective);
-    oVmap.module.controller('AppVmaptoolsController', this.vmapToolsController);
 };
 
 /**
@@ -220,3 +217,8 @@ nsVmap.nsToolsManager.ToolsManager.prototype.getInfoContainer = function () {
 nsVmap.nsToolsManager.ToolsManager.prototype.getTool = function (tool) {
     return this[tool];
 };
+
+// Définit la directive et le controller
+oVmap.module.directive('appVmaptools', nsVmap.nsToolsManager.ToolsManager.prototype.vmapToolsDirective);
+oVmap.module.directive('toolsContainer', nsVmap.nsToolsManager.ToolsManager.prototype.vmapToolsContainerDirective);
+oVmap.module.controller('AppVmaptoolsController', nsVmap.nsToolsManager.ToolsManager.prototype.vmapToolsController);

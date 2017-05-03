@@ -37,7 +37,7 @@ class RapportsCadastreParcelle extends Cadastre {
      * @param type $properties properties
      * @param type $oConnection connection object
      */
-    function rapportscadastreparcelle($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
@@ -83,6 +83,13 @@ class RapportsCadastreParcelle extends Cadastre {
      */
     function GET() {
 
+        if (!in_array('vmap_cadastre_user', $this->oConnection->aPrivileges)) {
+            $oError = new VitisError(0, 'INSUFFICIENT_PRIVILEGES');
+            $aXmlRacineAttribute['status'] = 0;
+            $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+            return $sMessage;
+        }
+
         /**
          * Tableau contenant les id_par des parcelles à utiliser
          * @type array
@@ -115,19 +122,17 @@ class RapportsCadastreParcelle extends Cadastre {
         // Met à jour la connexion
         $oBd = $this->oConnection->oBd;
         //$oBd = new BD($properties["cadastre"]["rp"]["login"], $properties["cadastre"]["rp"]["pass"], $properties["database"], $properties["server"], $properties["port"], $properties["sgbd"], $properties["page_encoding"]);
-
         // Mémorise la date de début
         $iDebutPdf = (date("G") * 60) * 60 + (date("i") * 60) + date("s");
         $DebutPdf = date("G") . 'h ' . date("i") . 'min ' . date("s") . 's';
 
         // Récupère l'année
         $sYear = $this->vmapGet($this->aProperties['schema_majic'], 'v_vmap_annee', array('annee'), '', 'LIMIT 1')[0]['annee'];
-       // $sYear = $this->vmapGet($this->aProperties['schema_majic'], '"ma_vue"', array('annee'), '', 'LIMIT 1')[0]['annee'];
-
+        // $sYear = $this->vmapGet($this->aProperties['schema_majic'], '"ma_vue"', array('annee'), '', 'LIMIT 1')[0]['annee'];
         // Charge les données
         if ($rapportType != 'Locaux' && $rapportType != 'ProprietaireLocaux') {
             require_once(__DIR__ . "/../../class/majic_libV2/Mj_Compte_Communal_Parcelles.class.inc");
-            
+
             // Patch pour décoder les properties UTF-8 parce que les rapports sont générés en ISO
             $properties["cadastre"]["fiche_urb"]["intersect"]["views"] = array_map($this->decodeUtf8Array, $properties["cadastre"]["fiche_urb"]["intersect"]["views"]);
             $oRapport = new Mj_Compte_Communal_Parcelles($aParcelles, $oBd, $properties, "polygon");
@@ -135,14 +140,16 @@ class RapportsCadastreParcelle extends Cadastre {
             require_once(__DIR__ . "/../../class/majic_libV2/Mj_Bati_Parcelles.class.inc");
             $oRapport = new Mj_Bati_Parcelles($aParcelles, $oBd, $properties);
         }
-        if (!file_exists($properties["cadastre"]["rp"]["rp_dir"])){
-			mkdir($properties["cadastre"]["rp"]["rp_dir"]);
-		}
+        if (!file_exists($properties["cadastre"]["rp"]["rp_dir"])) {
+            mkdir($properties["cadastre"]["rp"]["rp_dir"]);
+        }
         // Crée les dossiers correspondants
-        if (!file_exists($properties["cadastre"]["rp"]["rp_dir"] . "/" . $sYear))
+        if (!file_exists($properties["cadastre"]["rp"]["rp_dir"] . "/" . $sYear)) {
             @mkdir($properties["cadastre"]["rp"]["rp_dir"] . "/" . $sYear);
-        if (!file_exists($properties["cadastre"]["rp"]["rp_dir"] . "/" . $sYear . "/Rapport_Parcelle_" . $rapportType))
+        }
+        if (!file_exists($properties["cadastre"]["rp"]["rp_dir"] . "/" . $sYear . "/Rapport_Parcelle_" . $rapportType)) {
             @mkdir($properties["cadastre"]["rp"]["rp_dir"] . "/" . $sYear . "/Rapport_Parcelle_" . $rapportType);
+        }
         // Crée les XML
         if ($oRapport->isError()) {
             $sMessage = 'Erreur lors de l\'extraction des données avec la librairie majic : ' . $oRapport->sMessage;
@@ -150,24 +157,26 @@ class RapportsCadastreParcelle extends Cadastre {
             writeToErrorLog($sMessage);
         } else {
             // Création du fichier XML.
-//            $sFile = UniqFileName();
             $sFile = "";
             foreach ($aParcelles as $parcelle) {
                 $sFile .= $parcelle;
             }
-            
+            if (count($aParcelles) > 2) {
+                $sFile = UniqFileName();
+            }
+
             $sXmlFileName = $properties["cadastre"]["rp"]["rp_dir"] . "/" . $sYear . "/Rapport_Parcelle_" . $rapportType . "/" . $sFile . ".xml";
-            
-            if ($rapportType === 'ToutesInfos'){
+
+            if ($rapportType === 'ToutesInfos') {
                 $sXslFileName = __DIR__ . "/../../class/majic_libV2/xsl/Mj_Rapport.xsl";
-            }else{
+            } else {
                 $sXslFileName = __DIR__ . "/../../class/majic_libV2/xsl/Mj_Rapport_Parcelle_" . $rapportType . ".xsl";
             }
-             if (!file_exists($sXmlFileName)) {    
+            if (!file_exists($sXmlFileName)) {
                 $oRapport->asXMLFile("", $sXmlFileName, "Rapport_Parcelle", "UTF-8", "ISO-8859-1");
             }
         }
-        
+
         // Crée les PDF et XSL
         if ($rapportType === 'ToutesInfos') {
             // Chemin vers le fichier
@@ -180,7 +189,7 @@ class RapportsCadastreParcelle extends Cadastre {
                 // Création du fichier PDF.
                 $sCommandLine = $properties["fop_root_dir"] . "/fop -xsl " . $sXslFileName . " -xml " . $sXmlFileName . " -pdf " . $sPdfFileName;
                 exec($sCommandLine, $aCommand, $iResult);
-                
+
 
                 if ($iResult) {
                     $aReturn['error']['errorMessage'] .= "Erreur lors de la génération du rapport.";
@@ -226,7 +235,7 @@ class RapportsCadastreParcelle extends Cadastre {
 
             $downloadFilePath = $properties['web_server_name'] . '/' . $properties['services_alias'] . '/cadastreV2/downloadrapport?sYear=' . $sYear . '&sType=Rapport_Parcelle_' . $rapportType . '&sFileName=' . urlencode($sFile) . '.xls';
         }
-        
+
         $iFinPdf = (date("G") * 60) * 60 + (date("i") * 60) + date("s");
         $FinPdf = date("G") . 'h ' . date("i") . 'min ' . date("s") . 's';
 
@@ -238,6 +247,7 @@ class RapportsCadastreParcelle extends Cadastre {
 
         return json_encode($aReturn);
     }
+
     /**
      * Fonction permettant de décoder un tableau multidimensionnel UTF8 en ISO.
      * /param $s Tableau à décoder.

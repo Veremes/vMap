@@ -69,11 +69,13 @@ vitisApp.mainCtrl = function ($scope, $http, $timeout, $translate, $translatePar
 
         // Sélection du mode à afficher.
         if (goog.isDefAndNotNull(oUrlParams['mode_id'])) {
-            modesSrvc["selectMode"]($scope, oUrlParams['mode_id']);
             setTimeout(function () {
-                $('.mode_selected').removeClass('mode_selected');
-                $('#mode_' + oUrlParams['mode_id']).addClass('mode_selected');
-            }, 500);
+                modesSrvc["selectMode"]($scope, oUrlParams['mode_id']);
+                setTimeout(function () {
+                    $('.mode_selected').removeClass('mode_selected');
+                    $('#mode_' + oUrlParams['mode_id']).addClass('mode_selected');
+                }, 500);
+            });
 
         } else {
             modesSrvc["selectMode"]($scope, modesSrvc["modes"][0]["mode_id"]);

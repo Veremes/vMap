@@ -36,7 +36,7 @@ class Maps extends Vmap {
      * @param type $aValues parameters of the request
      * @param type $properties properties
      */
-    function Maps($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
@@ -77,17 +77,14 @@ class Maps extends Vmap {
      *     in="query",
      *     description="number of element",
      *     required=false,
-     *     type="integer",
-     *     default="4",
-     *     format="int32"
+     *     type="integer"
      *   ),
      * @SWG\Parameter(
      *     name="offset",
      *     in="query",
      *     description="index of first element",
      *     required=false,
-     *     type="string",
-     *     format="int32"
+     *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="attributs",
@@ -136,42 +133,42 @@ class Maps extends Vmap {
      *   produces={"application/xml", "application/json"},
      *   @SWG\Parameter(
      *     name="token",
-     *     in="query",
+     *     in="formData",
      *     description="user token",
      *     required=true,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="name",
-     *     in="query",
+     *     in="formData",
      *     description="",
      *     required=true,
      *     type="string"
      *   ),
      * @SWG\Parameter(
-     *     name="extent_id",
-     *     in="query",
+     *     name="extent",
+     *     in="formData",
      *     description="",
      *     required=true,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="crs_id",
-     *     in="query",
+     *     in="formData",
      *     description="",
      *     required=true,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="description",
-     *     in="query",
+     *     in="formData",
      *     description="",
      *     required=true,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="catalog_index",
-     *     in="query",
+     *     in="formData",
      *     description="",
      *     required=false,
      *     type="string"
@@ -240,8 +237,8 @@ class Maps extends Vmap {
                     $sSql = str_replace('[sSchemaVmap]', $this->aProperties['schema_vmap'], $sSql);
                     $resultat = $this->oConnection->oBd->execute($sSql);
                     if ($this->oConnection->oBd->enErreur()) {
-                        $this->oError = new Error(1, $this->oConnection->oBd->getBDMessage());
-                        $oError = new Error(1, $this->oConnection->oBd->getBDMessage());
+                        $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
+                        $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                         $aXmlRacineAttribute['status'] = 0;
                         $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
                     }
@@ -374,8 +371,8 @@ class Maps extends Vmap {
                     $sSql = str_replace('[sSchemaVmap]', $this->aProperties['schema_vmap'], $sSql);
                     $resultat = $this->oConnection->oBd->execute($sSql);
                     if ($this->oConnection->oBd->enErreur()) {
-                        $this->oError = new Error(1, $this->oConnection->oBd->getBDMessage());
-                        $oError = new Error(1, $this->oConnection->oBd->getBDMessage());
+                        $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
+                        $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                         $aXmlRacineAttribute['status'] = 0;
                         $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
                     }

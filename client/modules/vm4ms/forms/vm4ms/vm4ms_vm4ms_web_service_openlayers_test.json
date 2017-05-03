@@ -1,0 +1,92 @@
+{
+    "search":{
+    },
+    "update":{
+        "name":"wms_service_openlayers_test_update_form",
+        "title":"",
+        "input_size":"xs",
+        "event":"",
+        "nb_cols":12,
+        "rows":[
+            {
+                "fields": [
+                    {
+                        "type": "map_vmap",
+                        "name": "wms_service_test_map",
+                        "required": false,
+                        "nb_cols": 12,
+                        "id": "wms_service_test_map",
+                        "style": {
+                            "height": "100%",
+                            "margin-bottom": "-20px"
+                        },
+                        "map_options": {
+                            "center": {
+                                "extent": [
+                                ]
+                            },
+                            "type": "vmap",
+                            "controls": {
+                                "MP": false,
+                                "ZO": true,
+                                "SL": true,
+                                "CP": true
+                            },
+                            "layers": [],
+                            "interactions": {
+                                "multi_geometry": false,
+                                "full_screen": false,
+                                "RA": false,
+                                "RO": false,
+                                "ED": false,
+                                "DP": false,
+                                "DL": false,
+                                "DPol": false,
+                                "SE": true,
+                                "layer_tree": true
+                            },
+                            "draw_color": "rgba(54,184,255,0.6)",
+                            "contour_color": "rgba(0,0,0,0.4)",
+                            "contour_size": 2,
+                            "circle_radius": 6,
+                            "features": [],
+                            "coord_accuracy": 8,
+                            "tree": {
+                                "name": "Tree",
+                                "children": [
+                                    {
+                                        "view": {
+                                            "zoom": 6,
+                                            "maxZoom": 28,
+                                            "minZoom": 0,
+                                            "extent": [
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "Open Street Map",
+                                        "children": [
+                                            {
+                                                "name": "Open Street Maps",
+                                                "visible": true,
+                                                "layerType": "osm",
+                                                "url": "https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                                                "select": true,
+                                                "index": 0
+                                            }
+                                        ],
+                                        "visible": true
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "insert":{
+    },
+    "display":{
+    }
+}

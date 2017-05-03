@@ -1,0 +1,59 @@
+﻿<!-- MapServer Template -->
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <!--<link rel="stylesheet" href="css/lib/bootstrap/css/bootstrap.min.css?version=2">-->
+    <!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">-->
+</head>
+<body>
+    <form method="get" action="[ms_cgi_url]" name="mapForm">
+        <p>
+            <input type="hidden" name="ms_cgi_url" value="[ms_cgi_url]">
+            <input type="hidden" name="map" value="[map]">
+            <input type="hidden" name="imgext" value="[mapext]">
+            <input type="hidden" name="LAYERS" value="[LAYERS]">
+        </p>
+        <div class="container-fluid">
+            <div class="col-md-10">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-xs-2" style="padding:21px">
+                            <!--Légende-->
+                            [legend]
+                        </div>
+                        <div class="col-xs-8">
+                            <!--Carte-->
+                            <input class="MapLayer" type="image" name="img" src="[img]" width="[mapwidth]" height="[mapheight]" border="0" alt="">
+                        </div>
+                    </div>
+                </div>
+                <div class="container-fluid">
+                    <div class="bg-info" style="width:calc(17% + [mapwidth]px)">
+                        <div class="container-fluid" style="padding: 7px;margin-left: 5px;margin-right: -5px;margin-top: 15px;">
+                            <div class="col-xs-6">
+                                <!--Échelle-->
+                                <label style="margin-top: 5px;">Échelle: </label>
+                                1/<span id="scaledenom">[scaledenom]</span>
+                            </div>
+                            <div class="col-xs-6 text-right">
+                                <div class="row">
+                                    <div class="col-xs-6">
+                                        <label style="margin-top: 5px;">Actions: </label>
+                                    </div>
+                                    <div class="col-xs-6">
+                                        <select class="form-control input-sm" name="zoom">
+                                            <option value="1"[zoom_1_select]>pan</option>
+                                            <option value="2" [zoom_2_select]>zoom * 2</option>
+                                            <option value="3"[zoom_3_select]>zoom * 3</option>
+                                            <option value="-2"[zoom_-2_select]>zoom * -2</option>
+                                            <option value="-3"[zoom_-3_select]>zoom * -3</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</body>
