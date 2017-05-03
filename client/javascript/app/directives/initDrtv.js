@@ -13,7 +13,7 @@ vitisApp.appInitDrtv = function(externFunctionSrvc) {
         // Supprime le cache de Less.
         externFunctionSrvc["clearLessCache"]();
         // Durée d'affichage des messages de "notify".
-        $.notify.defaults({"autoHideDelay": 2000});
+        $.notify.defaults({"autoHideDelay": 3000});
         //
         return {
                 restrict: 'A',

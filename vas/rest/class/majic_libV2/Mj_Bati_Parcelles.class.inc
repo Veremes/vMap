@@ -18,7 +18,7 @@ class Mj_Bati_Parcelles extends Mj {
 	* \param $aIdPar Identifiant de la parcelle
 	* \param $oBD Objet de connexion
 	*/
-	function Mj_Bati_Parcelles($aIdPar,$oBD, $properties){
+	function __construct($aIdPar,$oBD, $properties){
 		$oBD = new BD ($properties["cadastre"]["rp"]["login"], $properties["cadastre"]["rp"]["pass"], $properties["database"], $properties["server"], $properties["port"], $properties["sgbd"], $properties["page_encoding"]); 
 		$i=0;
 		while ($aIdPar[$i]){

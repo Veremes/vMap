@@ -43,7 +43,7 @@ class Querys extends Vmap {
      * @param type $aValues parameters of the request
      * @param type $properties properties
      */
-    function Querys($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
@@ -57,7 +57,7 @@ class Querys extends Vmap {
      *   summary="Get business object summary querys",
      *   description="Request to get summary querys of a business object",
      *   operationId="GET",
-     *   produces={"application/xml", "application/json", "application/x-vm-json"},
+     *   produces={"application/json", "application/x-vm-json"},
      *  @SWG\Parameter(
      *     name="token",
      *     in="query",
@@ -70,8 +70,7 @@ class Querys extends Vmap {
      *     in="path",
      *     description="business object id",
      *     required=true,
-     *     type="integer",
-     *     format="int32"
+     *     type="integer"
      *   ),
      * @SWG\Parameter(
      *     name="filter",
@@ -135,17 +134,14 @@ class Querys extends Vmap {
      *     in="query",
      *     description="number of element",
      *     required=false,
-     *     type="integer",
-     *     default="4",
-     *     format="int32"
+     *     type="integer"
      *   ),
      * @SWG\Parameter(
      *     name="offset",
      *     in="query",
      *     description="index of first element",
      *     required=false,
-     *     type="string",
-     *     format="int32"
+     *     type="string"
      *   ),
      *   @SWG\Response(
      *         response=200,
@@ -160,7 +156,7 @@ class Querys extends Vmap {
      *   summary="Get business object list querys",
      *   description="Request to get list querys of a business object",
      *   operationId="GET",
-     *   produces={"application/xml", "application/json", "application/x-vm-json"},
+     *   produces={"application/json", "application/x-vm-json"},
      *  @SWG\Parameter(
      *     name="token",
      *     in="query",
@@ -173,8 +169,7 @@ class Querys extends Vmap {
      *     in="path",
      *     description="business object id",
      *     required=true,
-     *     type="integer",
-     *     format="int32"
+     *     type="integer"
      *   ),
      * @SWG\Parameter(
      *     name="filter",
@@ -239,16 +234,14 @@ class Querys extends Vmap {
      *     description="number of element",
      *     required=false,
      *     type="integer",
-     *     default="4",
-     *     format="int32"
+     *     default="4"
      *   ),
      * @SWG\Parameter(
      *     name="offset",
      *     in="query",
      *     description="index of first element",
      *     required=false,
-     *     type="string",
-     *     format="int32"
+     *     type="string"
      *   ),
      *   @SWG\Response(
      *         response=200,
@@ -263,7 +256,7 @@ class Querys extends Vmap {
      *   summary="Get business object form querys",
      *   description="Request to get the form querys of a business object",
      *   operationId="GET",
-     *   produces={"application/xml", "application/json", "application/x-vm-json"},
+     *   produces={"application/json", "application/x-vm-json"},
      *  @SWG\Parameter(
      *     name="token",
      *     in="query",
@@ -276,8 +269,7 @@ class Querys extends Vmap {
      *     in="path",
      *     description="business object id",
      *     required=true,
-     *     type="integer",
-     *     format="int32"
+     *     type="integer"
      *   ),
      * @SWG\Parameter(
      *     name="attributs",
@@ -349,17 +341,14 @@ class Querys extends Vmap {
      *     in="query",
      *     description="number of element",
      *     required=false,
-     *     type="integer",
-     *     default="4",
-     *     format="int32"
+     *     type="integer"
      *   ),
      * @SWG\Parameter(
      *     name="offset",
      *     in="query",
      *     description="index of first element",
      *     required=false,
-     *     type="string",
-     *     format="int32"
+     *     type="string"
      *   ),
      *   @SWG\Response(
      *         response=200,
@@ -394,17 +383,19 @@ class Querys extends Vmap {
         $oBusinessObject = new BusinessObject($this->aPath, $this->aValues, $this->aProperties, $this->oConnection);
         $oBusinessObject->GET();
 
+        $date = new DateTime();
+
         // Paramètres retenus dans l'url
-        $filter = $this->aValues['filter'];
-        $intersect_geom = $this->aValues['intersect_geom'];
-        $intersect_column = $this->aValues['intersect_column'];
-        $intersect_buffer = $this->aValues['intersect_buffer'];
-        $get_geom = $this->aValues['get_geom'];
-        $get_image = $this->aValues['get_image'];
-        $result_srid = $this->aValues['result_srid'];
-        $geom_field = $this->aValues['geom_field'];
-        $limit = $this->aValues['limit'];
-        $offset = $this->aValues['offset'];
+        $filter = !empty($this->aValues['filter']) ? $this->aValues['filter'] : '';
+        $intersect_geom = !empty($this->aValues['intersect_geom']) ? $this->aValues['intersect_geom'] : '';
+        $intersect_column = !empty($this->aValues['intersect_column']) ? $this->aValues['intersect_column'] : '';
+        $intersect_buffer = !empty($this->aValues['intersect_buffer']) ? $this->aValues['intersect_buffer'] : '';
+        $get_geom = !empty($this->aValues['get_geom']) ? $this->aValues['get_geom'] : '';
+        $get_image = !empty($this->aValues['get_image']) ? $this->aValues['get_image'] : '';
+        $result_srid = !empty($this->aValues['result_srid']) ? $this->aValues['result_srid'] : '';
+        $geom_field = !empty($this->aValues['geom_field']) ? $this->aValues['geom_field'] : '';
+        $limit = !empty($this->aValues['limit']) ? $this->aValues['limit'] : '';
+        $offset = !empty($this->aValues['offset']) ? $this->aValues['offset'] : '';
 
         // Paramètres retenus dans le business object
         $geom_column = $oBusinessObject->aFields['geom_column'];
@@ -412,8 +403,17 @@ class Querys extends Vmap {
         $bo_id_field = $oBusinessObject->aFields['id_field'];
         $bo_title = $oBusinessObject->aFields['title'];
         $bo_id = $oBusinessObject->aFields['business_object_id'];
+        $database = $oBusinessObject->aFields['database'];
         $schema = $oBusinessObject->aFields['schema'];
         $table = $oBusinessObject->aFields['table'];
+        $add_form_size = $oBusinessObject->aFields['add_form_size'];
+        $edit_form_size = $oBusinessObject->aFields['edit_form_size'];
+        $display_form_size = $oBusinessObject->aFields['display_form_size'];
+
+        // Base de données
+        if (!empty($database) && $database != $this->oConnection->oBd->base) {
+            $this->oConnection->oBd = new Vm($this->oConnection->oBd->login, $this->oConnection->oBd->mdp, $database, $this->oConnection->oBd->serveur, $this->oConnection->oBd->port, $this->oConnection->oBd->sgbd, $this->oConnection->oBd->sPageEncoding);
+        }
 
         // Chaine sql
         if ($type === 'form') {
@@ -464,7 +464,7 @@ class Querys extends Vmap {
         }
 
         // Début de la requête
-        $sSql = substr_replace($sSql, ' ' . $bo_id_field . ', ' . $bo_id_field . ' as bo_id_value,', $iAttributesPos, 0);
+        $sSql = substr_replace($sSql, ' ' . $bo_id_field . ' as bo_id_value,', $iAttributesPos, 0);
 
         if ($get_geom === true || $get_geom === 'true') {
             if (!empty($result_srid)) {
@@ -491,7 +491,7 @@ class Querys extends Vmap {
         if ($this->oConnection->oBd->enErreur()) {
             $aXmlRacineAttribute['status'] = 0;
             writeToErrorLog($this->oConnection->oBd->getBDMessage());
-            $oError = new Error(2, $this->oConnection->oBd->getBDMessage());
+            $oError = new VitisError(2, $this->oConnection->oBd->getBDMessage());
         } else {
             if (!$this->oConnection->oBd->enErreur() && $this->oConnection->oBd->nombreLigne($oResult) > 0) {
                 while ($aLigne = $this->oConnection->oBd->ligneSuivante($oResult)) {
@@ -499,7 +499,7 @@ class Querys extends Vmap {
                     // Image à la une                        
                     if ($get_image === true || $get_image === 'true') {
                         if (isset($aLigne['[bo_image]'])) {
-                            $aLigne['bo_image_path'] = $this->aProperties['web_server_name'] . '/' . $this->aProperties['ws_data_alias'] . '/vitis/' . $bo_id . '/documents/' . $aLigne['bo_id_value'] . '/image/' . $aLigne['[bo_image]'];
+                            $aLigne['bo_image_path'] = $this->aProperties['web_server_name'] . '/' . $this->aProperties['ws_data_alias'] . '/vitis/' . $bo_id . '/documents/' . $aLigne['bo_id_value'] . '/image/' . $aLigne['[bo_image]'] . "?d=" . $date->getTimestamp();
                             unset($aLigne['[bo_image]']);
                         }
                     }
@@ -544,9 +544,9 @@ class Querys extends Vmap {
                             }
 
                             if ($jsContent !== false)
-                                $js = $this->aProperties['web_server_name'] . '/' . $this->aProperties['ws_data_alias'] . '/vmap/business_object/' . $bo_id . '/forms/ressources/published.js';
+                                $js = $this->aProperties['web_server_name'] . '/' . $this->aProperties['ws_data_alias'] . '/vmap/business_object/' . $bo_id . '/forms/ressources/published.js' . "?d=" . $date->getTimestamp();
                             if ($cssContent !== false)
-                                $css = $this->aProperties['web_server_name'] . '/' . $this->aProperties['ws_data_alias'] . '/vmap/business_object/' . $bo_id . '/forms/ressources/published.css';
+                                $css = $this->aProperties['web_server_name'] . '/' . $this->aProperties['ws_data_alias'] . '/vmap/business_object/' . $bo_id . '/forms/ressources/published.css' . "?d=" . $date->getTimestamp();
 
                             $aLigne['bo_json_form'] = json_decode($jsonContent);
                             $aLigne['bo_json_form_js'] = $js;
@@ -556,6 +556,9 @@ class Querys extends Vmap {
                         // Attributs métier
                         $aLigne['bo_type'] = $bo_id;
                         $aLigne['bo_title'] = $bo_title;
+                        $aLigne['add_form_size'] = $add_form_size;
+                        $aLigne['edit_form_size'] = $edit_form_size;
+                        $aLigne['display_form_size'] = $display_form_size;
 
                         if (!empty($oBusinessObject->aFields['id_field']))
                             $aLigne['bo_id_field'] = $oBusinessObject->aFields['id_field'];
@@ -568,6 +571,7 @@ class Querys extends Vmap {
                         $aLigne['have_update_rights'] = $this->haveUpdateRights($aRights, $schema, $table, $bo_id, $oBusinessObject->aFields['id_field']);
                         $aLigne['have_card_rights'] = $this->haveCardRights($aRights, $schema, $table, $bo_id);
                         $aLigne['have_delete_rights'] = $this->haveDeleteRights($aRights);
+                        $aLigne['have_insert_rights'] = $this->haveInsertRights($aRights);
 
                         // Enlève les arguments non demandés
                         foreach ($aLigne as $key => $value) {
@@ -583,7 +587,7 @@ class Querys extends Vmap {
 
                     foreach ($aLigne['bo_' . $type] as $key => $value) {
                         if (is_dir($sDataDir . "/" . $key)) {
-                            $aLigne['bo_' . $type][$key] = $sDataUrl . "/" . $key . "/" . $value;
+                            $aLigne['bo_' . $type][$key] = $sDataUrl . "/" . $key . "/" . $value . "?d=" . $date->getTimestamp();
                         }
                     }
                     // Attributs récupérés
@@ -688,6 +692,18 @@ class Querys extends Vmap {
     }
 
     /**
+     * heck if connection rights contains insert
+     * @param string $aRights
+     * @return string true if the object is deletable
+     */
+    function haveInsertRights($aRights) {
+        if (in_array("INSERT", $aRights))
+            return "true";
+        else
+            return "false";
+    }
+
+    /**
      * Get the position of the firt attribute in a SQL request
      * @param string $sSql
      * @return int the position of the firt attribute
@@ -723,6 +739,9 @@ class Querys extends Vmap {
         if ($this->oConnection->oBd->enErreur()) {
             writeToErrorLog($this->oConnection->oBd->getBDMessage());
         } else {
+            if (!isset($this->oConnection->oBd->enErreur)) {
+                $this->oConnection->oBd->enErreur = false;
+            }
             if (!$this->oConnection->oBd->enErreur && $this->oConnection->oBd->nombreLigne($oResult) > 0) {
                 $aData = array();
                 while ($aObject = $this->oConnection->oBd->ligneSuivante($oResult)) {
@@ -742,7 +761,7 @@ class Querys extends Vmap {
      *   summary="Update an element of a business object",
      *   description="Request to update an element of a business object",
      *   operationId="PUT",
-     *   produces={"application/xml", "application/json", "application/x-vm-json"},
+     *   produces={"application/json", "application/x-vm-json"},
      *   @SWG\Parameter(
      *     name="token",
      *     in="query",
@@ -757,6 +776,15 @@ class Querys extends Vmap {
      *     required=true,
      *     type="integer",
      *     format="string"
+     *   ),
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     description="",
+     *     required=false,
+     *     type="body",
+     *     format="string",
+     *     @SWG\Schema(ref="#/definitions/businessobjects")
      *   ),
      *   @SWG\Response(
      *         response=200,
@@ -800,8 +828,11 @@ class Querys extends Vmap {
         // Définit si il a des fichiers a uploader
         $bUploadFiles = false;
         foreach ($this->aValues as $key => $value) {
-            if (strpos($key, '_attached_content_file')) {
-                $bUploadFiles = true;
+            if (strpos($key, '_file')) {
+                $sName = substr($key, 0, strpos($key, '_file'));
+                if (isset($this->aValues[$sName . '_name'])) {
+                    $bUploadFiles = true;
+                }
             }
         }
 
@@ -810,7 +841,7 @@ class Querys extends Vmap {
             // Création du dossier contenneur si il n'existe pas
             $sDirPath = $this->createElementFilesFolder($sBusinessObjectId, $this->aValues['my_vitis_id']);
             if (!is_dir($sDirPath)) {
-                $oError = new Error(1, "Unable to acces to the business object direrctory :" . $sDirPath);
+                $oError = new VitisError(1, "Unable to acces to the business object direrctory :" . $sDirPath);
                 $aXmlRacineAttribute['status'] = 0;
                 $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
                 return $sMessage;
@@ -822,8 +853,13 @@ class Querys extends Vmap {
         $aReturn = $this->genericPut($bo_schema, $bo_table, $bo_id_field);
 
         // Lance l'évènement webSocket
-//        if (!empty($bo_event))
-//            sendWebsocketMessage($this->aProperties['websocket_server'], $this->aProperties['websocket_port'], $this->aProperties['websocket_alias'], 'echo', $bo_event);
+        if (!empty($bo_event)) {
+            sendWebsocketMessage($this->aProperties['websocket_server'], $this->aProperties['websocket_port'], $this->aProperties['websocket_alias'], array(
+                'action' => 'event',
+                'service' => 'VmapEvents',
+                'data' => $bo_event
+            ));
+        }
         return $aReturn['sMessage'];
     }
 
@@ -837,15 +873,14 @@ class Querys extends Vmap {
     function extractFilesFromValues($aValues, $sDirPath) {
 
         foreach ($aValues as $key => $value) {
-            if (strpos($key, '_attached_content_file')) {
+            if (strpos($key, '_file')) {
 
                 $sName = substr($key, 0, strpos($key, '_file'));
                 $sFileName = $aValues[$sName . '_name'];
 
                 if (!empty($sFileName)) {
 
-                    $sFileColumn = substr($sName, 0, strpos($sName, '_attached_content'));
-                    $sDirColumnPath = $sDirPath . '/' . $sFileColumn;
+                    $sDirColumnPath = $sDirPath . '/' . $sName;
                     if (!is_dir($sDirColumnPath)) {
                         mkdir($sDirColumnPath, 0777, true);
                     }
@@ -855,7 +890,8 @@ class Querys extends Vmap {
                     fwrite($fp, $value);
                     fclose($fp);
 
-                    // Supprime de aValues le contenu des fichiers
+                    // Mise en place pour la base de données
+                    $aValues[$sName] = $aValues[$sName . '_name'];
                     unset($aValues[$sName . '_file']);
                     unset($aValues[$sName . '_name']);
                 }
@@ -872,6 +908,7 @@ class Querys extends Vmap {
      * @return string Path to the created directory
      */
     function createElementFilesFolder($sBoId, $sId) {
+        
         // Répertoires présents ?
         if (is_dir($this->aProperties['ws_data_dir'])) {
             $sDirPath = $this->aProperties['ws_data_dir'] . '/vitis';
@@ -901,7 +938,7 @@ class Querys extends Vmap {
      *   summary="Insert an element of a business object",
      *   description="Request to insert an element of a business object",
      *   operationId="POST",
-     *   produces={"application/xml", "application/json", "application/x-vm-json"},
+     *   produces={"application/json", "application/x-vm-json"},
      *   @SWG\Parameter(
      *     name="token",
      *     in="query",
@@ -917,6 +954,15 @@ class Querys extends Vmap {
      *     type="integer",
      *     format="string"
      *   ),
+     * @SWG\Parameter(
+     *     name="body",
+     *     in="body",
+     *     description="",
+     *     required=false,
+     *     type="body",
+     *     format="string",
+     *     @SWG\Schema(ref="#/definitions/businessobjects")
+     *   ),
      *   @SWG\Response(
      *         response=200,
      *         description="Poprerties Response",
@@ -931,7 +977,7 @@ class Querys extends Vmap {
      * @return array containing the status and the message
      */
     function POST() {
-
+        
         $sBusinessObjectId = $this->aPath['2'];
 
         if (!isset($sBusinessObjectId)) {
@@ -948,6 +994,7 @@ class Querys extends Vmap {
         $bo_schema = $oBusinessObject->aFields['schema'];
         $bo_table = $oBusinessObject->aFields['table'];
         $bo_id_field = $oBusinessObject->aFields['id_field'];
+        $bo_event = $oBusinessObject->aFields['event_id'];
 
         if (!empty($bo_database) && $bo_database != $this->oConnection->oBd->base) {
             $this->oConnection->oBd = new Vm($this->oConnection->oBd->login, $this->oConnection->oBd->mdp, $bo_database, $this->oConnection->oBd->serveur, $this->oConnection->oBd->port, $this->oConnection->oBd->sgbd, $this->oConnection->oBd->sPageEncoding);
@@ -963,15 +1010,15 @@ class Querys extends Vmap {
             // Création du dossier contenneur
             $sDirPath = $this->createElementFilesFolder($sBusinessObjectId, $this->aValues['my_vitis_id']);
             if (!is_dir($sDirPath)) {
-                $oError = new Error(1, "Unable to acces to the business object direrctory :" . $sDirPath);
+                $oError = new VitisError(1, "Unable to acces to the business object direrctory :" . $sDirPath);
                 $aXmlRacineAttribute['status'] = 0;
                 $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
                 return $sMessage;
             }
             // Écriture du fichier
             foreach ($_FILES as $sName => $aFile) {
-
-                $sFileColumn = array_search($aFile['name'], $this->aValues);
+                                
+                $sFileColumn = substr($sName, 0, strpos($sName, '_attached_content'));
 
                 $sDirColumnPath = $sDirPath . '/' . $sFileColumn;
                 if (!is_dir($sDirColumnPath)) {
@@ -984,6 +1031,15 @@ class Querys extends Vmap {
 
             $this->genericPut($bo_schema, $bo_table, $bo_id_field);
         }
+
+        // Lance l'évènement webSocket
+        if (!empty($bo_event)) {
+            sendWebsocketMessage($this->aProperties['websocket_server'], $this->aProperties['websocket_port'], $this->aProperties['websocket_alias'], array(
+                'action' => 'event',
+                'service' => 'VmapEvents',
+                'data' => $bo_event
+            ));
+        }
         return $aReturn['sMessage'];
     }
 
@@ -993,7 +1049,7 @@ class Querys extends Vmap {
      *   summary="delete elements of a business object",
      *   description="Request to delete elements of a business object",
      *   operationId="DELETE",
-     *   produces={"application/xml", "application/json"},
+     *   produces={"application/json", "application/x-vm-json"},
      *   @SWG\Parameter(
      *     name="token",
      *     in="query",
@@ -1034,6 +1090,10 @@ class Querys extends Vmap {
         if (!isset($sBusinessObjectId)) {
             return 'business_object_id required';
         }
+        
+        if (empty($this->aValues['idList']) && !empty($this->aPath['3'])) {
+            $this->aValues['idList'] = $this->aPath['3'];
+        }
 
         $this->aPath['3'] = $sBusinessObjectId;
         $this->aValues['my_vitis_id'] = $sBusinessObjectId;
@@ -1045,6 +1105,7 @@ class Querys extends Vmap {
         $bo_schema = $oBusinessObject->aFields['schema'];
         $bo_table = $oBusinessObject->aFields['table'];
         $bo_id_field = $oBusinessObject->aFields['id_field'];
+        $bo_event = $oBusinessObject->aFields['event_id'];
 
         $aIdList = explode("|", $this->aValues['idList']);
 
@@ -1063,7 +1124,7 @@ class Querys extends Vmap {
 
         if ($this->oConnection->oBd->enErreur()) {
             $aXmlRacineAttribute['status'] = 0;
-            $oError = new Error(1, $this->oConnection->oBd->getBDMessage());
+            $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
             $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
         } else {
             $this->deleteElementsDocuments($sBusinessObjectId, $aIdList);
@@ -1075,6 +1136,15 @@ class Querys extends Vmap {
         $aReturn = array('sStatus' => $aXmlRacineAttribute['status'], "sMessage" => $sMessage);
         $sMessage = $aReturn['sMessage'];
 
+        // Lance l'évènement webSocket
+        if (!empty($bo_event)) {
+            sendWebsocketMessage($this->aProperties['websocket_server'], $this->aProperties['websocket_port'], $this->aProperties['websocket_alias'], array(
+                'action' => 'event',
+                'service' => 'VmapEvents',
+                'data' => $bo_event
+            ));
+        }
+
         return $sMessage;
     }
 
@@ -1085,9 +1155,11 @@ class Querys extends Vmap {
      */
     function deleteElementsDocuments($sBusinessObjectId, $aIds) {
         for ($i = 0; $i < count($aIds); $i++) {
-            $sDir = $this->aProperties['ws_data_dir'] . '/vitis/' . $sBusinessObjectId . '/documents/' . $aIds[$i];
-            if (is_dir($sDir)) {
-                clearDir($sDir);
+            if (!empty($aIds[$i])) {
+                $sDir = $this->aProperties['ws_data_dir'] . '/vitis/' . $sBusinessObjectId . '/documents/' . $aIds[$i];
+                if (is_dir($sDir)) {
+                    clearDir($sDir);
+                }
             }
         }
     }

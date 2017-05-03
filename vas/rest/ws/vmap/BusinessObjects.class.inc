@@ -38,12 +38,12 @@ class BusinessObjects extends Vmap {
      * @param type $aValues parameters of the request
      * @param type $properties properties
      */
-    function BusinessObjects($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
         $this->oConnection = new Connection($this->aValues, $this->aProperties);
-        $this->aSelectedFields = Array("business_object_id", "title", "id_field", "database", "schema", "table", "sql_summary", "sql_list", "sorted_by", "geom_column", "search_field", "result_field", "search_use_strict", "event_id", "index");
+        $this->aSelectedFields = Array("business_object_id", "title", "id_field", "database", "schema", "table", "sql_summary", "sql_list", "sorted_by", "geom_column", "search_field", "result_field", "search_use_strict", "event_id", "index", "add_form_size", "edit_form_size", "display_form_size");
     }
 
     /**
@@ -79,16 +79,14 @@ class BusinessObjects extends Vmap {
      *     in="query",
      *     description="number of element",
      *     required=false,
-     *     type="integer",
-     *     format="int32"
+     *     type="integer"
      *   ),
      * @SWG\Parameter(
      *     name="offset",
      *     in="query",
      *     description="index of first element",
      *     required=false,
-     *     type="string",
-     *     format="int32"
+     *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="attributs",
@@ -137,8 +135,7 @@ class BusinessObjects extends Vmap {
      *     in="path",
      *     description="business object id",
      *     required=true,
-     *     type="integer",
-     *     format="int32"
+     *     type="integer"
      *   ),
      *   @SWG\Response(
      *         response=200,
@@ -166,16 +163,14 @@ class BusinessObjects extends Vmap {
      *     in="path",
      *     description="business object id",
      *     required=true,
-     *     type="integer",
-     *     format="int32"
+     *     type="integer"
      *   ),
      *   @SWG\Parameter(
      *     name="form",
      *     in="path",
      *     description="form name (default, published, custom)",
      *     required=true,
-     *     type="integer",
-     *     format="int32"
+     *     type="integer"
      *   ),
      *   @SWG\Response(
      *         response=200,
@@ -248,80 +243,194 @@ class BusinessObjects extends Vmap {
      *   produces={"application/xml", "application/json"},
      *   @SWG\Parameter(
      *     name="token",
-     *     in="query",
+     *     in="formData",
      *     description="user token",
      *     required=true,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="business_object_id",
-     *     in="query",
+     *     in="formData",
      *     description="",
      *     required=true,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="title",
-     *     in="query",
+     *     in="formData",
      *     description="",
      *     required=true,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="database",
-     *     in="query",
+     *     in="formData",
      *     description="",
      *     required=true,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="schema",
-     *     in="query",
+     *     in="formData",
      *     description="",
      *     required=true,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="table",
-     *     in="query",
+     *     in="formData",
      *     description="",
      *     required=true,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="id_field",
-     *     in="query",
+     *     in="formData",
      *     description="",
      *     required=true,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="sql_summary",
-     *     in="query",
+     *     in="formData",
      *     description="",
      *     required=true,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="sql_list",
-     *     in="query",
+     *     in="formData",
      *     description="",
      *     required=true,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="sorted_by",
-     *     in="query",
+     *     in="formData",
      *     description="",
      *     required=false,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="geom_column",
-     *     in="query",
+     *     in="formData",
      *     description="",
      *     required=true,
      *     type="string"
+     *   ),
+     * @SWG\Parameter(
+     *     name="search_field",
+     *     in="query",
+     *     description="",
+     *     required=false,
+     *     type="string"
+     *   ),
+     * @SWG\Parameter(
+     *     name="result_field",
+     *     in="query",
+     *     description="",
+     *     required=false,
+     *     type="string"
+     *   ),
+     * @SWG\Parameter(
+     *     name="search_use_strict",
+     *     in="query",
+     *     description="",
+     *     required=false,
+     *     type="string"
+     *   ),
+     * @SWG\Parameter(
+     *     name="event_id",
+     *     in="query",
+     *     description="",
+     *     required=false,
+     *     type="string"
+     *   ),
+     * @SWG\Parameter(
+     *     name="index",
+     *     in="query",
+     *     description="",
+     *     required=true,
+     *     type="integer"
+     *   ),
+     * @SWG\Parameter(
+     *     name="add_form_size",
+     *     in="query",
+     *     description="",
+     *     required=false,
+     *     type="string"
+     *   ),
+     * @SWG\Parameter(
+     *     name="edit_form_size",
+     *     in="query",
+     *     description="",
+     *     required=false,
+     *     type="string"
+     *   ),
+     * @SWG\Parameter(
+     *     name="display_form_size",
+     *     in="query",
+     *     description="",
+     *     required=false,
+     *     type="string"
+     *   ),
+     *   @SWG\Response(
+     *         response=200,
+     *         description="Poprerties Response",
+     *         @SWG\Schema(ref="#/definitions/businessobjects")
+     *     )
+     *  )
+     * )
+     */
+    /**
+     * @SWG\Post(path="/businessobjects/package_definition",
+     *   tags={"BusinessObjects"},
+     *   summary="Add business_object",
+     *   description="Request to add a business_object",
+     *   operationId="POST",
+     *   produces={"application/json"},
+     *   @SWG\Parameter(
+     *     name="token",
+     *     in="query",
+     *     description="user token",
+     *     required=true,
+     *     type="string"
+     *   ),
+     *  @SWG\Parameter(
+     *     name="package_definition",
+     *     in="formData",
+     *     description="",
+     *     required=true,
+     *     type="file"
+     *   ),
+     *   @SWG\Response(
+     *         response=200,
+     *         description="Poprerties Response",
+     *         @SWG\Schema(ref="#/definitions/businessobjects")
+     *     )
+     *  )
+     * )
+     */
+    /**
+     * @SWG\Post(path="/businessobjects/data_model",
+     *   tags={"BusinessObjects"},
+     *   summary="Add business_object",
+     *   description="Request to add a business_object",
+     *   operationId="POST",
+     *   produces={"application/json"},
+     *   @SWG\Parameter(
+     *     name="token",
+     *     in="query",
+     *     description="user token",
+     *     required=true,
+     *     type="string"
+     *   ),
+     *  @SWG\Parameter(
+     *     name="data_model",
+     *     in="formData",
+     *     description="",
+     *     required=true,
+     *     type="file"
      *   ),
      *   @SWG\Response(
      *         response=200,
@@ -335,12 +444,12 @@ class BusinessObjects extends Vmap {
      * @SWG\Post(path="/businessobjects/{business_object_id}/form/{form}",
      *   tags={"BusinessObjects"},
      *   summary="Add business_object",
-     *   description="Request to add a business_object form",
+     *   description="Request to generate a business_object form",
      *   operationId="POST",
      *   produces={"application/xml", "application/json"},
      *   @SWG\Parameter(
      *     name="token",
-     *     in="query",
+     *     in="formData",
      *     description="user token",
      *     required=true,
      *     type="string"
@@ -361,7 +470,7 @@ class BusinessObjects extends Vmap {
      *   ),
      * @SWG\Parameter(
      *     name="fields",
-     *     in="query",
+     *     in="formData",
      *     description="list of fields separed by | ",
      *     required=false,
      *     type="string"
@@ -380,15 +489,273 @@ class BusinessObjects extends Vmap {
      * @return array containing the status and the message
      */
     function POST() {
+        if (isset($this->oConnection->oError) && !empty($this->oConnection->oError)) {
+            $aXmlRacineAttribute['status'] = 0;
+            $sMessage = $this->oConnection->oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+            return $sMessage;
+        }
+        if (!in_array('vmap_admin', $this->oConnection->aPrivileges)) {
+            $oError = new VitisError(0, 'INSUFFICIENT_PRIVILEGES');
+            $aXmlRacineAttribute['status'] = 0;
+            $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+            return $sMessage;
+        }
         if (isset($this->aPath[4])) {
             $sBusinessObjectId = $this->aPath[2];
             $sFormName = $this->aPath[4];
             $aFields = explode("|", $this->aValues['fields']);
-            return $this->generateBusinessObjectForm($sBusinessObjectId, $sFormName, $aFields);
+            return $this->generateBusinessObjectForm($sBusinessObjectId, $sFormName, $aFields, $this->aValues['label']);
         } else {
-            $aReturn = $this->genericPost($this->aProperties['schema_vmap'], 'business_object', '', 'business_object_id');
-            return $aReturn['sMessage'];
+
+            if ($this->aPath[2] === 'package_definition') {
+                // Importe le dossier dans /tmp et renvoie son contenu
+                return $this->postPackageDefinition();
+            } else if ($this->aPath[2] === 'data_model') {
+                // Importe le modèle de données de l'objet métier
+                return $this->postDataModel();
+            } else {
+                $aReturn = $this->genericPost($this->aProperties['schema_vmap'], 'business_object', '', 'business_object_id');
+                return $aReturn['sMessage'];
+            }
         }
+    }
+
+    /**
+     * Post the package definition
+     * @return type
+     */
+    function postPackageDefinition() {
+
+        if (!isset($_FILES['package_definition'])) {
+            $oError = new VitisError(0, 'package_definition not found');
+            $aXmlRacineAttribute['status'] = 0;
+            $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+            return $sMessage;
+        }
+        if (!in_array('vitis_admin', $this->oConnection->aPrivileges) ||
+                !in_array('vmap_admin', $this->oConnection->aPrivileges) ||
+                !in_array('vm4ms_admin', $this->oConnection->aPrivileges)) {
+            $oError = new VitisError(0, 'insufficient privileges (needs to be vitis_admin, vmap_admin and vm4ms_admin)');
+            $aXmlRacineAttribute['status'] = 0;
+            $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+            return $sMessage;
+        }
+
+        $sZipName = $_FILES['package_definition']['name'];
+        $sPackageFormat = substr($sZipName, -4);
+        $sFolderName = str_replace('.vex', '', $sZipName);
+
+        // Test format du package
+        if ($sPackageFormat !== '.vex') {
+            writeToErrorLog('getBusinessObjectPackage: package format not valid: ' . $sPackageFormat);
+            $oError = new VitisError(0, 'Package not valid');
+            $aXmlRacineAttribute['status'] = 0;
+            $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+            return $sMessage;
+        }
+
+        // Dézippe le contennu dans un dossier dans tmp
+        $sDir = $this->UniqFileName();
+        $aReturn = $this->postFileSave('package_definition', '../../tmp/', $sDir);
+        $sPath = $this->aProperties['vas_home'] . '/tmp/' . $sDir;
+        $this->unZip($sPath . '/' . $sZipName, $sPath . '/' . $sFolderName);
+
+        // Cas où il y ait dans le zip un dossier de même nom
+        $sFolderPath = $sPath . '/' . $sFolderName;
+        if (is_dir($sPath . '/' . $sFolderName . '/' . $sFolderName)) {
+            $sFolderPath = $sPath . '/' . $sFolderName . '/' . $sFolderName;
+        }
+
+        $aBoFolders = array();
+        // Récupère les repertoires contenant des objets métier
+        $aFolderPathContent = scandir($sFolderPath);
+        if (count($aFolderPathContent) > 2 && !is_dir($sFolderPath . '/json') && !is_dir($sFolderPath . '/forms') && !is_dir($sFolderPath . '/sql') && !is_file($sFolderPath . '/package.json')) {
+            for ($i = 0; $i < count($aFolderPathContent); $i++) {
+                if ($aFolderPathContent[$i] !== '..' && $aFolderPathContent[$i] !== '.') {
+                    array_push($aBoFolders, $sFolderPath . '/' . $aFolderPathContent[$i]);
+                }
+            }
+        } else {
+            array_push($aBoFolders, $sFolderPath);
+        }
+
+        $aReturn['status'] = 1;
+
+        $aTmpReturn = array();
+        for ($i = 0; $i < count($aBoFolders); $i++) {
+
+            // Récupère le contennu du package
+            $aResult = $this->getBusinessObjectPackage($aBoFolders[$i]);
+
+            if (!empty($aResult['sMessage'])) {
+                if ($this->isJson($aResult['sMessage'])) {
+                    $aResult = json_decode($aResult['sMessage'], true);
+                }
+            }
+            if (!empty($aResult['errorMessage'])) {
+                $aReturn['errorMessage'] = $aResult['errorMessage'];
+                $aReturn['status'] = 0;
+            }
+
+            if (!empty($aResult['status'])) {
+                if ($aResult['status'] != 1) {
+                    $aReturn['status'] = $aResult['status'];
+                }
+            } else {
+                $aReturn['status'] = 0;
+            }
+
+            array_push($aTmpReturn, $aResult);
+        }
+
+        if ($aReturn['status'] === 1) {
+            $aReturn['businessobjects'] = $aTmpReturn;
+        }
+
+        // Supprime le dossier précédemment uploadé
+        clearDir($sPath);
+
+        return json_encode($aReturn);
+    }
+
+    /**
+     * Post the data model
+     * @return type
+     */
+    function postDataModel() {
+
+        if (!isset($_FILES['data_model'])) {
+            $oError = new VitisError(0, 'data_model not found');
+            $aXmlRacineAttribute['status'] = 0;
+            $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+            return $sMessage;
+        }
+        if (!in_array('vitis_admin', $this->oConnection->aPrivileges) ||
+                !in_array('vmap_admin', $this->oConnection->aPrivileges) ||
+                !in_array('vm4ms_admin', $this->oConnection->aPrivileges)) {
+            $oError = new VitisError(0, 'insufficient privileges (needs to be vitis_admin, vmap_admin and vm4ms_admin)');
+            $aXmlRacineAttribute['status'] = 0;
+            $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+            return $sMessage;
+        }
+
+        $sFileName = $_FILES['data_model']['name'];
+        $sDir = $this->UniqFileName();
+        $this->postFileSave('data_model', '../../tmp/', $sDir);
+        $sPath = $this->aProperties['vas_home'] . '/tmp/' . $sDir;
+        $sFilePath = $sPath . '/' . $sFileName;
+
+        if (isset($this->aValues['database']) && !empty($this->aValues['database'])) {
+            $sDatabase = $this->aValues['database'];
+        } else {
+            $sDatabase = $this->aProperties['database'];
+        }
+
+        $aFileRequests = $this->getDataModelFileRequests($sFilePath);
+
+        // Execute le SQL
+        $aResults = $this->executeDataModelRequests($aFileRequests, $sDatabase);
+
+        // Supprime le dossier précédemment uploadé
+        clearDir($sPath);
+
+        if (isset($this->oError)) {
+            $aXmlRacineAttribute['status'] = 0;
+            $sMessage = $this->oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+            return $sMessage;
+        } else {
+            $aReturn = array(status => 1);
+            return json_encode($aReturn);
+        }
+    }
+
+    /**
+     * Parse the data-model file contents and return an array of requests
+     * @param string $sFilePath
+     * @return array
+     */
+    function getDataModelFileRequests($sFilePath) {
+
+        // Travail sur chacune des lignes du fichier
+        $aFileContents = file($sFilePath);
+        $aFileContents = $this->cleanDataModelFileArray($aFileContents);
+
+        $sFileContents = '';
+        for ($i = 0; $i < count($aFileContents); $i++) {
+            $sFileContents .= $aFileContents[$i] . ' ';
+        }
+
+        // Travail sur chacune des requêtes du fichier
+        $aFileContents = explode(';', $sFileContents);
+        $aFileContents = $this->cleanDataModelFileArray($aFileContents);
+
+        return $aFileContents;
+    }
+
+    /**
+     * Delete the white spaces and comments from the data-model file array vue
+     * @param array $aFileContents
+     * @return array
+     */
+    function cleanDataModelFileArray($aFileContents) {
+
+        for ($i = count($aFileContents); $i >= 0; $i--) {
+            // Supprime les espaces
+            $aFileContents[$i] = trim($aFileContents[$i]);
+            // Supprime les lignes vides
+            if ($aFileContents[$i] === '') {
+                unset($aFileContents[$i]);
+            }
+            // Supprime les commentaires
+            if (substr($aFileContents[$i], 0, 2) === '--') {
+                unset($aFileContents[$i]);
+            }
+        }
+        // Redonne les bons index
+        $aFileContents2 = Array();
+        foreach ($aFileContents as $key => $value) {
+            array_push($aFileContents2, $value);
+        }
+        $aFileContents = $aFileContents2;
+
+        return $aFileContents;
+    }
+
+    /**
+     * Execute the data-model requests
+     * @param array $aFileRequests
+     * @return array results
+     */
+    function executeDataModelRequests($aFileRequests, $sDatabase) {
+
+        // Connexion avec uVitis
+        $oBD = new Vm($this->aProperties['owner_login'], $this->aProperties['owner_pass'], $sDatabase, $this->aProperties['server'], $this->aProperties['port'], $this->aProperties['sgbd'], $this->aProperties['page_encoding']);
+        $this->oConnection->oBd = $oBD;
+
+        $this->oConnection->oBd->demarreTransaction();
+
+        $aResults = Array();
+        $bError = false;
+
+        for ($i = 0; $i < count($aFileRequests); $i++) {
+
+            $oResult = $this->oConnection->oBd->execute($aFileRequests[$i]);
+            array_push($aResults, $oResult);
+
+            if ($this->oConnection->oBd->enErreur()) {
+                $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
+                $bError = true;
+                break;
+            }
+        }
+
+        if ($bError) {
+            $this->oConnection->oBd->annuleTransaction();
+        } else {
+            $this->oConnection->oBd->termineTransaction();
+        }
+
+        return $aResults;
     }
 
     /**
@@ -398,7 +765,7 @@ class BusinessObjects extends Vmap {
      * @param array $aFields fields to use
      * @return string jsonContent of the form
      */
-    function generateBusinessObjectForm($sBusinessObjectId, $sFormName, $aFields) {
+    function generateBusinessObjectForm($sBusinessObjectId, $sFormName, $aFields, $oLabel) {
 
         // Objet BusinessObject correspondant
         $oBusinessObject = new BusinessObject($this->aPath, $this->aValues, $this->aProperties, $this->oConnection);
@@ -423,27 +790,11 @@ class BusinessObjects extends Vmap {
             }
         }
 
-        $aRows = $oForm->generateRowsByTableColumns($aColumnsToUse);
+        $aRows = $oForm->generateRowsByTableColumns($aColumnsToUse, array(), array(), json_decode(json_encode($oLabel), true));
         $aForm = $oForm->generateFormByRows($aRows, $bo_title, $sFormName);
 
-        $sDirPath = $this->aProperties['ws_data_dir'] . '/vmap/business_object/' . $sBusinessObjectId;
-
         // création de l'arborescence si elle n'existe pas
-        if (!is_dir($this->aProperties['ws_data_dir'] . '/vmap')) {
-            @mkdir($this->aProperties['ws_data_dir'] . '/vmap');
-        }
-        if (!is_dir($this->aProperties['ws_data_dir'] . '/vmap/business_object')) {
-            @mkdir($this->aProperties['ws_data_dir'] . '/vmap/business_object');
-        }
-        if (!is_dir($sDirPath)) {
-            @mkdir($sDirPath);
-        }
-        if (!is_dir($sDirPath . '/forms')) {
-            @mkdir($sDirPath . '/forms');
-        }
-        if (!is_dir($sDirPath . '/forms/ressources')) {
-            @mkdir($sDirPath . '/forms/ressources');
-        }
+        $sDirPath = $this->createBoPath($sBusinessObjectId);
 
         $JSONcontent = json_encode($aForm);
 
@@ -473,6 +824,219 @@ class BusinessObjects extends Vmap {
     }
 
     /**
+     * Return the imported bo package content
+     * @param string $sFolderPath
+     * @return array
+     */
+    function getBusinessObjectPackage($sFolderPath) {
+
+        // Variables Path
+        $sPackagePath = $sFolderPath . '/package.json';
+        $sSQLPath = $sFolderPath . '/sql';
+        $sDefinitionPath = $sFolderPath . '/json';
+        $sFormsPath = $sFolderPath . '/forms';
+
+        // Retour
+        $aResult = array();
+
+        // Récupère la definition du packet
+        if (!is_file($sPackagePath)) {
+            writeToErrorLog('getBusinessObjectPackage: package.json not found');
+            $aReturn = array(status => 0, errorMessage => 'Package not valid');
+            return $aReturn;
+        }
+        $aResult['package'] = json_decode(file_get_contents($sPackagePath), true);
+
+        // Récupère les définitions json
+        if (!is_dir($sDefinitionPath)) {
+            writeToErrorLog('getBusinessObjectPackage: json folder not found');
+            $aReturn = array(status => 0, errorMessage => 'Package not valid');
+            return $aReturn;
+        }
+        $aResult['json'] = array(
+            'business_object' => json_decode(file_get_contents($sDefinitionPath . '/business_object.json'), true),
+            'mapserver_layers' => json_decode(file_get_contents($sDefinitionPath . '/mapserver_layers.json'), true),
+            'reports' => json_decode(file_get_contents($sDefinitionPath . '/reports.json'), true),
+            'event' => json_decode(file_get_contents($sDefinitionPath . '/event.json'), true)
+        );
+
+        // Récupère les définitions sql
+        if (!is_dir($sSQLPath)) {
+            writeToErrorLog('getBusinessObjectPackage: sql folder not found');
+            $aReturn = array(status => 0, errorMessage => 'Package not valid');
+            return $aReturn;
+        }
+        $aResult['sql'] = array(
+            'structure' => json_decode(file_get_contents($sSQLPath . '/structure.json'), true),
+            'table' => file_get_contents($sSQLPath . '/table.sql'),
+        );
+
+        // Récupère les formulaires json et leurs ressources
+        $aResult['forms'] = array(
+            'custom' => json_decode(file_get_contents($sFormsPath . '/custom.json'), true),
+            'default' => json_decode(file_get_contents($sFormsPath . '/default.json'), true),
+            'published' => json_decode(file_get_contents($sFormsPath . '/published.json'), true)
+        );
+        if (is_dir($sFormsPath . '/ressources')) {
+            $aResult['forms']['ressources'] = array();
+            if (is_file($sFormsPath . '/ressources/custom.js')) {
+                $aResult['forms']['ressources']['js']['custom'] = file_get_contents($sFormsPath . '/ressources/custom.js');
+            }
+            if (is_file($sFormsPath . '/ressources/default.js')) {
+                $aResult['forms']['ressources']['js']['default'] = file_get_contents($sFormsPath . '/ressources/default.js');
+            }
+            if (is_file($sFormsPath . '/ressources/published.js')) {
+                $aResult['forms']['ressources']['js']['published'] = file_get_contents($sFormsPath . '/ressources/published.js');
+            }
+            if (is_file($sFormsPath . '/ressources/custom.css')) {
+                $aResult['forms']['ressources']['css']['custom'] = file_get_contents($sFormsPath . '/ressources/custom.css');
+            }
+            if (is_file($sFormsPath . '/ressources/default.css')) {
+                $aResult['forms']['ressources']['css']['default'] = file_get_contents($sFormsPath . '/ressources/default.css');
+            }
+            if (is_file($sFormsPath . '/ressources/published.css')) {
+                $aResult['forms']['ressources']['css']['published'] = file_get_contents($sFormsPath . '/ressources/published.css');
+            }
+        }
+
+        // Vérification/erreurs
+        if ($aResult['package'] === null) {
+            writeToErrorLog('getBusinessObjectPackage: package.json not valid');
+            $aReturn = array(status => 0, errorMessage => 'Package not valid');
+            return $aReturn;
+        }
+        if ($aResult['json']['business_object'] === null) {
+            writeToErrorLog('getBusinessObjectPackage: business_object.json not valid');
+            $aReturn = array(status => 0, errorMessage => 'Package not valid');
+            return $aReturn;
+        }
+        if ($aResult['json']['mapserver_layers'] === null) {
+            writeToErrorLog('getBusinessObjectPackage: mapserver_layers.json not valid');
+            $aReturn = array(status => 0, errorMessage => 'Package not valid');
+            return $aReturn;
+        }
+        if ($aResult['sql']['structure'] === null) {
+            writeToErrorLog('getBusinessObjectPackage: structure.json not valid');
+            $aReturn = array(status => 0, errorMessage => 'Package not valid');
+            return $aReturn;
+        }
+        if ($aResult['sql']['table'] === null) {
+            writeToErrorLog('getBusinessObjectPackage: table.sql not valid');
+            $aReturn = array(status => 0, errorMessage => 'Package not valid');
+            return $aReturn;
+        }
+
+        $aResult['status'] = 1;
+
+        return $aResult;
+    }
+
+    /**
+     * Creates the business object forms directory path
+     * @param string $sBusinessObjectId
+     * @return string
+     */
+    function createBoPath($sBusinessObjectId) {
+
+        $sDirPath = $this->aProperties['ws_data_dir'] . '/vmap/business_object/' . $sBusinessObjectId;
+
+        // création de l'arborescence si elle n'existe pas
+        if (!is_dir($this->aProperties['ws_data_dir'] . '/vmap')) {
+            @mkdir($this->aProperties['ws_data_dir'] . '/vmap');
+        }
+        if (!is_dir($this->aProperties['ws_data_dir'] . '/vmap/business_object')) {
+            @mkdir($this->aProperties['ws_data_dir'] . '/vmap/business_object');
+        }
+        if (!is_dir($sDirPath)) {
+            @mkdir($sDirPath);
+        }
+        if (!is_dir($sDirPath . '/forms')) {
+            @mkdir($sDirPath . '/forms');
+        }
+        if (!is_dir($sDirPath . '/forms/ressources')) {
+            @mkdir($sDirPath . '/forms/ressources');
+        }
+
+        return $sDirPath;
+    }
+
+    /**
+     * Creates a compressed zip file
+     * @param string $sFolder
+     * @param string $sDestination
+     * @return boolean
+     */
+    function createZip($sFolder, $sDestination) {
+
+        $zip = new ZipArchive();
+        $zip->open($sDestination, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+
+        $files = new RecursiveIteratorIterator(
+                new RecursiveDirectoryIterator($sFolder), RecursiveIteratorIterator::LEAVES_ONLY
+        );
+
+        foreach ($files as $name => $file) {
+            if (!$file->isDir()) {
+                $filePath = $file->getRealPath();
+                $relativePath = substr($filePath, strlen($sFolder) + 1);
+                $zip->addFile($filePath, $relativePath);
+            }
+        }
+
+        $zip->close();
+
+        return file_exists($sDestination);
+    }
+
+    /**
+     * Unzip a compressed zip file
+     * @param string $sZipFile
+     * @param string $sDestination
+     */
+    function unZip($sZipFile, $sDestination) {
+        $zip = new ZipArchive;
+        $res = $zip->open($sZipFile);
+        if ($res === TRUE) {
+            // extract it to the path we determined above
+            $zip->extractTo($sDestination);
+            $zip->close();
+        }
+    }
+
+    /**
+     * Copy a folder
+     * @param string $src
+     * @param string $dst
+     */
+    function recurseCopy($src, $dst) {
+        $dir = opendir($src);
+        @mkdir($dst);
+        while (false !== ( $file = readdir($dir))) {
+            if (( $file != '.' ) && ( $file != '..' )) {
+                if (is_dir($src . '/' . $file)) {
+                    $this->recurseCopy($src . '/' . $file, $dst . '/' . $file);
+                } else {
+                    copy($src . '/' . $file, $dst . '/' . $file);
+                }
+            }
+        }
+        closedir($dir);
+    }
+
+    /**
+     * 
+     * @param string $string
+     * @return boolean
+     */
+    function isJson($string) {
+        if (!is_string($string)) {
+            return false;
+        }
+        json_decode($string);
+        return (json_last_error() == JSON_ERROR_NONE);
+    }
+
+    /**
      * @SWG\Put(path="/businessobjects/{business_object_id}",
      *   tags={"BusinessObjects"},
      *   summary="Update BusinessObject",
@@ -493,6 +1057,125 @@ class BusinessObjects extends Vmap {
      *     required=true,
      *     type="integer",
      *     format="string"
+     *   ),
+     * @SWG\Parameter(
+     *     name="title",
+     *     in="query",
+     *     description="",
+     *     required=false,
+     *     type="string"
+     *   ),
+     * @SWG\Parameter(
+     *     name="database",
+     *     in="query",
+     *     description="",
+     *     required=false,
+     *     type="string"
+     *   ),
+     * @SWG\Parameter(
+     *     name="schema",
+     *     in="query",
+     *     description="",
+     *     required=false,
+     *     type="string"
+     *   ),
+     * @SWG\Parameter(
+     *     name="table",
+     *     in="query",
+     *     description="",
+     *     required=false,
+     *     type="string"
+     *   ),
+     * @SWG\Parameter(
+     *     name="id_field",
+     *     in="query",
+     *     description="",
+     *     required=false,
+     *     type="string"
+     *   ),
+     * @SWG\Parameter(
+     *     name="sql_summary",
+     *     in="query",
+     *     description="",
+     *     required=false,
+     *     type="string"
+     *   ),
+     * @SWG\Parameter(
+     *     name="sql_list",
+     *     in="query",
+     *     description="",
+     *     required=false,
+     *     type="string"
+     *   ),
+     * @SWG\Parameter(
+     *     name="sorted_by",
+     *     in="query",
+     *     description="",
+     *     required=false,
+     *     type="string"
+     *   ),
+     * @SWG\Parameter(
+     *     name="geom_column",
+     *     in="query",
+     *     description="",
+     *     required=false,
+     *     type="string"
+     *   ),
+     * @SWG\Parameter(
+     *     name="search_field",
+     *     in="query",
+     *     description="",
+     *     required=false,
+     *     type="string"
+     *   ),
+     * @SWG\Parameter(
+     *     name="result_field",
+     *     in="query",
+     *     description="",
+     *     required=false,
+     *     type="string"
+     *   ),
+     * @SWG\Parameter(
+     *     name="search_use_strict",
+     *     in="query",
+     *     description="",
+     *     required=false,
+     *     type="string"
+     *   ),
+     * @SWG\Parameter(
+     *     name="event_id",
+     *     in="query",
+     *     description="",
+     *     required=false,
+     *     type="string"
+     *   ),
+     * @SWG\Parameter(
+     *     name="index",
+     *     in="query",
+     *     description="",
+     *     required=false,
+     *     type="integer"
+     *   ),
+     * @SWG\Parameter(
+     *     name="add_form_size",
+     *     in="query",
+     *     description="",
+     *     required=false,
+     *     type="string"
+     *   ),
+     * @SWG\Parameter(
+     *     name="edit_form_size",
+     *     in="query",
+     *     description="",
+     *     required=false,
+     *     type="string"
+     *   ),
+     * @SWG\Parameter(
+     *     name="display_form_size",
+     *     in="query",
+     *     description="",
+     *     required=false,
+     *     type="string"
      *   ),
      *   @SWG\Response(
      *         response=200,
@@ -556,7 +1239,7 @@ class BusinessObjects extends Vmap {
      *   @SWG\Parameter(
      *     name="cmd",
      *     in="query",
-     *     description="command send from the studio",
+     *     description="Save, Perso_Save, Perso_Published, Default_Published, Perso_Reset, Default_Reset",
      *     required=false,
      *     type="string"
      *   ),
@@ -574,6 +1257,17 @@ class BusinessObjects extends Vmap {
      * @return array containing the status and the message
      */
     function PUT() {
+        if (isset($this->oConnection->oError) && !empty($this->oConnection->oError)) {
+            $aXmlRacineAttribute['status'] = 0;
+            $sMessage = $this->oConnection->oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+            return $sMessage;
+        }
+        if (!in_array('vmap_admin', $this->oConnection->aPrivileges)) {
+            $oError = new VitisError(0, 'INSUFFICIENT_PRIVILEGES');
+            $aXmlRacineAttribute['status'] = 0;
+            $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+            return $sMessage;
+        }
         if (isset($this->aPath[4])) {
             $sBusinessObjectId = $this->aPath[2];
             $sFormName = $this->aPath[4];
@@ -614,6 +1308,33 @@ class BusinessObjects extends Vmap {
 
         if ($this->aValues["cmd"]) {
             switch ($this->aValues["cmd"]) {
+                case "Save":
+
+                    if (!empty($this->aValues['Json'])) {
+                        $pFile = fopen($sDirPath . '/forms/' . $sFormName . '.json', 'w');
+                        if (fwrite($pFile, $this->aValues["Json"]) == FALSE) {
+                            writeToErrorLog('ERROR: ' . $sFormName . '.json save failed');
+                        }
+                        fclose($pFile);
+                    }
+
+                    if ($this->aValues["Js"] != "") {
+                        $pFileJS = fopen($sDirPath . '/forms/ressources/' . $sFormName . '.js', 'w+');
+                        if (fwrite($pFileJS, $this->aValues["Js"]) == FALSE) {
+                            writeToErrorLog('ERROR: ' . $sFormName . '.js save failed');
+                        }
+                        fclose($pFileJS);
+                    }
+
+                    if ($this->aValues["Css"] != "") {
+                        $pFileCSS = fopen($sDirPath . '/forms/ressources/' . $sFormName . '.css', 'w+');
+                        if (fwrite($pFileCSS, $this->aValues["Css"]) == FALSE) {
+                            writeToErrorLog('ERROR: ' . $sFormName . '.css save failed');
+                        }
+                        fclose($pFileCSS);
+                    }
+
+                    break;
                 case "Perso_Save":
 
                     if (!empty($this->aValues['Json'])) {
@@ -675,7 +1396,7 @@ class BusinessObjects extends Vmap {
                 case "Default_Reset" :
                     @unlink($sDirPath . "/forms/default.json");
                     $aFields = explode("|", $this->aValues['field']);
-                    $this->generateBusinessObjectForm($sBusinessObjectId, $sFormName, $aFields);
+                    $this->generateBusinessObjectForm($sBusinessObjectId, $sFormName, $aFields, $this->aValues['label']);
                     break;
             }
         }
@@ -750,28 +1471,40 @@ class BusinessObjects extends Vmap {
         //forme 'veremes_cadastre_parcelle'|'veremes_cadatre_commune'
         if (!empty($this->aValues['idList'])) {
             $aBos = explode("|", $this->aValues['idList']);
-            for ($i = 0; $i < count($aBos); $i++) {                        
+            for ($i = 0; $i < count($aBos); $i++) {
                 if (substr($aBos[$i], 0, 1) === "'") {
                     $aBos[$i] = substr($aBos[$i], 1);
-                }    
+                }
                 if (substr($aBos[$i], -1) === "'") {
                     $aBos[$i] = substr($aBos[$i], 0, -1);
-                }         
+                }
             }
         }
         if (!empty($this->aPath[2])) {
             array_push($aBos, $this->aPath[2]);
         }
 
+        // Supprime les Bo un par un
         for ($i = 0; $i < count($aBos); $i++) {
-            $this->removeBusinessObjectFiles($aBos[$i]);
+            $aPath = Array('vmap', 'businessobjects', $aBos[$i]);
+            $aValues = $this->aValues;
+            $aValues['my_vitis_id'] = $aBos[$i];
+            $oBo = new BusinessObject($aPath, $aValues, $this->aProperties, $this->oConnection);
+
+            // Supprime l'objet métier
+            $oBo->DELETE();
+
+            if (isset($oBo->oError)) {
+                $aXmlRacineAttribute['status'] = 0;
+                $sMessage = $oBo->oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+                return $sMessage;
+            } else {
+                $this->removeBusinessObjectFiles($aBos[$i]);
+                $aXmlRacineAttribute['status'] = 1;
+                $sMessage = $this->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+                return $sMessage;
+            }
         }
-
-        // Supprime l'objet métier de la base
-        $aReturn = $this->genericDelete($this->aProperties['schema_vmap'], 'business_object', 'business_object_id');
-        return $aReturn['sMessage'];
-
-        return 0;
     }
 
     function removeBusinessObjectFiles($sBusinessObjectId) {

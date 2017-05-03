@@ -36,12 +36,12 @@ class PrintTemplates extends Vmap {
      * @param type $aValues parameters of the request
      * @param type $properties properties
      */
-    function PrintTemplates($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
         $this->oConnection = new Connection($this->aValues, $this->aProperties);
-        $this->aSelectedFields = Array("printtemplate_id", "name", "rt_format_id", "rt_orientation_id", "definition", "outputformats_id", "sql", "ressource_id", "business_object_id");
+        $this->aSelectedFields = Array("printtemplate_id", "name", "rt_format_id", "rt_orientation_id", "definition", "outputformats_id");
     }
 
     /**
@@ -77,16 +77,14 @@ class PrintTemplates extends Vmap {
      *     in="query",
      *     description="number of element",
      *     required=false,
-     *     type="integer",
-     *     format="int32"
+     *     type="integer"
      *   ),
      * @SWG\Parameter(
      *     name="offset",
      *     in="query",
      *     description="index of first element",
      *     required=false,
-     *     type="string",
-     *     format="int32"
+     *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="attributs",
@@ -135,14 +133,42 @@ class PrintTemplates extends Vmap {
      *   produces={"application/xml", "application/json"},
      *   @SWG\Parameter(
      *     name="token",
-     *     in="query",
+     *     in="formData",
      *     description="user token",
      *     required=true,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="name",
-     *     in="query",
+     *     in="formData",
+     *     description="",
+     *     required=true,
+     *     type="string"
+     *   ),
+     * @SWG\Parameter(
+     *     name="rt_format_id",
+     *     in="formData",
+     *     description="",
+     *     required=true,
+     *     type="string"
+     *   ),
+     * @SWG\Parameter(
+     *     name="rt_orientation_id",
+     *     in="formData",
+     *     description="",
+     *     required=true,
+     *     type="string"
+     *   ),
+     * @SWG\Parameter(
+     *     name="definition",
+     *     in="formData",
+     *     description="",
+     *     required=true,
+     *     type="string"
+     *   ),
+     * @SWG\Parameter(
+     *     name="outputformats_id",
+     *     in="formData",
      *     description="",
      *     required=true,
      *     type="string"
@@ -174,8 +200,8 @@ class PrintTemplates extends Vmap {
                 $sSql = str_replace('[sSchemaVmap]', $this->aProperties['schema_vmap'], $sSql);
                 $resultat = $this->oConnection->oBd->execute($sSql);
                 if ($this->oConnection->oBd->enErreur()) {
-                    $this->oError = new Error(1, $this->oConnection->oBd->getBDMessage());
-                    $oError = new Error(1, $this->oConnection->oBd->getBDMessage());
+                    $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
+                    $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                     $aXmlRacineAttribute['status'] = 0;
                     $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
                 }
@@ -212,6 +238,34 @@ class PrintTemplates extends Vmap {
      *     required=false,
      *     type="string"
      *   ),
+     * @SWG\Parameter(
+     *     name="rt_format_id",
+     *     in="query",
+     *     description="",
+     *     required=false,
+     *     type="string"
+     *   ),
+     * @SWG\Parameter(
+     *     name="rt_orientation_id",
+     *     in="query",
+     *     description="",
+     *     required=false,
+     *     type="string"
+     *   ),
+     * @SWG\Parameter(
+     *     name="definition",
+     *     in="query",
+     *     description="",
+     *     required=false,
+     *     type="string"
+     *   ),
+     * @SWG\Parameter(
+     *     name="outputformats_id",
+     *     in="query",
+     *     description="",
+     *     required=false,
+     *     type="string"
+     *   ),
      *   @SWG\Response(
      *         response=200,
      *         description="Poprerties Response",
@@ -239,8 +293,8 @@ class PrintTemplates extends Vmap {
                 $sSql = str_replace('[sSchemaVmap]', $this->aProperties['schema_vmap'], $sSql);
                 $resultat = $this->oConnection->oBd->execute($sSql);
                 if ($this->oConnection->oBd->enErreur()) {
-                    $this->oError = new Error(1, $this->oConnection->oBd->getBDMessage());
-                    $oError = new Error(1, $this->oConnection->oBd->getBDMessage());
+                    $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
+                    $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                     $aXmlRacineAttribute['status'] = 0;
                     $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
                 }

@@ -36,7 +36,7 @@ class ServiceTypes extends Vmap {
      * @param type $aValues parameters of the request
      * @param type $properties properties
      */
-    function ServiceTypes($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
@@ -77,16 +77,14 @@ class ServiceTypes extends Vmap {
      *     in="query",
      *     description="number of element",
      *     required=false,
-     *     type="integer",
-     *     format="int32"
+     *     type="integer"
      *   ),
      * @SWG\Parameter(
      *     name="offset",
      *     in="query",
      *     description="index of first element",
      *     required=false,
-     *     type="string",
-     *     format="int32"
+     *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="attributs",

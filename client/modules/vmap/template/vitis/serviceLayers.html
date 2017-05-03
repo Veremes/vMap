@@ -1,0 +1,29 @@
+<div class="row layer-tests">
+    <div data-app-service-layers="" class="col-xs-12">
+        <!-- Menu -->
+        <ul class="nav nav-tabs" role="tablist">
+            <li role="presentation" class="active">
+                <a href="#service_layers_layers_list" aria-controls="service_layers_layers_list" role="tab" data-toggle="tab">{{ 'TITLE_GRID_VMAP_MAP_LAYER_WMS_LAYERS' | translate }}</a>
+            </li>
+            <li role="presentation">
+                <a href="#service_layers_capabilities" aria-controls="service_layers_capabilities" role="tab" data-toggle="tab" ng-click="refresh = !refresh">GetCapabilities</a>
+            </li>
+            <li role="presentation">
+                <a href="#service_layers_layers_ol" aria-controls="service_layers_layers_ol" role="tab" data-toggle="tab" ng-click="showOlMap()">OpenLayers 3</a>
+            </li>
+        </ul>
+        <!-- Onglets -->
+        <div class="tab-content" style="height: calc(100% - 46px);">
+            <div role="tabpanel" class="tab-pane active" id="service_layers_layers_list"></div>
+            <div role="tabpanel" class="tab-pane" id="service_layers_capabilities">                
+                <ui-codemirror id="service_layers_capabilities_codemirror" ui-codemirror-opts="codemirror_options" ui-refresh="refresh" ng-model="xml" style="height: 50%"></ui-codemirror>
+            </div>
+            <div role="tabpanel" class="tab-pane" id="service_layers_layers_ol">
+                <div id="service_layers_layers_ol_formreader"
+                     app-form-reader 
+                     app-properties="ctrl.oProperties"
+                     app-token="ctrl.sToken"></div>
+            </div>
+        </div>
+    </div>
+</div>

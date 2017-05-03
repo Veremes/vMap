@@ -20,7 +20,7 @@ class Mj_Compte_Communal_Parcelles extends Mj {
 	* \param $properties Tableau des propri�t�s
 	* \param $sLayerTypeParcelle Chaine Type de g�om�trie des parcelles
 	*/
-	function Mj_Compte_Communal_Parcelles($aIdPar,$oBD,$properties,$sLayerTypeParcelle){
+	function __construct($aIdPar,$oBD,$properties,$sLayerTypeParcelle){
              $oBD = new BD ($properties["cadastre"]["rp"]["login"], $properties["cadastre"]["rp"]["pass"], $properties["database"], $properties["server"], $properties["port"], $properties["sgbd"], $properties["page_encoding"]);                
 		$i=0;
                 while ($aIdPar[$i]){

@@ -36,12 +36,12 @@ class Services extends Vmap {
      * @param type $aValues parameters of the request
      * @param type $properties properties
      */
-    function Services($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
         $this->oConnection = new Connection($this->aValues, $this->aProperties);
-        $this->aSelectedFields = Array("service_id", "name", "service_type_id", "description", "url", "key", "thumbnail", "lang", "imagery", "service_type_version");
+        $this->aSelectedFields = Array("service_id", "name", "service_type_id", "description", "url", "key", "thumbnail", "lang", "imagery", "service_type_version", "service_type_type", "service_options", "service_vm4ms");
     }
 
     /**
@@ -77,17 +77,14 @@ class Services extends Vmap {
      *     in="query",
      *     description="number of element",
      *     required=false,
-     *     type="integer",
-     *     default="4",
-     *     format="int32"
+     *     type="integer"
      *   ),
      * @SWG\Parameter(
      *     name="offset",
      *     in="query",
      *     description="index of first element",
      *     required=false,
-     *     type="string",
-     *     format="int32"
+     *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="attributs",
@@ -123,7 +120,31 @@ class Services extends Vmap {
      * @return  Services
      */
     function GET() {
-        $aReturn = $this->genericGet($this->aProperties['schema_vmap'], 'service', 'service_id', false, 'vmap_admin_map_vmap_services');
+        $this->genericGet($this->aProperties['schema_vmap'], 'service', 'service_id', false, 'vmap_admin_map_vmap_services');
+        
+        // Remplace les balises
+        for ($i = 0; $i < count($this->aObjects); $i++) {
+            $this->aObjects[$i]->aFields['url'] = str_replace('[ms_cgi_url]', $this->aProperties['ms_cgi_url'], $this->aObjects[$i]->aFields['url']);
+        }
+        
+        // Reformatte la réponse 
+        if (isset($this->aValues['sEncoding'])) {
+            $sEncoding = $this->aValues['sEncoding'];
+        } else {
+            $sEncoding = null;
+        }if (isset($this->aValues['sSourceEncoding'])) {
+            $sSourceEncoding = $this->aValues['sSourceEncoding'];
+        } else {
+            $sSourceEncoding = null;
+        }if (isset($this->aValues['output'])) {
+            $output = $this->aValues['output'];
+        } else {
+            $output = null;
+        }
+        $aXmlRacineAttribute['status'] = 1;
+        $sMessage = $this->asDocument('', 'vitis', $sEncoding, True, $aXmlRacineAttribute, $sSourceEncoding, $output);
+        $aReturn = array('sStatus' => $aXmlRacineAttribute['status'], "sMessage" => $sMessage);
+
         return $aReturn['sMessage'];
     }
 
@@ -137,49 +158,49 @@ class Services extends Vmap {
      *   consumes= { "multipart/form-data"},
      *   @SWG\Parameter(
      *     name="token",
-     *     in="query",
+     *     in="formData",
      *     description="user token",
      *     required=true,
      *     type="string"
      *   ),
      * * @SWG\Parameter(
      *     name="service_type_id",
-     *     in="query",
+     *     in="formData",
      *     description="",
      *     required=false,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="name",
-     *     in="query",
+     *     in="formData",
      *     description="",
      *     required=false,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="description",
-     *     in="query",
+     *     in="formData",
      *     description="",
      *     required=false,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="url",
-     *     in="query",
+     *     in="formData",
      *     description="",
      *     required=false,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="key",
-     *     in="query",
+     *     in="formData",
      *     description="",
      *     required=false,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="service_type_version",
-     *     in="query",
+     *     in="formData",
      *     description="",
      *     required=false,
      *     type="string"
@@ -209,7 +230,7 @@ class Services extends Vmap {
     function POST() {
 
         // Vignette à uploader ?
-        if (!empty($_FILES['thumbnail'])) {            
+        if (!empty($_FILES['thumbnail'])) {
             // la colonne thumbnail vaudra le nom du fichier
             $this->aValues["thumbnail"] = $_FILES['thumbnail']["name"];
         }
@@ -411,21 +432,22 @@ class Services extends Vmap {
         }
         if (!empty($this->aPath['2'])) {
             $aIdList = array($this->aPath['2']);
+            $this->aValues['idList'] = $this->aPath['2'];
         }
         require $this->sRessourcesFile;
         $sSql = str_replace('[idList]', str_replace('|', ',', $this->aValues['idList']), $aSql['getTotalServiceLayers']);
         $sSql = str_replace('[sSchemaVmap]', $this->aProperties['schema_vmap'], $sSql);
         $resultat = $this->oConnection->oBd->execute($sSql);
         if ($this->oConnection->oBd->enErreur()) {
-            $this->oError = new Error(1, $this->oConnection->oBd->getBDMessage());
-            $oError = new Error(1, $this->oConnection->oBd->getBDMessage());
+            $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
+            $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
             $aXmlRacineAttribute['status'] = 0;
             $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
             return $sMessage;
         } else {
             if ($this->oConnection->oBd->objetSuivant($resultat)->nb_layers > 0) {
-                $this->oError = new Error(1, $this->oConnection->oBd->getBDMessage());
-                $oError = new Error(1, 'ERROR_SERVICE_DELETE_VMAP_MAP_SERVICE');
+                $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
+                $oError = new VitisError(1, 'ERROR_SERVICE_DELETE_VMAP_MAP_SERVICE');
                 $aXmlRacineAttribute['status'] = 0;
                 $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
             } else {

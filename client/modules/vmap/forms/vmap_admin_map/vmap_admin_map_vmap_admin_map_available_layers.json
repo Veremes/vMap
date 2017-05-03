@@ -21,7 +21,10 @@
                         "web_service":{
                             "ressource_id":"vmap/layerthemes",
                             "id_key":"layertheme_id",
-                            "label_key":"name"
+                            "label_key":"name",
+                            "parameters":{
+                                "order_by":"name"
+                            }
                         }
                     },
                     {
@@ -32,23 +35,10 @@
                         "web_service":{
                             "ressource_id":"vmap/services",
                             "id_key":"service_id",
-                            "label_key":"name"
-                        }
-                    }
-                ]
-            },
-            {
-                "fields":[
-                    {
-                        "type":"select",
-                        "name":"crs_list",
-                        "label":"FORM_COORDINATE_SYSTEM_VMAP_MAP_LAYER",
-                        "nb_cols":4,
-                        "web_service":{
-                            "ressource_id":"vmap/crss",
-                            "id_key":"crs_id",
                             "label_key":"name",
-                            "callback": "concatSelectAttributes('crs_list', ' : ')"
+                            "parameters":{
+                                "order_by":"name"
+                            }
                         }
                     }
                 ]

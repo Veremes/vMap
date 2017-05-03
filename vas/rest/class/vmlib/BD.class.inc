@@ -4,11 +4,11 @@
  * \file BD.class.inc
  * \brief BD.class.inc \n \n Ce fichier contient la classe php BD.
  *
- * Elle est bas�e sur un classe �labor�e par Philippe Rigaux qui permet d'utiliser les fonctions natives de php pour l'exploitation du SGBD
- * MySQL en fran�ais. Toutes les manipulations les plus courantes de MySQL sont impl�ment�es dans cette classe.
- * Elle a �t� reprise pour pouvoir fonctionner aussi bien avec une base  MySQL que PostgreSQL.
+ * Elle est basée sur un classe élaborée par Philippe Rigaux qui permet d'utiliser les fonctions natives de php pour l'exploitation du SGBD
+ * MySQL en français. Toutes les manipulations les plus courantes de MySQL sont implémentées dans cette classe.
+ * Elle a été reprise pour pouvoir fonctionner aussi bien avec une base  MySQL que PostgreSQL.
  *
- * Les sessions php permettent de conserver les donn�es n�cessaires pour g�n�rer un objet BD r�current.
+ * Les sessions php permettent de conserver les données nécessaires pour générer un objet BD récurrent.
  *
  * \author Philippe Rigaux <rigaux@lamsade.dauphine.fr>.
  * \author Olivier Gayte <olivier.gayte@veremes.com>.
@@ -17,14 +17,14 @@
  */
 /**
  * \class BD
- * \brief BD Class \n \n Cette classe totalement g�n�rique permet de manipuler des donn�es
+ * \brief BD Class \n \n Cette classe totalement générique permet de manipuler des données
  * contenues dans une base MySQL, Oracle ou PostgreSQL.
  *
- * Elle est bas�e sur un classe �labor�e par Philippe Rigaux qui permet d'utiliser les fonctions natives de php pour l'exploitation du SGBD
- * MySQL en fran�ais. Toutes les manipulations les plus courantes de MySQL sont impl�ment�es dans cette classe.
- * Elle a �t� reprise pour pouvoir fonctionner aussi bien avec une base  MySQL que PostgreSQL.
+ * Elle est basée sur un classe élaborée par Philippe Rigaux qui permet d'utiliser les fonctions natives de php pour l'exploitation du SGBD
+ * MySQL en français. Toutes les manipulations les plus courantes de MySQL sont implémentées dans cette classe.
+ * Elle a été reprise pour pouvoir fonctionner aussi bien avec une base  MySQL que PostgreSQL.
  *
- * Les sessions php permettent de conserver les donn�es n�cessaires pour g�n�rer un objet BD r�current.
+ * Les sessions php permettent de conserver les données nécessaires pour générer un objet BD récurrent.
  *
  * \author  Philippe Rigaux <rigaux@lamsade.dauphine.fr>.
  * \author Olivier Gayte <olivier.gayte@veremes.com>.
@@ -48,7 +48,7 @@ class BD {
     var $connexion;
 
     /**
-     * Bool�en, permet de savoir si une erreur � �t� rencontr�e.
+     * Booléen, permet de savoir si une erreur à été rencontrée.
      */
     var $erreurRencontree = 0;
 
@@ -63,12 +63,12 @@ class BD {
     var $mdp;
 
     /**
-     * Nom de la base de donn�es utilis�e.
+     * Nom de la base de données utilisée.
      */
     var $base;
 
     /**
-     * Nom ou IP du serveur utilis�.
+     * Nom ou IP du serveur utilisé.
      */
     var $serveur;
 
@@ -78,7 +78,7 @@ class BD {
     var $port;
 
     /**
-     * Message � afficher.
+     * Message à afficher.
      */
     var $sMessage = "";
 
@@ -88,7 +88,7 @@ class BD {
     var $sDsn;
 
     /**
-     * Casse des attributs renvoy�es par la fonction LigneSuite ("min", "maj" ou "").
+     * Casse des attributs renvoyées par la fonction LigneSuite ("min", "maj" ou "").
      */
     var $sAttributeCase = ""; //"min", "maj"
     /**
@@ -97,20 +97,20 @@ class BD {
     var $sgbd;
 
     /**
-     * langue de l'application par d�faut fr
+     * langue de l'application par défaut fr
      */
     var $lang;
 
     /**
-     * Connexion � la base
+     * Connexion à la base
      * \param $login Identifiant de l'utilisateur.
      * \param $motDePasse Mot de passe de l'utilisateur.
-     * \param $base Nom de la base de donn�es utilis�e.
-     * \param $serveur Nom ou IP du serveur utilis�.
-     * \param $port Port de connexion utilis� : 5432 pour postgresql
-     * \param $sgbd SGBD utilis� : "pgsql" - "mysql" - "oci" (Oracle)
+     * \param $base Nom de la base de données utilisée.
+     * \param $serveur Nom ou IP du serveur utilisé.
+     * \param $port Port de connexion utilisé : 5432 pour postgresql
+     * \param $sgbd SGBD utilisé : "pgsql" - "mysql" - "oci" (Oracle)
      */
-    function BD($login, $motDePasse, $base, $serveur, $port, $sgbd, $sPageEncoding = "ISO-8859-1", $lang = "fr") {
+    function __construct($login, $motDePasse, $base, $serveur, $port, $sgbd, $sPageEncoding = "ISO-8859-1", $lang = "fr") {
         $this->login = $login;
         $this->mdp = $motDePasse;
         $this->base = $base;
@@ -164,18 +164,18 @@ class BD {
         }
     }
 
-    // ---- Partie priv�e : les m�thodes
+    // ---- Partie privée : les méthodes
 
     /**
-     * M�thodes getSourceEncoding
-     * \return Cette m�thode permet de retourner l'encodage de la base de donn�es selon le type de BD.
+     * Méthodes getSourceEncoding
+     * \return Cette méthode permet de retourner l'encodage de la base de données selon le type de BD.
      */
     function getSourceEncoding() {
         if ($this->sgbd != "") {
             try {
                 switch ($this->sgbd) {
                     case "sqlite":
-                        // Requ�te qui va permettre de r�cup�rer l'encodage de la base
+                        // Requête qui va permettre de récupérer l'encodage de la base
                         break;
                     case "pgsql" :
                         $sSql = "SELECT datname,encoding FROM pg_database where datname='sDataBase'";
@@ -239,8 +239,8 @@ class BD {
     }
 
     /**
-     * M�thodes pour afficher le message en HTML.
-     * \param $message Message � afficher.
+     * Méthodes pour afficher le message en HTML.
+     * \param $message Message à afficher.
      * \private
      */
     function setBDMessage($message) {
@@ -248,9 +248,9 @@ class BD {
     }
 
     /**
-     * M�thodes pour afficher le message en HTML encod� en UTF-8. 
-     * ATTENTION : A utiliser seulement pour des chaines �crites � la main. Ne pas utiliser pour des chaines ou il y a concat�nation entre "chaine �crite � la main" et chaine venant de la Base de donn�es
-     * \param $message Message � afficher.
+     * Méthodes pour afficher le message en HTML encodé en UTF-8. 
+     * ATTENTION : A utiliser seulement pour des chaines écrites à la main. Ne pas utiliser pour des chaines ou il y a concaténation entre "chaine écrite à la main" et chaine venant de la Base de données
+     * \param $message Message à afficher.
      * \private
      */
     function setStringMessage($message) {
@@ -258,9 +258,9 @@ class BD {
     }
 
     /**
-     * M�thodes qui permet d'encoder une chaine en UTF-8 pour que celle-ci soit correctement �crite dans les fichier de log. 
-     * \param $sMessageEncode Message � afficher.
-     * \return La chaine � �crire dans le fichier de log.
+     * Méthodes qui permet d'encoder une chaine en UTF-8 pour que celle-ci soit correctement écrite dans les fichier de log. 
+     * \param $sMessageEncode Message à afficher.
+     * \return La chaine à écrire dans le fichier de log.
      */
     function stringMessageEncode($sMessageEncode) {
         $sMessageEncode = iconv("ISO-8859-1", $this->sPageEncoding, $sMessageEncode);
@@ -269,7 +269,7 @@ class BD {
 
     /**
      * \private
-     * \return Le message � afficher.
+     * \return Le message à afficher.
      */
     function getBDMessage() {
         if ($this->sMessage != "")
@@ -280,7 +280,7 @@ class BD {
     }
 
     /**
-     * Supprime le message � afficher.
+     * Supprime le message à afficher.
      * \private
      */
     function cleanMessage() {
@@ -290,7 +290,7 @@ class BD {
     // ---- Partie publique -------------------------
 
     /**
-     * M�thode indiquant la liste des tables contenues dans la base de donn�es.
+     * Méthode indiquant la liste des tables contenues dans la base de données.
      * \return Le jeu d'enregistrement de la liste des tables.
      */
     function listeDesTables() {
@@ -300,9 +300,9 @@ class BD {
     }
 
     /**
-     * M�thode d'ex�cution d'une requ�te.
-     * \param $sRequete Requ�te � ex�cuter.
-     * \return Le jeu d'enregistrement g�n�r� par l'ex�cution.
+     * Méthode d'exécution d'une requête.
+     * \param $sRequete Requête à exécuter.
+     * \return Le jeu d'enregistrement généré par l'exécution.
      */
     function execute($sRequete) {
         writeToDebugLog($sRequete);
@@ -313,7 +313,7 @@ class BD {
         $oPDOresult = $this->connexion->query($sRequete);
 
         //$iFin = (date("G")*60)*60 + (date("i")*60) + date("s");
-        //writeToDebugLog('Temps d\'ex�cution : '.($iFin-$iDebut));
+        //writeToDebugLog('Temps d\'exécution : '.($iFin-$iDebut));
         if ($this->connexion->errorCode() === "00000") {
             $this->erreurRencontree = 0;
             return $oPDOresult;
@@ -328,29 +328,29 @@ class BD {
     }
 
     /**
-     * M�thode permettant de d�marrer une transaction.
+     * Méthode permettant de démarrer une transaction.
      */
     function demarreTransaction() {
         $this->connexion->beginTransaction();
     }
 
     /**
-     * M�thode permettant de terminer une transaction.
+     * Méthode permettant de terminer une transaction.
      */
     function termineTransaction() {
         $this->connexion->commit();
     }
 
     /**
-     * M�thode permettant d'annuler une transaction.
+     * Méthode permettant d'annuler une transaction.
      */
     function annuleTransaction() {
         $this->connexion->rollBack();
     }
 
     /**
-     * M�thode de suppression d'un objet PDO::Statement (n�cessaire pour l'ex�cution
-     * de requ�tes successives).
+     * Méthode de suppression d'un objet PDO::Statement (nécessaire pour l'exécution
+     * de requêtes successives).
      * \return Null.
      */
     function fermeResultat() {
@@ -358,8 +358,8 @@ class BD {
     }
 
     /**
-     * Acc�s � la ligne suivante, sous forme d'objet
-     * \param $oPDOresult  Jeu d'enregistrement r�sultant de l'�x�cution d'une requ�te.
+     * Accès à la ligne suivante, sous forme d'objet
+     * \param $oPDOresult  Jeu d'enregistrement résultant de l'éxécution d'une requête.
      * \return La ligne suivante dans le jeu d'enregistrement.
      */
     function objetSuivant($oPDOresult) {
@@ -367,8 +367,8 @@ class BD {
     }
 
     /**
-     * Acc�s � la ligne suivante, sous forme de tableau associatif
-     * \param $oPDOresult  Jeu d'enregistrement r�sultant de l'�x�cution d'une requ�te.
+     * Accès à la ligne suivante, sous forme de tableau associatif
+     * \param $oPDOresult  Jeu d'enregistrement résultant de l'éxécution d'une requête.
      * \return La ligne suivante dans le jeu d'enregistrement.
      */
     function ligneSuivante($oPDOresult) {
@@ -376,8 +376,8 @@ class BD {
     }
 
     /**
-     * Acc�s au r�sultat sous forme de tableau associatif
-     * \param $oPDOresult  Jeu d'enregistrement r�sultant de l'�x�cution d'une requ�te.
+     * Accès au résultat sous forme de tableau associatif
+     * \param $oPDOresult  Jeu d'enregistrement résultant de l'éxécution d'une requête.
      * \return un tableau contenant les enregistrements sous forme de tableau associatif (champs=>valeur).
      */
     function getResultTableAssoc($oPDOresult) {
@@ -385,7 +385,7 @@ class BD {
     }
 
     /**
-     * Acc�s � la ligne suivante, sous forme de tableau indic�
+     * Accès à la ligne suivante, sous forme de tableau indicé
      * \param $oDBresultat Jeu d'enregistrement.
      * \return La ligne suivante dans le jeu d'enregistrement.
      */
@@ -394,8 +394,8 @@ class BD {
     }
 
     /**
-     * M�thode indiquant si une erreur a �t� rencontr�e
-     * \return L'erreur rencontr�e.
+     * Méthode indiquant si une erreur a été rencontrée
+     * \return L'erreur rencontrée.
      */
     function enErreur() {
         return $this->erreurRencontree;
@@ -403,34 +403,34 @@ class BD {
 
     /**
      * DEPRECATED ?
-     * M�thode donnant l'id de la derni�re ligne ins�r�e.
-     * \return L'id de la derni�re ligne ins�r�e.
+     * Méthode donnant l'id de la dernière ligne insérée.
+     * \return L'id de la dernière ligne insérée.
      */
     function idDerniereLigne() {
         return mysql_insert_id();
     }
 
     /**
-     * M�thode permettant de prot�ger les caract�res sp�ciaux d'une cha�ne de caract�re
-     * dans une requ�te.
-     * \param $chaine Cha�ne de caract�re � prot�ger.
+     * Méthode permettant de protéger les caractéres spéciaux d'une chaine de caractère
+     * dans une requête.
+     * \param $chaine Chaine de caractère à protéger.
      */
     function protegeChaine($chaine) {
         return $this->connexion->quote($chaine);
     }
 
     /**
-     * M�thode indiquant le nombre d'attributs dans le r�sultat.
-     * \param $res  Jeu d'enregistrement r�sultant de l'�x�cution d'une requ�te.
-     * \return Le nombre d'attributs dans le r�sultat.
+     * Méthode indiquant le nombre d'attributs dans le résultat.
+     * \param $res  Jeu d'enregistrement résultant de l'éxécution d'une requête.
+     * \return Le nombre d'attributs dans le résultat.
      */
     function getFieldsNumber($oPDOresult) {
         return $oPDOresult->columnCount();
     }
 
     /**
-     * M�thode donnant le nom d'un attribut.
-     * \param $oPDOresult  Jeu d'enregistrement r�sultant de l'�x�cution d'une requ�te.
+     * Méthode donnant le nom d'un attribut.
+     * \param $oPDOresult  Jeu d'enregistrement résultant de l'éxécution d'une requête.
      * \param $iFieldCount Nombre d'attributs.
      * \param $iPosition Position de l'attribut.
      * \return Le nom d'un attribut.
@@ -458,27 +458,27 @@ class BD {
     }
 
     /**
-     * M�thode indiquant le nombre de lignes dans le r�sultat. Utilisez  PHP> 5.1
-     * \param $oPDOresult Jeu d'enregistrement r�sultant de l'�x�cution d'une requ�te.
-     * \return Le nombre de lignes dans le r�sultat.
+     * Méthode indiquant le nombre de lignes dans le résultat. Utilisez  PHP> 5.1
+     * \param $oPDOresult Jeu d'enregistrement résultant de l'éxécution d'une requête.
+     * \return Le nombre de lignes dans le résultat.
      */
     function nombreLigne($oPDOresult) {
         return $oPDOresult->rowCount();
     }
 
     /**
-     * M�thode de d�connexion.
+     * Méthode de déconnexion.
      */
     function quitter() {
         $this->connexion->null;
     }
 
     /**
-     * M�thode permettant de r�cup�rer le type d'une attribut.
-     * \param $oPDOresult Jeu d'enregistrement r�sultant de l'�x�cution d'une requ�te.
+     * Méthode permettant de récupérer le type d'une attribut.
+     * \param $oPDOresult Jeu d'enregistrement résultant de l'éxécution d'une requête.
      * \param $iNumFields Nombres d'attributs.
      * \param $sFieldName Nom de l'attribut.
-     * \return Le type d'une attribut (-1 si l'attribut pass� en param�tre n'est pas trouv�, 'VAR_STRING' texte, 'DATE' date, ... ).
+     * \return Le type d'une attribut (-1 si l'attribut passé en paramètre n'est pas trouvé, 'VAR_STRING' texte, 'DATE' date, ... ).
      */
     function getType($oPDOresult, $iNumFields, $sFieldName, $sTable) {
         $sType = -1;
@@ -496,23 +496,23 @@ class BD {
                     $sType = $aMeta['native_type'];
             }
         }
-        // si le champ n'a pas �t� trouv�, il s'agit d'une erreur
+        // si le champ n'a pas été trouvé, il s'agit d'une erreur
         return $sType;
     }
 
     /**
-     * M�thode permettant de construire une clause WHERE SQL � partir d'une liste de valeur pass�es en requ�te.
-     * La table cible est sp�cifi�e en param�tre de la m�thode.
-     * \param $sSchema Schema de la base de donn�es
+     * Méthode permettant de construire une clause WHERE SQL à partir d'une liste de valeur passées en requête.
+     * La table cible est spécifiée en paramètre de la méthode.
+     * \param $sSchema Schema de la base de données
      * \param $sTable Table dans laquelle on recherche.
-     * \param $aValues Valeurs contenues dans la requ�te.
-     * \param $bListQuery Liste des champs filtr�s.
-     * \param $bUpper Modification de la casse. Facultatif, false par d�faut.
-     * \param $bClause Type de clause : AND ou OR. Facultatif, AND par d�faut.
-     * \return La clause WHERE de la requ�te SQL de recherche.
+     * \param $aValues Valeurs contenues dans la requête.
+     * \param $bListQuery Liste des champs filtrés.
+     * \param $bUpper Modification de la casse. Facultatif, false par défaut.
+     * \param $bClause Type de clause : AND ou OR. Facultatif, AND par défaut.
+     * \return La clause WHERE de la requête SQL de recherche.
      */
     function getWhereClause($sSchema, $sTable, $aValues, $bListQuery, $bLower = false, $sClause = "AND") {
-        // LIKE g�re tous les types de champs.
+        // LIKE gère tous les types de champs.
         switch ($this->sgbd) {
             case 'mysql' :
                 $sProtectField = '`';
@@ -645,28 +645,28 @@ class BD {
     }
 
     /**
-     * M�thode permettant d'ajouter des enregistrements.
-     * \param $sSchema Schema de la base de donn�es
+     * Méthode permettant d'ajouter des enregistrements.
+     * \param $sSchema Schema de la base de données
      * \param $sTable Table dans laquelle on ajoute.
-     * \param $aValues Valeurs � ajouter.
-     * \param $sSequence Nom de la s�quence � utiliser.
+     * \param $aValues Valeurs à ajouter.
+     * \param $sSequence Nom de la séquence à utiliser.
      * \param $iIdField Nom de l'attribut identifiant.
-     * \param $bGetSql Bool�en : doit on renvoyer le code sql ou ex�cuter la requ�te? Vaut 'false' par d�faut.
-     * \return L'id de la derni�re ligne ins�r�e.
+     * \param $bGetSql Booléen : doit on renvoyer le code sql ou exécuter la requête? Vaut 'false' par défaut.
+     * \return L'id de la dernière ligne insérée.
      */
     function insert($sSchema, $sTable, $aValues, $sSequence, $iIdField, $bGetSql = false) {
-        // Ins�re les �l�ments du tableau $aValues dans $sTable et renvoie l'identifiant de l'enregistrement correspondant (en fait le dernier)
+        // Insére les éléments du tableau $aValues dans $sTable et renvoie l'identifiant de l'enregistrement correspondant (en fait le dernier)
         switch ($this->sgbd) {
             case 'mysql' :
-                $sSQL = "INSERT INTO `$sTable` (";
+                $sSql = "INSERT INTO `$sTable` (";
                 $sSqlList = $this->AddLimite(0, 0, "SELECT * FROM " . $sTable);
                 $sProtectField = "`";
                 break;
             case 'pgsql' :
-                $sSQL = 'INSERT INTO ' . $sSchema . '.' . $sTable . '(';
+                $sSql = 'INSERT INTO ' . $sSchema . '.' . $sTable . '(';
                 $sSqlList = $this->AddLimite(0, 0, 'SELECT * FROM ' . $sSchema . '.' . $sTable);
                 $sProtectField = '"';
-                // Utilisation de la sequence pour r�cup�rer un identifiant
+                // Utilisation de la sequence pour récupérer un identifiant
                 if ($sSequence) {
                     $oPDOresult = $this->execute('SELECT nextval(\'' . $sSequence . '\')');
                     if ($oPDOresult !== false)
@@ -677,10 +677,10 @@ class BD {
                 }
                 break;
             case 'oci' :
-                $sSQL = 'INSERT INTO ' . $sTable . '(';
+                $sSql = 'INSERT INTO ' . $sTable . '(';
                 $sSqlList = 'SELECT ' . $sTable . '.* FROM ' . $sTable . ' WHERE ROWNUM <=1 AND ROWNUM >=0';
                 $sProtectField = '"';
-                // Utilisation de la sequence pour r�cup�rer un identifiant
+                // Utilisation de la sequence pour récupérer un identifiant
                 if ($sSequence) {
                     $oPDOresult = $this->execute('SELECT ' . $sSequence . '.nextval FROM dual');
                     if ($oPDOresult !== false)
@@ -711,16 +711,20 @@ class BD {
         }
 
         if (empty($iIdValue)) {
-            $sSQL = $sSQL . $sFields . ") VALUES (" . $sValues . ") RETURNING \"" . $iIdField . "\"";
+            $sSql = $sSql . $sFields . ") VALUES (" . $sValues . ") RETURNING \"" . $iIdField . "\"";
         } else {
-            $sSQL = $sSQL . $sFields . ") VALUES (" . $sValues . ")";
+            $sSql = $sSql . $sFields . ") VALUES (" . $sValues . ")";
         }
 
         $resultat = $this->fermeResultat();
         if ($bGetSql) {
-            return $sSQL;
+            return $sSql;
         } else {
-            $iResult = $this->execute($sSQL);
+            $iResult = $this->execute($sSql);
+            if ($iResult === false) {
+                return $iResult;
+            }
+            
             // Valeur retour au cas où $iIdValue soit vide
             if (empty($iIdValue)) {
                 $iIdValue = $iResult->fetchColumn();
@@ -736,12 +740,12 @@ class BD {
     }
 
     /**
-     * M�thode permettant d'ajouter des enregistrements par le biais de la commande SQL 'COPY'.
-     * Methode impl�ment�e pour PostgreSQL.
-     * \param $sSchema Schema de la base de donn�es
+     * Méthode permettant d'ajouter des enregistrements par le biais de la commande SQL 'COPY'.
+     * Methode implémentée pour PostgreSQL.
+     * \param $sSchema Schema de la base de données
      * \param $sTable Table dans laquelle on ajoute.
-     * \param $aValues Valeurs � ajouter.
-     * \param $sSequence Nom de la s�quence � utiliser.
+     * \param $aValues Valeurs à ajouter.
+     * \param $sSequence Nom de la séquence à utiliser.
      * \param $sIdField Nom de l'attribut identifiant.
      */
     function copy($sSchema, $sTable, $aValues, $sSequence, $sIdField) {
@@ -789,31 +793,31 @@ class BD {
     }
 
     /**
-     * M�thode permettant de mettre � jour des enregistrements.
-     * \param $sSchema Schema de la base de donn�es
-     * \param $sTable Table dans laquelle on met � jour.
-     * \param $aValues Valeurs � mettre � jour.
+     * Méthode permettant de mettre à jour des enregistrements.
+     * \param $sSchema Schema de la base de données
+     * \param $sTable Table dans laquelle on met à jour.
+     * \param $aValues Valeurs à mettre à jour.
      * \param $sAttribute Attribut de la clause "WHERE".
      * \param $sId Valeur de l'attribut.
      * \param $sIdType Type de l'attribut.
      */
     function update($sSchema, $sTable, $aValues, $sAttribute, $sId, $sIdType = "") {
-// Modifie la table $sTable � partir du contenu du tableau $aValues
-// Le nom des �l�ments de $aValues doit �tre le m�me que les nom de champs
-// Le type de chaque champ est pris en compte de mani�re dynamque
+// Modifie la table $sTable à partir du contenu du tableau $aValues
+// Le nom des éléments de $aValues doit être le même que les nom de champs
+// Le type de chaque champ est pris en compte de manière dynamque
         switch ($this->sgbd) {
             case 'mysql' :
-                $sSQL = "UPDATE `$sTable` set ";
+                $sSql = "UPDATE `$sTable` set ";
                 $sSqlList = $this->AddLimite(0, 0, "SELECT * FROM " . $sTable);
                 $sProtectField = "`";
                 break;
             case 'pgsql' :
-                $sSQL = 'UPDATE ' . $sSchema . '.' . $sTable . ' set ';
+                $sSql = 'UPDATE ' . $sSchema . '.' . $sTable . ' set ';
                 $sSqlList = $this->AddLimite(0, 0, 'SELECT * FROM ' . $sSchema . '.' . $sTable);
                 $sProtectField = '"';
                 break;
             case 'oci' :
-                $sSQL = 'UPDATE ' . $sTable . ' set ';
+                $sSql = 'UPDATE ' . $sTable . ' set ';
                 $sSqlList = $this->AddLimite(0, 1, 'SELECT * FROM ' . $sTable);
                 $sProtectField = '';
                 break;
@@ -836,7 +840,7 @@ class BD {
         }
 
         if ($sPaires != "") {
-            $sSQL = $sSQL . $sPaires;
+            $sSql = $sSql . $sPaires;
             if ($sAttribute != "") {
                 if (!is_array($sId)) {
                     $sWhereClause = $this->AddWhereClause($sAttribute, $sId, $sIdType);
@@ -844,10 +848,10 @@ class BD {
                     $sId = implode(",", $sId);
                     $sWhereClause = " WHERE " . $this->AddInClause($sSchema, $sAttribute, $sId);
                 }
-                $sSQL = $sSQL . $sWhereClause;
+                $sSql = $sSql . $sWhereClause;
             }
             $resultat = $this->fermeResultat();
-            $iResult = $this->execute($sSQL);
+            $iResult = $this->execute($sSql);
             if ($iResult !== false) {
                 $iResult = $this->fermeResultat();
             }
@@ -855,8 +859,8 @@ class BD {
     }
 
     /**
-     * M�thode permettant de supprimer des enregistrements de la table pass�e en param�tre conform�ment � la clause sp�cifi�e.
-     * \param $sSchema Schema de la base de donn�es
+     * Méthode permettant de supprimer des enregistrements de la table passée en paramètre conformément à la clause spécifiée.
+     * \param $sSchema Schema de la base de données
      * \param $sTable Table dans laquelle on supprime.
      * \param $sAttribute Attribut de la clause "WHERE".
      * \param $sId Valeur de l'attribut.
@@ -865,7 +869,7 @@ class BD {
     function delete($sSchema, $sTable, $sAttribute, $sId, $sIdType = "") {
         switch ($this->sgbd) {
             case 'mysql' :
-                $sSQL = "DELETE FROM `$sTable` WHERE " . $sAttribute;
+                $sSql = "DELETE FROM `$sTable` WHERE " . $sAttribute;
                 break;
             case 'pgsql' :
                 if (substr_count($sAttribute, '.') != 1)
@@ -875,37 +879,37 @@ class BD {
                     $sAttribute = $sSchema . '.' . $sAttribute;
                 }
 
-                $sSQL = 'DELETE FROM ' . $sSchema . '.' . $sTable . ' WHERE ' . $sAttribute . '';
+                $sSql = 'DELETE FROM ' . $sSchema . '.' . $sTable . ' WHERE ' . $sAttribute . '';
                 break;
             case 'oci' :
-                $sSQL = "DELETE FROM $sTable WHERE " . $sAttribute;
+                $sSql = "DELETE FROM $sTable WHERE " . $sAttribute;
                 break;
         }
-        if ($sIdType == "text") {
-            $sSQL .= " IN ('" . $sId . "')";
-            $sSQL = str_replace(',', "','", $sSQL);
+        if ($sIdType == "text" && (substr($sId, 1) !== "'" && substr($sId, -1) !== "'")) {
+            $sSql .= " IN ('" . $sId . "')";
+            $sSql = str_replace(',', "','", $sSql);
         } else {
-            $sSQL .= ' IN (' . $sId . ')';
+            $sSql .= ' IN (' . $sId . ')';
         }
-        $iResult = $this->execute($sSQL);
+        $iResult = $this->execute($sSql);
         if ($iResult !== false) {
             $iResult = $this->fermeResultat();
         }
     }
 
     /**
-     * M�thode permettant d'ajouter des enregistrements dans une table li�e.
+     * Méthode permettant d'ajouter des enregistrements dans une table liée.
      * \param $sTableName Table dans laquelle on ajoute.
      * \param $sAttributePK Attribut PK.
      * \param $sPKValue Valeur de l'attribut PK.
      * \param $aAttributeList Tableau contenant les attributs et leurs valeurs.
-     * \param $sSequence S�quence.
-     * \param $sSchema Sch�ma.
+     * \param $sSequence Séquence.
+     * \param $sSchema Schéma.
      */
     function insertLinkedTable($sTableName, $sAttributePK, $sPKValue, $aAttributeList, $sSequence, $sSchema) {
         switch ($this->sgbd) {
             case 'mysql' :
-                //m�thode non impl�ment� pour mysql
+                //méthode non implémenté pour mysql
                 break;
             case 'pgsql' :
                 break;
@@ -923,14 +927,14 @@ class BD {
     }
 
     /**
-     * M�thode permettant d'ajouter des enregistrements sans ajout de nouvel Id dans une table li�e.
-     * \param $sSchema Sch�ma.
+     * Méthode permettant d'ajouter des enregistrements sans ajout de nouvel Id dans une table liée.
+     * \param $sSchema Schéma.
      * \param $sTable Table dans laquelle on ajoute.
      * \param $aAttributeFK Tableau contenant les attributs.
      * \param $aValueList Tableau contenant les valeurs.
      */
     function insertWithoutIdLinkedTable($sSchema, $sTable, $aAttributeList, $aValueList) {
-        //M�thode impl�ment� uniquement pour postgresql
+        //Méthode implémenté uniquement pour postgresql
         if ($sSchema != "") {
             $sTable = $sSchema . "." . $sTable;
         }
@@ -944,8 +948,8 @@ class BD {
     }
 
     /**
-     * M�thode permettant de mettre � jour des enregistrements dans une table li�e.
-     * \param $sTableName Table dans laquelle on met un enregistrement � jour.
+     * Méthode permettant de mettre à jour des enregistrements dans une table liée.
+     * \param $sTableName Table dans laquelle on met un enregistrement à jour.
      * \param $sAttributePK Attribut PK.
      * \param $sAttributeFK Attribut FK.
      * \param $sFKList Liste des valeurs de l'attribut FK.
@@ -954,28 +958,28 @@ class BD {
     function updateLinkedTable($sTableName, $sAttributePK, $sAttributeFK, $sFKList, $sPKValue) {
         switch ($this->sgbd) {
             case 'mysql' :
-                //m�thode non impl�ment� pour mysql
+                //méthode non implémenté pour mysql
                 break;
             case 'pgsql' :
                 $sSql = "UPDATE " . $sTableName . " SET " . $sAttributePK . "=" . $sPKValue . " WHERE " . $sAttributeFK . "=";
                 break;
             case 'oci' :
-                //m�thode non impl�ment� pour oci
+                //méthode non implémenté pour oci
                 break;
         }
         $aFKList = explode("@", $sFKList);
-        //Met � jour les enregistrements de $aFKList
+        //Met à jour les enregistrements de $aFKList
         foreach ($aFKList as $sFKValue) {
             writeToDebugLog($sSql . $sFKValue);
-            writeToSqlLog($this->login . " | " . $sSQL);
+            writeToSqlLog($this->login . " | " . $sSql);
             $this->connexion->query($sSql . $sFKValue);
         }
     }
 
     /**
-     * M�thode permettant de g�n�rer une clause SQL simple de type "LIMIT" selon le sgbd.
+     * Méthode permettant de générer une clause SQL simple de type "LIMIT" selon le sgbd.
      * \param $iMinRowValue Valeur minimale du limit.
-     * \param $iRowPage Nombre d'enregistrements s�lectionn�s.
+     * \param $iRowPage Nombre d'enregistrements sélectionnés.
      */
     function AddLimite($iMinRowValue, $iRowPage, $sSql) {
         switch ($this->sgbd) {
@@ -999,9 +1003,9 @@ class BD {
     }
 
     /**
-     * M�thode permettant de g�n�rer une clause SQL simple de type "ORDER BY" selon le sgbd.
+     * Méthode permettant de générer une clause SQL simple de type "ORDER BY" selon le sgbd.
      * \param $sAttribute Attribut.
-     * \param $sOrder Ordre dans lequel doivent �tre tri�es les donn�es "ASC" ou "DESC".
+     * \param $sOrder Ordre dans lequel doivent étre triées les données "ASC" ou "DESC".
      */
     function AddOrder($sAttibute, $sOrder) {
         if (is_null($sOrder))
@@ -1021,7 +1025,7 @@ class BD {
     }
 
     /**
-     * M�thode permettant de g�n�rer une clause SQL simple de type "WHERE" selon le sgbd.
+     * Méthode permettant de générer une clause SQL simple de type "WHERE" selon le sgbd.
      * \param $sAttribute Attribut.
      * \param $sId Valeur de l'attribut.
      * \param $sType Type de l'attribut.
@@ -1048,8 +1052,8 @@ class BD {
     }
 
     /**
-     * M�thode permettant de g�n�rer une clause SQL simple de type "AND" selon le sgbd.
-     * \param $sSchema Schema de la base de donn�es
+     * Méthode permettant de générer une clause SQL simple de type "AND" selon le sgbd.
+     * \param $sSchema Schema de la base de données
      * \param $sAttribute Attribut.
      * \param $sId Valeur de l'attribut.
      */
@@ -1082,8 +1086,8 @@ class BD {
     }
 
     /**
-     * M�thode permettant de g�n�rer une clause SQL simple de type "IN" selon le sgbd.
-     * \param $sSchema Schema de la base de donn�es
+     * Méthode permettant de générer une clause SQL simple de type "IN" selon le sgbd.
+     * \param $sSchema Schema de la base de données
      * \param $sAttribute Attribut.
      * \param $sId Valeurs de l'attribut.
      */
@@ -1109,11 +1113,11 @@ class BD {
     }
 
     /**
-     * M�thode qui renvoie une cha�ne format�e pour pouvoir �tre utilis� dans un requ�te insert, update ou select.
-     * \param $sValue Cha�ne qui va doit �tre format�e.
+     * Méthode qui renvoie une chaine formatée pour pouvoir étre utilisé dans un requête insert, update ou select.
+     * \param $sValue Chaine qui va doit être formatée.
      * \param $sType Type de l'attribut.
-     * \param $sSchema Schema contenant la table dont est issu le champ � traiter (vide par d�faut).
-     * \param $sTable Table dont est issu le champ � traiter (vide par d�faut).
+     * \param $sSchema Schema contenant la table dont est issu le champ à traiter (vide par défaut).
+     * \param $sTable Table dont est issu le champ à traiter (vide par défaut).
      */
     function formatForSql($sValue, $sType, $sSchema = "", $sTable = "") {
 
@@ -1149,7 +1153,7 @@ class BD {
 
                 break;
         }
-        // Gestion des types alphanum�riques
+        // Gestion des types alphanumériques
         if ($sValue === "") {
             $sValue = "null";
         } else {
@@ -1173,26 +1177,26 @@ class BD {
                     break;
             }
         }
-        // Cas particulier : le bool�en 'faux' dans PostgreSQL
+        // Cas particulier : le booléen 'faux' dans PostgreSQL
         if ($sType == "bool" && $this->sgbd == "pgsql" && $sValue == "null")
             $sValue = "false";
         return $sValue;
     }
 
     /**
-     * M�thode permettant de construire une clause WHERE SQL � partir d'une liste de valeur pass�es en requ�te et avec une jointure sur une autre table.
-     * La table cible est sp�cifi�e en param�tre de la m�thode.
-     * \param $sSchema Schema de la base de donn�es
+     * Méthode permettant de construire une clause WHERE SQL é partir d'une liste de valeur passées en requête et avec une jointure sur une autre table.
+     * La table cible est spécifiée en paramètre de la méthode.
+     * \param $sSchema Schema de la base de données
      * \param $sTable Table dans laquelle on recherche.
-     * \param $aValues Valeurs contenues dans la requ�te.
+     * \param $aValues Valeurs contenues dans la requête.
      * \param $bListQuery.
      * \param $sTable_sql
      * \param $pKey
      * \param $isWhereExist
-     * \return La clause WHERE de la requ�te SQL de recherche.
+     * \return La clause WHERE de la requête SQL de recherche.
      */
     function getWhereAndClause($sSchema, $sTable, $aValues, $bListQuery, $sTable_sql, $pKey, $isWhereExist = false) {
-        // LIKE g�re tous les types de champs.
+        // LIKE gère tous les types de champs.
         switch ($this->sgbd) {
             case 'mysql' :
                 $sProtectField = '`';

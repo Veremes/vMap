@@ -1,7 +1,0 @@
-KEYS
-LICENSE
-NOTICE
-README
-fop.cmd
-fop.js
-status.xml

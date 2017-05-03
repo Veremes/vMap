@@ -25,7 +25,7 @@ class UserModule extends Vmap {
      * @param type $properties properties
      * @param type $oConnection connection object
      */
-    function UserModule($aPath, $aValues, $properties, $oConnection) {
+    function __construct($aPath, $aValues, $properties, $oConnection) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;

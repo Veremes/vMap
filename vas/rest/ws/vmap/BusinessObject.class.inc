@@ -1,6 +1,8 @@
 <?php
 
 require_once 'Vmap.class.inc';
+require_once 'BusinessObjectEvent.class.inc';
+require_once 'PrintReports.class.inc';
 require_once __DIR__ . '/../../class/vitis_lib/Connection.class.inc';
 
 /**
@@ -25,12 +27,12 @@ class BusinessObject extends Vmap {
      * @param type $properties properties
      * @param type $oConnection connection object
      */
-    function BusinessObject($aPath, $aValues, $properties, $oConnection) {
+    function __construct($aPath, $aValues, $properties, $oConnection) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
         $this->oConnection = $oConnection;
-        $this->aSelectedFields = Array("business_object_id", "title", "id_field", "database", "schema", "table", "sql_summary", "sql_list", "sorted_by", "geom_column", "search_field", "result_field", "search_use_strict", "event_id", "index");
+        $this->aSelectedFields = Array("business_object_id", "title", "id_field", "database", "schema", "table", "sql_summary", "sql_list", "sorted_by", "geom_column", "search_field", "result_field", "search_use_strict", "event_id", "index", "add_form_size", "edit_form_size", "display_form_size");
     }
 
     /**
@@ -87,22 +89,35 @@ class BusinessObject extends Vmap {
             $form = file_get_contents($this->aProperties['ws_data_dir'] . '/vmap/business_object/' . $businessObjectId . '/forms/published.json');
             array_push($this->aFields['json_form'], json_decode($form));
         }
-        if (file_exists($this->aProperties['ws_data_dir'] . '/vmap/business_object/' . $businessObjectId . '/forms/ressources/published.js')) {            
+        if (file_exists($this->aProperties['ws_data_dir'] . '/vmap/business_object/' . $businessObjectId . '/forms/ressources/published.js')) {
             $this->aFields['json_form_js'] = $this->aProperties['web_server_name'] . '/' . $this->aProperties['ws_data_alias'] . '/vmap/business_object/' . $businessObjectId . '/forms/ressources/published.js';
         }
-        if (file_exists($this->aProperties['ws_data_dir'] . '/vmap/business_object/' . $businessObjectId . '/forms/ressources/published.css')) {            
+        if (file_exists($this->aProperties['ws_data_dir'] . '/vmap/business_object/' . $businessObjectId . '/forms/ressources/published.css')) {
             $this->aFields['json_form_js'] = $this->aProperties['web_server_name'] . '/' . $this->aProperties['ws_data_alias'] . '/vmap/business_object/' . $businessObjectId . '/forms/ressources/published.js';
+        }
+        if (!empty($this->aFields['database']) && $this->aFields['database'] != $this->oConnection->oBd->base) {
+            $sLogin = $this->oConnection->oBd->login;
+            $sPassword = $this->oConnection->oBd->mdp;
+            $this->oConnection->oBd = new Vm($sLogin, $sPassword, $this->aFields['database'], $this->oConnection->oBd->serveur, $this->oConnection->oBd->port, $this->oConnection->oBd->sgbd, $this->oConnection->oBd->sPageEncoding);
         }
         if (!empty($this->aFields['geom_column'])) {
-            $aGeomColumnsInfos = $this->getTableGeomColumnsInfos($this->aFields['schema'], $this->aFields['table']);
-            for ($i = 0; $i < count($aGeomColumnsInfos); $i++) {
-                if ($aGeomColumnsInfos[$i]['f_geometry_column'] === $this->aFields['geom_column']) {
-                    $this->aFields['geom_type'] = $aGeomColumnsInfos[$i]['type'];
+            if (!$this->oConnection->oBd->enErreur()) {
+                $aGeomColumnsInfos = $this->getTableGeomColumnsInfos($this->aFields['schema'], $this->aFields['table']);
+                for ($i = 0; $i < count($aGeomColumnsInfos); $i++) {
+                    if ($aGeomColumnsInfos[$i]['f_geometry_column'] === $this->aFields['geom_column']) {
+                        $this->aFields['geom_type'] = $aGeomColumnsInfos[$i]['type'];
+                    }
                 }
             }
         }
-        
-        $this->aFields['list_fields'] = $this->getListFields();
+
+        if (!$this->oConnection->oBd->enErreur()) {
+            $this->aFields['list_fields'] = $this->getListFields();
+        }
+
+        if (!empty($sLogin)) {
+            $this->oConnection->oBd = new Vm($sLogin, $sPassword, $this->aProperties['database'], $this->aProperties['server'], $this->aProperties['port'], $this->aProperties['sgbd'], $this->aProperties['page_encoding']);
+        }
     }
 
     /**
@@ -129,11 +144,47 @@ class BusinessObject extends Vmap {
      * delete a business_object
      */
     function DELETE() {
-        $this->oConnection->oBd->delete($this->aProperties['schema_vmap'], 'business_object', 'business_object_id', $this->aValues['my_vitis_id'], 'integer');
-        if ($this->oConnection->oBd->enErreur()) {
-            $this->oError = new Error(1, $this->oConnection->oBd->getBDMessage());
-        } else {
-            $this->aFields['business_object_id'] = $this->aValues['my_vitis_id'];
+
+        $this->GET();
+        $bEventExists = false;
+        $bReportExists = false;
+
+        // Test existance rapports
+        $aPath = Array('vmap', 'printreports');
+        $aValues = $this->aValues;
+        unset($aValues['my_vitis_id']);
+        $aValues['filter'] = "business_object_id='" . $this->aFields['business_object_id'] . "'";
+        $oPrintReports = new PrintReports($aPath, $aValues, $this->aProperties, $this->oConnection);
+        $oPrintReports->GET();
+        if (count($oPrintReports->aObjects) > 0) {
+            $this->oError = new VitisError(1, 'ERROR_BO_DELETE_REPPORT');
+            $bReportExists = true;
+        }
+
+        // Test existance événement
+        if (isset($this->aFields['event_id']) && !empty($this->aFields['event_id'])) {
+            $aPath = Array('vmap', 'businessobjectevents', $this->aFields['event_id']);
+            $aValues = $this->aValues;
+            $aValues['my_vitis_id'] = $this->aFields['event_id'];
+            $oEvent = new BusinessObjectEvent($aPath, $aValues, $this->aProperties, $this->oConnection);
+            $oEvent->GET();
+
+            // L'événement existe
+            if (isset($oEvent->aFields['event_id']) && !empty($oEvent->aFields['event_id'])) {
+                $this->oError = new VitisError(1, 'ERROR_BO_DELETE_EVENT');
+                $bEventExists = true;
+            }
+        }
+
+        // Suppression objet
+        if (!$bEventExists && !$bReportExists) {
+            $this->aFields = array();
+            $this->oConnection->oBd->delete($this->aProperties['schema_vmap'], 'business_object', 'business_object_id', $this->aValues['my_vitis_id'], 'text');
+            if ($this->oConnection->oBd->enErreur()) {
+                $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
+            } else {
+                $this->aFields['business_object_id'] = $this->aValues['my_vitis_id'];
+            }
         }
     }
 

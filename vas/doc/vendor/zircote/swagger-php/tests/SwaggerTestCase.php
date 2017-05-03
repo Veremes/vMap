@@ -123,7 +123,6 @@ class SwaggerTestCase extends PHPUnit_Framework_TestCase
     {
         $analyser = new Analyser();
         $context = Context::detect(1);
-        $context->line -= 1; // correct generated lines: "<?php\n" and "/**\n"
         return $analyser->fromComment("<?php\n/**\n * " . implode("\n * ", explode("\n", $comment)) . "\n*/", $context);
     }
 
@@ -177,7 +176,7 @@ class SwaggerTestCase extends PHPUnit_Framework_TestCase
                 }
             ];
         }
-        $data = get_object_vars($object);
+        $data = unserialize(serialize((array) $object));
         ksort($data);
         foreach ($data as $property => $value) {
             if (is_object($value)) {
@@ -187,7 +186,7 @@ class SwaggerTestCase extends PHPUnit_Framework_TestCase
                     if (gettype($value[0]) === 'string') {
                         $sortFn = 'strcasecmp';
                     } else {
-                        $sortFn = @$sortMap[$property];
+                        $sortFn = isset($sortMap[$property]) ? $sortMap[$property] : null;
                     }
                     if ($sortFn) {
                         usort($value, $sortFn);

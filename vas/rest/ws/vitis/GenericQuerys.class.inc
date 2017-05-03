@@ -39,7 +39,7 @@ class GenericQuerys extends Vitis {
      * @param type $aValues parameters of the request
      * @param type $properties properties
      */
-    function GenericQuerys($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties) {
         require_once 'GenericQuerys.class.sql.inc';
         $this->aSql = $aSql;
         $this->aValues = $aValues;
@@ -375,10 +375,11 @@ class GenericQuerys extends Vitis {
             if (!empty($this->aValues['table']))
                 $this->aPath[2] = $this->aValues['table'];
 
-            if (empty($this->aValues['login']))
+            $sLogin = $this->aValues['login'];
+            if (empty($this->aValues['login']) || $this->aValues['login'] == 'u_vitis')
                 $this->aValues['login'] = $this->oConnection->oBd->login;
 
-            if (empty($this->aValues['password']))
+            if (empty($this->aValues['password']) || $sLogin == 'u_vitis')
                 $this->aValues['password'] = $this->oConnection->oBd->mdp;
 
             if (empty($this->aValues['server']))
@@ -396,19 +397,25 @@ class GenericQuerys extends Vitis {
             if (empty($this->aValues['encoding']))
                 $this->aValues['encoding'] = $this->oConnection->oBd->sPageEncoding;
         }
+        else {
+            if ($this->aValues['login'] == 'u_vitis') {
+                $this->aValues['login'] = '';
+                $this->aValues['password'] = '';
+            }
+        }
 
         $this->oBd = new BD($this->aValues['login'], $this->aValues['password'], $this->aValues['database'], $this->aValues['server'], $this->aValues['port'], $this->aValues['sgbd'], $this->aValues['encoding']);
         if ($this->oBd->erreurRencontree) {
             writeToErrorLog(ERROR_CONNECTION_PROBLEM);
             writeToErrorLog($this->oBd->getBDMessage());
-            $oError = new Error(1, $this->oBd->sMessage);
+            $oError = new VitisError(1, $this->oBd->sMessage);
             $aXmlRacineAttribute['status'] = 0;
             $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
             $bXMLError = true;
         } else {
             if (isset($this->aPath[2])) {
-                if ($this->aPath[3] == "columns") {
-                    $this->getTableColumns();
+                if (!empty($this->aPath[3]) && $this->aPath[3] == "columns") {
+                    $this->getTableColumns($this->aValues['schema'], $this->aPath[2]);
                 } else {
                     $aDataReturn = $this->getData();
                 }
@@ -428,9 +435,11 @@ class GenericQuerys extends Vitis {
     function getTables() {
         require_once "Table.class.inc";
         $sSql = str_replace('[sSchema]', $this->aValues['schema'], $this->aSql[$this->aValues['sgbd']]['getTables']);
+        if (!empty($this->aValues['order_by']))
+            $sSql .= ' ORDER BY ' . $this->aValues['order_by'];
         $oPDOresult = $this->oBd->execute($sSql);
         if ($this->oBd->enErreur()) {
-            $oError = new Error(1, $this->oBd->getBDMessage());
+            $oError = new VitisError(1, $this->oBd->getBDMessage());
             writeToErrorLog($this->oBd->getBDMessage());
             $aXmlRacineAttribute['status'] = 0;
             $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
@@ -441,15 +450,13 @@ class GenericQuerys extends Vitis {
         return $aFields;
     }
 
-    function getTableColumns() {
+    function getTableColumns($sSchema, $sTable) {
         require_once "Column.class.inc";
-        $sSql = str_replace('[sSchema]', $this->aValues['schema'], $this->aSql[$this->aValues['sgbd']]['getTableColumns']);
-
-        $sSql = str_replace('[sTable]', $this->aPath[2], $sSql);
-
+        $sSql = str_replace('[sSchema]', $sSchema, $this->aSql[$this->aValues['sgbd']]['getTableColumns']);
+        $sSql = str_replace('[sTable]', $sTable, $sSql);
         $oPDOresult = $this->oBd->execute($sSql);
         if ($this->oBd->enErreur()) {
-            $oError = new Error(1, $this->oBd->getBDMessage());
+            $oError = new VitisError(1, $this->oBd->getBDMessage());
             $aXmlRacineAttribute['status'] = 0;
             $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
         } else {
@@ -484,7 +491,7 @@ class GenericQuerys extends Vitis {
         return $aColumn;
     }
 
-    function getData() {
+    function getData($bOnlyReturnStatus = false) {
         //ne gère pas les données géométriques
         $sSql = "SELECT ";
         if ($this->aValues['distinct'] == "true") {
@@ -590,7 +597,7 @@ class GenericQuerys extends Vitis {
         $oPDOresult = $this->oBd->execute($sSql);
 
         if ($this->oBd->enErreur()) {
-            $oError = new Error(1, $this->oBd->getBDMessage());
+            $oError = new VitisError(1, $this->oBd->getBDMessage());
         } else {
             while ($aLigne = $oPDOresult->fetch(PDO::FETCH_ASSOC)) {
 
@@ -615,7 +622,7 @@ class GenericQuerys extends Vitis {
         $oPDOresult = $this->oBd->execute($sSql);
 
         if ($this->oBd->enErreur()) {
-            $oError = new Error(1, $this->oBd->getBDMessage());
+            $oError = new VitisError(1, $this->oBd->getBDMessage());
         } else {
             $aLigne = $this->oBd->ligneSuivante($oPDOresult);
             $this->aFields['total_row_number'] = $aLigne['total_row_number'];

@@ -34,7 +34,7 @@ class UserPrintTemplates extends Vmap {
      * @param type $aValues parameters of the request
      * @param type $properties properties
      */
-    function UserPrintTemplates($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
@@ -69,16 +69,14 @@ class UserPrintTemplates extends Vmap {
      *     in="query",
      *     description="number of element",
      *     required=false,
-     *     type="integer",
-     *     format="int32"
+     *     type="integer"
      *   ),
      * @SWG\Parameter(
      *     name="offset",
      *     in="query",
      *     description="index of first element",
      *     required=false,
-     *     type="string",
-     *     format="int32"
+     *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="attributs",
@@ -117,7 +115,11 @@ class UserPrintTemplates extends Vmap {
         require $this->sRessourcesFile;
         // Structure json des modèles d'impression et leurs paramètres.
         $sesGroup = $this->oConnection->sesGroup;
-        $old_filter = $this->aValues['filter'];
+        if (isset($this->aValues['filter']) && !empty($this->aValues['filter'])) {
+            $old_filter = $this->aValues['filter'];
+        } else {
+            $old_filter = '';
+        }
         if (isset($this->aValues['filter']) && $this->aValues['filter'] != "") {
             $this->aValues['filter'] = '(' . ($this->aValues['filter']) . ')' . " AND group_id in ($sesGroup)";
         } else {
@@ -153,8 +155,8 @@ class UserPrintTemplates extends Vmap {
                 $sSql = str_replace('[sSchemaVmap]', $this->aProperties['schema_vmap'], $sSql);
                 $resultat = $this->oConnection->oBd->execute($sSql);
                 if ($this->oConnection->oBd->enErreur()) {
-                    $this->oError = new Error(1, $this->oConnection->oBd->getBDMessage());
-                    $oError = new Error(1, $this->oConnection->oBd->getBDMessage());
+                    $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
+                    $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                     $aXmlRacineAttribute['status'] = 0;
                     $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
                     return $sMessage;

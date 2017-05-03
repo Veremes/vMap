@@ -77,7 +77,8 @@ class Parameter extends AbstractAnnotation
     public $items;
 
     /**
-     * @var string Determines the format of the array if type array is used. Possible values are: csv - comma separated values foo,bar. ssv - space separated values foo bar. tsv - tab separated values foo\tbar. pipes - pipe separated values foo|bar. multi - corresponds to multiple parameter instances instead of multiple values for a single instance foo=bar&foo=baz. This is valid only for parameters in "query" or "formData". Default value is csv.
+     * Determines the format of the array if type array is used. Possible values are: csv - comma separated values foo,bar. ssv - space separated values foo bar. tsv - tab separated values foo\tbar. pipes - pipe separated values foo|bar. multi - corresponds to multiple parameter instances instead of multiple values for a single instance foo=bar&foo=baz. This is valid only for parameters in "query" or "formData". Default value is csv.
+     * @var string
      */
     public $collectionFormat;
 
@@ -168,7 +169,7 @@ class Parameter extends AbstractAnnotation
         'in' => ['query', 'header', 'path', 'formData', 'body'],
         'description' => 'string',
         'required' => 'boolean',
-        'format' => ['int32', 'int64', 'float', 'double', 'byte', 'date', 'date-time', 'string'],
+        'format' => 'string',
         'collectionFormat' => ['csv', 'ssv', 'tsv', 'pipes', 'multi'],
         'maximum' => 'number',
         'exclusiveMaximum' => 'boolean',
@@ -227,6 +228,9 @@ class Parameter extends AbstractAnnotation
                 } elseif (in_array($this->type, $validTypes) === false) {
                     $valid = false;
                     Logger::notice($this->identity() . '->type must be "' . implode('", "', $validTypes) . '" when ' . $this->_identity([]) . '->in != "body" in ' . $this->_context);
+                } elseif ($this->type === 'file' && $this->in !== 'formData') {
+                    Logger::notice($this->identity() . '->in must be "formData" when ' . $this->_identity([]) . '->type == "file" in ' . $this->_context);
+                    $valid = false;
                 }
             }
         }

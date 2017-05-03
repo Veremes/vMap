@@ -33,7 +33,7 @@ class Mj_Attributes extends Mj {
 	* \private
 	* \return Un tableau HTML sous la forme d'une chaîne de caractères.
 	*/
-	function Mj_Attributes($aAttributesEmprise,$aField=Array()){
+	function __construct($aAttributesEmprise,$aField=Array()){
 		foreach ($aAttributesEmprise as $sAttributeEmprise => $aValue){
 			if (is_array($aValue)){
 				foreach ($aValue as $sLabel => $sValue){

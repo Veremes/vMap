@@ -22,7 +22,7 @@
         "bin-dir": "bin"
     },
     "require": {
-        "php": ">=5.4.0",
+        "php": ">=5.6",
         "doctrine/annotations": "*",
         "symfony/finder": "*"
     },
@@ -33,11 +33,16 @@
         "files": ["src/functions.php"]
     },
     "require-dev": {
-        "zendframework/zend-form": "*"
+        "zendframework/zend-form": "<2.8",
+        "squizlabs/php_codesniffer": ">=2.7",
+        "phpunit/phpunit": ">=4.8 <=5.6"
     },
     "autoload-dev": {
         "psr-4": {
             "SwaggerTests\\": "tests/"
         }
+    },
+    "scripts": {
+        "test": "phpunit && phpcs -p --extensions=php --standard=PSR2 --error-severity=1 --warning-severity=0 ./src ./tests"
     }
 }

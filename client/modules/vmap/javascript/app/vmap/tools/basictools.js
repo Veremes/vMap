@@ -7,6 +7,8 @@
  */
 goog.provide('nsVmap.nsToolsManager.BasicTools');
 
+goog.require('oVmap');
+
 goog.require('nsVmap.nsToolsManager.Controls');
 goog.require('nsVmap.nsToolsManager.Location');
 goog.require('nsVmap.nsToolsManager.Measure');
@@ -31,10 +33,6 @@ nsVmap.nsToolsManager.BasicTools = function () {
     this.oInsert_ = new nsVmap.nsToolsManager.Insert();
     this.oPrint_ = new nsVmap.nsToolsManager.Print();
     this.oControls_ = new nsVmap.nsToolsManager.Controls();
-
-    // Directives et controleurs Angular
-    oVmap.module.directive('appBasictools', this.basictoolsDirective);
-    oVmap.module.controller('AppBasictoolsController', this.basictoolsController);
 };
 
 /**
@@ -156,6 +154,11 @@ nsVmap.nsToolsManager.BasicTools.prototype.basictoolsController = function ($sco
                 $scope['$oControls'] = oChild;
         }
     });
+    
+    // Ferme les outils quand on change de carte
+    oVmap['scope'].$on('mapChanged', function(){
+        oVmap.getToolsManager().getBasicTools().toggleOutTools();
+    });
 };
 
 /************************************************
@@ -215,3 +218,7 @@ nsVmap.nsToolsManager.BasicTools.prototype.getPrint = function () {
 nsVmap.nsToolsManager.BasicTools.prototype.getControls = function () {
     return this.oControls_;
 };
+
+// Définit la directive et le controller
+oVmap.module.directive('appBasictools', nsVmap.nsToolsManager.BasicTools.prototype.basictoolsDirective);
+oVmap.module.controller('AppBasictoolsController', nsVmap.nsToolsManager.BasicTools.prototype.basictoolsController);

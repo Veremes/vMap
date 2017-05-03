@@ -1,0 +1,873 @@
+{
+    "search": {
+        "name": "vm4ms_layer_search_form",
+        "title": "",
+        "input_size": "xxs",
+        "nb_cols": 12,
+        "rows": [
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "name",
+                        "label": "FORM_NAME_VM4MS_VM4MS_LAYER",
+                        "nb_cols": 3
+                    },
+                    {
+                        "type": "text",
+                        "name": "title",
+                        "label": "FORM_LAYER_TITLE_VM4MS_VM4MS_LAYER",
+                        "nb_cols": 3
+                    },
+                    {
+                        "type": "select",
+                        "name": "coordsys_id",
+                        "label": "FORM_COORDSYS_ID_VM4MS_VM4MS_LAYER",
+                        "nb_cols": 3,
+                        "web_service": {
+                            "ressource_id": "vm4ms/coordinatesystems",
+                            "id_key": "coordsys_id",
+                            "label_key": "label",
+                            "parameters": {
+                                "order_by": "label"
+                            }
+                        }
+                    },
+                    {
+                        "type": "select",
+                        "name": "source_id",
+                        "label": "FORM_SOURCE_ID_VM4MS_VM4MS_LAYER",
+                        "nb_cols": 3,
+                        "web_service": {
+                            "ressource_id": "vm4ms/sources",
+                            "id_key": "source_id",
+                            "label_key": "name",
+                            "parameters": {
+                                "order_by": "name"
+                            }
+                        }
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "select",
+                        "name": "connection_id",
+                        "label": "FORM_CONNECTION_ID_VM4MS_VM4MS_LAYER",
+                        "nb_cols": 3,
+                        "web_service": {
+                            "ressource_id": "vm4ms/layerconnections",
+                            "id_key": "connection_id",
+                            "label_key": "name",
+                            "parameters": {
+                                "order_by": "name"
+                            }
+                        }
+                    },
+                    {
+                        "type": "select",
+                        "name": "ms_layertype_id",
+                        "label": "FORM_LAYERTYPE_ID_VM4MS_VM4MS_LAYER",
+                        "nb_cols": 3,
+                        "web_service": {
+                            "ressource_id": "vm4ms/layertypes",
+                            "id_key": "ms_layertype_id",
+                            "label_key": "ms_layertype_id",
+                            "parameters": {
+                                "order_by": "ms_layertype_id"
+                            }
+                        }
+                    },
+                    {
+                        "type": "text",
+                        "name": "definition",
+                        "label": "FORM_DEFINITION_VM4MS_VM4MS_LAYER",
+                        "nb_cols": 3
+                    },
+                    {
+                        "type": "radio",
+                        "name": "active",
+                        "label": "FORM_ACTIVE_VM4MS_VM4MS_LAYER",
+                        "options": {
+                            "choices": [{
+                                    "label": "FORM_ACTIVE_YES_VM4MS_VM4MS_LAYER",
+                                    "value": true
+                                },
+                                {
+                                    "label": "FORM_ACTIVE_NO_VM4MS_VM4MS_LAYER",
+                                    "value": false
+                                }]
+                        },
+                        "inline": true,
+                        "nb_cols": 3
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "number",
+                        "name": "opacity",
+                        "label": "FORM_OPACITY_VM4MS_VM4MS_LAYER",
+                        "pattern": "^([0-9]|[1-9][0-9]|[1][0][0])$",
+                        "nb_cols": 3
+                    },
+                    {
+                        "type": "text",
+                        "name": "tableschema",
+                        "label": "FORM_TABLESCHEMA_VM4MS_VM4MS_LAYER",
+                        "nb_cols": 3
+                    },
+                    {
+                        "type": "text",
+                        "name": "tablename",
+                        "label": "FORM_TABLENAME_VM4MS_VM4MS_LAYER",
+                        "nb_cols": 3
+                    },
+                    {
+                        "type": "text",
+                        "name": "tableidfield",
+                        "label": "FORM_TABLEIDFIELD_VM4MS_VM4MS_LAYER",
+                        "nb_cols": 3
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "button",
+                        "class": "btn-ungroup btn-group-xs",
+                        "nb_cols": 12,
+                        "buttons": [
+                            {
+                                "type": "button",
+                                "name": "search",
+                                "label": "FORM_SEARCH_BUTTON",
+                                "class": "btn-primary",
+                                "event": "setGridFilter()"
+                            },
+                            {
+                                "type": "reset",
+                                "name": "reset",
+                                "label": "FORM_RESET_BUTTON",
+                                "class": "btn-primary",
+                                "event": "resetGridFilter()"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "update": {
+        "name": "vm4ms_layer_update_form",
+        "title": "FORM_TITLE_VM4MS_VM4MS_LAYER",
+        "input_size": "xs",
+        "initEvent": "initVm4msLayerForm()",
+        "beforeEvent": "beforeSendingLayerForm()",
+        "event": "sendSimpleForm()",
+        "afterEvent": "editSectionForm()",
+        "nb_cols": 12,
+        "rows": [
+            {
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "ms_layer_id",
+                        "label": "FORM_LAYER_ID_VM4MS_VM4MS_LAYER",
+                        "nb_cols": 3
+                    },
+                    {
+                        "type": "label",
+                        "name": "name",
+                        "label": "FORM_LAYER_NAME_VM4MS_VM4MS_LAYER",
+                        "nb_cols": 3
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "title",
+                        "label": "FORM_LAYER_TITLE_VM4MS_VM4MS_LAYER",
+                        "required": true,
+                        "tooltip": {
+                            "content":"FORM_LAYER_TITLE_TOOLTIP_CONTENT_VM4MS_VM4MS_LAYER",
+                            "width": "300px"
+                        },
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "class": "form-field-inline layer-connexion-row",
+                "fields": [
+                    {
+                        "type": "select",
+                        "name": "connection_id",
+                        "label": "FORM_CONNECTION_ID_VM4MS_VM4MS_LAYER",
+                        "nb_cols": 2,
+                        "web_service": {
+                            "ressource_id": "vm4ms/layerconnections",
+                            "id_key": "connection_id",
+                            "label_key": "name",
+                            "parameters": {
+                                "order_by": "name"
+                            }
+                        }
+                    },
+                    {
+                        "type": "editable_select",
+                        "name": "tableschema",
+                        "label": "FORM_TABLESCHEMA_VM4MS_VM4MS_LAYER",
+                        "nb_cols": 2
+                    },
+                    {
+                        "type": "button",
+                        "class": "btn-group btn-group-sm",
+                        "nb_cols": 1,
+                        "buttons": [
+                            {
+                                "type": "button",
+                                "name": "table-datalist",
+                                "label": "FORM_BTN_TABLE_VM4MS_VM4MS_LAYER",
+                                "class": "btn-primary",
+                                "event": "setLayerTableOptions()",
+                                "glyphicon": "refresh"
+                            }
+                        ]
+                    },
+                    {
+                        "type": "editable_select",
+                        "name": "tablename",
+                        "label": "FORM_TABLENAME_VM4MS_VM4MS_LAYER",
+                        "nb_cols": 2
+                    },
+                    {
+                        "type": "button",
+                        "class": "btn-group btn-group-sm",
+                        "nb_cols": 1,
+                        "buttons": [
+                            {
+                                "type": "button",
+                                "name": "id-field-datalist",
+                                "label": "FORM_BTN_IDENTIFIER_VM4MS_VM4MS_LAYER",
+                                "class": "btn-primary",
+                                "event": "setLayerIdFieldOptions()",
+                                "glyphicon": "refresh"
+                            }
+                        ]
+                    },
+                    {
+                        "type": "editable_select",
+                        "name": "tableidfield",
+                        "label": "FORM_TABLEIDFIELD_VM4MS_VM4MS_LAYER",
+                        "nb_cols": 2
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "select",
+                        "name": "ms_layertype_id",
+                        "label": "FORM_LAYERTYPE_ID_VM4MS_VM4MS_LAYER",
+                        "nb_cols": 4,
+                        "web_service": {
+                            "ressource_id": "vm4ms/layertypes",
+                            "id_key": "ms_layertype_id",
+                            "label_key": "ms_layertype_id",
+                            "parameters": {
+                                "order_by": "ms_layertype_id"
+                            }
+                        },
+                        "required": true
+                    },
+                    {
+                        "type": "select",
+                        "name": "coordsys_id",
+                        "label": "FORM_COORDSYS_ID_VM4MS_VM4MS_LAYER",
+                        "nb_cols": 4,
+                        "web_service": {
+                            "ressource_id": "vm4ms/coordinatesystems",
+                            "id_key": "coordsys_id",
+                            "label_key": "label",
+                            "parameters": {
+                                "order_by": "label"
+                            }
+                        }
+                    },
+                    {
+                        "type": "select",
+                        "name": "source_id",
+                        "label": "FORM_SOURCE_ID_VM4MS_VM4MS_LAYER",
+                        "nb_cols": 4,
+                        "web_service": {
+                            "ressource_id": "vm4ms/sources",
+                            "id_key": "source_id",
+                            "label_key": "name",
+                            "parameters": {
+                                "order_by": "name"
+                            }
+                        }
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "radio",
+                        "name": "active",
+                        "label": "FORM_ACTIVE_VM4MS_VM4MS_LAYER",
+                        "options": {
+                            "choices": [{
+                                    "label": "FORM_ACTIVE_YES_VM4MS_VM4MS_LAYER",
+                                    "value": true
+                                },
+                                {
+                                    "label": "FORM_ACTIVE_NO_VM4MS_VM4MS_LAYER",
+                                    "value": false
+                                }]
+                        },
+                        "default_value": true,
+                        "nb_cols": 3
+                    },
+                    {
+                        "type": "text",
+                        "name": "opacity",
+                        "label": "FORM_OPACITY_VM4MS_VM4MS_LAYER",
+                        "pattern": "^([0-9]|[1-9][0-9]|[1][0][0])$",
+                        "default_value": 100,
+                        "required": true,
+                        "nb_cols": 1
+                    },
+                    {
+                        "type": "hidden",
+                        "name": "create_ws_map_file",
+                        "default_value": "true",
+                        "nb_cols": 1
+                    },
+                    {
+                        "type": "hidden",
+                        "name": "test_layer",
+                        "default_value": false,
+                        "nb_cols": 1
+                    }
+                ]
+            },
+            {
+                "class": "form-row-layer-definition",
+                "fields": [
+                    {
+                        "type": "codemirror",
+                        "name": "definition",
+                        "label": "FORM_DEFINITION_VM4MS_VM4MS_LAYER",
+                        "nb_cols": 12,
+                        "codemirrorOptions": {
+                            "runnable": true,
+                            "lineNumbers": true,
+                            "matchBrackets": true,
+                            "mode": "map",
+                            "indentUnit": 4,
+                            "indentWithTabs": true,
+                            "enterMode": "keep",
+                            "tabMode": "shift",
+                            "appHeight": "40%"
+                        }
+                    }
+                ]
+            },
+            {
+                "class": "form-field-inline form-row-layer-palette",
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "layer_login",
+                        "label": "FORM_LAYER_LOGIN_VM4MS_VM4MS_LAYER_DEFINITION",
+                        "nb_cols": 2
+                    },
+                    {
+                        "type": "password",
+                        "name": "layer_password",
+                        "label": "FORM_LAYER_PASSWORD_VM4MS_VM4MS_LAYER_DEFINITION",
+                        "nb_cols": 2
+                    },
+                    {
+                        "type": "button",
+                        "class": "btn-ungroup btn-group-sm vm4ms-layer-symbols-fonts-container",
+                        "nb_cols": 5,
+                        "buttons": [
+                            {
+                                "type": "button",
+                                "name": "mapserver_symbols",
+                                "label": "FORM_BTN_SYMBOLS_VM4MS_VM4MS_LAYER",
+                                "class": "btn-default",
+                                "event": "displayMapServerSymbolsModal()"
+                            },
+                            {
+                                "type": "button",
+                                "name": "mapserver_fonts",
+                                "label": "FORM_BTN_FONTS_VM4MS_VM4MS_LAYER",
+                                "class": "btn-default",
+                                "event": "displayMapServerFontsModal()"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "class": "form-row-margin-top form-row-layer-btn",
+                "fields": [
+                    {
+                        "type": "button",
+                        "class": "btn-ungroup btn-group-sm",
+                        "nb_cols": 12,
+                        "buttons": [
+                            {
+                                "type": "submit",
+                                "name": "form_submit",
+                                "label": "FORM_BTN_SAVE_LAYER_VM4MS_VM4MS_LAYER",
+                                "class": "btn-primary"
+                            },
+                            {
+                                "type": "button",
+                                "name": "test_layer_btn",
+                                "label": "FORM_TEST_LAYER_VM4MS_VM4MS_LAYER",
+                                "class": "btn-primary",
+                                "event": "testVm4msLayer()"
+                            },
+                            {
+                                "type": "button",
+                                "name": "clone_form",
+                                "label": "FORM_CLONE",
+                                "class": "btn-primary",
+                                "event": "cloneVm4msLayer()"
+                            },
+                            {
+                                "type": "button",
+                                "name": "return_list",
+                                "label": "FORM_RETURN_LIST",
+                                "class": "btn-primary",
+                                "event": "setMode(\"search\")"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "insert": {
+        "name": "vm4ms_layer_insert_form",
+        "title": "FORM_TITLE_VM4MS_VM4MS_LAYER",
+        "input_size": "xs",
+        "initEvent": "initVm4msLayerForm()",
+        "event": "sendSimpleForm()",
+        "afterEvent": "editSectionForm()",
+        "nb_cols": 12,
+        "rows": [
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "name",
+                        "label": "FORM_NAME_VM4MS_VM4MS_LAYER",
+                        "pattern": "[a-zA-Z0-9_]+",
+                        "required": true,
+                        "tooltip": {
+                            "content":"FORM_LAYER_NAME_TOOLTIP_CONTENT_VM4MS_VM4MS_LAYER",
+                            "width": "390px"
+                        },
+                        "nb_cols": 3
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "title",
+                        "label": "FORM_LAYER_TITLE_VM4MS_VM4MS_LAYER",
+                        "required": true,
+                        "tooltip": {
+                            "content":"FORM_LAYER_TITLE_TOOLTIP_CONTENT_VM4MS_VM4MS_LAYER",
+                            "width": "300px"
+                        },
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "class": "form-field-inline layer-connexion-row",
+                "fields": [
+                    {
+                        "type": "select",
+                        "name": "connection_id",
+                        "label": "FORM_CONNECTION_ID_VM4MS_VM4MS_LAYER",
+                        "nb_cols": 1,
+                        "web_service": {
+                            "ressource_id": "vm4ms/layerconnections",
+                            "id_key": "connection_id",
+                            "label_key": "name",
+                            "parameters": {
+                                "order_by": "name"
+                            }
+                        }
+                    },
+                    {
+                        "type": "editable_select",
+                        "name": "tableschema",
+                        "label": "FORM_TABLESCHEMA_VM4MS_VM4MS_LAYER",
+                        "nb_cols": 2
+                    },
+                    {
+                        "type": "button",
+                        "class": "btn-group btn-group-sm",
+                        "nb_cols": 1,
+                        "buttons": [
+                            {
+                                "type": "button",
+                                "name": "table-datalist",
+                                "label": "FORM_BTN_TABLE_VM4MS_VM4MS_LAYER",
+                                "class": "btn-primary",
+                                "event": "setLayerTableOptions()",
+                                "glyphicon": "refresh"
+                            }
+                        ]
+                    },
+                    {
+                        "type": "editable_select",
+                        "name": "tablename",
+                        "label": "FORM_TABLENAME_VM4MS_VM4MS_LAYER",
+                        "nb_cols": 2
+                    },
+                    {
+                        "type": "button",
+                        "class": "btn-group btn-group-sm",
+                        "nb_cols": 1,
+                        "buttons": [
+                            {
+                                "type": "button",
+                                "name": "id-field-datalist",
+                                "label": "FORM_BTN_IDENTIFIER_VM4MS_VM4MS_LAYER",
+                                "class": "btn-primary",
+                                "event": "setLayerIdFieldOptions()",
+                                "glyphicon": "refresh"
+                            }
+                        ]
+                    },
+                    {
+                        "type": "editable_select",
+                        "name": "tableidfield",
+                        "label": "FORM_TABLEIDFIELD_VM4MS_VM4MS_LAYER",
+                        "nb_cols": 2
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "select",
+                        "name": "ms_layertype_id",
+                        "label": "FORM_LAYERTYPE_ID_VM4MS_VM4MS_LAYER",
+                        "nb_cols": 4,
+                        "web_service": {
+                            "ressource_id": "vm4ms/layertypes",
+                            "id_key": "ms_layertype_id",
+                            "label_key": "ms_layertype_id",
+                            "parameters": {
+                                "order_by": "ms_layertype_id"
+                            }
+                        },
+                        "required": true,
+                        "options": ["|"]
+                    },
+                    {
+                        "type": "select",
+                        "name": "coordsys_id",
+                        "label": "FORM_COORDSYS_ID_VM4MS_VM4MS_LAYER",
+                        "nb_cols": 4,
+                        "web_service": {
+                            "ressource_id": "vm4ms/coordinatesystems",
+                            "id_key": "coordsys_id",
+                            "label_key": "label",
+                            "parameters": {
+                                "order_by": "label"
+                            }
+                        }
+                    },
+                    {
+                        "type": "select",
+                        "name": "source_id",
+                        "label": "FORM_SOURCE_ID_VM4MS_VM4MS_LAYER",
+                        "nb_cols": 4,
+                        "web_service": {
+                            "ressource_id": "vm4ms/sources",
+                            "id_key": "source_id",
+                            "label_key": "name",
+                            "parameters": {
+                                "order_by": "name"
+                            }
+                        }
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "radio",
+                        "name": "active",
+                        "label": "FORM_ACTIVE_VM4MS_VM4MS_LAYER",
+                        "options": {
+                            "choices": [{
+                                    "label": "FORM_ACTIVE_YES_VM4MS_VM4MS_LAYER",
+                                    "value": true
+                                },
+                                {
+                                    "label": "FORM_ACTIVE_NO_VM4MS_VM4MS_LAYER",
+                                    "value": false
+                                }]
+                        },
+                        "default_value": true,
+                        "nb_cols": 3
+                    },
+                    {
+                        "type": "text",
+                        "name": "opacity",
+                        "label": "FORM_OPACITY_VM4MS_VM4MS_LAYER",
+                        "pattern": "^([0-9]|[1-9][0-9]|[1][0][0])$",
+                        "required": true,
+                        "default_value": 100,
+                        "nb_cols": 1
+                    },
+                    {
+                        "type": "hidden",
+                        "name": "create_ws_map_file",
+                        "default_value": "true",
+                        "nb_cols": 1
+                    },
+                    {
+                        "type": "hidden",
+                        "name": "wmsservices",
+                        "nb_cols": 1
+                    }
+                ]
+            },
+            {
+                "class": "form-row-layer-definition",
+                "fields": [
+                    {
+                        "type": "codemirror",
+                        "name": "definition",
+                        "label": "FORM_DEFINITION_VM4MS_VM4MS_LAYER",
+                        "nb_cols": 12,
+                        "codemirrorOptions": {
+                            "runnable": true,
+                            "lineNumbers": true,
+                            "matchBrackets": true,
+                            "mode": "map",
+                            "indentUnit": 4,
+                            "indentWithTabs": true,
+                            "enterMode": "keep",
+                            "tabMode": "shift",
+                            "appHeight": "40%"
+                        }
+                    }
+                ]
+            },
+            {
+                "class": "form-field-inline form-row-layer-palette",
+                "fields": [
+                    {
+                        "type": "button",
+                        "class": "btn-ungroup btn-group-sm vm4ms-layer-symbols-fonts-container",
+                        "nb_cols": 5,
+                        "buttons": [
+                            {
+                                "type": "button",
+                                "name": "mapserver_symbols",
+                                "label": "FORM_BTN_SYMBOLS_VM4MS_VM4MS_LAYER",
+                                "class": "btn-default",
+                                "event": "displayMapServerSymbolsModal()"
+                            },
+                            {
+                                "type": "button",
+                                "name": "mapserver_fonts",
+                                "label": "FORM_BTN_FONTS_VM4MS_VM4MS_LAYER",
+                                "class": "btn-default",
+                                "event": "displayMapServerFontsModal()"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "class": "form-row-margin-top form-row-layer-btn",
+                "fields": [
+                    {
+                        "type": "button",
+                        "class": "btn-ungroup btn-group-sm",
+                        "nb_cols": 12,
+                        "buttons": [
+                            {
+                                "type": "submit",
+                                "name": "form_submit",
+                                "label": "FORM_CREATE",
+                                "class": "btn-primary"
+                            },
+                            {
+                                "type": "button",
+                                "name": "return_list",
+                                "label": "FORM_RETURN_LIST",
+                                "class": "btn-primary",
+                                "event": "setMode(\"search\")"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "display": {
+        "name": "vm4ms_layer_display_form",
+        "title": "FORM_TITLE_VM4MS_VM4MS_LAYER",
+        "input_size": "xs",
+        "nb_cols": 12,
+        "rows": [
+            {
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "ms_layer_id",
+                        "label": "FORM_LAYER_ID_VM4MS_VM4MS_LAYER",
+                        "nb_cols": 3
+                    },
+                    {
+                        "type": "label",
+                        "name": "name",
+                        "label": "FORM_NAME_VM4MS_VM4MS_LAYER",
+                        "nb_cols": 3
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "title",
+                        "label": "FORM_LAYER_TITLE_VM4MS_VM4MS_LAYER",
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "connection_label",
+                        "label": "FORM_CONNECTION_ID_VM4MS_VM4MS_LAYER",
+                        "nb_cols": 3
+                    },
+                    {
+                        "type": "label",
+                        "name": "tableschema",
+                        "label": "FORM_TABLESCHEMA_VM4MS_VM4MS_LAYER",
+                        "nb_cols": 3
+                    },
+                    {
+                        "type": "label",
+                        "name": "tablename",
+                        "label": "FORM_TABLENAME_VM4MS_VM4MS_LAYER",
+                        "nb_cols": 3
+                    },
+                    {
+                        "type": "label",
+                        "name": "tableidfield",
+                        "label": "FORM_TABLEIDFIELD_VM4MS_VM4MS_LAYER",
+                        "nb_cols": 3
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "source_label",
+                        "label": "FORM_SOURCE_ID_VM4MS_VM4MS_LAYER",
+                        "nb_cols": 3
+                    },
+                    {
+                        "type": "label",
+                        "name": "ms_layertype_id",
+                        "label": "FORM_LAYERTYPE_ID_VM4MS_VM4MS_LAYER",
+                        "nb_cols": 3
+                    },
+                    {
+                        "type": "label",
+                        "name": "coordsys_label",
+                        "label": "FORM_COORDSYS_ID_VM4MS_VM4MS_LAYER",
+                        "nb_cols": 3
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "active",
+                        "label": "FORM_ACTIVE_VM4MS_VM4MS_LAYER",
+                        "default_value": "setRadioTranslation('active')",
+                        "nb_cols": 3
+                    },
+                    {
+                        "type": "label",
+                        "name": "opacity",
+                        "label": "FORM_OPACITY_VM4MS_VM4MS_LAYER",
+                        "nb_cols": 1
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "codemirror",
+                        "name": "definition",
+                        "label": "FORM_DEFINITION_VM4MS_VM4MS_LAYER",
+                        "nb_cols": 12,
+                        "codemirrorOptions": {
+                            "runnable": true,
+                            "lineNumbers": true,
+                            "matchBrackets": true,
+                            "mode": "map",
+                            "indentUnit": 4,
+                            "indentWithTabs": true,
+                            "enterMode": "keep",
+                            "tabMode": "shift",
+                            "readOnly": "true",
+                            "appHeight": "40%"
+                        }
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "button",
+                        "class": "btn-ungroup btn-group-sm",
+                        "nb_cols": 12,
+                        "buttons": [
+                            {
+                                "type": "button",
+                                "name": "return_list",
+                                "label": "FORM_RETURN_LIST",
+                                "class": "btn-primary",
+                                "event": "setMode(\"search\")"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}

@@ -388,6 +388,11 @@ form .checkbox {
     padding-right: 0;
 }
 
+// Marge au dessus d'une ligne de formulaire.
+.form-row-margin-top {
+    margin-top: 10px;
+}
+
 // Liste ui-grid dans un champ de formulaire.
 .ui-grid-form-field {
     width: 100%;
@@ -423,6 +428,12 @@ form .checkbox {
     background: rgba(0, 0, 0, 0) url(@ui-grid-bg-image) repeat-x scroll center top;
     border-left: 1px solid #ccc;
     border-right: 1px solid #ccc;
+}
+.ui-grid-form-field-header-title > span {
+    float: left;
+}
+.ui-grid-form-field-header-title > div {
+    float: right;
 }
 // Formulaire de recherche.
 .ui-grid-form-field-header-search {
@@ -494,4 +505,10 @@ form .checkbox {
 }
 .formreader-radio-inline .radio {
     margin: 12px 15px 8px 15px !important;
+}
+
+// Formatage des champs des "link" et "linkurl".
+.formreader-link {
+    display: block;
+    padding: 0 !important;
 }

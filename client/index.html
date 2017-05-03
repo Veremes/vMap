@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=10">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Administration</title>
         <script src="javascript/externs/jquery/jquery-1.11.3.min.js"></script>
@@ -39,38 +39,45 @@
                 context: document.body
             }).done(function (data) {
 
-                /**
-                 * Version de l'application
-                 */
+                // Version de l'application
                 sessionStorage['build'] = data['build'];
-                
-                /**
-                 * Nom de l'application
-                 */
+
+                // Nom de l'application
                 sessionStorage['application'] = data['application'];
-                
-                /**
-                 * Paramètre "environment"
-                 */
+
+                // Paramètre "environment"
                 sessionStorage['environment'] = data['environment'];
-                
-                /**
-                 * Paramètre "web_server_name" dans les properties (protocol + hostname + port).
-                 */
-                if (typeof(data["web_server_name"]) == "undefined" || data["web_server_name"] == "")
+
+                // Paramètre "web_server_name" dans les properties (protocol + hostname + port).
+                if (typeof (data["web_server_name"]) == "undefined" || data["web_server_name"] == "") {
                     data["web_server_name"] = window.location.protocol + "//" + window.location.host;
-                
-                /**
-                 * Sauve les properties du client.
-                 */
+                }
+
+                // Balises à remplace
+                for (var key in data) {
+                    data[key] = data[key].replace(/\[hostname\]/, window.location.hostname);
+                }
+
+                // Sauve les properties du client.
                 window["oClientProperties"] = data;
             });
+
+            // Enlève les majuscules et les "/" à la fin de web_server_name
+            window['oClientProperties']['web_server_name'] = window['oClientProperties']['web_server_name'].replace(/\/+$/g, '').toLowerCase();
+
+            // Enlève les ports par défaut de web_server_name
+            if (window.location.protocol === 'https:') {
+                window['oClientProperties']['web_server_name'] = window['oClientProperties']['web_server_name'].replace(/:443/g, '');
+            }
+            if (window.location.protocol === 'http:') {
+                window['oClientProperties']['web_server_name'] = window['oClientProperties']['web_server_name'].replace(/:80/g, '');
+            }
 
             /**
              * Paramètres de l'url dans un objet
              */
             var oUrlParams = {};
-            location.search.replace("?","").split("&").forEach(function(sUrlParams){
+            location.search.replace("?", "").split("&").forEach(function (sUrlParams) {
                 var aUrlParams = sUrlParams.split("=");
                 oUrlParams[aUrlParams[0]] = aUrlParams[1];
             });
@@ -90,7 +97,7 @@
                 sessionStorage['appEnv'] = sessionStorage['application'] + "_" + sessionStorage['environment'];
             else
                 sessionStorage['appEnv'] = sessionStorage['application'];
-                
+
             /**
              * Fichiers à charger
              * @type Array

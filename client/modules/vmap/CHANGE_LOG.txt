@@ -1,44 +1,53 @@
-
-              +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-              +                                                                                   +
-              +             			 VEREMES - Module Vmap change log        	  		      +
-              +                                                                                   +
-              +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-
-|b21152|AMELIORATION|BETA	|   Utilisation du composant DocumentViewer (Vitis) pour l'apperçu des images dans les listes de vMap Admin (Cartes et Services)
-|b21080|AMELIORATION|BETA	|   Généralisation du dossier conteneur de fichiers à objets métier ou vitis
-|b21037|BUG 		|BETA	|   Dans l'objet cartes du mode cartes en édition lorsqu'on change le système de projection, l'étendue ne change pas automatiquement.
-|b21033|BUG         |BETA	|   Onglet "Couches" : correction d'un bug sur le drag'n drop et l'affichage dans l'ordre des couches WMS associées.
-|b21030|AMELIORATION|BETA	|   Légendes pour les calques non répétées
-|b21025|AMELIORATION|BETA	|   Ordre des couches dans un calque
-|b21025|AMELIORATION|BETA	|   Couches dans un calque: ne pas utiliser getCapabilities tant que l'utilisateur ne clique pas sur "Ajouter une couche"
-|b21011|AMELIORATION|BETA	|   Supprimer les dossiers de l'objet métier lors de la suppression de celui-ci
-|b21008|AMELIORATION|BETA	|   Couches dájà présentes avec affichage des erreurs par notification
-|b21006|BUG 		|BETA	|   "Gestion des cartes" lorsque l'utilisateur est associé à aucun groupe
-|b20999|AMELIORATION|BETA	|   Bug projections Cadastre
-|b20992|AMELIORATION|BETA	|   Upload de fichiers grace aux objets métier
-|b20937|AMELIORATION|BETA	|   Dans les onglets Rapports et Couches, utiliser l'identifiant de l'objet métier et non son titre
-|b20928|AMELIORATION|BETA	|   Filtres des couches: passer la valeur -1000000 par défaut
-|b20861|AMELIORATION|BETA	|   Sélection de la carte à afficher en utilisant map_id dans l'url
-|b20861|AMELIORATION|BETA	|   Sélection d'un ou plusieurs objets dans le panier en utilisant bo_id et ids dans l'url
-|b20861|AMELIORATION|BETA	|   Sélection avec i et i+
-|b20861|AMELIORATION|BETA	|   Ordre (index) des objets métiers à selectionner avec i
-|b20861|AMELIORATION|BETA	|   Possibilité de gérer les objets sans géométrie
-|b20861|AMELIORATION|BETA	|   Utilisation de couleurs différentes entre basicTool.active et interaction.active
-|b20861|AMELIORATION|BETA	|   Affichage de l'étiquelle à l'endroit du click
-|b20861|AMELIORATION|BETA	|   "Effacer la locatisation" dans le panier
-|b20861|BUG 		|BETA	|   Conflits couches de localisation
-|b20861|AMELIORATION|BETA	|   ToogleOutTools quand on affiche une popup
-|b20861|AMELIORATION|BETA	|   Bouton ajouter une partie dans i, i+ et insertion
-|b20861|AMELIORATION|BETA	|   Outil d'insertion: enlever la possibilité d'éditer la géométrie tant qu'il y en a pas
-|b20861|AMELIORATION|BETA	|   Changement logo "poubelle" dans le panier
-|b20861|BUG 		|BETA	|   GetCapabilities lent sur certains flux
-|b20780|BUG 		|BETA	|   Bug téléchargement de la carte: étendue
-|b20777|BUG 		|BETA	|   Bug impressions: {{map_scale}}
-|b20774|BUG 		|BETA	|   Bug utilisation d'une carte sans couches associées
-|b20701|AMELIORATION|BETA	|   Fiche urbanisme: pouvoir utiliser une carte prédéfinie avec un zoom par rapport à la parcelle prédéfini
-|b20699|AMELIORATION|BETA	|   Bug administration: pouvoir ajouter des couches privées (remplacer la balise [token] avand le getCapabilities)
-|b20657|AMELIORATION|BETA	|   Correction du bug d'impression (taille des templates) sous linux
-|b20571|AMELIORATION|BETA	|   Implémentation des raports d'impression (module courrier)
-|b20571|AMELIORATION|BETA	|   Possibilié de ne pas utiliser le proxy pour l'affichage des couches
+b23245|RELEASE	    |vmap|	Version 2017.02.00
+b23161|BUG			|vmap|	Utilisation d'un environnement
+b23149|EVOLUTION	|vmap|	Tooltip dans le formulaire évènements
+b23128|BUG			|vmap|	Bug panier: zoom simple point zoome trop proche
+b22799|EVOLUTION	|vmap|	Passage du nombre d'éléments affichés à 100 dans la liste des calques disponibles pour une carte.
+b22794|EVOLUTION	|vmap|	Modification de la table coordsys: coordsys.srid devient coordsys.coordsys_id
+b22788|EVOLUTION	|vmap|	Bouton de clonage d'une carte.
+b22772|BUG			|vmap|	Cadastre: Ordre des enregistrements dans la liste des adresses
+b22751|EVOLUTION	|vmap|	Ordre des calques dans l'administration de vMap (FIXES #1974)
+b22746|BUG			|vmap|	Tri par index dans les calques de la carte.
+b22736|EVOLUTION	|vmap|	Ajout de couche dans un calque: les couches doivent être présentés triées par défaut par nom de couches croissant (FIXES #1953)
+b22702|BUG			|vmap|	Type GEOMETRY peut contenir des aggrégats
+b22701|BUG			|vmap|	Remplacement des balises "[token]" et "[ms_cgi_url]" à l'ajout d'une couche à un calque.
+b22690|BUG          |vmap|	Lorsqu'on veut ajouter des couches à un calque et que le service n'est pas bon, on a une erreur js et après toute l'application est plantée.
+b22655|EVOLUTION	|vmap|	Utilisation de baslises [bo_link] dans sql_summary
+b22644|BUG			|vmap|	À la création d'une carte, l'étendue n'est pas définie de manière automatique.
+b22602|EVOLUTION	|vmap|	Prévient des injections JavaScript
+b22584|EVOLUTION	|vmap|	Test WMS: afficher modale avec liste des couches
+b22561|EVOLUTION	|vmap|	Enlever la projection des calques dans l'interface
+b22560|EVOLUTION	|vmap|	Noms des systèmees de coordonnées (FIXES #1897)
+b22555|EVOLUTION	|vmap|	CADASTRE Fiche d'urbanisme: utilisation de array_views pour l'affichage dans un tableau (FIXES #1751)
+b22546|BUG			|vmap|	CADASTRE Fiche descriptive: Lorsque nous paramétrons des intersectons l'ordre des colonnes affichées n'est pas celui du fichier de properties mais celui de l'ordre des colonnes dans la vue. (FIXES #1675)
+b22535|EVOLUTION	|vmap|	Optimisation des messages d'erreur
+b22524|EVOLUTION	|vmap|	Filtre sur l'onglet objets Métier (FIXES #1877)
+b22523|EVOLUTION	|vmap|	Permettre l'agrandissement de la légende par onmousehover si la taille réelle de l'image est plus grande que celle affichée dans l'encart (FIXES #1899)
+b22489|BUG			|vmap|	Corrections des libellés des modes
+b22438|BUG			|vmap|	Désactivation des controles vMap en mode compilé
+b22315|EVOLUTION	|vmap|	Déconceille à l'utilisateur de créer un objet métier sur s_vmap, s_vitis etc..
+b22188|EVOLUTION	|vmap|	Infobulle vignette des services (FIXES #1883)
+b22076|BUG			|vmap|	CADASTRE: ne pas afficher les rapports si pas d'enregistrements
+b22029|BUG			|vmap|	Étendue de la carte dans l'admin de vMap
+b22028|EVOLUTION	|vmap|	Utilisation de WebSockets pour synchroniser le raffraichissement des couches entre les différents clients connectés à l'application
+b21950|BUG			|vmap|	Propriété "name" obligatoire pour l'affichage des champs de form. "title" et "subtitle".
+b21932|BUG			|vmap|	Utilisation des flux WMS avec plusieurs styles (IGN)
+b21897|EVOLUTION	|vmap|	Vérification des URL des services WMS et WMTS
+b21889|EVOLUTION	|vmap|	Recherche dans un service WMS (FIXES #1725)
+b21824|EVOLUTION	|vmap|	Taille des formulaires des objets métiers configurable
+b21696|BUG			|vmap|	Correction d'un bug dans la fonction "getCapabilities()" si MapServer retourne une erreur.
+b21593|BUG			|vmap|	Localistion d'une entité sans géométrie
+b21472|EVOLUTION	|vmap|	La notion de "couche" est remplacée par celle de "calque" dans l'administration.
+b21469|EVOLUTION	|vmap|	Filtre de recherche dans la liste des couches d'une carte.
+b21345|EVOLUTION	|vmap|	Utilisation de flux XYZ
+b21323|EVOLUTION	|vmap|	Nom de la couche dans la table des matières en infobulle (au cas où le il soit trop long)
+b21257|EVOLUTION	|vmap|	Utilisation de flux WMTS
+b21232|BUG			|vmap|	Quand on ajoute une couche elle ne s'ajoute pas forcément au dessus
+b21221|BUG			|vmap|	Impossible de localiser un élément lors d'une localisation
+b21218|BUG			|vmap|	Affichage dans le requêteur lorsque les noms des objets métier sont trop gros
+b21216|BUG			|vmap|	Affichage lors de l'insertion de géométries de type 'GEOMETRY'
+b21215|EVOLUTION	|vmap|	Mise en page popup
+b21214|EVOLUTION	|vmap|	Enlève la fonctionnalité de grandissement de l'image popup
+b21210|BUG			|vmap|	Bug upload images de même nom
+b21183|BUG			|vmap|	Projections cadastre
+b21143|BUG			|vmap|	Taille imagettes

@@ -8,6 +8,8 @@
 
 goog.provide('nsVmap.nsMapManager.LayersOrder');
 
+goog.require('oVmap');
+
 goog.require('ol.View');
 goog.require('ol.layer.Group');
 goog.require('ol.layer.Base');
@@ -21,10 +23,6 @@ goog.require('ol.layer.Base');
  */
 nsVmap.nsMapManager.LayersOrder = function () {
     oVmap.log("nsVmap.nsMapManager.LayersOrder");
-
-    // Directives et controleurs Angular
-    oVmap.module.directive('appLayersorder', this.layersorderDirective);
-    oVmap.module.controller('AppLayersorderController', this.layersorderController);
 };
 
 /**
@@ -170,3 +168,7 @@ nsVmap.nsMapManager.LayersOrder.prototype.layersorderController.prototype.setSel
         }
     }
 };
+
+// Définit la directive et le controller
+oVmap.module.directive('appLayersorder', nsVmap.nsMapManager.LayersOrder.prototype.layersorderDirective);
+oVmap.module.controller('AppLayersorderController', nsVmap.nsMapManager.LayersOrder.prototype.layersorderController);

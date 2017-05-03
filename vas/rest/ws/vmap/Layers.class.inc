@@ -37,7 +37,7 @@ class Layers extends Vmap {
      * @param type $aValues parameters of the request
      * @param type $properties properties
      */
-    function Layers($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
@@ -78,16 +78,14 @@ class Layers extends Vmap {
      *     description="number of element",
      *     required=false,
      *     type="integer",
-     *     default="4",
-     *     format="int32"
+     *     default="4"
      *   ),
      * @SWG\Parameter(
      *     name="offset",
      *     in="query",
      *     description="index of first element",
      *     required=false,
-     *     type="string",
-     *     format="int32"
+     *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="attributs",
@@ -183,77 +181,56 @@ class Layers extends Vmap {
      *   produces={"application/xml", "application/json"},
      *   @SWG\Parameter(
      *     name="token",
-     *     in="query",
+     *     in="formData",
      *     description="user token",
      *     required=true,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="name",
-     *     in="query",
+     *     in="formData",
      *     description="",
      *     required=true,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="theme_id",
-     *     in="query",
+     *     in="formData",
      *     description="",
-     *     required=true,
+     *     required=false,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="service_id",
-     *     in="query",
+     *     in="formData",
      *     description="",
      *     required=true,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="description",
-     *     in="query",
+     *     in="formData",
      *     description="",
      *     required=false,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="visible",
-     *     in="query",
+     *     in="formData",
      *     description="",
      *     required=false,
      *     type="boolean"
      *   ),
      * @SWG\Parameter(
-     *     name="bo_database",
-     *     in="query",
-     *     description="",
-     *     required=false,
-     *     type="string"
-     *   ),
-     * @SWG\Parameter(
-     *     name="bo_schema",
-     *     in="query",
-     *     description="",
-     *     required=false,
-     *     type="string"
-     *   ),
-     * @SWG\Parameter(
-     *     name="bo_table",
-     *     in="query",
+     *     name="bo_id",
+     *     in="formData",
      *     description="",
      *     required=false,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="layer_list",
-     *     in="query",
-     *     description="",
-     *     required=false,
-     *     type="string"
-     *   ),
-     * @SWG\Parameter(
-     *     name="crs_list",
-     *     in="query",
+     *     in="formData",
      *     description="",
      *     required=false,
      *     type="string"
@@ -271,13 +248,13 @@ class Layers extends Vmap {
     /**
      * @SWG\Post(path="/layers/{layer_id}/form/{form}",
      *   tags={"Layers"},
-     *   summary="Add layer form",
+     *   summary="Generates the layer form",
      *   description="Request to add a layer form",
      *   operationId="POST",
      *   produces={"application/json"},
      *   @SWG\Parameter(
      *     name="token",
-     *     in="query",
+     *     in="formData",
      *     description="user token",
      *     required=true,
      *     type="string"
@@ -313,12 +290,23 @@ class Layers extends Vmap {
 
         // /layers/{layer_id}/form/{form}
         if (isset($this->aPath[4])) {
+            if (isset($this->oConnection->oError) && !empty($this->oConnection->oError)) {
+                $aXmlRacineAttribute['status'] = 0;
+                $sMessage = $this->oConnection->oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+                return $sMessage;
+            }
+            if (!in_array('vmap_admin', $this->oConnection->aPrivileges)) {
+                $oError = new VitisError(0, 'INSUFFICIENT_PRIVILEGES');
+                $aXmlRacineAttribute['status'] = 0;
+                $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+                return $sMessage;
+            }
             $layerId = $this->aPath[2];
             $sFormName = $this->aPath[4];
             return $this->generateEmptyForm($layerId, $sFormName);
         }
 
-        $aReturn = $this->genericPost($this->aProperties['schema_vmap'], 'layer', $this->aProperties['schema_vmap'].'.seq_common', 'layer_id');
+        $aReturn = $this->genericPost($this->aProperties['schema_vmap'], 'layer', $this->aProperties['schema_vmap'] . '.seq_common', 'layer_id');
         return $aReturn['sMessage'];
     }
 
@@ -438,21 +426,7 @@ class Layers extends Vmap {
      *     type="boolean"
      *   ),
      * @SWG\Parameter(
-     *     name="bo_database",
-     *     in="query",
-     *     description="",
-     *     required=false,
-     *     type="string"
-     *   ),
-     * @SWG\Parameter(
-     *     name="bo_schema",
-     *     in="query",
-     *     description="",
-     *     required=false,
-     *     type="string"
-     *   ),
-     * @SWG\Parameter(
-     *     name="bo_table",
+     *     name="bo_id",
      *     in="query",
      *     description="",
      *     required=false,
@@ -460,13 +434,6 @@ class Layers extends Vmap {
      *   ),
      * @SWG\Parameter(
      *     name="layer_list",
-     *     in="query",
-     *     description="",
-     *     required=false,
-     *     type="string"
-     *   ),
-     * @SWG\Parameter(
-     *     name="crs_list",
      *     in="query",
      *     description="",
      *     required=false,
@@ -501,11 +468,40 @@ class Layers extends Vmap {
      *     required=true,
      *     type="string"
      *   ),
-     *   @SWG\Parameter(
+     *  @SWG\Parameter(
      *     name="form",
      *     in="path",
-     *     description="form",
+     *     description="form name (default, published, custom)",
      *     required=true,
+     *     type="integer",
+     *     format="string"
+     *   ),
+     *   @SWG\Parameter(
+     *     name="json_file",
+     *     in="formData",
+     *     description="Wsubform.json",
+     *     required=false,
+     *     type="file"
+     *   ),
+     *  @SWG\Parameter(
+     *     name="js_file",
+     *     in="formData",
+     *     description="Javascript file link with WSubform",
+     *     required=false,
+     *     type="file"
+     *   ),
+     *  @SWG\Parameter(
+     *     name="css_file",
+     *     in="formData",
+     *     description="Css file link with WSubform",
+     *     required=false,
+     *     type="file"
+     *   ),
+     *   @SWG\Parameter(
+     *     name="cmd",
+     *     in="query",
+     *     description="Perso_Save, Perso_Published, Default_Published, Perso_Reset, Default_Reset",
+     *     required=false,
      *     type="string"
      *   ),
      *   @SWG\Response(
@@ -525,6 +521,17 @@ class Layers extends Vmap {
 
         // /layers/{layer_id}/form/{form}
         if (isset($this->aPath[4])) {
+            if (isset($this->oConnection->oError) && !empty($this->oConnection->oError)) {
+                $aXmlRacineAttribute['status'] = 0;
+                $sMessage = $this->oConnection->oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+                return $sMessage;
+            }
+            if (!in_array('vmap_admin', $this->oConnection->aPrivileges)) {
+                $oError = new VitisError(0, 'INSUFFICIENT_PRIVILEGES');
+                $aXmlRacineAttribute['status'] = 0;
+                $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+                return $sMessage;
+            }
             $layerId = $this->aPath[2];
             $sFormName = $this->aPath[4];
             $sComand = $this->aValues['cmd'];

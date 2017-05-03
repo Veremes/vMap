@@ -13,7 +13,7 @@ class PostgisUtil {
     var $oBd;
     var $lang;
 
-    function PostgisUtil($oConnection, $lang = "fr") {
+    function __construct($oConnection, $lang = "fr") {
         $this->lang = $lang;
         loadLang($this->sFolderLib, $this->lang);
         $this->oBd = $oConnection;

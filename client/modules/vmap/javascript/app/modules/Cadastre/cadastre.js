@@ -7,14 +7,14 @@
  */
 goog.provide('nsVmap.nsToolsManager.nsModules.Cadastre');
 
+goog.require('oVmap');
+
 goog.require('ol.geom.Point');
 goog.require('ol.format.WKT');
 goog.require('ol.Feature');
 goog.require('ol.source.Vector');
 goog.require('ol.layer.Vector');
 goog.require('ol.Collection');
-// goog.require('goog.events.Listenable');
-// goog.require('goog.events.EventType');
 
 /**
  * @classdesc
@@ -25,10 +25,6 @@ goog.require('ol.Collection');
  */
 nsVmap.nsToolsManager.nsModules.Cadastre = function (opt_options) {
     oVmap.log('nsVmap.nsToolsManager.nsModules.Cadastre');
-
-    // Directives et controleurs Angular
-    oVmap.module.directive('appCadastre', this.cadastreDirective);
-    oVmap.module.controller('AppcadastreController', this.cadastreController);
 };
 goog.exportProperty(nsVmap.nsToolsManager.nsModules, 'Cadastre', nsVmap.nsToolsManager.nsModules.Cadastre);
 
@@ -972,23 +968,34 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
         return 0;
     }
 
-    $('#rapports-modal').modal('show');
+    this['show_veremes_cadastre_parcelle'] = false;
+    this['show_veremes_cadastre_compte'] = false;
 
     for (var i = 0; i < this['selection'].length; i++) {
         if (this['selection'][i]['tabCode'] === 'veremes_cadastre_parcelle') {
 
             oVmap.log(this['selection'][i]['tableParams']['data']);
 
+            this['show_veremes_cadastre_parcelle'] = true;
+
             $(rapports).find('#Cadastre-rapports-table-parcelle').bootstrapTable('load', this['selection'][i]['tableParams']['data']);
             // Si une seule ligne est proposée, alors on la sélectionne
 //			if (this['selection'][i]['tableParams']['data'].length === 1)
 //				$(rapports).find('#Cadastre-rapports-table-parcelle').bootstrapTable('check', 0);
         }
-        if (this['selection'][i]['tabCode'] === 'veremes_cadastre_compte')
+        if (this['selection'][i]['tabCode'] === 'veremes_cadastre_compte') {
+            this['show_veremes_cadastre_compte'] = true;
             $(rapports).find('#Cadastre-rapports-table-comptes').bootstrapTable('load', this['selection'][i]['tableParams']['data']);
+        }
         // Si une seule ligne est proposée, alors on la sélectionne
 //		if (this['selection'][i]['tableParams']['data'].length === 1)
 //			$(rapports).find('#Cadastre-rapports-table-comptes').bootstrapTable('check', 0);
+    }
+
+    if (this['show_veremes_cadastre_parcelle'] || this['show_veremes_cadastre_compte']) {
+        $('#rapports-modal').modal('show');
+    } else {
+        $.notify('Aucun rapport disponible pour cette sélection');
     }
 
 };
@@ -1288,7 +1295,8 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
         'date': dd + '/' + mm + '/' + yyyy,
         'nature': goog.isDef(data[0]) ? data[0]['NATURE'].trim() : '',
         'proprietaires': proprietaires,
-        'aIntersections': data['aIntersections']
+        'aIntersections': data['aIntersections'],
+        'aIntersectionsArray': data['aIntersectionsArray']
     };
 
     // Ajout de la feature
@@ -2635,7 +2643,14 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
             } else {
                 var paramField = 'id_voie';
             }
-            cadastreController.getBaseElemByValue(oVmap["properties"]["cadastre"]["api"] + '/adresses', 'aAdresses', paramField, row['ID_RIVOLI'], afterLoad);
+            cadastreController.getBaseElemByValue({
+                'path': oVmap["properties"]["cadastre"]["api"] + '/adresses',
+                'variableName': 'aAdresses',
+                'param': paramField,
+                'value': row['ID_RIVOLI'],
+                'order_by': 'DNVOIRI',
+                'callback': afterLoad
+            });
         });
         // Si une seule ligne est proposée, alors on la sélectionne
         if (data.length === 1)
@@ -2649,15 +2664,23 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
 
 /**
  * Update a varialbe value
- * @param {string} path API path (ex: cadastre/communes)
- * @param {string} variableName name of the variable
- * @param {string} param API param
- * @param {string} value API param value
- * @param {string} callback Function to load after the http request
+ * @param {object} opt_options
+ * @param {string} opt_options.path API path (ex: cadastre/communes)
+ * @param {string} opt_options.variableName name of the variable
+ * @param {string} opt_options.param API param
+ * @param {string} opt_options.value API param value
+ * @param {string} opt_options.callback Function to load after the http request
  * @returns {undefined}
  */
-nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.getBaseElemByValue = function (path, variableName, param, value, callback) {
+nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.getBaseElemByValue = function (opt_options) {
     oVmap.log('nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.getBaseElemByValue');
+
+    var path = opt_options['path'];
+    var variableName = opt_options['variableName'];
+    var param = opt_options['param'];
+    var value = opt_options['value'];
+    var callback = opt_options['callback'];
+    var orderBy = opt_options['order_by'];
 
     callback = goog.isDef(callback) ? callback : function () {
         return 0;
@@ -2678,7 +2701,8 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
             'token': oVmap['properties']['token'],
             'attributs': '-geom|proj',
             'filter': '"' + param + '"' + '=' + '\'' + value + '\'',
-            'result_srid': oVmap.getMap().getOLMap().getView().getProjection().getCode().substring(5)
+            'result_srid': oVmap.getMap().getOLMap().getView().getProjection().getCode().substring(5),
+            'order_by': goog.isDefAndNotNull(orderBy) ? orderBy : ''
         }
     }).then(function (response) {
 
@@ -3880,3 +3904,7 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
     // Cache le tooltip
     oVmap.getMap().getMapTooltip().hide();
 };
+
+// Définit la directive et le controller
+oVmap.module.directive('appCadastre', nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreDirective);
+oVmap.module.controller('AppcadastreController', nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController);

@@ -36,7 +36,7 @@ class PrintReports extends Vmap {
      * @param type $aValues parameters of the request
      * @param type $properties properties
      */
-    function PrintReports($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
@@ -77,16 +77,14 @@ class PrintReports extends Vmap {
      *     in="query",
      *     description="number of element",
      *     required=false,
-     *     type="integer",
-     *     format="int32"
+     *     type="integer"
      *   ),
      * @SWG\Parameter(
      *     name="offset",
      *     in="query",
      *     description="index of first element",
      *     required=false,
-     *     type="string",
-     *     format="int32"
+     *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="attributs",
@@ -135,59 +133,66 @@ class PrintReports extends Vmap {
      *   produces={"application/xml", "application/json"},
      *   @SWG\Parameter(
      *     name="token",
-     *     in="query",
+     *     in="formData",
      *     description="user token",
      *     required=true,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="name",
-     *     in="query",
+     *     in="formData",
      *     description="",
      *     required=true,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="rt_format_id",
-     *     in="query",
+     *     in="formData",
      *     description="",
      *     required=true,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="rt_orientation_id",
-     *     in="query",
+     *     in="formData",
      *     description="",
      *     required=true,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="outputformats_id",
-     *     in="query",
+     *     in="formData",
      *     description="",
      *     required=true,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="business_object_id",
-     *     in="query",
+     *     in="formData",
      *     description="",
      *     required=true,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="htmldefinition",
-     *     in="query",
+     *     in="formData",
      *     description="",
      *     required=true,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="jsonobjects",
-     *     in="query",
+     *     in="formData",
      *     description="",
-     *     required=false,
+     *     required=true,
      *     type="string"
+     *   ),
+     * @SWG\Parameter(
+     *     name="multiobject",
+     *     in="formData",
+     *     description="",
+     *     required=true,
+     *     type="boolean"
      *   ),
      *   @SWG\Response(
      *         response=200,

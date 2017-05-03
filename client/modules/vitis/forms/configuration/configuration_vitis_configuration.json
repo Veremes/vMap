@@ -12,6 +12,7 @@
                     {
                         "type":"title",
                         "label":"FORM_GENERAL_SECTION_CONFIGURATION",
+                        "name":"title_properties",
                         "nb_cols":12
                     }
                 ]
@@ -61,8 +62,8 @@
                 "fields":[
                     {
                         "type":"number",
-                        "name":"refresh_period",
-                        "label":"FORM_REFRESH_PERIOD_CONFIGURATION",
+                        "name":"minimum_refresh_period",
+                        "label":"FORM_MINIMUM_REFRESH_PERIOD_CONFIGURATION",
                         "nb_cols":12
                     }
                 ]
@@ -134,6 +135,7 @@
                     {
                         "type":"title",
                         "label":"FORM_LOG_SECTION_CONFIGURATION",
+                        "name":"title_properties_log",
                         "nb_cols":12
                     }
                 ]
@@ -212,6 +214,7 @@
                     {
                         "type":"title",
                         "label":"FORM_HTTP_SERVER_SECTION_CONFIGURATION",
+                        "name":"title_properties_server",
                         "nb_cols":12
                     }
                 ]
@@ -271,6 +274,28 @@
                     {
                         "type":"title",
                         "label":"FORM_SECURITY_SECTION_CONFIGURATION",
+                        "name":"title_properties_security",
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"radio",
+                        "name":"proxy_check_ssl",
+                        "id":"proxy_check_ssl",
+                        "label":"FORM_PROXY_CHECK_SSL_CONFIGURATION",
+                        "options": {
+                            "choices": [{
+                                    "label": "FORM_PROXY_CHECK_SSL_TRUE_CONFIGURATION",
+                                    "value": true
+                                },
+                                {
+                                    "label": "FORM_PROXY_CHECK_SSL_FALSE_CONFIGURATION",
+                                    "value": false
+                                }]
+                        },
                         "nb_cols":12
                     }
                 ]
@@ -392,6 +417,7 @@
                     {
                         "type":"title",
                         "label":"FORM_DATABASE_TITLE_CONFIGURATION",
+                        "name":"title_properties_database",
                         "nb_cols":12
                     }
                 ]

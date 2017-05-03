@@ -35,7 +35,7 @@ class Invariants extends Vmap {
      * @param type $aValues parameters of the request
      * @param type $properties properties
      */
-    function Invariants($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;

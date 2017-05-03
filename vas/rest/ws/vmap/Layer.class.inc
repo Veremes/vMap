@@ -25,7 +25,7 @@ class Layer extends Vmap {
      * @param type $properties properties
      * @param type $oConnection connection object
      */
-    function Layer($aPath, $aValues, $properties, $oConnection) {
+    function __construct($aPath, $aValues, $properties, $oConnection) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
@@ -51,8 +51,7 @@ class Layer extends Vmap {
      *     in="path",
      *     description="layer id",
      *     required=true,
-     *     type="integer",
-     *   format="int32"
+     *     type="integer"
      *   ),
      *   @SWG\Response(
      *         response=200,
@@ -69,7 +68,7 @@ class Layer extends Vmap {
 
         $this->aFields = $this->getFields($this->aProperties['schema_vmap'], 'v_layer', 'layer_id');
         
-        // Ajoute (si il existe le formulaire associé à la couche)
+        // Ajoute (si il existe le formulaire associé au calque)
         $this->aFields['filter_form'] = $this->getFilterForm();
         $this->aFields['crs_list_label'] = str_replace('|', ',', $this->aFields['crs_list']);
     }
@@ -95,7 +94,7 @@ class Layer extends Vmap {
     function DELETE() {
         $this->oConnection->oBd->delete($this->aProperties['schema_vmap'], 'layer', 'layer_id', $this->aValues['my_vitis_id'], 'integer');
         if ($this->oConnection->oBd->enErreur()) {
-            $this->oError = new Error(1, $this->oConnection->oBd->getBDMessage());
+            $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
         } else {
             $this->aFields['layer_id'] = $this->aValues['my_vitis_id'];
         }

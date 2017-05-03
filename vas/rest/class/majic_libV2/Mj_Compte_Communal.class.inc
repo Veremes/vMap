@@ -40,7 +40,7 @@ class Mj_Compte_Communal extends Mj {
 	* \param $oBD Objet de connexion PDO_BD
 	*/
         
-	function Mj_Compte_Communal($sIdDnupro,$oBD,$properties, $sEncryptKey = ''){
+	function __construct($sIdDnupro,$oBD,$properties, $sEncryptKey = ''){
              $oBD = new BD ($properties["cadastre"]["rp"]["login"], $properties["cadastre"]["rp"]["pass"], $properties["database"], $properties["server"], $properties["port"], $properties["sgbd"], $properties["page_encoding"]);                
                 $this->sEncryptKey = $sEncryptKey;
                 include $this->sRessourcesFile;

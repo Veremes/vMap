@@ -25,7 +25,7 @@ class Mj_Compte_Communal_Parcelle extends Mj_Compte_Communal {
 	* \param $sIdPar Identifiant de la parcelle.
 	* \param $oBD Objet de connexion PDO_BD
 	*/
-	function Mj_Compte_Communal_Parcelle($sIdDnupro,$sIdPar,$oBD,$bFP=false,$sEncryptedKey='',$AllSuf=false){
+	function __construct($sIdDnupro,$sIdPar,$oBD,$bFP=false,$sEncryptedKey='',$AllSuf=false){
 		$this->bAllSuf=$AllSuf;
 		$this->sEncryptKey=$sEncryptedKey;
 		include $this->sRessourcesFile;

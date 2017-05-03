@@ -7,6 +7,8 @@
  */
 goog.provide('nsVmap.nsToolsManager.Measure');
 
+goog.require('oVmap');
+
 goog.require('ol.interaction.Draw');
 goog.require('ol.style.Style');
 goog.require('ol.style.Fill');
@@ -32,10 +34,6 @@ goog.require('ol.geom.LineString');
  */
 nsVmap.nsToolsManager.Measure = function () {
     oVmap.log('nsVmap.nsToolsManager.Measure');
-
-    // Directives et controleurs Angular
-    oVmap.module.directive('appMeasure', this.measureDirective);
-    oVmap.module.controller('AppmeasureController', this.measureController);
 };
 goog.exportProperty(nsVmap.nsToolsManager, 'Measure', nsVmap.nsToolsManager.Measure);
 
@@ -1009,3 +1007,7 @@ nsVmap.nsToolsManager.Measure.prototype.measureController.prototype.getPointsInf
 
     return aPoints;
 };
+
+// Définit la directive et le controller
+oVmap.module.directive('appMeasure', nsVmap.nsToolsManager.Measure.prototype.measureDirective);
+oVmap.module.controller('AppmeasureController', nsVmap.nsToolsManager.Measure.prototype.measureController);

@@ -35,12 +35,12 @@ class Modules extends Vmap {
      * @param type $aValues parameters of the request
      * @param type $properties properties
      */
-    function Modules($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
         $this->oConnection = new Connection($this->aValues, $this->aProperties);
-	$this->aSelectedFields = Array("module_id", "label", "description", "rolname");
+		$this->aSelectedFields = Array("module_id", "label", "description", "rolname");
     }
     /**
      * @SWG\Get(path="/modules",
@@ -75,16 +75,14 @@ class Modules extends Vmap {
      *     in="query",
      *     description="number of element",
      *     required=false,
-     *     type="integer",
-     *     format="int32"
+     *     type="integer"
      *   ),
      * @SWG\Parameter(
      *     name="offset",
      *     in="query",
      *     description="index of first element",
      *     required=false,
-     *     type="string",
-     *     format="int32"
+     *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="attributs",

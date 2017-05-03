@@ -21,7 +21,10 @@
                         "web_service":{
                             "ressource_id":"vmap/layerthemes",
                             "id_key":"layertheme_id",
-                            "label_key":"name"
+                            "label_key":"name",
+                            "parameters":{
+                                "order_by":"name"
+                            }
                         }
                     },
                     {
@@ -32,23 +35,10 @@
                         "web_service":{
                             "ressource_id":"vmap/services",
                             "id_key":"service_id",
-                            "label_key":"name"
-                        }
-                    }
-                ]
-            },
-            {
-                "fields":[
-                    {
-                        "type":"select",
-                        "name":"crs_list",
-                        "label":"FORM_COORDINATE_SYSTEM_VMAP_MAP_LAYER",
-                        "nb_cols":4,
-                        "web_service":{
-                            "ressource_id":"vmap/crss",
-                            "id_key":"crs_id",
                             "label_key":"name",
-                            "callback": "concatSelectAttributes('crs_list', ' : ')"
+                            "parameters":{
+                                "order_by":"name"
+                            }
                         }
                     }
                 ]
@@ -141,7 +131,10 @@
                         "web_service":{
                             "ressource_id":"vmap/layerthemes",
                             "id_key":"layertheme_id",
-                            "label_key":"name"
+                            "label_key":"name",
+                            "parameters":{
+                                "order_by":"name"
+                            }
                         }
                     }
                 ]
@@ -199,27 +192,58 @@
             {
                 "fields":[
                     {
-                        "type":"double_select",
-                        "name":"crs_list",
-                        "name_from":"available_crs_list",
-                        "name_to":"crs_list",
-                        "label":"FORM_CRS_LIST_VMAP_MAP_LAYER",
-                        "label_from":"FORM_AVAILABLE_CRS_LIST_VMAP_MAP_LAYER",
-                        "label_to":"FORM_LAYER_CRS_LIST_VMAP_MAP_LAYER",
-                        "web_service":{
-                            "ressource_id":"vmap/crss",
-                            "id_key":"crs_id",
-                            "label_key":"name",
-                            "callback": "concatSelectAttributes('available_crs_list|crs_list', ' : ')"
-                        },
-                        "tooltip": {
-                            "title": "",
-                            "content": "FORM_CRS_LIST_VMAP_MAP_LAYER_TOOLTIP",
-                            "container": "body",
-                            "html": true
-                        },
-                        "size":"6",
-                        "nb_cols":12
+                        "type":"select",
+                        "name":"wmts_layer",
+                        "label":"FORM_LAYER_VMAP_MAP_LAYER",
+                        "nb_cols":6,
+                        "visible": false,
+                        "required": true,
+                        "onchange": "wmtsLayerSelected()"
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"select",
+                        "name":"matrix_set",
+                        "label":"FORM_MATRIX_VMAP_MAP_LAYER",
+                        "nb_cols":6,
+                        "visible": false,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"select",
+                        "name":"layer_style",
+                        "label":"FORM_STYLE_VMAP_MAP_LAYER",
+                        "nb_cols":6,
+                        "visible": false,
+                        "required": false
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"select",
+                        "name":"layer_format",
+                        "label":"FORM_FORMAT_VMAP_MAP_LAYER",
+                        "nb_cols":6,
+                        "visible": false,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"hidden",
+                        "name":"layer_options",
+                        "nb_cols":6
                     }
                 ]
             },
@@ -233,7 +257,10 @@
                         "web_service":{
                             "ressource_id":"vmap/businessobjects",
                             "id_key":"business_object_id",
-                            "label_key":"business_object_id"
+                            "label_key":"business_object_id",
+                            "parameters":{
+                                "order_by":"business_object_id"
+                            }
                         }
                     }
                 ]
@@ -330,7 +357,10 @@
                         "web_service":{
                             "ressource_id":"vmap/services",
                             "id_key":"service_id",
-                            "label_key":"name"
+                            "label_key":"name",
+                            "parameters":{
+                                "order_by":"name"
+                            }
                         },
                         "options":["|"]
                     }
@@ -370,7 +400,10 @@
                         "web_service":{
                             "ressource_id":"vmap/layerthemes",
                             "id_key":"layertheme_id",
-                            "label_key":"name"
+                            "label_key":"name",
+                            "parameters":{
+                                "order_by":"name"
+                            }
                         },
                         "visible": false
                     }
@@ -430,28 +463,58 @@
             {
                 "fields":[
                     {
-                        "type":"double_select",
-                        "name":"crs_list",
-                        "name_from":"available_crs_list",
-                        "name_to":"crs_list",
-                        "label":"FORM_CRS_LIST_VMAP_MAP_LAYER",
-                        "label_from":"FORM_AVAILABLE_CRS_LIST_VMAP_MAP_LAYER",
-                        "label_to":"FORM_LAYER_CRS_LIST_VMAP_MAP_LAYER",
+                        "type":"select",
+                        "name":"wmts_layer",
+                        "label":"FORM_LAYER_VMAP_MAP_LAYER",
+                        "nb_cols":6,
                         "visible": false,
-                        "web_service":{
-                            "ressource_id":"vmap/crss",
-                            "id_key":"crs_id",
-                            "label_key":"name",
-                            "callback": "concatSelectAttributes('available_crs_list|crs_list', ' : ')"
-                        },
-                        "tooltip": {
-                            "title": "",
-                            "content": "FORM_CRS_LIST_VMAP_MAP_LAYER_TOOLTIP",
-                            "container": "body",
-                            "html": true
-                        },
-                        "size":"6",
-                        "nb_cols":12
+                        "required": true,
+                        "onchange": "wmtsLayerSelected()"
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"select",
+                        "name":"matrix_set",
+                        "label":"FORM_MATRIX_VMAP_MAP_LAYER",
+                        "nb_cols":6,
+                        "visible": false,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"select",
+                        "name":"layer_style",
+                        "label":"FORM_STYLE_VMAP_MAP_LAYER",
+                        "nb_cols":6,
+                        "visible": false,
+                        "required": false
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"select",
+                        "name":"layer_format",
+                        "label":"FORM_FORMAT_VMAP_MAP_LAYER",
+                        "nb_cols":6,
+                        "visible": false,
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"hidden",
+                        "name":"layer_options",
+                        "nb_cols":6
                     }
                 ]
             },
@@ -465,7 +528,10 @@
                         "web_service":{
                             "ressource_id":"vmap/businessobjects",
                             "id_key":"business_object_id",
-                            "label_key":"business_object_id"
+                            "label_key":"business_object_id",
+                            "parameters":{
+                                "order_by":"business_object_id"
+                            }
                         },
                         "visible": false
                     }
@@ -616,8 +682,8 @@
                 "fields":[
                     {
                         "type":"label",
-                        "name":"crs_list_label",
-                        "label":"FORM_LAYER_CRS_LIST_VMAP_MAP_LAYER",
+                        "name":"wmts_layer",
+                        "label":"FORM_LAYER_VMAP_MAP_LAYER",
                         "nb_cols":6
                     }
                 ]
@@ -626,7 +692,37 @@
                 "fields":[
                     {
                         "type":"label",
-                        "name":"business_object_id",
+                        "name":"matrix_set",
+                        "label":"FORM_MATRIX_VMAP_MAP_LAYER",
+                        "nb_cols":6
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"label",
+                        "name":"layer_style",
+                        "label":"FORM_STYLE_VMAP_MAP_LAYER",
+                        "nb_cols":6
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"label",
+                        "name":"layer_format",
+                        "label":"FORM_FORMAT_VMAP_MAP_LAYER",
+                        "nb_cols":6
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"label",
+                        "name":"bo_id",
                         "label":"FORM_BUSINESS_OBJECT_VMAP_MAP_LAYER",
                         "nb_cols":6
                     }

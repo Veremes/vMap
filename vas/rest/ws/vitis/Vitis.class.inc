@@ -168,14 +168,18 @@ class Vitis extends DbClass {
      * @param $sSchema schema of the table
      * @param $sTable table name
      * @param $sIdField name of the id field
-     * @param $sPrivilegeParent privilege to get all the object
-     * @param $sPrivilegeChild privilege the get one object
+     * @param $bOnlyReturnStatus
      * @param $sVitisObjectName Name of the vitis object, if provide and the object contains files stored in ws_data/vitis/$sVitisObjectName the values will be url formed
      * @return the array of objects
      */
     function genericGet($sSchema, $sTable, $sIdField, $bOnlyReturnStatus = false, $sVitisObjectName = "") {
+        if (!empty($this->aProperties['ws_data_alias']))
+            $ws_data_alias = $this->aProperties['ws_data_alias'];
+        else
+            $ws_data_alias = '';
         $sParentClassName = get_class($this);
         $sChildClassName = substr($sParentClassName, 0, -1);
+        $date = new DateTime();
         if (isset($this->aValues['sEncoding']))
             $sEncoding = $this->aValues['sEncoding'];
         else
@@ -205,12 +209,12 @@ class Vitis extends DbClass {
                     // Vérifie si il y a des fichiers à renvoyer
                     if ($sVitisObjectName != "") {
                         $sDataDir = $this->aProperties['ws_data_dir'] . '/vitis/' . $sVitisObjectName . '/documents/' . $oObject->aFields[$sIdField];
-                        $sDataUrl = $this->aProperties['web_server_name'] . "/" . $this->aProperties['ws_data_alias'] . "/vitis/" . $sVitisObjectName . "/documents/" . $oObject->aFields[$sIdField];
+                        $sDataUrl = $this->aProperties['web_server_name'] . "/" . $ws_data_alias . "/vitis/" . $sVitisObjectName . "/documents/" . $oObject->aFields[$sIdField];
                         if (is_dir($sDataDir)) {
                             // Remplace le nom du fichier par son url
-                            foreach ($oObject->aFields as $key => $value) {                                
+                            foreach ($oObject->aFields as $key => $value) {
                                 if (is_dir($sDataDir . "/" . $key)) {
-                                    $oObject->aFields[$key] = $sDataUrl . "/" . $key . "/" . $value;
+                                    $oObject->aFields[$key] = $sDataUrl . "/" . $key . "/" . $value . "?d=" . $date->getTimestamp();
                                 }
                             }
                         }
@@ -222,10 +226,12 @@ class Vitis extends DbClass {
 
                     //build request to get Ids
                     $sSql = "SELECT ";
-                    if (isset($this->aValues['distinct']) && $this->aValues['distinct'] == "true") {
+                    if (!empty($this->aValues['distinct']) && $this->aValues['distinct'] == "true") {
                         $sSql .= "DISTINCT ";
                     }
                     // Format $this->aSelectedFields for spatial use
+                    if (empty($this->aValues['result_srid']))
+                        $this->aValues['result_srid'] = null;
                     $this->formatSelectedFieldsForGeom($sSchema, $sTable, $this->aValues['result_srid']);
                     //filter
                     $this->addSelectedFields();
@@ -265,7 +271,7 @@ class Vitis extends DbClass {
                         }
                     }
                     $sSql .= " FROM " . $sSchema . "." . $sTable;
-                    if (isset($this->aValues['filter'])) {
+                    if (!empty($this->aValues['filter'])) {
                         //$aFilter = explode("|", $this->aValues['filter']);
 
                         if (strpos($sSql, " WHERE ") == FALSE) {
@@ -275,7 +281,7 @@ class Vitis extends DbClass {
                         }
                     }
                     //order by
-                    if (isset($this->aValues['order_by'])) {
+                    if (!empty($this->aValues['order_by'])) {
                         $aOrder = explode("|", $this->aValues['order_by']);
                         foreach ($aOrder as $value) {
                             if (strpos($sSql, "ORDER BY") == FALSE) {
@@ -284,16 +290,16 @@ class Vitis extends DbClass {
                                 $sSql .= ", " . str_replace("=", " ", "\"" . $value . "\"");
                             }
                         }
-                        if (isset($this->aValues['sort_order'])) {
+                        if (!empty($this->aValues['sort_order'])) {
                             $sSql .= " " . $this->aValues['sort_order'];
                         }
                     }
                     //limit
-                    if (isset($this->aValues['limit'])) {
+                    if (!empty($this->aValues['limit'])) {
                         $sSql .= " LIMIT " . $this->aValues['limit'];
                     }
                     //offset
-                    if (isset($this->aValues['offset'])) {
+                    if (!empty($this->aValues['offset'])) {
                         $sSql .= " OFFSET " . $this->aValues['offset'];
                     }
 
@@ -309,12 +315,12 @@ class Vitis extends DbClass {
                             // Vérifie si il y a des fichiers à renvoyer
                             if ($sVitisObjectName != "") {
                                 $sDataDir = $this->aProperties['ws_data_dir'] . '/vitis/' . $sVitisObjectName . '/documents/' . $oObject->aFields[$sIdField];
-                                $sDataUrl = $this->aProperties['web_server_name'] . "/" . $this->aProperties['ws_data_alias'] . "/vitis/" . $sVitisObjectName . "/documents/" . $oObject->aFields[$sIdField];
+                                $sDataUrl = $this->aProperties['web_server_name'] . "/" . $ws_data_alias . "/vitis/" . $sVitisObjectName . "/documents/" . $oObject->aFields[$sIdField];
                                 if (is_dir($sDataDir)) {
                                     // Remplace le nom du fichier par son url
                                     foreach ($oObject->aFields as $key => $value) {
                                         if (is_dir($sDataDir . "/" . $key)) {
-                                            $oObject->aFields[$key] = $sDataUrl . "/" . $key . "/" . $value;
+                                            $oObject->aFields[$key] = $sDataUrl . "/" . $key . "/" . $value . "?d=" . $date->getTimestamp();
                                         }
                                     }
                                 }
@@ -323,7 +329,7 @@ class Vitis extends DbClass {
                     }
                     $this->aFields['list_count'] = $this->oConnection->oBd->nombreLigne($oResult);
                     $sSql = "select count(*) as total_row_number FROM " . $sSchema . "." . $sTable;
-                    if (isset($this->aValues['filter'])) {
+                    if (!empty($this->aValues['filter'])) {
 
                         //$aFilter = explode("|", $this->aValues['filter']);
 
@@ -340,7 +346,7 @@ class Vitis extends DbClass {
                     $this->aFields['total_row_number'] = $aLigne['total_row_number'];
                 }
             } else {
-                $oError = new Error(1, "Rights problem : you don't have right to list " . $sChildClassName);
+                $oError = new VitisError(1, "Rights problem : you don't have right to list " . $sChildClassName);
             }
         }
 
@@ -373,7 +379,7 @@ class Vitis extends DbClass {
                 $this->aOrganizedFields[$value] = $value;
             }
         }
-        if (isset($this->aValues["attributs"])) {
+        if (!empty($this->aValues["attributs"])) {
             if (strpos($this->aValues["attributs"], "-") === 0) {
                 $aAtttributs = explode("|", substr($this->aValues["attributs"], 1));
                 foreach ($aAtttributs as $value) {
@@ -431,7 +437,7 @@ class Vitis extends DbClass {
                 // insert user in table
                 $iId = $this->oConnection->oBd->insert($sSchema, $sTable, $this->aValues, $sSequence, $sIdField);
                 if ($this->oConnection->oBd->enErreur()) {
-                    $oError = new Error(1, $this->oConnection->oBd->getBDMessage());
+                    $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                     $aXmlRacineAttribute['status'] = 0;
                     $sMessage = $oError->asDocument('', 'vitis', $sEncoding, True, $aXmlRacineAttribute, $sSourceEncoding, $this->aValues['output']);
                 } else {
@@ -442,7 +448,7 @@ class Vitis extends DbClass {
                     $sMessage = $this->asDocument('', 'vitis', $sEncoding, True, $aXmlRacineAttribute, $sSourceEncoding, $this->aValues['output']);
                 }
             } else {
-                $oError = new Error(1, "Rights problem : you don't have right to insert in " . $sSchema . "." . $sTable);
+                $oError = new VitisError(1, "Rights problem : you don't have right to insert in " . $sSchema . "." . $sTable);
                 $aXmlRacineAttribute['status'] = 0;
                 $sMessage = $oError->asDocument('', 'vitis', $sEncoding, True, $aXmlRacineAttribute, $sSourceEncoding, $this->aValues['output']);
             }
@@ -478,7 +484,7 @@ class Vitis extends DbClass {
             if (in_array('UPDATE', $this->aTablePrivileges)) {
                 $iId = $this->oConnection->oBd->update($sSchema, $sTable, $this->aValues, $sIdField, $this->aValues['my_vitis_id'], "text");
                 if ($this->oConnection->oBd->enErreur()) {
-                    $oError = new Error(1, $this->oConnection->oBd->getBDMessage());
+                    $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                     $aXmlRacineAttribute['status'] = 0;
                     $sMessage = $oError->asDocument('', 'vitis', $sEncoding, True, $aXmlRacineAttribute, $sSourceEncoding, $this->aValues['output']);
                 } else {
@@ -487,7 +493,7 @@ class Vitis extends DbClass {
                     $sMessage = $this->asDocument('', 'vitis', $sEncoding, True, $aXmlRacineAttribute, $sSourceEncoding, $this->aValues['output']);
                 }
             } else {
-                $oError = new Error(1, "Rights problem : you don't have right to insert in " . $sSchema . "." . $sTable);
+                $oError = new VitisError(1, "Rights problem : you don't have right to update in " . $sSchema . "." . $sTable);
                 $aXmlRacineAttribute['status'] = 0;
                 $sMessage = $oError->asDocument('', 'vitis', $sEncoding, True, $aXmlRacineAttribute, $sSourceEncoding, $this->aValues['output']);
             }
@@ -529,6 +535,10 @@ class Vitis extends DbClass {
                         array_push($this->aObjects, $oObject);
                     }
                 }
+            } else {
+                $oError = new VitisError(12, "Rights problem : you don't have right to delete in" . $sSchema . "." . $sTable);
+                $aXmlRacineAttribute['status'] = 0;
+                $sMessage = $oError->asDocument('', 'vitis', $sEncoding, True, $aXmlRacineAttribute, $sSourceEncoding, $this->aValues['output']);
             }
         }
         foreach ($this->aObjects as $oObject) {
@@ -556,7 +566,7 @@ class Vitis extends DbClass {
     function deleteChild($sSchema, $sTable, $sIdField, $sPrivilegeParent = "") {
         $this->oConnection->oBd->delete($this->aProperties['schema_framework'], 'v_user', 'user_id', $this->aValues['my_vitis_id'], 'integer');
         if ($this->oConnection->oBd->enErreur()) {
-            $this->oError = new Error(1, $this->oConnection->oBd->getBDMessage());
+            $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
         } else {
             $this->aFields["user_id"] = $this->aValues['my_vitis_id'];
         }
@@ -626,8 +636,10 @@ class Vitis extends DbClass {
         } else {
             $aIdItems = array();
         }
-
-        $this->oConnection->oBd->delete($sSchema, $sTable, $sFieldIdFromRequest, $this->aValues[$sFieldIdFromRequest], 'integer');
+        $sMode = 'text';
+        if (is_numeric($this->aValues[$sFieldIdFromRequest]))
+            $sMode = 'integer';
+        $this->oConnection->oBd->delete($sSchema, $sTable, $sFieldIdFromRequest, $this->aValues[$sFieldIdFromRequest], $sMode);
         foreach ($aIdItems as $aIdItem) {
             $this->aValues[$sFieldIdToUpdate] = $aIdItem;
             $aReturn = $this->genericPost($sSchema, $sTable, null, $sFieldIdFromRequest);
@@ -646,8 +658,10 @@ class Vitis extends DbClass {
      * @param string $sFieldName Field's name form request for DB save
      * @param string $sPath realtive path from public_dir
      */
-    function postFileSave($sFieldName, $sPath) {
-        $sDir = $this->UniqFileName();
+    function postFileSave($sFieldName, $sPath, $sDir = null) {
+        if ($sDir === null) {
+            $sDir = $this->UniqFileName();
+        }
         $sPictureDir = $this->aProperties['dir_export'] . $sPath;
 
         $this->aValues[$sFieldName] = $sDir . "/" . $_FILES[$sFieldName]['name'];
@@ -711,18 +725,18 @@ class Vitis extends DbClass {
      * @param string $aReturn
      */
     function postFileSaveWsData($sFieldName, $sVitisObjectName, $sId, $aReturn) {
-        if(!isset($aReturn)){
+        if (!isset($aReturn)) {
             $aReturn = array("sStatus" => 1);
         }
         if (!empty($_FILES[$sFieldName])) {
-            $sImageDir = $this->aProperties['ws_data_dir'] . '/vitis/'.$sVitisObjectName.'/documents/' . $sId . '/'.$sFieldName.'/' . $_FILES[$sFieldName]["name"];
+            $sImageDir = $this->aProperties['ws_data_dir'] . '/vitis/' . $sVitisObjectName . '/documents/' . $sId . '/' . $sFieldName . '/' . $_FILES[$sFieldName]["name"];
             $sDirPath = $this->createElementFilesFolder($sVitisObjectName, $sId);
-            $sDirColumnPath = $sDirPath . '/'.$sFieldName;
+            $sDirColumnPath = $sDirPath . '/' . $sFieldName;
             if (!is_dir($sDirColumnPath)) {
                 mkdir($sDirColumnPath, 0777, true);
             }
             $sErrorMessage = uploadFile($sFieldName, "", $sImageDir, $_FILES[$sFieldName]['size'] + 1);
-            if ($sErrorMessage != ""){
+            if ($sErrorMessage != "") {
                 $aReturn = array("sStatus" => 0, "sMessage" => $sErrorMessage);
                 writeToErrorLog($sErrorMessage);
             }
@@ -738,7 +752,7 @@ class Vitis extends DbClass {
      * @param string $aReturn
      */
     function putFileUpdateWsData($sFieldName, $sVitisObjectName, $sId, $aReturn) {
-        if(!isset($aReturn)){
+        if (!isset($aReturn)) {
             $aReturn = array("sStatus" => 1);
         }
         if (!empty($this->aValues[$sFieldName . "_file"])) {
@@ -747,7 +761,7 @@ class Vitis extends DbClass {
 
             // Crée les répertoires si ils n'existent pas
             $sDirPath = $this->createElementFilesFolder($sVitisObjectName, $sId);
-            $sDirColumnPath = $sDirPath . '/'.$sFieldName;
+            $sDirColumnPath = $sDirPath . '/' . $sFieldName;
             if (!is_dir($sDirColumnPath)) {
                 mkdir($sDirColumnPath, 0777, true);
             }
@@ -770,12 +784,10 @@ class Vitis extends DbClass {
         return $aReturn;
     }
 
-
-
     function getTablePrivileges($sSchema, $sTable) {
         $this->aTablePrivileges = $this->oConnection->getTableRights($sSchema, $sTable);
     }
-    
+
     /**
      * Create the element files container
      * @param string $sVitisObjectName
@@ -805,7 +817,7 @@ class Vitis extends DbClass {
 
         return $sDirPath;
     }
-    
+
     /**
      * Delete the documents binded to the elements specified in $aIds
      * @param string $sVitisObjectName

@@ -46,7 +46,7 @@
                         data-toggle="dropdown" 
                         aria-haspopup="true" 
                         aria-expanded="false">
-                    <span class="caret" ng-show="oInsertObject.sGeomType === 'GEOMETRYCOLLECTION'"></span>
+                    <span class="caret" ng-show="oInsertObject.sGeomType === 'GEOMETRYCOLLECTION' || oInsertObject.sGeomType === 'GEOMETRY' && ctrl.addPartGeomType === ''"></span>
                     <span class="icon-point" ng-show="ctrl.addPartGeomType === 'Point'"></span>
                     <span class="icon-line" ng-show="ctrl.addPartGeomType === 'LineString'"></span>
                     <span class="icon-polygon" ng-show="ctrl.addPartGeomType === 'Polygon'"></span>
@@ -54,22 +54,22 @@
                 </button>
                 <ul class="dropdown-menu">
                     <li><a href="javascript:void(0)"
-                           ng-show="oInsertObject.sGeomType === 'GEOMETRYCOLLECTION' || oInsertObject.sGeomType === 'POINT' || oInsertObject.sGeomType === 'MULTIPOINT'"
+                           ng-show="oInsertObject.sGeomType === 'GEOMETRYCOLLECTION' || oInsertObject.sGeomType === 'GEOMETRY' || oInsertObject.sGeomType === 'POINT' || oInsertObject.sGeomType === 'MULTIPOINT'"
                            ng-click="ctrl.addPartGeomType = 'Point'; ctrl.startInsertion('insertPoint', false)">
                             <span class="icon-point"></span> Point
                         </a></li>
                     <li><a href="javascript:void(0)"
-                           ng-show="oInsertObject.sGeomType === 'GEOMETRYCOLLECTION' || oInsertObject.sGeomType === 'LINESTRING' || oInsertObject.sGeomType === 'MULTILINESTRING'"
+                           ng-show="oInsertObject.sGeomType === 'GEOMETRYCOLLECTION' || oInsertObject.sGeomType === 'GEOMETRY' || oInsertObject.sGeomType === 'LINESTRING' || oInsertObject.sGeomType === 'MULTILINESTRING'"
                            ng-click="ctrl.addPartGeomType = 'LineString'; ctrl.startInsertion('insertLineString', false)">
                             <span class="icon-line"></span> Ligne
                         </a></li>
                     <li><a href="javascript:void(0)"
-                           ng-show="oInsertObject.sGeomType === 'GEOMETRYCOLLECTION' || oInsertObject.sGeomType === 'POLYGON' || oInsertObject.sGeomType === 'MULTIPOLYGON'"
+                           ng-show="oInsertObject.sGeomType === 'GEOMETRYCOLLECTION' || oInsertObject.sGeomType === 'GEOMETRY' || oInsertObject.sGeomType === 'POLYGON' || oInsertObject.sGeomType === 'MULTIPOLYGON'"
                            ng-click="ctrl.addPartGeomType = 'Polygon'; ctrl.startInsertion('insertPolygon', false)">
                             <span class="icon-polygon"></span> Polygone
                         </a></li>
                     <li><a href="javascript:void(0)"
-                           ng-show="oInsertObject.sGeomType === 'GEOMETRYCOLLECTION' || oInsertObject.sGeomType === 'POLYGON' || oInsertObject.sGeomType === 'MULTIPOLYGON'"
+                           ng-show="oInsertObject.sGeomType === 'GEOMETRYCOLLECTION' || oInsertObject.sGeomType === 'GEOMETRY' || oInsertObject.sGeomType === 'POLYGON' || oInsertObject.sGeomType === 'MULTIPOLYGON'"
                            ng-click="ctrl.addPartGeomType = 'Circle'; ctrl.startInsertion('insertCircle', false)">
                             <span class="icon-circle"></span> Cercle
                         </a></li>
@@ -77,7 +77,7 @@
             </div>
             
             <div class="hr-gray margin-10"
-                 ng-show="(featuresLength > 0) || (oInsertObject.sGeomType === 'GEOMETRYCOLLECTION' || oInsertObject.sGeomType === 'POLYGON' || oInsertObject.sGeomType === 'MULTIPOLYGON')"></div>
+                 ng-show="(featuresLength > 0) || (oInsertObject.sGeomType === 'GEOMETRYCOLLECTION' || oInsertObject.sGeomType === 'GEOMETRY' || oInsertObject.sGeomType === 'POLYGON' || oInsertObject.sGeomType === 'MULTIPOLYGON')"></div>
 
             <ul class="list-menu gray-list-menu">
                 <li class="basic-tools-dropdown-btn">
@@ -100,7 +100,7 @@
                 </li>
                 <li class="basic-tools-dropdown-btn">
                     <a class="btn-draw"
-                       ng-show="(oInsertObject.sGeomType === 'GEOMETRYCOLLECTION' || oInsertObject.sGeomType === 'POLYGON' || oInsertObject.sGeomType === 'MULTIPOLYGON')"
+                       ng-show="(oInsertObject.sGeomType === 'GEOMETRYCOLLECTION' || oInsertObject.sGeomType === 'GEOMETRY' || oInsertObject.sGeomType === 'POLYGON' || oInsertObject.sGeomType === 'MULTIPOLYGON') && featuresLength > 0"
                        ng-class="{'active': ctrl.currentAction === 'basicTools-insert-addHole'}"
                        ng-click="ctrl.startInsertion('addHole', ctrl.currentAction === 'basicTools-insert-addHole')">
                         <span class="icon-dot-circle-o"></span>
@@ -109,7 +109,7 @@
                 </li>
                 <li class="basic-tools-dropdown-btn">
                     <a class="btn-draw"
-                       ng-show="(oInsertObject.sGeomType === 'GEOMETRYCOLLECTION' || oInsertObject.sGeomType === 'POLYGON' || oInsertObject.sGeomType === 'MULTIPOLYGON')"
+                       ng-show="(oInsertObject.sGeomType === 'GEOMETRYCOLLECTION' || oInsertObject.sGeomType === 'GEOMETRY' || oInsertObject.sGeomType === 'POLYGON' || oInsertObject.sGeomType === 'MULTIPOLYGON') && featuresLength > 0"
                        ng-class="{'active': ctrl.currentAction === 'basicTools-insert-deleteHole'}"
                        ng-click="ctrl.startInsertion('deleteHole', ctrl.currentAction === 'basicTools-insert-deleteHole')">
                         <span class="icon-dot-circle-o"></span>
@@ -145,7 +145,8 @@
 </div>
 
 <div class="modal fade" id="basictools-insert-form-reader-modal" role="dialog">
-    <div class="modal-dialog ">
+    <div class="modal-dialog"
+         ng-class="{'modal-60':oInsertObject.add_form_size == 2, 'modal-90':oInsertObject.add_form_size == 3}">
         <!--Modal content-->
         <div class="modal-content" style="">
             <div class="modal-header">

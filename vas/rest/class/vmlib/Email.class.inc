@@ -94,7 +94,8 @@ class Email {
         );
         $aHeaders = $oMime->headers($aHeaders);
         //
-        $aSmtp = Mail::factory('smtp', array(
+		$oMail = new Mail();
+		$aSmtp = $oMail->factory('smtp', array(
                     'host' => $this->aProperties["smtp_host"],
                     'port' => $this->aProperties["smtp_port"],
                     'auth' => $this->aProperties["smtp_authentification"],

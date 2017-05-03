@@ -36,7 +36,7 @@ class WebServices extends Vitis {
      * @param type $aValues parameters of the request
      * @param type $properties properties
      */
-    function WebServices($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
@@ -114,7 +114,7 @@ class WebServices extends Vitis {
      *   summary="Get ressources list",
      *   description="Request to get ressources list",
      *   operationId="GET",
-     *   produces={"application/xml", "application/json", "application/x_vm_json"},
+     *   produces={"application/json", "application/x_vm_json"},
      *   @SWG\Parameter(
      *     name="token",
      *     in="query",
@@ -149,7 +149,7 @@ class WebServices extends Vitis {
      *   summary="Get ressources infos",
      *   description="Request to get ressources infos",
      *   operationId="GET",
-     *   produces={"application/xml", "application/json", "application/x_vm_json"},
+     *   produces={"application/json", "application/x_vm_json"},
      *   @SWG\Parameter(
      *     name="token",
      *     in="query",
@@ -191,40 +191,56 @@ class WebServices extends Vitis {
      * @return Columns
      */
     function GET() {
-        require("../doc/vendor/autoload.php");
+        if ($this->oConnection->oError == null) {
+            require("../doc/vendor/autoload.php");
 
-        //$sWebServiceName = '';
-        if (!empty($this->aPath[2]))
-            $sWebServiceName = $this->aPath[2];
-        $sRessourceName = '';
-        if (!empty($this->aPath[4]))
-            $sRessourceName = $this->aPath[4];
+            //$sWebServiceName = '';
+            if (!empty($this->aPath[2]))
+                $sWebServiceName = $this->aPath[2];
+            $sRessourceName = '';
+            if (!empty($this->aPath[4]))
+                $sRessourceName = $this->aPath[4];
 
-        if (!empty($sRessourceName)) {
-            // infos de la ressource
-            $this->getRessourceInfos($sWebServiceName, $sRessourceName);
-        } else if (!empty($this->aPath[3])) {
-            // liste des ressources
-            $this->getRessourceInfos($sWebServiceName);
-        } else if (!empty($sWebServiceName)) {
-            // infos du web service
-            $oWebService = $this->getWebServiceInfos($sWebServiceName, explode("|", $this->aValues['attributs']));
-            array_push($this->aObjects, $oWebService);
-        } else {
-            // liste des web services
-            // Tableau web services
-            $aWebServices = $this->getWebServicesList();
-
-            // Ajout dans l'output
-            for ($i = 0; $i < count($aWebServices); $i++) {
-                $oWebService = $this->getWebServiceInfos($aWebServices[$i], explode("|", $this->aValues['attributs']));
+            if (!empty($sRessourceName)) {
+                // infos de la ressource
+                $this->getRessourceInfos($sWebServiceName, $sRessourceName);
+            } else if (!empty($this->aPath[3])) {
+                // liste des ressources
+                $this->getRessourceInfos($sWebServiceName, $sRessourceName);
+            } else if (!empty($sWebServiceName)) {
+                // infos du web service
+    			$aAttributs = array();
+    			if (!empty($this->aValues['attributs'])){
+    				$aAttributs = explode("|", $this->aValues['attributs']);
+    			}
+                $oWebService = $this->getWebServiceInfos($sWebServiceName, $aAttributs);
                 array_push($this->aObjects, $oWebService);
+            } else {
+                // liste des web services
+                // Tableau web services
+                $aWebServices = $this->getWebServicesList();
+
+    			$aAttributs = array();
+    			if (!empty($this->aValues['attributs'])){
+    				$aAttributs = explode("|", $this->aValues['attributs']);
+    			}
+                // Ajout dans l'output
+                for ($i = 0; $i < count($aWebServices); $i++) {
+                    $oWebService = $this->getWebServiceInfos($aWebServices[$i], $aAttributs);
+                    array_push($this->aObjects, $oWebService);
+                }
             }
+
+
+            $aXmlRacineAttribute['status'] = 1;
+            $sMessage = $this->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+        }else{
+            http_response_code(403); 
+            $aXmlRacineAttribute['status']=0;
+            $this->aFields['error'] = "ERROR : invalid token";
+            $sMessage = $this->asDocument('','vitis',$this->aValues['sEncoding'],True,$aXmlRacineAttribute,$this->aValues['sSourceEncoding'],$this->aValues['output']);
+            return $sMessage;
         }
-
-
-        $aXmlRacineAttribute['status'] = 1;
-        $sMessage = $this->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
         return $sMessage;
     }
 
@@ -270,7 +286,7 @@ class WebServices extends Vitis {
             }
         }
 
-        $oWebService = new WebService($this->aPath, $this->aValues);
+        $oWebService = new WebService($this->aPath, $this->aValues, $this->aProperties);
         $oWebService->aFields = $oJson;
 
         return $oWebService;
@@ -324,7 +340,7 @@ class WebServices extends Vitis {
         $oJson = json_decode($swagger);
 
         foreach ($oJson->tags as $value) {
-            if (strtolower($sWebServiceName . '/' . $sRessourceName) == strtolower($sWebServiceName . "/" . $value->name) || !isset($sRessourceName)) {
+            if (strtolower($sWebServiceName . '/' . $sRessourceName) == strtolower($sWebServiceName . "/" . $value->name) || $sRessourceName === "") {
                 if (file_exists("./ws/" . $sWebServiceName . "/" . $value->name . ".class.inc")) {
                     require_once("./ws/" . $sWebServiceName . "/" . $value->name . ".class.inc");
                     $sClassName = $value->name;
@@ -344,16 +360,18 @@ class WebServices extends Vitis {
                     }
                     if (in_array("fields", $aFields)) {
                         $sClass->aFields["fields"] = "";
-                        foreach ($sClass->aRessourceFields as $sFields) {
-                            if (strpos($sFields, " as ")) {
-                                $field = explode(" as ", $sFields)[1];
-                            } else {
-                                $field = $sFields;
-                            }
-                            if ($sClass->aFields["fields"] == "") {
-                                $sClass->aFields["fields"] = $field;
-                            } else {
-                                $sClass->aFields["fields"] .= ", " . $field;
+                        if (!empty($aRessourceFields)){
+                            foreach ($sClass->aRessourceFields as $sFields) {
+                                if (strpos($sFields, " as ")) {
+                                    $field = explode(" as ", $sFields)[1];
+                                } else {
+                                    $field = $sFields;
+                                }
+                                if ($sClass->aFields["fields"] == "") {
+                                    $sClass->aFields["fields"] = $field;
+                                } else {
+                                    $sClass->aFields["fields"] .= ", " . $field;
+                                }
                             }
                         }
                     }
@@ -361,6 +379,9 @@ class WebServices extends Vitis {
                         require_once 'Columns.class.inc';
                         $oColumn = new Columns($this->aPath, array("ressource_id" => $sClass->aFields["ressource_id"], "module" => $sWebServiceName), $this->aProperties, $this->oConnection);
                         $oColumn->GET();
+                        if (empty($sClass->aObjects)){
+                            $sClass->aObjects = array();
+                        }
                         array_push($sClass->aObjects, $oColumn);
                     }
                     if (in_array("actions", $aFields)) {
@@ -392,7 +413,7 @@ class WebService extends WebServices {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      */
-    function WebService($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
@@ -407,7 +428,7 @@ class Ressource extends WebServices {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      */
-    function Ressource($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
@@ -422,7 +443,7 @@ class RessourceList extends WebServices {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      */
-    function RessourceList($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;

@@ -125,6 +125,16 @@ if (system.args.length < 11) {
                 'resolutionCoeff': sResolutionCoeff,
                 'displayProgress': false
             };
+            
+//            console.log('token: ', mapOptions.token);
+//            console.log('apiUrl: ', mapOptions.apiUrl);
+//            console.log('mapId: ', mapOptions.mapId);
+//            console.log('mapJSON: ', mapOptions.mapJSON);
+//            console.log('extent: ', mapOptions.extent);
+//            console.log('features: ', mapOptions.features);
+//            console.log('featuresZoom: ', mapOptions.featuresZoom);
+//            console.log('resolutionCoeff: ', mapOptions.resolutionCoeff);
+//            console.log('displayProgress: ', mapOptions.displayProgress);
 
             // Initialize the map with the given params
             page.evaluate(function (mapOptions) {

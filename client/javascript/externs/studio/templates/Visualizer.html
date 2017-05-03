@@ -18,7 +18,7 @@
         <button ng-if="ctrl.json_" id="Json_Save_button" type="button" class="btn btn-info btn-fly" onclick="angular.element('#cm_Json_Editor').scope().ctrl.saveData()" title="{{::ctrl.text.SaveJSON}}">
             <span class="glyphicon glyphicon-floppy-open" aria-hidden="true"></span>
         </button>
-        <button ng-if="ctrl.form_" id="Json_Save_button" type="button" class="btn btn-info btn-fly" onclick="oVFB.reloadLists()" title="{{::ctrl.text.LoadDatasourcesValues}}">
+        <button ng-if="ctrl.form_" id="Json_Save_button" type="button" class="btn btn-info btn-fly" onclick="oVFB.reloadForm()" title="{{::ctrl.text.LoadDatasourcesValues}}">
             <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
         </button>
 <!--        <button ng-if="ctrl.js_" id="JsDefault_Load_button" type="button" class="btn btn-info btn-fly" ng-click="ctrl.loadDefaultJavascript()" title="{{::ctrl.text.LoadDefaultJavascript}}">

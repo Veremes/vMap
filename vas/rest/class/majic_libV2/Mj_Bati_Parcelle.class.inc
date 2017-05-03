@@ -28,7 +28,7 @@ class Mj_Bati_Parcelle extends Mj {
 	* \param $sIdPar Identifiant de la parcelle
 	* \param $oBD Objet de connexion
 	*/
-	function Mj_Bati_Parcelle($sIdPar,$oBD){
+	function __construct($sIdPar,$oBD){
 		include $this->sRessourcesFile;
 		$this->sSql=$aSql[$oBD->sgbd]['bati_parcelle'];
 		$this->sSql=str_replace('sIdPar',$sIdPar,$this->sSql);

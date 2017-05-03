@@ -1,4 +1,4 @@
-/* global nsVmap, ol, oVmap, goog, angular */
+/* global nsVmap, ol, oVmap, goog, angular, vitisApp */
 
 /**
  * @author: Armand Bahi
@@ -7,6 +7,9 @@
  */
 
 goog.provide('nsVmap.Map');
+
+goog.require('oVmap');
+
 goog.require('nsVmap.olFunctions');
 goog.require('ol.Map');
 goog.require('ol.View');
@@ -18,8 +21,6 @@ goog.require('ol.layer.Vector');
 goog.require('ol.Collection');
 goog.require('ol.proj.Projection');
 goog.require('goog.async.AnimationDelay');
-
-
 
 /**
  * @classdesc
@@ -169,7 +170,7 @@ nsVmap.Map = function () {
      * @private
      */
     this.vmapEvents_ = [];
-
+    
     /**
      * Contient les évènements ajoutés sur la carte par la méthode addDrawInteraction ou setDrawInteraction
      * @type {array}
@@ -215,10 +216,6 @@ nsVmap.Map = function () {
         if (aInteractions[i] instanceof ol.interaction.DoubleClickZoom)
             this.oOpenLayersMap_.removeInteraction(aInteractions[i]);
     }
-
-    // Directives et controleurs Angular
-    oVmap.module.directive('appMap', this.mapDirective);
-    oVmap.module.controller('AppMapController', this.mapController);
 
     this.oOpenLayersMap_.getViewport().setAttribute('id', 'map1');
 
@@ -946,6 +943,12 @@ nsVmap.Map.prototype.mapController = function ($scope, $window, $element, $http)
         this_.emptyLoadErrorsEvents();
         this_.listenLoadErrors();
     });
+
+    // Vide selectionOverlay, locationOverlay quand on change de carte
+    oVmap['scope'].$on('mapChanged', function () {
+        oVmap.getMap().getSelectionOverlay().getSource().clear();
+        oVmap.getMap().getLocationOverlay().getSource().clear();
+    });
 };
 
 /**
@@ -1282,3 +1285,7 @@ nsVmap.Map.prototype.getLayerById = function (layerId) {
     // Si aucun layer ne correspondait
     return null;
 };
+
+// Définit la directive et le controller
+oVmap.module.directive('appMap', nsVmap.Map.prototype.mapDirective);
+oVmap.module.controller('AppMapController', nsVmap.Map.prototype.mapController);

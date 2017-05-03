@@ -39,6 +39,7 @@ function uploadFile($sNomObjet, $sFileType, $sServerPath, $sMaxSize) {
     $aExtensionFile = array('pdf', 'gif', 'jpg', 'jpeg', 'png', 'txt');
     $aExtensionZip = array('zip', 'gex');
     $aExtensionFmw = array('fmw');
+    $aForbiddenExtension = explode('|', str_replace("*.", "", $properties['forbidden_extension']));
     $sTmpFile = $_FILES[$sNomObjet]['tmp_name'];
     // Si l'utilisateur n'a indiqué aucun fichier à uploader, il ne se passe rien
     $sErrorMsg = "";
@@ -74,7 +75,7 @@ function uploadFile($sNomObjet, $sFileType, $sServerPath, $sMaxSize) {
     }
     $aTemp = explode("\\", $sServerPath);
     if (is_uploaded_file($sTmpFile)) {
-
+        if (!in_array(extension($aTemp[count($aTemp) - 1]), $aForbiddenExtension)) {
         //Teste si le fichier correspont au format voulu.
         $bAllowUpload = false;
         $sFormat = "";
@@ -135,7 +136,9 @@ function uploadFile($sNomObjet, $sFileType, $sServerPath, $sMaxSize) {
                 }
                 break;
             default :
-                $bAllowUpload = true;
+                
+                     $bAllowUpload = true;
+                
                 break;
         }
 
@@ -143,9 +146,9 @@ function uploadFile($sNomObjet, $sFileType, $sServerPath, $sMaxSize) {
         if ($_FILES[$sNomObjet]['size'] > $sMaxSize || $_FILES[$sNomObjet]['error'] == 1) {
             $bAllowUpload = false;
             if ($_FILES[$sNomObjet]['size'] > $sMaxSize)
-                $sErrorMsg .=FILE_LABEL_PHPUTIL . $_FILES[$sNomObjet]['name'] . OF_LABEL_PHPUTIL . $_FILES[$sNomObjet]['size'] . ERROR_EXCEED_MAX_SIZE . ' (' . $sMaxSize . LABEL_BYTES_PHPUTIL . ').';
+                $sErrorMsg .= FILE_LABEL_PHPUTIL . $_FILES[$sNomObjet]['name'] . OF_LABEL_PHPUTIL . $_FILES[$sNomObjet]['size'] . ERROR_EXCEED_MAX_SIZE . ' (' . $sMaxSize . LABEL_BYTES_PHPUTIL . ').';
             if ($_FILES[$sNomObjet]['error'] > $sMaxSize)
-                $sErrorMsg .=FILE_LABEL_PHPUTIL . $_FILES[$sNomObjet]['name'] . ERROR_EXCEED_MAX_SIZE_PHP . ' (' . $sMaxSize . LABEL_BYTES_PHPUTIL . ').';
+                $sErrorMsg .= FILE_LABEL_PHPUTIL . $_FILES[$sNomObjet]['name'] . ERROR_EXCEED_MAX_SIZE_PHP . ' (' . $sMaxSize . LABEL_BYTES_PHPUTIL . ').';
         }
         //Lance l'upload.
         if ($bAllowUpload) {
@@ -155,10 +158,15 @@ function uploadFile($sNomObjet, $sFileType, $sServerPath, $sMaxSize) {
             }
             //chmod($sServerPath,755);
         }
+        }else{
+                    writeToErrorLog(ERROR_FILE . $_FILES[$sNomObjet]['name'] . ERROR_NOT_FILE . $sFileType);
+                    $sErrorMsg = FILE_LABEL_PHPUTIL . $_FILES[$sNomObjet]['name'] . ERROR_NOT_FILE . $sFileType . ERROR_VALID_FILE . $sFormat . '.';
+                 }
     } else {
         writeToErrorLog(ERROR_FILE . $_FILES[$sNomObjet]['name'] . ERROR_DOWNLOAD_SERVER);
         $sErrorMsg = FILE_LABEL_PHPUTIL . $_FILES[$sNomObjet]['name'] . ERROR_DOWNLOAD_SERVER . ' (' . ERROR_CODE_PHPUTIL . $_FILES[$sNomObjet]['error'] . ').';
     }
+
     return $sErrorMsg;
 }
 
@@ -187,119 +195,62 @@ function getFileName($sFullFileName) {
 }
 
 /**
- * Cette fonction permet de dézipper un fichier zip.
- * \param $sZipExeDir Emplacement de l'utilitaire unzip.
- * \param $sZipFileDir Emplacement du fichier zip.
- * \param $sDirToExtract Chemin où les fichiers doivent être extrait.
- * return Retourne un tableau.
+ * Creates a compressed zip file
+ * @param string $sFolder
+ * @param string $sDestination
+ * @return boolean
  */
-function unZip($sZipExeDir, $sZipFileDir, $sDirToExtract) {
-    $sLigneCommande = "\"" . $sZipExeDir . "\"  \"" . $sZipFileDir . "\" -d \"" . $sDirToExtract . "\"";
-    exec($sLigneCommande, $aResult, $iResult);
-    if ($iResult) {
-        writeToErrorLog(ERROR_ZIP_IMPOSSIBLE . $sZipFileDir . TO_LABEL_PHPUTIL . $sDirToExtract . ".");
-        writeToErrorLog(ERROR_ZIP_COMMAND . $sLigneCommande);
-        foreach ($aResult as $sValeur) {
-            writeToErrorLog("	" . $sValeur);
-        }
-    }
-    return $iResult;
+function createZip($sFolder, $sDestination, $sExtensionToExclude = '') {
+	if (!empty($sExtensionToExclude)){
+		$aExtensionToExclude = explode('|', $sExtensionToExclude);
+	} else {
+		$aExtensionToExclude = array();
+	}
+	$sFolder = rtrim($sFolder, "/");
+
+	$zip = new ZipArchive();
+	$zip->open($sDestination, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+
+	$files = new RecursiveIteratorIterator(
+			new RecursiveDirectoryIterator($sFolder), RecursiveIteratorIterator::LEAVES_ONLY
+	);
+	foreach ($files as $name => $file) {
+		if (!$file->isDir()) {
+			$filePath = $file->getRealPath();
+			
+			// Récupération de l'extension
+			$oFileInfo = new SplFileInfo($filePath);
+			$sExtension = $oFileInfo->getExtension();
+			
+			$relativePath = substr($filePath, strlen($sFolder) + 1);
+			if (in_array($sExtension, $aExtensionToExclude)) {
+				continue;
+			}
+			$zip->addFile($filePath, $relativePath);
+		}
+	}
+
+	$zip->close();
+
+	return file_exists($sDestination);
 }
 
 /**
- * Cette fonction permet de décompresser un fichier avec 7z.
- * \param $s7ZipExeDir Emplacement de l'utilitaire 7z.
- * \param $s7ZipFileDir Emplacement du fichier à décompresser.
- * \param $sDirToExtract Chemin où les fichiers doivent être extraits.
- * return Retourne un tableau.
+ * Unzip a compressed zip file
+ * @param string $sZipFile
+ * @param string $sDestination
  */
-function un7Zip($s7ZipExeDir, $s7ZipFileDir, $sDirToExtract) {
-    $sLigneCommande = "\"" . $s7ZipExeDir . "\" x \"" . $s7ZipFileDir . "\" -o\"" . $sDirToExtract . "\" -y -r";
-    exec($sLigneCommande, $aResult, $iResult);
-
-    if ($iResult) {
-        writeToErrorLog(ERROR_ZIP_IMPOSSIBLE . $s7ZipFileDir . TO_LABEL_PHPUTIL . $sDirToExtract . "(7zip).");
-        writeToErrorLog(ERROR_ZIP_COMMAND . $sLigneCommande);
-        foreach ($aResult as $sValeur) {
-            writeToErrorLog("	" . $sValeur);
-        }
-    }
-    return $iResult;
-}
-
-/**
- * Cette fonction permet de zipper des fichiers.
- * \param $sZipExeDir Emplacement de l'utilitaire zip.
- * \param $sZipFileDir Emplacement du fichier zip à créer.
- * \param $sZipFileName Nom du fichier zip à créer.
- * \param $aExtensionToZip Tableau contenant les extensions des fichiers qui doivent être zippé (* si tout zipper).
- * return Retourne un false si il n'y a pas d'erreur .
- */
-function Zip($sZipExeDir, $sZipFileDir, $sZipFileName, $aExtensionToZip) {
-    $bErreur = true;
-    $sExtensionErreur = "";
-    if (is_dir($sZipFileDir)) { //vérifie si le répertoire a bien été créé
-        chdir($sZipFileDir); //on se place dans le répertoire des fichiers à compresser.
-        foreach ($aExtensionToZip as $sExtension) {
-            $sExtension = "*." . $sExtension;
-            $sLigneCommande = $sZipExeDir . " -9 -r " . $sZipFileDir . "/" . $sZipFileName . ".zip zipfile " . $sExtension . " -x \"*log\"";
-            @exec($sLigneCommande, $aResult, $iResult);
-            if (!$iResult) {
-                $bErreur = false;
-            } else {
-                $sExtensionErreur .= $sExtension . ", ";
-            }
-        }
-    } else {
-        return $bErreur;
-    }
-
-    if ($bErreur) {
-        writeToErrorLog(ERROR_ZIP_IMPOSSIBLE . $sExtensionErreur . FOLDER_LABEL_PHPUTIL . $sZipFileDir . ".");
-        foreach ($aResult as $sValeur) {
-            writeToErrorLog("	" . $sValeur);
-        }
-    }
-
-    return $bErreur;
-}
-
-/**
- * Cette fonction permet de 7zipper des fichiers.
- * \param $sZipExeDir Emplacement de l'utilitaire 7zip.
- * \param $sZipDir Répertoire à compresser
- * \param $sZipFileDir Emplacement du fichier zip à créer.
- * \param $sZipFileName Nom du fichier zip à créer.
- * \param $aExtensionToZip Tableau contenant les extensions des fichiers qui doivent être zippé (* si tout zipper).
- * return Retourne un false si il n'y a pas d'erreur.
- */
-function Sevenzip($sZipExeDir, $sZipDir, $sZipFileDir, $sZipFileName, $aExtensionToZip) {
-    $bErreur = true;
-    $sExtensionErreur = "";
-    if (is_dir($sZipDir)) { //vérifie si le répertoire a bien été créé//chdir($sZipDir); //on se place dans le répertoire des fichiers à compresser.
-        foreach ($aExtensionToZip as $sExtension) {
-            $sExtension = "*." . $sExtension;
-            //$sLigneCommande =$sZipExeDir." a -r -mx9 -mmt=on ".$sZipFileDir."/".$sZipFileName.".zip ".$sExtension." -xr!*.log";
-            $sLigneCommande = "\"" . $sZipExeDir . "\" a -r -mx9 -mmt=on \"" . $sZipDir . "/" . $sZipFileName . ".zip\" \"" . $sZipDir . $sExtension . "\" -xr!*.log";
-            @exec($sLigneCommande, $aResult, $iResult);
-            if (!$iResult) {
-                $bErreur = false;
-            } else {
-                $sExtensionErreur .= $sExtension . ", ";
-            }
-        }
-    } else {
-        return $bErreur;
-    }
-
-    if ($bErreur) {
-        writeToErrorLog(ERROR_ZIP_IMPOSSIBLE . $sExtensionErreur . FOLDER_LABEL_PHPUTIL . $sZipFileDir . ".");
-        foreach ($aResult as $sValeur) {
-            writeToErrorLog("	" . $sValeur);
-        }
-    }
-
-    return $bErreur;
+function unZip($sZipFile, $sDestination) {
+	$zip = new ZipArchive;
+	$res = $zip->open($sZipFile);
+	if ($res === TRUE) {
+		// extract it to the path we determined above
+		$zip->extractTo($sDestination);
+		$zip->close();
+		return file_exists($sDestination);
+	} else {
+		return false;
+	}
 }
 
 /**
@@ -579,21 +530,32 @@ function floor2($val) {
     return $bits[0];
 }
 
-function sendWebsocketMessage($webSocketServer, $webSocketPort, $webSocketAlias, $sAction, $sMessage){
-	require_once 'vmlib/class.websocket_client.php';
-	
-	$client = new WebsocketClient;
-	$client->connect($webSocketServer, $webSocketPort, '/'.$webSocketAlias);
+/**
+ * Send a websocket message
+ * @param string $webSocketServer
+ * @param string $webSocketPort
+ * @param string $webSocketAlias
+ * @param array $aPlayload array to convent JSON and send
+ */
+function sendWebsocketMessage($webSocketServer, $webSocketPort, $webSocketAlias, $aPlayload) {
+    require_once 'vmlib/class.websocket_client.php';
 
-	usleep(5000);
+    $client = new WebsocketClient;
+    $client->connect($webSocketServer, $webSocketPort, '/' . $webSocketAlias);
 
-	$payload = json_encode(array(
-		'action' => $sAction,
-		'data' => $sMessage
-	));
+    $sPayload = json_encode($aPlayload);
 
-		$client->sendData($payload);
-		usleep(5000);
+    // Check each 10ms if the server is yet connected and send the data via the websocket
+    for ($index = 0; $index < 100; $index++) {
+        if ($client->isConnected() === true) {
+            $client->sendData($sPayload);
+            break;
+        } else {
+            usleep(10000);
+        }
+    }
+
+    usleep(5000);
 }
 
 /**
@@ -611,8 +573,7 @@ class array2xml extends DomDocument {
      * \param $sRoot              Nom du premier noeud (string)
      * \param $sNodeName   The name numeric keys are called (string)
      */
-    //public function __construct($sRoot='root', $node_name='node')
-    public function array2xml($sRoot = 'root', $sNodeName = 'node') {
+    public function __construct($sRoot = 'root', $sNodeName = 'node') {
         parent::__construct();
         //$this->encoding = "ISO-8859-1";
         $this->encoding = "utf-8";

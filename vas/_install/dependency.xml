@@ -3,7 +3,7 @@
 <installer>
 	<schema>
 		<name>s_vitis</name>
-		<version>2016.05.00</version>
+		<version>2017.01.02</version>
 		<dependenciesCollection>
 			<dependency>
 				<name>postgres</name>
@@ -21,12 +21,20 @@
 		<dependency>
 			<name>vcredist</name>
 			<nature>extern-post</nature>
-			<location>\\roussillon\Ressources\vitis\vcredist-11</location>
+			<location>vcredist-11</location>
 		</dependency>
 		<dependency>
 			<name>php</name>
 			<nature>extern-post</nature>
-			<location>\\roussillon\Ressources\vitis\php-5.6.28</location>
+			<location>php-5.6.30</location>
+		</dependency>
+		<dependency>
+			<name>post-install</name>
+			<nature>extern-post</nature>
+		</dependency>
+		<dependency>
+			<name>websocket</name>
+			<nature>extern-post</nature>
 		</dependency>
 	</dependenciesCollection>
 </installer>

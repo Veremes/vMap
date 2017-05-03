@@ -4,7 +4,7 @@
 	<dependenciesCollection>
 		<dependency>
 			<nature>vas</nature>
-			<version>2016.05.00</version>
+			<version>2017.01.02</version>
 		</dependency>
 	</dependenciesCollection>
 </installer>

@@ -47,7 +47,7 @@
         "title":"FORM_TITLE_VMAP_MAP_LAYER_THEME",
         "input_size":"xs",
         "event":"sendSimpleForm()",
-        "nb_cols":6,
+        "nb_cols":12,
         "rows":[
             {
                 "fields":[
@@ -55,7 +55,7 @@
                         "type":"label",
                         "name":"layertheme_id",
                         "label":"FORM_MAPTHEME_ID_VMAP_MAP_LAYER_THEME",
-                        "nb_cols":12
+                        "nb_cols":6
                     }
                 ]
             },
@@ -66,7 +66,7 @@
                         "name":"name",
                         "label":"FORM_NAME_VMAP_MAP_LAYER_THEME",
                         "required":true,
-                        "nb_cols":12
+                        "nb_cols":6
                     }
                 ]
             },
@@ -76,8 +76,8 @@
                         "type":"textarea",
                         "name":"description",
                         "label":"FORM_DESCRIPTION_VMAP_MAP_LAYER_THEME",
-                        "size":8,
-                        "nb_cols":12
+                        "size":12,
+                        "nb_cols":9
                     }
                 ]
             },
@@ -86,7 +86,7 @@
                     {
                         "type":"button",
                         "class":"btn-ungroup btn-group-sm",
-                        "nb_cols":12,
+                        "nb_cols":6,
                         "buttons":[
                             {
                                 "type":"submit",
@@ -113,7 +113,7 @@
         "input_size":"xs",
         "event":"sendSimpleForm()",
         "afterEvent":"editSectionForm()",
-        "nb_cols":6,
+        "nb_cols":12,
         "rows":[
             {
                 "fields":[
@@ -122,7 +122,7 @@
                         "name":"name",
                         "label":"FORM_NAME_VMAP_MAP_LAYER_THEME",
                         "required":true,
-                        "nb_cols":12
+                        "nb_cols":6
                     }
                 ]
             },
@@ -132,8 +132,8 @@
                         "type":"textarea",
                         "name":"description",
                         "label":"FORM_DESCRIPTION_VMAP_MAP_LAYER_THEME",
-                        "size":8,
-                        "nb_cols":12
+                        "size":12,
+                        "nb_cols":9
                     }
                 ]
             },
@@ -142,7 +142,7 @@
                     {
                         "type":"button",
                         "class":"btn-ungroup btn-group-sm",
-                        "nb_cols":12,
+                        "nb_cols":6,
                         "buttons":[
                             {
                                 "type":"submit",

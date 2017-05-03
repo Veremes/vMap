@@ -36,7 +36,7 @@ class Privileges extends Vitis {
      * @param type $aValues parameters of the request
      * @param type $properties properties
      */
-    function Privileges($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
@@ -180,7 +180,7 @@ class Privileges extends Vitis {
         $aReturn = $this->genericPut($this->aProperties['schema_framework'], 'privileges', 'rolname');
        // $this->aValues['my_vitis_id'] = "'" . $this->aValues['my_vitis_id'] . "'";
         if ($this->oConnection->oBd->enErreur()) {
-            $oError = new Error(1, $this->oConnection->oBd->getBDMessage());
+            $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
             $aXmlRacineAttribute['status'] = 0;
             $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
             return $sMessage;
@@ -199,7 +199,7 @@ class Privileges extends Vitis {
                         $sSql = str_replace('[excludeLogin]', $excludeLogin , $sSql);
                         $resultat  = $this->oConnection->oBd->execute($sSql);
                         if ($this->oConnection->oBd->enErreur()) {
-                            $oError = new Error(1, $this->oConnection->oBd->getBDMessage());
+                            $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                             $aXmlRacineAttribute['status'] = 0;
                             $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
                             return $sMessage;
@@ -219,7 +219,7 @@ class Privileges extends Vitis {
                                        
                                         $this->oConnection->oBd->execute($sSql);
                                         if ($this->oConnection->oBd->enErreur()) {
-                                            $oError = new Error(1, $this->oConnection->oBd->getBDMessage());
+                                            $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                                             $aXmlRacineAttribute['status'] = 0;
                                             $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
                                             return $sMessage;
@@ -255,7 +255,7 @@ class Privileges extends Vitis {
                                          
                                         $resultat  = $this->oConnection->oBd->execute($sSql);
                                         if ($this->oConnection->oBd->enErreur()) {
-                                            $oError = new Error(1, $this->oConnection->oBd->getBDMessage());
+                                            $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                                             $aXmlRacineAttribute['status'] = 0;
                                             $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
                                             return $sMessage;
@@ -268,7 +268,7 @@ class Privileges extends Vitis {
                                                         $sSql = str_replace('[sId]', $iId, $sSql);
                                                         $this->oConnection->oBd->execute($sSql);
                                                         if ($this->oConnection->oBd->enErreur()) {
-                                                            $oError = new Error(1, $this->oConnection->oBd->getBDMessage());
+                                                            $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                                                             $aXmlRacineAttribute['status'] = 0;
                                                             $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
                                                             return $sMessage;

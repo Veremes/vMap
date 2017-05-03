@@ -14,7 +14,10 @@
                     <button id="add_line_button" type="button" class="btn btn-success" ng-click="ctrl.addLine()" ng-show="ctrl.bTreeWithLines_" title="{{::ctrl.text.InfoBulle.Add}}">
                         L <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                     </button>
-                    <button id="add_row_button" type="button" class="btn btn-success" ng-click="ctrl.addElement()" title="{{::ctrl.text.InfoBulle.AddElement}}">
+                    <button ng-if="ctrl.applicationName !== 'gtf'" id="add_row_button" type="button" class="btn btn-success" ng-click="ctrl.addElement()" title="{{::ctrl.text.InfoBulle.AddElement}}">
+                        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                    </button>
+					 <button ng-if="ctrl.applicationName === 'gtf'" id="add_row_button" type="button" class="btn btn-success" ng-click="ctrl.addElement()" title="{{::ctrl.text.InfoBulle.AddElement_gtf}}">
                         <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                     </button>
                     <button id="rem_element_button" type="button" class="btn btn-success" ng-click="ctrl.removeElement()" title="{{::ctrl.text.InfoBulle.Delete}}">

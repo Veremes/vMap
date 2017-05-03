@@ -35,7 +35,7 @@ class Voies extends Cadastre {
      * @param type $aValues parameters of the request
      * @param type $properties properties
      */
-    function Voies($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;

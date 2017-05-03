@@ -32,7 +32,7 @@ class Mj_Suf extends Mj {
 	* \param $sIdSuf Identifiant de la suf
 	* \param $sIdDnupro Identifiant du propriétaire
 	*/
-	function Mj_Suf($oBD,$sIdSuf,$sIdDnupro,$sEncryptedKey='', $bAllSuf=false){
+	function __construct($oBD,$sIdSuf,$sIdDnupro,$sEncryptedKey='', $bAllSuf=false){
 		$this->bAllSuf = $bAllSuf;
 		$this->sEncryptKey = $sEncryptedKey;
 		include $this->sRessourcesFile;

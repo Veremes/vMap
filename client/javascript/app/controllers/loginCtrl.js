@@ -23,20 +23,20 @@ vitisApp.loginCtrl = function ($scope, $translate, $rootScope, $q, Restangular, 
      * Affiche un message d'erreur.
      * @param {string} sMessage Message d'erreur.
      **/
-    $scope["showErrorAlert"] = function(sMessage) {
-            $translate([sMessage]).then(function (translations) {
-                    $scope["sLoginErrorMessage"] = translations[sMessage];
-                    document.getElementById("login_error_alert").style.display = "block";
-            });
-    }        
+    $scope["showErrorAlert"] = function (sMessage) {
+        $translate([sMessage]).then(function (translations) {
+            $scope["sLoginErrorMessage"] = translations[sMessage];
+            document.getElementById("login_error_alert").style.display = "block";
+        });
+    }
 
     /**
      * hideErrorAlert function.
      * Cache le message d'erreur.
      **/
-    $scope["hideErrorAlert"] = function() {
-            document.getElementById("login_error_alert").style.display = "none";
-    }        
+    $scope["hideErrorAlert"] = function () {
+        document.getElementById("login_error_alert").style.display = "none";
+    }
 
     //
     $rootScope["oFormDefinition"] = {};
@@ -60,8 +60,8 @@ vitisApp.loginCtrl = function ($scope, $translate, $rootScope, $q, Restangular, 
     // Chargement des properties côté serveur.
     propertiesSrvc["getFromServer"]().then(function () {
         // Paramètrage de la langue
-		if (propertiesSrvc["VM_STATUS"] == "UNSTABLE")
-			$scope["showErrorAlert"]("FORM_VAS_STATUS_ERROR");
+        if (propertiesSrvc["VM_STATUS"] == "UNSTABLE")
+            $scope["showErrorAlert"]("FORM_VAS_STATUS_ERROR");
         $translate["use"](propertiesSrvc["language"]);
         bootbox["setLocale"](propertiesSrvc["language"]);
         // Surcharge la propriété "app_name" par le nom de l'application passé dans l'url.
@@ -79,19 +79,21 @@ vitisApp.loginCtrl = function ($scope, $translate, $rootScope, $q, Restangular, 
         });
 
         // Options du <select> "Domaine".
-        if (typeof (envSrvc["oFormValues"]["login_form"]["domain"]) == "undefined")
-            envSrvc["oFormValues"]["login_form"]["domain"] = {};
-        var i = 0;
-        var aOptions = [{"label": "", "value": ""}];
-        var aKeys = Object.keys(propertiesSrvc["domain"]);
-        while (i < aKeys.length) {
-            // Ajoute les options non vides.
-            if (aKeys[i] != "" && propertiesSrvc["domain"][aKeys[i]])
-                aOptions.push({"label": aKeys[i], "value": propertiesSrvc["domain"][aKeys[i]]});
-            i++;
+        if (goog.isDefAndNotNull(propertiesSrvc["domain"])) {
+            if (typeof (envSrvc["oFormValues"]["login_form"]["domain"]) == "undefined")
+                envSrvc["oFormValues"]["login_form"]["domain"] = {};
+            var i = 0;
+            var aOptions = [{"label": "", "value": ""}];
+            var aKeys = Object.keys(propertiesSrvc["domain"]);
+            while (i < aKeys.length) {
+                // Ajoute les options non vides.
+                if (aKeys[i] != "" && propertiesSrvc["domain"][aKeys[i]])
+                    aOptions.push({"label": aKeys[i], "value": propertiesSrvc["domain"][aKeys[i]]});
+                i++;
+            }
+            envSrvc["oFormValues"]["login_form"]["domain"]["options"] = aOptions;
+            envSrvc["oFormValues"]["login_form"]["domain"]["selectedOption"] = aOptions[0];
         }
-        envSrvc["oFormValues"]["login_form"]["domain"]["options"] = aOptions;
-        envSrvc["oFormValues"]["login_form"]["domain"]["selectedOption"] = aOptions[0];
     });
 
     // Paramètres pour la requête ajax du subform.
@@ -117,10 +119,10 @@ vitisApp.loginCtrl = function ($scope, $translate, $rootScope, $q, Restangular, 
             var sFormName = $scope["sFormDefinitionName"];
             // Suppression des accents du login.
             /*
-            var aPatternAccent = new Array('à', 'â', 'ä', 'á', 'ã', 'å', 'î', 'ï', 'ì', 'í', 'ô', 'ö', 'ò', 'ó', 'õ', 'ø', 'ù', 'û', 'ü', 'ú', 'é', 'è', 'ê', 'ë', 'ç', 'ÿ', 'ñ');
-            var aPatternReplaceAccent = new Array('a', 'a', 'a', 'a', 'a', 'a', 'i', 'i', 'i', 'i', 'o', 'o', 'o', 'o', 'o', 'o', 'u', 'u', 'u', 'u', 'e', 'e', 'e', 'e', 'c', 'y', 'n');
-            var sUser = externFunctionSrvc["preg_replace"](aPatternAccent, aPatternReplaceAccent, $scope["oFormValues"][sFormName]["user_login"]);
-            */
+             var aPatternAccent = new Array('à', 'â', 'ä', 'á', 'ã', 'å', 'î', 'ï', 'ì', 'í', 'ô', 'ö', 'ò', 'ó', 'õ', 'ø', 'ù', 'û', 'ü', 'ú', 'é', 'è', 'ê', 'ë', 'ç', 'ÿ', 'ñ');
+             var aPatternReplaceAccent = new Array('a', 'a', 'a', 'a', 'a', 'a', 'i', 'i', 'i', 'i', 'o', 'o', 'o', 'o', 'o', 'o', 'u', 'u', 'u', 'u', 'e', 'e', 'e', 'e', 'c', 'y', 'n');
+             var sUser = externFunctionSrvc["preg_replace"](aPatternAccent, aPatternReplaceAccent, $scope["oFormValues"][sFormName]["user_login"]);
+             */
             var sUser = $scope["oFormValues"][sFormName]["user_login"];
             // Concatène le domaine au login ?
             if ($scope["oFormValues"][sFormName]["domain"]["selectedOption"]["value"] != "" && $scope["oFormValues"][sFormName]["domain"]["selectedOption"]["value"] != undefined && sUser.indexOf("@") == -1)
@@ -143,14 +145,16 @@ vitisApp.loginCtrl = function ($scope, $translate, $rootScope, $q, Restangular, 
                             // Sauve les données de l'utilisateur.
                             userSrvc["login"] = sUser;
                             userSrvc["id"] = parseInt(data["user_id"]);
+                            userSrvc["privileges"] = data["privileges"];
                             sessionStorage["user_login"] = sUser;
                             sessionStorage["user_id"] = userSrvc["id"];
+                            sessionStorage["privileges"] = userSrvc["privileges"];
                             // Chargement des properties stockées côté serveur.
                             propertiesSrvc["getFromServer"]().then(function () {
                                 // Surcharge la propriété "app_name" par le nom de l'application passé dans l'url.
                                 propertiesSrvc["app_name"] = sessionStorage["application"].toLowerCase().charAt(0).toUpperCase() + sessionStorage["application"].slice(1);
                                 // Paramètre "environment".
-                                if (typeof(sessionStorage['environment']) != "undefined")
+                                if (typeof (sessionStorage['environment']) != "undefined")
                                     propertiesSrvc["environment"] = sessionStorage['environment'];
                                 // Connexion à l'application.
                                 sessionSrvc["connect"]();
@@ -170,7 +174,7 @@ vitisApp.loginCtrl = function ($scope, $translate, $rootScope, $q, Restangular, 
         // Retourne la promesse.
         return promise;
     }
-    
-    
+
+
 };
 vitisApp.module.controller("loginCtrl", vitisApp.loginCtrl);

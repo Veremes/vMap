@@ -28,7 +28,7 @@ class MapJSON extends Vmap {
      * @param type $properties properties
      * @param type $oConnection connection object
      */
-    function MapJSON($aPath, $aValues, $properties, $oConnection) {
+    function __construct($aPath, $aValues, $properties, $oConnection) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
@@ -54,8 +54,7 @@ class MapJSON extends Vmap {
      *     in="path",
      *     description="map id",
      *     required=true,
-     *     type="integer",
-     *   format="int32"
+     *     type="integer"
      *   ),
      *   @SWG\Response(
      *         response=200,
@@ -80,13 +79,13 @@ class MapJSON extends Vmap {
         $oMap = new Map(Array('vmap', 'maps'), $aValues, $properties, $oConnection);
         $oMap->GET();
 
-        // Récupère les couches correspondantes
+        // Récupère les calques correspondants
         $aLayers = $this->getMapLayers($aPath[2]);
-        
+
         for ($i = 0; $i < count($aLayers); $i++) {
             $aLayers[$i]->aFields['events'] = $this->getLayersEvents($aLayers[$i]->aFields['layer_id']);
         }
-        
+
         // Forme l'objet mapjson
         $oMapJSON['name'] = 'Tree';
         $oMapJSON['children'] = Array();
@@ -100,7 +99,7 @@ class MapJSON extends Vmap {
         $oMapJSON['children'][0]['view']['extent'] = $extent;
         $oMapJSON['children'][0]['view']['projection'] = $oMap->aFields['crs_id'];
 
-        // Réordonne les couches pour qu'elles correspondent à la définition vmap
+        // Réordonne les calques pour qu'ils correspondent à la définition vmap
         $aThemes = $this->reorderLayers($aLayers);
 
         $i = 1;
@@ -133,11 +132,11 @@ class MapJSON extends Vmap {
             while ($aLigne = $this->oConnection->oBd->ligneSuivante($oResult)) {
                 // stocke le layer id dans la chaine de caractères
                 if ($filterList == '')
-                    $filterList.=$aLigne['layer_id'];
+                    $filterList .= $aLigne['layer_id'];
                 else
-                    $filterList.=',' . $aLigne['layer_id'];
+                    $filterList .= ',' . $aLigne['layer_id'];
 
-                // stocke les infos complémentaires de la couche (visible, opacity etc...)
+                // stocke les infos complémentaires du calque (visible, opacity etc...)
                 $tmp['layer_index'] = $aLigne['layer_index'];
                 $tmp['layer_visible'] = $aLigne['layer_visible'];
                 $tmp['layer_opacity'] = $aLigne['layer_opacity'];
@@ -147,8 +146,8 @@ class MapJSON extends Vmap {
         } else {
             return Array();
         }
-        
-        if(empty($filterList)){
+
+        if (empty($filterList)) {
             return Array();
         }
 
@@ -162,7 +161,7 @@ class MapJSON extends Vmap {
         // Transforme oLayers en tableau de Layer
         $aLayers = Array();
         foreach ($oLayers->aObjects as $oLayer) {
-            // Rajoute les informations sur l'état de la couche
+            // Rajoute les informations sur l'état du calque
             foreach ($aLayers_infos[$oLayer->aFields['layer_id']] as $key => $value) {
                 $oLayer->aFields[$key] = $value;
             }
@@ -188,7 +187,7 @@ class MapJSON extends Vmap {
                 array_push($aEvents, $aLigne['event_id']);
             }
         }
-        
+
         return $aEvents;
     }
 
@@ -218,8 +217,13 @@ class MapJSON extends Vmap {
             else
                 continue;
 
-            if (!empty($oLayer->aFields['service_url']))
-                $tmp['url'] = str_replace('[token]', $this->aValues['token'], $oLayer->aFields['service_url']);
+            if (!empty($oLayer->aFields['service_url'])) {
+                $tmp['url'] = $oLayer->aFields['service_url'];
+                $tmp['url'] = str_replace('[token]', $this->aValues['token'], $tmp['url']);
+                if (isset($this->aProperties['ms_cgi_url'])) {
+                    $tmp['url'] = str_replace('[ms_cgi_url]', $this->aProperties['ms_cgi_url'], $tmp['url']);
+                }
+            }
 
             if (!empty($oLayer->aFields['layer_index']))
                 $tmp['index'] = $oLayer->aFields['layer_index'];
@@ -233,15 +237,15 @@ class MapJSON extends Vmap {
 
             if (!empty($oLayer->aFields['layer_opacity']))
                 $tmp['opacity'] = $oLayer->aFields['layer_opacity'] / 100;
-            
+
             if (!empty($oLayer->aFields['events']))
                 $tmp['events'] = $oLayer->aFields['events'];
-            
+
             if (!empty($oLayer->aFields['is_dynamic']))
                 $tmp['is_dynamic'] = $oLayer->aFields['is_dynamic'];
             else
                 $tmp['is_dynamic'] = false;
-            
+
             if (!empty($oLayer->aFields['is_filtered']) && !empty($oLayer->aFields['filter_form']))
                 $tmp['is_filtered'] = $oLayer->aFields['is_filtered'];
             else
@@ -249,7 +253,29 @@ class MapJSON extends Vmap {
 
             if (!empty($oLayer->aFields['filter_form']))
                 $tmp['filter_form'] = $oLayer->aFields['filter_form'];
-            
+
+            if (!empty($oLayer->aFields['matrix_set']))
+                $tmp['matrixSet'] = $oLayer->aFields['matrix_set'];
+
+            if (!empty($oLayer->aFields['layer_style']))
+                $tmp['style'] = $oLayer->aFields['layer_style'];
+
+            if (!empty($oLayer->aFields['layer_format']))
+                $tmp['format'] = $oLayer->aFields['layer_format'];
+
+            // Problèmes en cas de rest
+            if (!empty($oLayer->aFields['service_type_type']))
+                $tmp['requestEncoding'] = $oLayer->aFields['service_type_type'];
+
+            if (!empty($oLayer->aFields['layer_options']))
+                $tmp['layer_options'] = $oLayer->aFields['layer_options'];
+
+            if (!empty($oLayer->aFields['service_options']))
+                $tmp['service_options'] = $oLayer->aFields['service_options'];
+
+            if (!empty($oLayer->aFields['service_type_version']))
+                $tmp['version'] = $oLayer->aFields['service_type_version'];
+
 
             if ($oLayer->aFields['service_type_id'] == 'tilewms' || $oLayer->aFields['service_type_id'] == 'imagewms') {
                 if (!empty($oLayer->aFields['layer_list']))
@@ -264,7 +290,7 @@ class MapJSON extends Vmap {
                     $tmp['layer'] = $oLayer->aFields['layer_list'];
             }
 
-            // Définit si la couche est interrogeable en consultation
+            // Définit si le calque est interrogeable en consultation
             if (!empty($oLayer->aFields['bo_id'])) {
                 $tmp['bo_queryable'] = true;
             } else {
@@ -289,16 +315,48 @@ class MapJSON extends Vmap {
                     $table = $oBusinessObject->aFields['table'];
                 else
                     $table = '';
-                $tmp['bo_user_rights'] = $this->oConnection->getTableRights($schema, $table);
+                if (!empty($oBusinessObject->aFields['database'])) {
+                    $database = $oBusinessObject->aFields['database'];
+
+                    $sLogin = $this->oConnection->oBd->login;
+                    $sPassword = $this->oConnection->oBd->mdp;
+
+                    $oBD = new Vm($sLogin, $sPassword, $database, $this->aProperties['server'], $this->aProperties['port'], $this->aProperties['sgbd'], $this->aProperties['page_encoding']);
+                    $this->oConnection->oBd = $oBD;
+
+                    $tmp['bo_user_rights'] = $this->oConnection->getTableRights($schema, $table);
+
+                    $oBD = new Vm($sLogin, $sPassword, $this->aProperties['database'], $this->aProperties['server'], $this->aProperties['port'], $this->aProperties['sgbd'], $this->aProperties['page_encoding']);
+                    $this->oConnection->oBd = $oBD;
+                } else {
+                    $tmp['bo_user_rights'] = $this->oConnection->getTableRights($schema, $table);
+                }
+
                 $tmp['bo_id'] = $oLayer->aFields['bo_id'];
                 $tmp['bo_title'] = $oLayer->aFields['bo_title'];
                 $tmp['bo_search_field'] = $oLayer->aFields['bo_search_field'];
                 $tmp['bo_result_field'] = $oLayer->aFields['bo_result_field'];
                 $tmp['bo_search_use_strict'] = $oLayer->aFields['bo_search_use_strict'];
-                $tmp['bo_id_field'] = $oBusinessObject->aFields['id_field'];
-                $tmp['bo_geom_column'] = $oBusinessObject->aFields['geom_column'];
-                $tmp['bo_geom_type'] = $oBusinessObject->aFields['geom_type'];
-                $tmp['bo_index'] = $oBusinessObject->aFields['index'];
+                $tmp['bo_id_field'] = '';
+                if (!empty($oBusinessObject->aFields['id_field']))
+                    $tmp['bo_id_field'] = $oBusinessObject->aFields['id_field'];
+                $tmp['bo_geom_column'] = '';
+                if (!empty($oBusinessObject->aFields['geom_column']))
+                    $tmp['bo_geom_column'] = $oBusinessObject->aFields['geom_column'];
+                $tmp['bo_geom_type'] = '';
+                if (!empty($oBusinessObject->aFields['geom_type']))
+                    $tmp['bo_geom_type'] = $oBusinessObject->aFields['geom_type'];
+                $tmp['bo_index'] = '';
+                if (!empty($oBusinessObject->aFields['index']))
+                    $tmp['bo_index'] = $oBusinessObject->aFields['index'];
+
+                if (is_array($oLayer->aFields['events'])) {
+                    array_push($oLayer->aFields['events'], $oBusinessObject->aFields['event_id']);
+                    $tmp['events'] = $oLayer->aFields['events'];
+                } else if (!empty($oBusinessObject->aFields['event_id'])) {
+                    $oLayer->aFields['events'] = $oBusinessObject->aFields['event_id'];
+                    $tmp['events'] = $oLayer->aFields['events'];
+                }
             }
 
             $tmp['layer_id'] = $oLayer->aFields['layer_id'];

@@ -7,6 +7,7 @@ require_once 'PrintMapServices.class.inc';
 require_once __DIR__ . '/../vitis/Vitis.class.inc';
 require_once __DIR__ . '/../../class/vitis_lib/Connection.class.inc';
 require_once __DIR__ . '/../../class/vmlib/BdDataAccess.inc';
+require_once __DIR__ . '/../../class/vmlib/phpUtil.inc';
 
 /**
  * \file printreportservices.class.inc
@@ -40,7 +41,7 @@ class PrintReportServices extends PrintServices {
      * @param type $properties properties
      * @param type $oConnection connection object
      */
-    function printreportservices($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
@@ -52,46 +53,46 @@ class PrintReportServices extends PrintServices {
      *   tags={"PrintServices"},
      *   summary="Creates a map print",
      *   description="Creates a map print",
-     *   operationId="GET",
+     *   operationId="POST",
      *   produces={"application/json"},
      * @SWG\Parameter(
      *     name="token",
-     *     in="query",
+     *     in="formData",
      *     description="user token",
      *     required=true,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="printreport_id",
-     *     in="query",
+     *     in="formData",
      *     description="report to print out",
      *     required=true,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="ids",
-     *     in="query",
+     *     in="formData",
      *     description="id(s) of the business object element(s) to use in the scope",
      *     required=false,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="scope_json",
-     *     in="query",
+     *     in="formData",
      *     description="scope to incorpore",
      *     required=false,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="includes_json",
-     *     in="query",
+     *     in="formData",
      *     description="files to include",
      *     required=false,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="quality",
-     *     in="query",
+     *     in="formData",
      *     description="image quality",
      *     required=false,
      *     type="string"
@@ -866,48 +867,6 @@ class PrintReportServices extends PrintServices {
         }
     }
 
-    /**
-     * Creates a compressed zip file
-     * @param string $sFolder
-     * @param string $sDestination
-     * @return boolean
-     */
-    function createZip($sFolder, $sDestination) {
-
-        $zip = new ZipArchive();
-        $zip->open($sDestination, ZipArchive::CREATE | ZipArchive::OVERWRITE);
-
-        $files = new RecursiveIteratorIterator(
-                new RecursiveDirectoryIterator($sFolder), RecursiveIteratorIterator::LEAVES_ONLY
-        );
-
-        foreach ($files as $name => $file) {
-            if (!$file->isDir()) {
-                $filePath = $file->getRealPath();
-                $relativePath = substr($filePath, strlen($sFolder) + 1);
-                $zip->addFile($filePath, $relativePath);
-            }
-        }
-
-        $zip->close();
-
-        return file_exists($sDestination);
-    }
-
-    /**
-     * Unzip a compressed zip file
-     * @param string $sZipFile
-     * @param string $sDestination
-     */
-    function unZip($sZipFile, $sDestination) {
-        $zip = new ZipArchive;
-        $res = $zip->open($sZipFile);
-        if ($res === TRUE) {
-            // extract it to the path we determined above
-            $zip->extractTo($sDestination);
-            $zip->close();
-        }
-    }
 
     /**
      * Function that calls this->POST for each id in aValues['ids']

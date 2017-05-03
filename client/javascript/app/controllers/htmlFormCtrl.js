@@ -10,6 +10,7 @@ goog.provide("vitis.controllers.htmlForm");
  * @param {angular.$http} $http Angular http service.
  * @param {angular.$log} $log Angular log service.
  * @param {service} $q Angular q service.
+ * @param {angular.$timeout} $timeout Angular timeout service.
  * @param {service} Restangular Service Restangular.
  * @param {service} envSrvc Paramètres d'environnement.
  * @param {service} propertiesSrvc Paramètres des properties.
@@ -17,7 +18,7 @@ goog.provide("vitis.controllers.htmlForm");
  * @param {service} externFunctionSrvc Fonctions externes à Angular.
  * @ngInject
  **/
-vitisApp.htmlFormCtrl = function ($scope, $http, $log, $q, Restangular, envSrvc, propertiesSrvc, sessionSrvc, externFunctionSrvc) {
+vitisApp.htmlFormCtrl = function ($scope, $http, $log, $q, $timeout, Restangular, envSrvc, propertiesSrvc, sessionSrvc, externFunctionSrvc) {
     $log.info("initHtmlForm");
     $scope["oFormScope"] = $scope;
     $scope["oProperties"] = propertiesSrvc;
@@ -92,7 +93,10 @@ vitisApp.htmlFormCtrl = function ($scope, $http, $log, $q, Restangular, envSrvc,
             envSrvc["oFormValues"][$scope["sFormDefinitionName"]] = {};
             envSrvc["oFormDefaultValues"][$scope["sFormDefinitionName"]] = {};
         }
-        deferred.resolve("load form. def.");
+        // timeout sinon problème de synchro aléatoire (form. json chargé avant le formreader).
+        $timeout(function () {
+            deferred.resolve("load form. def.");
+        });
     }
     // Structure de formulaire à charger ?
     if (typeof (sTable) != "undefined") {
@@ -159,7 +163,6 @@ vitisApp.htmlFormCtrl = function ($scope, $http, $log, $q, Restangular, envSrvc,
 
                                 // Emission d'un évènement de chargement des données et de la définition du formulaire.
                                 $scope.$root.$emit("formDefinitionLoaded", $scope["sFormDefinitionName"]);
-
                                 if (data["javascript"] === true) {
                                     var sUrl = "";
                                     if (oFormRequestParams["sUrl"].indexOf(".json") === -1) {

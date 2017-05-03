@@ -35,12 +35,12 @@ class DescriptionParcelles extends Cadastre {
      * @param type $aValues parameters of the request
      * @param type $properties properties
      */
-    function DescriptionParcelles($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
         $this->oConnection = new Connection($this->aValues, $this->aProperties);
-		$this->aSelectedFields = Array(id_par, 'id_com as ID_COM', 'id_par as ID_PAR', 'ccodep as CCODEP', 'ccodir as CCODIR', 'ccocom as CCOCOM', 'ccopre as CCOPRE', 'ccosec as CCOSEC', 'dnupla as DNUPLA', 'cenr as CENR', 'dcntpa as DCNTPA', 'dsrpar as DSRPAR', ' dnupro as DNUPRO', 'jdata as JDATAT', 'dreflf as DREFLF', 'gpdl as GPDL', 'cprsecr as CPRSECR', 'ccosecr as CCOSECR', 'dnuplar as DNUPLAR', 'dnupdl as DNUPDL', 'gurbpa as GURBPA', 'dparpi as DPARPI', 'ccoarp as CCOARP', 'gparnf as GPARNF', 'gparbat as  GPARBAT', 'ccovoi as CCOVOI', 'ccoriv as CCORIV', 'ccocif as CCOCIF', 'id_voie as ID_RIVOLI', 'id_dnupro as ID_DNUPRO', 'dnvoiri as DNVOIRI', 'dindic as DINDIC', 'l_nature_voie as L_NATURE_VOIE', 'dvoilib as DVOILIB');
+		$this->aSelectedFields = Array('id_par', 'id_com as ID_COM', 'id_par as ID_PAR', 'ccodep as CCODEP', 'ccodir as CCODIR', 'ccocom as CCOCOM', 'ccopre as CCOPRE', 'ccosec as CCOSEC', 'dnupla as DNUPLA', 'cenr as CENR', 'dcntpa as DCNTPA', 'dsrpar as DSRPAR', ' dnupro as DNUPRO', 'jdata as JDATAT', 'dreflf as DREFLF', 'gpdl as GPDL', 'cprsecr as CPRSECR', 'ccosecr as CCOSECR', 'dnuplar as DNUPLAR', 'dnupdl as DNUPDL', 'gurbpa as GURBPA', 'dparpi as DPARPI', 'ccoarp as CCOARP', 'gparnf as GPARNF', 'gparbat as  GPARBAT', 'ccovoi as CCOVOI', 'ccoriv as CCORIV', 'ccocif as CCOCIF', 'id_voie as ID_RIVOLI', 'id_dnupro as ID_DNUPRO', 'dnvoiri as DNVOIRI', 'dindic as DINDIC', 'l_nature_voie as L_NATURE_VOIE', 'dvoilib as DVOILIB');
     }
     
     /**

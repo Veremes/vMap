@@ -8,15 +8,20 @@ goog.require('vitis.directives.main');
 
 vitisApp.on('appMainDrtvLoaded', function () {
 
+    // Injection des services.
+    var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
+    var Restangular = angular.element(vitisApp.appMainDrtv).injector().get(["Restangular"]);
+    var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
+    var sessionSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["sessionSrvc"]);
+    var propertiesSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["propertiesSrvc"]);
 
     /**
      * preventUserPasswordChanged function.
      * Fenêtre de confirmation pour valider ou non le changement du mot de passe de l'utilisateur.
      * @param {boolean} bShowConfirm Affiche ou non une fenêtre de confirmation.
      * @return {promise}
-     * @expose
      **/
-    angular.element(vitisApp.appHtmlFormDrtv).scope().preventUserPasswordChanged = function (bShowConfirm) {
+    angular.element(vitisApp.appHtmlFormDrtv).scope()["preventUserPasswordChanged"] = function (bShowConfirm) {
 // Injection des services.
         var $q = angular.element(vitisApp.appHtmlFormDrtv).injector().get(["$q"]);
         var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
@@ -65,9 +70,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
     /**
      * disconnectUserPasswordChanged function.
      * Si changement de mot de passe : déconnexion de l'application.
-     * @expose
      **/
-    angular.element(vitisApp.appHtmlFormDrtv).scope().disconnectUserPasswordChanged = function () {
+    angular.element(vitisApp.appHtmlFormDrtv).scope()["disconnectUserPasswordChanged"] = function () {
 // Injection des services.
         var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
         var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
@@ -89,9 +93,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
     /**
      * loadLogsJob function.
      * Paramétrage avant la compilation du template des logs. 
-     * @expose
      **/
-    angular.element(vitisApp.appMainDrtv).scope().loadLogsJob = function () {
+    angular.element(vitisApp.appMainDrtv).scope()["loadLogsJob"] = function () {
 // Injection des services.
         var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
         var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
@@ -102,9 +105,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
     /**
      * loadConfiguration function.
      * Paramétrage avant la compilation du template de configuration. 
-     * @expose
      **/
-    angular.element(vitisApp.appMainDrtv).scope().loadConfiguration = function () {
+    angular.element(vitisApp.appMainDrtv).scope()["loadConfiguration"] = function () {
 // Injection des services.
         var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
         var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
@@ -116,9 +118,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * setPropertiesFormValues function.
      * Affiche les valeurs du formulaire de l'onglet "configuration" (properties).
      * @param {array} aPropertiesToCopy Tableau de properties à copier.
-     * @expose
      **/
-    angular.element(vitisApp.appMainDrtv).scope().setPropertiesFormValues = function (aPropertiesToCopy) {
+    angular.element(vitisApp.appMainDrtv).scope()["setPropertiesFormValues"] = function (aPropertiesToCopy) {
 // Injection des services.
         var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
         var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
@@ -143,7 +144,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
                 if (!Array.isArray(aPropertiesToCopy))
                     aPropertiesToCopy = [];
                 aPropertiesToCopy.forEach(function (sPropertieName) {
-                    envSrvc["oFormValues"][envSrvc["sFormDefinitionName"]][sPropertieName] = propertiesSrvc[sPropertieName];
+                    envSrvc["oFormValues"][envSrvc["sFormDefinitionName"]][sPropertieName] = angular.copy(propertiesSrvc[sPropertieName]);
                 });
                 //
                 while (i < aPropertiesKeys.length) {
@@ -175,9 +176,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
     };
     /**
      * 
-     * @expose
      */
-    angular.element(vitisApp.appHtmlFormDrtv).scope().testPublicConnection = function () {
+    angular.element(vitisApp.appHtmlFormDrtv).scope()["testPublicConnection"] = function () {
         var scope = this.$new();
         var Restangular = angular.element(vitisApp.appMainDrtv).injector().get(["Restangular"]);
         var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
@@ -208,9 +208,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
     /**
      * loadUser function.
      * Paramètrage avant l'édition du compte de l'utilisateur connecté.
-     * @expose
      **/
-    angular.element(vitisApp.appMainDrtv).scope().loadUser = function () {
+    angular.element(vitisApp.appMainDrtv).scope()["loadUser"] = function () {
 // Injection des services.
         var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
         var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
@@ -223,13 +222,12 @@ vitisApp.on('appMainDrtvLoaded', function () {
         var sFunctionName = "before" + goog.string.toTitleCase(envSrvc["oSelectedObject"]["name"], "_").replace(/_/g, "") + "Edition";
         scope.$root[sFunctionName]();
         //
-        angular.element(vitisApp.appMainDrtv).scope().loadSimpleForm();
+        angular.element(vitisApp.appMainDrtv).scope()['loadSimpleForm']();
     };
     /**
      * appUserRoleColumn directive.
      * Mise en forme de la colonne "role" dans la liste de l'onglet "users_user" (Utilisateurs).
      * @param {service} $translate Translate service.
-     * @expose
      * @ngInject
      **/
     vitisApp.appUserRoleColumnDrtv = function ($translate) {
@@ -288,9 +286,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * hideExcludedUserPrivileges function.
      * Cache les privilèges protégés de l'utilisateur de la liste des options sélectionnées d'un "double-select".
      * @param {string} sFormElementName Nom du champ de formulaire.
-     * @expose
      **/
-    angular.element(vitisApp.appMainDrtv).scope().hideExcludedUserPrivileges = function (sFormElementName) {
+    angular.element(vitisApp.appMainDrtv).scope()["hideExcludedUserPrivileges"] = function (sFormElementName) {
         // Injection des services.
         var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
         var $timeout = angular.element(vitisApp.appMainDrtv).injector().get(["$timeout"]);
@@ -337,9 +334,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * ImportFromAd function.
      * Affichage de la fenêtre modale et du formulaire de connexion au serveur AD.
      * @param {string} sObject Types d'enregistrements (users/groups).
-     * @expose
      **/
-    angular.element(vitisApp.appMainDrtv).scope().ImportFromAd = function (sObject) {
+    angular.element(vitisApp.appMainDrtv).scope()["ImportFromAd"] = function (sObject) {
         // Injection des services.
         var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
         var $compile = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["$compile"]);
@@ -417,9 +413,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
     /**
      * loadImportForm function.
      * Connexion au serveur AD et compilation du template (arborescence, form. de recherche et liste).
-     * @expose
      **/
-    angular.element(vitisApp.appMainDrtv).scope().loadImportForm = function () {
+    angular.element(vitisApp.appMainDrtv).scope()["loadImportForm"] = function () {
 // Injection des services.
         var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
         var $q = angular.element(vitisApp.appMainDrtv).injector().get(["$q"]);
@@ -503,9 +498,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * updateProperties function.
      * Sauve les properties du module.
      * @param {string} sModuleName Nom du module.
-     * @expose
      **/
-    angular.element(vitisApp.appMainDrtv).scope().updateProperties = function (sModuleName) {
+    angular.element(vitisApp.appMainDrtv).scope()["updateProperties"] = function (sModuleName) {
 // Injection des services.
         var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
         var $translate = angular.element(vitisApp.appMainDrtv).injector().get(["$translate"]);
@@ -566,9 +560,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * beforeUsersVitisUsersEdition function.
      * Données non modifiables si l'utilidateur vient de l'Active Directory.
      * @param {object} sId Id de l'enregistrement sélectionné dans la liste.
-     * @expose
      **/
-    angular.element(vitisApp.appMainDrtv).scope().beforeUsersVitisUsersEdition = function (sId) {
+    angular.element(vitisApp.appMainDrtv).scope()["beforeUsersVitisUsersEdition"] = function (sId) {
 // Injection des services.
         var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
         var Restangular = angular.element(vitisApp.appMainDrtv).injector().get(["Restangular"]);
@@ -635,9 +628,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * beforeUserVitisUserEdition function.
      * Données non modifiables si l'utilidateur vient de l'Active Directory .
      * @param {object} sId Id de l'enregistrement sélectionné dans la liste.
-     * @expose
      **/
-    angular.element(vitisApp.appMainDrtv).scope().beforeUserVitisUserEdition = function (sId) {
+    angular.element(vitisApp.appMainDrtv).scope()["beforeUserVitisUserEdition"] = function (sId) {
 // Injection des services.
         var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
         var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
@@ -668,9 +660,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
     /**
      * beforeSendingDomainForm function.
      * Actions à effectuer avant l'envoi du form. d'un domaine.
-     * @expose
      **/
-    angular.element(vitisApp.appMainDrtv).scope().beforeSendingDomainForm = function () {
+    angular.element(vitisApp.appMainDrtv).scope()["beforeSendingDomainForm"] = function () {
 // Injection des services.
         var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
         var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
@@ -701,9 +692,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
     /**
      * getUsers2DomainFilter function.
      * Actions à effectuer avant l'envoi du form. d'un domaine.
-     * @expose
      **/
-    angular.element(vitisApp.appMainDrtv).scope().getUsers2DomainFilter = function () {
+    angular.element(vitisApp.appMainDrtv).scope()["getUsers2DomainFilter"] = function () {
 // Injection des services.
         var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
         var propertiesSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["propertiesSrvc"]);
@@ -717,11 +707,13 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * isImgFile function.
      * @param {string} sFile FilesName
      * @return {boolean} true if it's an image
-     * @expose
      **/
     angular.element(vitisApp.appMainDrtv).scope()["isImgFile"] = function (sFile) {
         //liste des extension image
         var sExtAccepted = ["jpg", "png", "jpeg"];
+        if (sFile.indexOf('?') !== -1) {
+            sFile = sFile.substr(0, sFile.indexOf('?'));
+        }
         //récupération de l'extension dufichier courant
         var aExt = sFile.split(".");
         return (sExtAccepted.indexOf(aExt[aExt.length - 1].toLowerCase()) > -1);
@@ -729,7 +721,6 @@ vitisApp.on('appMainDrtvLoaded', function () {
     /**
      * appSignaletiqueImgViewer directive.
      * Visualisation photo.
-     * @expose
      * @ngInject
      **/
     vitisApp.appDocumentViewerDrtv = function () {
@@ -757,7 +748,6 @@ vitisApp.on('appMainDrtvLoaded', function () {
                         console.error("File attribute is not present on directive caller");
                         return;
                     } else if (attrs["file"] === "") {
-                        console.error("File attribute is an empty string");
                         return;
                     }
 
@@ -876,7 +866,6 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * appLinker directive.
      * Lien entre ce champs et un autre champs d'une autre table correspondant au code.
      * @param {object} $timeout Angular Tiemout service.
-     * @expose
      * @ngInject
      * 
      **/
@@ -938,7 +927,6 @@ vitisApp.on('appMainDrtvLoaded', function () {
 
     /**
      * Set the locked work esi
-     * @expose
      * @param {string} sModule Module's name to organize work Objects
      * @param {string} sObjectName Object's name to call work Object
      */
@@ -988,7 +976,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
             }
 
 // Recharge la liste
-            angular.element(vitisApp.appWorkspaceListDrtv).scope()['refreshGrid'](appWorkspaceListScope, envSrvc["oGridOptions"][envSrvc["oSelectedObject"]["name"]]);
+            angular.element(vitisApp.appWorkspaceListDrtv).scope()["refreshGrid"](appWorkspaceListScope, envSrvc["oGridOptions"][envSrvc["oSelectedObject"]["name"]]);
             angular.element("#" + config["sIdButtonLock"]).prop("disabled", true);
             angular.element("#" + config["sIdButtonUnlock"]).prop("disabled", false);
             angular.element(vitisApp.appMainDrtv).scope()["oWorkObjects"][sModule][sObjectName]["value"] = aSelectedRows[0][config["sFieldId"]];
@@ -1005,7 +993,6 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * appPostsEsi directive.
      * Mise en forme de la colonne "itinéraire" dans la liste de l'onglet "users_user" (Utilisateurs).
      * @param {service} $translate Translate service.
-     * @expose
      * @ngInject
      **/
     vitisApp.appTextPopoverDisplayDrtv = function ($translate) {
@@ -1045,11 +1032,41 @@ vitisApp.on('appMainDrtvLoaded', function () {
     };
     vitisApp["compileProvider"].directive("appTextPopoverDisplay", vitisApp.appTextPopoverDisplayDrtv);
 
+
+    /**
+     * appPostsEsi directive.
+     * Mise en forme de la colonne "itinéraire" dans la liste de l'onglet "users_user" (Utilisateurs).
+     * @param {service} $translate Translate service.
+     * @ngInject
+     **/
+    vitisApp.appNavBarDrtv = function ($translate) {
+        return {
+            replace: true,
+            template: '<div class="progress" style="margin: 5px 10px 10px;">' +
+                    '<div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width:{{row.entity[col.field]}}%">{{textValue}}</div>' +
+                    '</div>',
+            link: function (scope, element, attrs) {
+
+                scope.textValue = (goog.isDefAndNotNull(attrs["hidevalue"])) ? "" : scope.row.entity[scope.col.field] + "%";
+
+                if (goog.isDefAndNotNull(attrs["mode"]))
+                    element[0].firstChild.className = element[0].firstChild.className + " progress-bar-" + attrs["mode"];
+
+                if (goog.isDefAndNotNull(attrs["striped"])) {
+                    element[0].firstChild.className = element[0].firstChild.className + " progress-bar-striped"; // Not available in IE9 and below
+                    if (goog.isDefAndNotNull(attrs["active"])) {
+                        element[0].firstChild.className = element[0].firstChild.className + " active"; // Not available in IE9 and below
+                    }
+                }
+            }
+        };
+    };
+    vitisApp["compileProvider"].directive("appNavbar", vitisApp.appNavBarDrtv);
+
     /**
      * Clear the locked work Object
      * @param {string} sModule Module's name to organize work Objects
      * @param {string} sObjectName Object's name to call work Object
-     * @expose
      */
     angular.element(vitisApp.appMainDrtv).scope()["clearWorkObject"] = function (sModule, sObjectName) {
 
@@ -1082,7 +1099,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
             }
 
 // Recharge la liste
-            angular.element(vitisApp.appWorkspaceListDrtv).scope()['refreshGrid'](appWorkspaceListScope, envSrvc["oGridOptions"][envSrvc["oSelectedObject"]["name"]]);
+            angular.element(vitisApp.appWorkspaceListDrtv).scope()["refreshGrid"](appWorkspaceListScope, envSrvc["oGridOptions"][envSrvc["oSelectedObject"]["name"]]);
             angular.element("#" + config["sIdButtonLock"]).prop("disabled", false);
             angular.element("#" + config["sIdButtonUnlock"]).prop("disabled", true);
             angular.element(vitisApp.appMainDrtv).scope()["oWorkObjects"][sModule][sObjectName]["value"] = false;
@@ -1101,7 +1118,6 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * @param {string} sModule Module's name to organize work Objects
      * @param {string} sObjectName Object's name to call work Object
      * @param {object} oParams Parameters needed to use function set clear and look
-     * @expose
      */
     angular.element(vitisApp.appMainDrtv).scope()["initWorkObject"] = function (sModule, sObjectName, oParams) {
         if (!goog.isDefAndNotNull(angular.element(vitisApp.appMainDrtv).scope()["oWorkObjects"]))
@@ -1116,7 +1132,6 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * @param {string} sModule Module's name to organize work Objects
      * @param {string} sObjectName Object's name to call work Object
      * @return {integer / boolean} false if workObject is empty or id of workObject Selected
-     * @expose
      */
     angular.element(vitisApp.appMainDrtv).scope()["getWorkObject"] = function (sModule, sObjectName) {
         return angular.element(vitisApp.appMainDrtv).scope()["oWorkObjects"][sModule][sObjectName]["value"];
@@ -1125,7 +1140,6 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * test if a work Object is already exist for a defined Object
      * @param {string} sModule Module's name to organize work Objects
      * @param {string} sObjectName Object's name to call work Object
-     * @expose
      */
     angular.element(vitisApp.appMainDrtv).scope()["lookWorkObjectIsAlreadyLock"] = function (sModule, sObjectName) {
         var $http = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["$http"]);
@@ -1167,9 +1181,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
     /**
      * loadHelp function.
      * Chargement des sections du mode "help".
-     * @expose
      **/
-    angular.element(vitisApp.appMainDrtv).scope().loadHelp = function () {
+    angular.element(vitisApp.appMainDrtv).scope()["loadHelp"] = function () {
 // Injection des services.
         var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
         var envSrvc = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["envSrvc"]);
@@ -1200,9 +1213,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
     /**
      * deleteUsers function.
      * Suppression des utilisateurs sélectionnés (sauf l'utilisateur connecté).
-     * @expose
      **/
-    angular.element(vitisApp.appMainDrtv).scope().deleteUsers = function () {
+    angular.element(vitisApp.appMainDrtv).scope()["deleteUsers"] = function () {
         // Injection des services.
         var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
         var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
@@ -1224,9 +1236,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * hideCurrentUserFromExcludedPrivileges function.
      * Cache l'utilisateur connecté de la liste "Utilisateurs liés au groupe" (Utilisateurs > Privilèges).
      * @param {string} sFormElementName Nom du champ de formulaire.
-     * @expose
      **/
-    angular.element(vitisApp.appMainDrtv).scope().hideCurrentUserFromExcludedPrivileges = function (sFormElementName) {
+    angular.element(vitisApp.appMainDrtv).scope()["hideCurrentUserFromExcludedPrivileges"] = function (sFormElementName) {
         // Injection des services.
         var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
         var $timeout = angular.element(vitisApp.appMainDrtv).injector().get(["$timeout"]);
@@ -1264,5 +1275,132 @@ vitisApp.on('appMainDrtvLoaded', function () {
                 }
             });
         }
+    };
+    /**
+     * loadModes function.
+     * Chargement de la section "Calques de la carte" dans l'onglet "Cartes".
+     **/
+    angular.element(vitisApp.appMainDrtv).scope()["loadModes"] = function () {
+        // Injection des services.
+        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
+        var $translate = angular.element(vitisApp.appMainDrtv).injector().get(["$translate"]);
+        var envSrvc = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["envSrvc"]);
+        //
+        $log.info("loadModes");
+        var scope = this;
+        // Classe spécifique pour séparer la liste ui-grid de la liste des sections.
+        var oSectionContainer = document.getElementById("container_section_" + envSrvc["oSelectedObject"]["name"] + "_modes");
+        oSectionContainer.className = oSectionContainer.className + " section-container-workspace-list";
+
+        // Paramétrage du module ui-grid
+        scope["gridOptions"] = {
+            "enableRowSelection": true,
+            "enableSelectAll": false,
+            "enablePagination": false,
+            "enablePaginationControls": false,
+            "multiSelect": false,
+            "useExternalPagination": true,
+            "paginationPageSize": 999, // Pas de pagination
+            "enableColumnMenus": false,
+            "enableColumnResizing": false,
+            "appHeader": true,
+            "appHeaderTitleBar": true,
+            "appHeaderSearchForm": false,
+            "appHeaderOptionBar": false,
+            "appLoadGridData": true,
+            //"aFilter": ["action=getAll"],
+            "appGridTitle": "LIST_TITLE_GRID_MODES",
+            "appFooter": false,
+            "appShowPagination": false,
+            "appEnableDragAndDrop": true,
+            "appDragAndDropEvent": {
+                "rowFinishDrag": "updateModesSorting"
+            },
+            "appActions": [],
+            "oUrlParams": {
+                "action": "getAll",
+                "distinct": true,
+                "order_by": "index",
+                "sort_order": "ASC"
+            }
+        };
+        // Pas de chargement de données.
+        scope["bLoadFormValues"] = false;
+
+        // Id de traduction des libellés des colonnes de la liste.
+        var aTranslationsId = ["LIST_MODE_ICONE_MODE_CONFIGURATION",
+            "LIST_MODE_ID_MODE_CONFIGURATION"
+        ];
+        // Définition des colonnes de la liste.
+        $translate(aTranslationsId).then(function (aTranslations) {
+            scope["gridOptions"]["columnDefs"] = [
+                {"name": aTranslations["LIST_MODE_ID_MODE_CONFIGURATION"], "displayName": aTranslations["LIST_MODE_ID_MODE_CONFIGURATION"], "field": "mode_id", "width": 300, "enableSorting": false, "type": "string", "enableColumnMoving": false, "enableColumnResizing": false, "headerCellClass": "vitis_mode_" + envSrvc["oSelectedObject"]["name"] + "_mode_id"},
+                {"name": aTranslations["LIST_MODE_ICONE_MODE_CONFIGURATION"], "displayName": aTranslations["LIST_MODE_ICONE_MODE_CONFIGURATION"], "field": "mode_id", "width": 50, "enableSorting": false, "type": "number", "enableColumnMoving": false, "enableColumnResizing": false, "headerCellClass": "vitis_mode_" + envSrvc["oSelectedObject"]["name"] + "_index", "cellClass": "cell-align-center", "cellTemplate": "<div style=\"font-size:16px;color:#9a9a9a;margin-top:5px;vertical-align:middle\" class=\"icon-{{row.entity[col.field]}}\"></div>"}
+            ];
+        });
+    };
+
+    /**
+     * updateModesSorting function.
+     * Change l'ordre des calques sélectionnés d'une carte.
+     **/
+    angular.element(vitisApp.appMainDrtv).scope()["updateModesSorting"] = function () {
+        //
+        $log.info("updateMapLayerSorting");
+        var scope = this;
+        var oParams = {
+            "token": sessionSrvc["token"]
+        };
+        // Sauve la liste des id des modes.
+        var oGridOptions = envSrvc["oGridOptions"][envSrvc["oSelectedObject"]["name"]];
+        var i = 0, aModesId = [];
+        while (i < oGridOptions["data"].length) {
+            aModesId.push(oGridOptions["data"][i]["mode_id"]);
+            i++;
+        }
+        oParams["modes_id"] = aModesId.join("|");
+
+        // Mise à jour de l'index des calques de la carte dans la base.
+        var oWebServiceBase = Restangular["one"](propertiesSrvc["services_alias"] + "/vitis", "modes");
+        oWebServiceBase["customPUT"](oParams, "sorting", {"token": sessionSrvc["token"]}).then(function (data) {
+            // Erreur ?
+            if (data["status"] === 0) {
+                var oOptions = {
+                    "className": "modal-danger",
+                    "message": data["errorMessage"]
+                };
+                scope["modalWindow"]("dialog", "ERROR_ADD_MAP_LAYERS_VMAP_MAP_MAP_LAYERS", oOptions);
+            }
+        });
+    };
+
+    /**
+     * reloadSectionForm function.
+     **/
+    angular.element(vitisApp.appMainDrtv).scope()['reloadWebsocketStatus'] = function () {
+        var i = 0;
+        var tryReloadWebsocketStatus = function () {
+            if (i > 10) {
+                return 0;
+            }
+            var websocketConfigScope = angular.element($('[data-app-websocket-configuration=""]')).scope();
+            if (goog.isDefAndNotNull(websocketConfigScope)) {
+                if (goog.isDefAndNotNull(websocketConfigScope['ctrl'])) {
+                    angular.element($('[data-app-websocket-configuration=""]')).scope()['ctrl']['reloadWebsocketStatus']();
+                } else {
+                    setTimeout(function () {
+                        tryReloadWebsocketStatus();
+                    }, 500);
+                }
+            } else {
+                setTimeout(function () {
+                    tryReloadWebsocketStatus();
+                }, 500);
+            }
+            i++;
+        };
+        setTimeout(function () {
+            tryReloadWebsocketStatus();
+        });
     };
 });

@@ -25,12 +25,12 @@ class Module extends Vmap {
      * @param type $properties properties
      * @param type $oConnection connection object
      */
-    function Module($aPath, $aValues, $properties, $oConnection) {
+    function __construct($aPath, $aValues, $properties, $oConnection) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
         $this->oConnection = $oConnection;
-	$this->aSelectedFields = Array("module_id", "label", "description", "rolname");
+		$this->aSelectedFields = Array("module_id", "label", "description", "rolname");
     }
 
     /**
@@ -52,8 +52,7 @@ class Module extends Vmap {
      *     in="path",
      *     description="module id",
      *     required=true,
-     *     type="string",
-     *   format="int32"
+     *     type="string"
      *   ),
      *   @SWG\Response(
      *         response=200,

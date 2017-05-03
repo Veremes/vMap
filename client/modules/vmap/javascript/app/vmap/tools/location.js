@@ -7,8 +7,9 @@
  */
 goog.provide('nsVmap.nsToolsManager.Location');
 
-goog.require('ol.Geolocation');
+goog.require('oVmap');
 
+goog.require('ol.Geolocation');
 
 /**
  * @classdesc
@@ -19,10 +20,6 @@ goog.require('ol.Geolocation');
  */
 nsVmap.nsToolsManager.Location = function () {
     oVmap.log('nsVmap.nsToolsManager.Location');
-
-    // Directives et controleurs Angular
-    oVmap.module.directive('appLocation', this.locationDirective);
-    oVmap.module.controller('ApplocationController', this.locationController);
 };
 
 /**
@@ -167,6 +164,13 @@ nsVmap.nsToolsManager.Location.prototype.locationController = function ($scope, 
             // Récupère les properties de locatisation de l'API
             this_.setAPILocationProperties();
         });
+    });
+
+    // Vide les localisations quand on change de carte
+    oVmap['scope'].$on('mapChanged', function () {
+        if (goog.isDef(this_.locationPopup)) {
+            this_.locationPopup.remove();
+        }
     });
 };
 
@@ -508,9 +512,15 @@ nsVmap.nsToolsManager.Location.prototype.locationController.prototype.addToSelec
 
         var selection = data[0];
 
+        // Cas ou il n'y ait pas de géométrie
+        if (!goog.isDefAndNotNull(selection['bo_intersect_geom'])) {
+            $.notify('Géométrie non disponible');
+            return 0;
+        }
+
         this_.centerGeom(selection['bo_intersect_geom']);
 
-        var selectScope = angular.element($('#select-list-modal')).scope();
+        var selectScope = angular.element($('#vmap-basicselect-tool')).scope();
         selectScope.$evalAsync(function () {
             var this_ = selectScope['ctrl'];
             var newSelection = goog.array.clone(this_['aSelections']);
@@ -627,3 +637,7 @@ nsVmap.nsToolsManager.Location.prototype.locationController.prototype.locateFeat
 nsVmap.nsToolsManager.Location.prototype.locationController.prototype.removeLocation = function () {
     oVmap.getToolsManager().getBasicTools().hideTool('#location-search-form');
 };
+
+// Définit la directive et le controller
+oVmap.module.directive('appLocation', nsVmap.nsToolsManager.Location.prototype.locationDirective);
+oVmap.module.controller('ApplocationController', nsVmap.nsToolsManager.Location.prototype.locationController);

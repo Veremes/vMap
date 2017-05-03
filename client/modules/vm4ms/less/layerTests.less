@@ -1,0 +1,148 @@
+.layer-tests {
+    width: 100%;
+    height: 100%;
+    padding: 13px 0;
+    margin: 0;
+    background-color: #f8f8f8;
+}
+.layer-tests > div, .layer-tests .tab-pane {
+    height: 100%;
+}
+.layer-tests .tab-content {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-top: none;
+    border-radius: 0 4px 4px 4px;
+    //overflow: hidden;
+}
+.layer-tests .tab-pane {
+    //overflow: hidden;
+}
+// Test du flux WMS (OpenLayers).
+#layer_tests_layer_ol_map {
+    width: 100%;
+    height: 100%;
+}
+// 
+.layer-tests a[role='tab'] {
+    padding: 5px 10px 5px 10px;
+}
+// Boutons de raffraichissement des onglets.
+.layer-tests .btn-refresh-tab {
+    display: none;
+}
+.layer-tests .active .btn-refresh-tab {
+    display: initial;
+}
+//
+.layer-tests .nav-tabs > li > a {
+    line-height: 34px;
+}
+// Test du flux WMS (MapServer).
+#layer_tests_layer_ms_iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    //overflow-y: scroll;
+}
+
+// Tous les parents de la carte vmap (formulaire) : hauteur à 100%.
+#layer_tests_layer_ol_map > div,
+#layer_tests_layer_ol_map > div > div,
+#layer_tests_layer_ol_map > div > div > form,
+#layer_tests_layer_ol_map > div > div > form > div,
+#layer_tests_layer_ol_map > div > div > form > div > div:last-child,
+#layer_tests_layer_ol_map > div > div > form > div > div > div,
+#layer_tests_layer_ol_map > div > div > form > div > div > div > div,
+#layer_tests_layer_ol_map > div > div > form > div > div > div > div > div,
+#layer_tests_layer_ol_map > div > div > form > div > div > div > div > div > div,
+#layer_tests_layer_ol_map > div > div > form > div > div > div > div > div > div > div,
+#layer_tests_layer_ol_map > div > div > form > div > div > div > div > div > div > div > div,
+#layer_tests_layer_ol_map > div > div > form > div > div > div > div > div > div > div > div > div,
+#layer_tests_layer_ol_map > div > div > form > div > div > div > div > div > div > div > div > div > div {
+    height: 100%;
+}
+
+// Pas de marge dans le form.
+#layer_openlayers_test_update_form {
+    margin: 0 !important;
+}
+
+// Pas de label pour la carte vmap.
+#layer_test_map_label {
+    display: none;
+}
+
+// Onglet des logs de MapServer.
+.layer-mapserver-log > textarea{
+    width: 100%;
+    height: 100%;
+    resize: none;
+    font-size: 11px;
+}
+
+// Test d'une couche avec MapServer.
+.mapserver-layer-test-popup .modal-body {
+    padding: 5px;
+}
+.mapserver-layer-test-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+.mapserver-layer-test-popup .modal-content {
+    height: 100%;
+}
+.mapserver-layer-test-popup .bootbox-body, .mapserver-layer-test-popup .mapserver-layer-test-container {
+    width: 100%;
+    height: 100%;
+}
+
+// Test d'une couche avec OpenLAyers.
+.openlayers-layer-test-popup .bootbox-body, .openlayers-layer-test-popup .openlayers-layer-test-container, .openlayers-layer-test-container > div, .openlayers-layer-test-container .ng-isolate-scope {
+    width: 100%;
+    height: 100%;
+}
+.openlayers-layer-test-container form, .openlayers-layer-test-popup form, .openlayers-layer-test-popup .form-row {
+    margin: 0;
+}
+.openlayers-layer-test-container form, .openlayers-layer-test-container form > div, .openlayers-layer-test-container form .form-group, .openlayers-layer-test-container form .form-group > div, .openlayers-layer-test-container form .form-group > div > div {
+    width: 100%;
+    height: 100%;
+}
+.openlayers-layer-test-popup form div[ng-switch-when^='map_'] {
+    width: 100%;
+    height: 100%;
+}
+// Pas de label au-dessus de la carte.
+.openlayers-layer-test-popup form div[ng-switch-when^='map_'] > label {
+    display: none;
+}
+/*
+.openlayers-layer-test-popup form, .openlayers-layer-test-popup .form-row {
+    margin: 0;
+}
+*/
+.openlayers-layer-test-container form .form-group {
+    padding: 0;
+}
+// Boutons de la carte (zoom, édition...)
+.openlayers-layer-test-popup .form-map-Group-btn-zoom {
+    left: 25px;
+    top: 25px;
+}
+.openlayers-layer-test-popup .form-map-Group-btn-interact {
+    right: 25px;
+    top: 25px;
+}
+
+// Test d'une couche (fenêtre modale).
+.layer-test-dialog-modal-window .modal-body {
+    padding: 0;
+}
+.layer-test-dialog-modal-window .bootbox-body {
+    //height: 100%;
+}
+.layer_test_container {
+    height: 100%;
+}

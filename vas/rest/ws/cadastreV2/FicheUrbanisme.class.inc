@@ -37,7 +37,7 @@ class FicheUrbanisme extends Cadastre {
      * @param type $properties properties
      * @param type $oConnection connection object
      */
-    function ficheurbanisme($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
@@ -81,9 +81,16 @@ class FicheUrbanisme extends Cadastre {
 
         $ID_PAR = $this->aPath[2];
 
+        if (!in_array('vmap_cadastre_user', $this->oConnection->aPrivileges)) {
+            $oError = new VitisError(0, 'INSUFFICIENT_PRIVILEGES');
+            $aXmlRacineAttribute['status'] = 0;
+            $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+            return $sMessage;
+        }
+
         // Vérifie les droits de d'utilisateur sur la commune
         if ($this->haveCommuneRights(substr($ID_PAR, 0, 5)) == false) {
-            $aReturn['error']['errorMessage'] .="L'utilisateur n'a pas les droits sur la commune";
+            $aReturn['error']['errorMessage'] .= "L'utilisateur n'a pas les droits sur la commune";
             return json_encode($aReturn);
         }
 
@@ -98,38 +105,55 @@ class FicheUrbanisme extends Cadastre {
         $sSchema = $this->aProperties['schema_cadastre'];
         $sTable = 'v_vmap_parcelle';
         $sFilter = "id_par = '" . $ID_PAR . "'";
-        $aAttributs = Array('ST_AsEWKT(geom) as geom');
+        if (!empty($this->aValues['result_srid']))
+            $aAttributs = Array('ST_AsEWKT(ST_Transform(geom, ' . $this->aValues['result_srid'] . ')) as geom');
+        else
+            $aAttributs = Array('ST_AsEWKT(geom) as geom');
 
         $oParcelleInfos['data']['geometry'] = $this->vmapGet($sSchema, $sTable, $aAttributs, $sFilter)[0];
-
-        // Infos complémentaires (paramétrées par l'administrateur)
-        $aIntersectionViews = $this->aProperties['cadastre']['fiche_urb']['intersect']['views'];
 
         // Récupère la géométrie de la parcelle
         $sSchema = $this->aProperties['schema_cadastre'];
         $sTable = 'v_vmap_parcelle';
         $sFilter = "\"id_par\" = '" . $ID_PAR . "'";
-        $aAttributs = Array('ST_AsEWKT(geom) as geom');
+        if (!empty($this->aValues['result_srid']))
+            $aAttributs = Array('ST_AsEWKT(ST_Transform(geom, ' . $this->aValues['result_srid'] . ')) as geom');
+        else
+            $aAttributs = Array('ST_AsEWKT(geom) as geom');
         $parcelleGeom = $this->vmapGet($sSchema, $sTable, $aAttributs, $sFilter)[0]['geom'];
 
         // Récupère les intersections
         $oParcelleInfos['data']['aIntersections'] = array();
+        $oParcelleInfos['data']['aIntersectionsArray'] = array();
 
+        // Infos complémentaires (paramétrées par l'administrateur)
+        $aIntersectionViews = $this->aProperties['cadastre']['fiche_urb']['intersect']['views'];
         foreach ($aIntersectionViews as $key => $value) {
-
             $sTable = $key;
             $aAttributs = Array();
-
             foreach ($value as $key2 => $value2) {
                 if ($key2 != 'title' && $key2 != 'type' && $key2 != 'intersect') {
                     array_push($aAttributs, $key2);
                 }
             }
-
             $oIntersect = $this->vmapIntersectGet($sSchema, $sTable, $parcelleGeom, $aAttributs);
             $value['data'] = $oIntersect;
-
             array_push($oParcelleInfos['data']['aIntersections'], $value);
+        }
+        $aIntersectionArrayViews = $this->aProperties['cadastre']['fiche_urb']['intersect']['array_views'];
+        for ($i = 0; $i < count($aIntersectionArrayViews); $i++) {
+            foreach ($aIntersectionArrayViews[$i] as $key => $value) {
+                $sTable = $key;
+                $aAttributs = Array();
+                foreach ($value as $key2 => $value2) {
+                    if ($key2 != 'title' && $key2 != 'type' && $key2 != 'intersect') {
+                        array_push($aAttributs, $key2);
+                    }
+                }
+                $oIntersect = $this->vmapIntersectGet($sSchema, $sTable, $parcelleGeom, $aAttributs);
+                $value['data'] = $oIntersect;
+                array_push($oParcelleInfos['data']['aIntersectionsArray'], $value);
+            }
         }
 
         return json_encode($oParcelleInfos);

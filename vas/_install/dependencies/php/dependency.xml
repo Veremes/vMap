@@ -5,7 +5,7 @@
 		<dependency>
 			<name>vcredist</name>
 			<nature>extern-pre</nature>
-			<location>\\roussillon\Ressources\vitis\vcredist-11</location>
+			<location>vcredist-11</location>
 		</dependency>
 	</dependenciesCollection>
 </installer>

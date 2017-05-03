@@ -1,6 +1,7 @@
 # coding: utf-8
 import platform
 import os
+import zipfile
 
 
 def DisplayInfos(self):
@@ -14,14 +15,17 @@ def Check(self, mode):
 
 	if mode != 'uninstall':
 		if platform.system() == 'Windows':
-			result = self.Tools.fileManipulator.RecursiveOverwriteCopy(os.path.join(self.Tools.params['ressourcesPath'], 'dependencies', 'phantomjs', 'windows'), os.path.join(self.Tools.params['vasDirectory'], 'server', 'phantomjs'))
-			if result[0] != 0:
-				return result
+			try:
+				zip_ref = zipfile.ZipFile(os.path.join(self.Tools.params['ressourcesPath'], 'dependencies', 'phantomjs', 'windows', 'phantomjs.zip'), 'r')
+				zip_ref.extractall(os.path.join(self.Tools.params['vasDirectory'], 'server'))
+				zip_ref.close()
+			except Exception as err:
+				return [1, str(err)]
 		else:
 			if not os.path.isdir(os.path.join(self.Tools.params['vasDirectory'], 'server')):
 				os.mkdir(os.path.join(self.Tools.params['vasDirectory'], 'server'))
 
-			result = self.Tools.RunCommand(["tar", "jxvf", os.path.join(self.Tools.params['ressourcesPath'], 'dependencies', 'phantomjs', 'linux', 'phantomjs.tar.bz2'), "--directory", os.path.join(self.Tools.params['vasDirectory'], 'server')])
+			result = self.Tools.RunCommand(["tar", "zxvf", os.path.join(self.Tools.params['ressourcesPath'], 'dependencies', 'phantomjs', 'linux', 'phantomjs.tar.gz'), "--directory", os.path.join(self.Tools.params['vasDirectory'], 'server')])
 			if result[0] != 0:
 				return result
 

@@ -18,7 +18,7 @@ class Mj_PosPlu extends Mj {
 	* \param $sIdPar Identifiant de la parcelle
 	* \param $sCodCom Code Insee de la commune
 	*/
-	function Mj_PosPlu($oBD,$sObjectId, $sIdPar,$sCodCom) {
+	function __construct($oBD,$sObjectId, $sIdPar,$sCodCom) {
 		include $this->sRessourcesFile;
 		$this->sSql=$aSql[$oBD->sgbd]['pos_plu'];
 		$this->sSql=str_replace('$sObjectId', $sObjectId, $this->sSql);

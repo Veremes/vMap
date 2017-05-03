@@ -1,0 +1,18 @@
+<div data-app-map-server-symbols="" class="col-xs-12">
+    <div ng-repeat="oSymbol in oMapServerSymbols track by $index" class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+        <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="heading_symbol_{{oSymbol.id}}">
+                <h4 class="panel-title">
+                    <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapse_symbol_{{oSymbol.id}}" aria-expanded="false" aria-controls="collapse_symbol_{{oSymbol.id}}">{{oSymbol.name}}</a>
+                </h4>
+            </div>
+            <div id="collapse_symbol_{{oSymbol.id}}" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="heading_symbol_{{oSymbol.id}}">
+                <div class="panel-body">
+                    <ul>
+                        <li ng-repeat="sDefinitionLine in oSymbol.definition track by $index" ng-bind-html="trustAsHtml(sDefinitionLine)"></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

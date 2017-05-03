@@ -74,3 +74,17 @@ form[name="logs"] .form-subtitle {
 .logs-form > .treeview > .list-group > .list-group-item {
     width: auto;
 }
+
+// Fichiers et répertoires au même niveau.
+.logs-form li[class^='list-group-item node-logs_vitis_log_treeview'] > span[class='icon glyphicon'] {
+    display: initial;
+}
+.logs-form li[class^='list-group-item node-logs_vitis_log_treeview'] > span[class^='icon node-icon'] {
+    left: -5px;
+}
+
+// Pas de retour à la ligne dans les titres et noms de fichiers.
+.logs-form .node-logs_vitis_log_treeview {
+    white-space: nowrap;
+    overflow: hidden;
+}

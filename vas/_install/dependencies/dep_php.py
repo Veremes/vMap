@@ -1,6 +1,7 @@
 # coding: utf-8
 import platform
 import os
+import zipfile
 
 
 def DisplayInfos(self):
@@ -11,12 +12,20 @@ def DisplayInfos(self):
 def Check(self, mode):
 	if mode == 'update':
 		result = self.Tools.fileManipulator.RecursiveDelete(os.path.join(self.Tools.params['vasDirectory'], 'server', 'php'))
+		if result[0] != 0:
+			return result
+		result = self.Tools.fileManipulator.RemoveAlias('dependencies', 'php')
+		if result[0] != 0:
+			return result
 
 	if mode != 'uninstall':
 		if platform.system() == 'Windows':
-			result = self.Tools.fileManipulator.RecursiveOverwriteCopy(os.path.join(self.Tools.params['ressourcesPath'], 'dependencies', 'php', 'windows'), os.path.join(self.Tools.params['vasDirectory'], 'server', 'php'))
-			if result[0] != 0:
-				return result
+			try:
+				zip_ref = zipfile.ZipFile(os.path.join(self.Tools.params['ressourcesPath'], 'dependencies', 'php', 'windows', 'php.zip'), 'r')
+				zip_ref.extractall(os.path.join(self.Tools.params['vasDirectory'], 'server'))
+				zip_ref.close()
+			except Exception as err:
+				return [1, str(err)]
 
 			phpIniDest = os.path.join(self.Tools.params['vasDirectory'], 'server', 'php', 'php.ini')
 			result = self.Tools.fileManipulator.RecursiveOverwriteCopy(os.path.join(self.Tools.params['ressourcesPath'], 'dependencies', 'php', 'php.ini'), phpIniDest)

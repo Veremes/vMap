@@ -1,0 +1,64 @@
+<div class="row wms-service-tests">
+    <div data-app-wms-service-tests="" class="col-xs-12">
+        <!-- Menu -->
+        <ul class="nav nav-tabs" role="tablist">
+            <li role="presentation" class="active">
+                <a href="#wms_service_tests_get_capabilities" aria-controls="wms_service_tests_get_capabilities" role="tab" data-toggle="tab" ng-click="showWmsServiceGetCapabilities()">{{ 'TAB_TITLE_GETCAPABILITIES_VM4MS_WMS_SERVICE_TESTS' | translate }}
+                    <button type="button" class="btn btn-primary btn-refresh-tab" aria-label="Left Align" ng-click="showWmsServiceGetCapabilities(true)">
+                        <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+                    </button>
+                </a>
+            </li>
+            <li role="presentation">
+                <a href="#wms_service_tests_wms_service_mapserver" aria-controls="wms_service_tests_wms_service_mapserver" role="tab" data-toggle="tab" ng-click="testWmsServiceWithMapServer()">{{ 'TAB_TITLE_TEST_WMS_SERVICE_MAP_SERVER_VM4MS_WMS_SERVICE_TESTS' | translate }}
+                    <button type="button" class="btn btn-primary btn-refresh-tab" aria-label="Left Align" ng-click="testWmsServiceWithMapServer(true)">
+                        <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+                    </button>
+                </a>
+            </li>
+            <li role="presentation">
+                <a href="#wms_service_tests_wms_service_ol" aria-controls="wms_service_tests_wms_service_ol" role="tab" data-toggle="tab" ng-click="testWmsServiceWithOpenLayers()">{{ 'TAB_TITLE_TEST_WMS_SERVICE_OL3_VM4MS_WMS_SERVICE_TESTS' | translate }}
+                    <button type="button" class="btn btn-primary btn-refresh-tab" aria-label="Left Align" ng-click="testWmsServiceWithOpenLayers(true)">
+                        <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+                    </button>
+                </a>
+            </li>
+            <li role="presentation">
+                <a href="#wms_service_tests_wms_service_log" aria-controls="wms_service_tests_wms_service_log" role="tab" data-toggle="tab" ng-click="loadWmsServiceMapServerLog()">{{ 'TAB_TITLE_MAPSERVER_LOG_VM4MS_WMS_SERVICE_TESTS' | translate }}
+                    <button type="button" class="btn btn-primary btn-refresh-tab" aria-label="Left Align" ng-click="loadWmsServiceMapServerLog(true)">
+                        <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+                    </button>
+                </a>
+            </li>
+            <li role="presentation">
+                <a href="#wms_service_tests_wms_service_map_file" aria-controls="wms_service_tests_wms_service_map_file" role="tab" data-toggle="tab" ng-click="loadWmsServiceMapFile()">{{ 'TAB_TITLE_MAP_FILE_VM4MS_WMS_SERVICE_TESTS' | translate }}
+                    <button type="button" class="btn btn-primary btn-refresh-tab" aria-label="Left Align" ng-click="loadWmsServiceMapFile(true)">
+                        <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+                    </button>
+                </a>
+            </li>
+        </ul>
+        <!-- Onglets -->
+        <div class="tab-content">
+            <div role="tabpanel" class="tab-pane active" id="wms_service_tests_get_capabilities">
+                <textarea id="wms_service_tests_get_capabilities_textarea"></textarea>
+            </div>
+            <div role="tabpanel" class="tab-pane" id="wms_service_tests_wms_service_mapserver">
+                <iframe src="" id="wms_service_tests_wms_service_ms_iframe"></iframe>
+            </div>
+            <div role="tabpanel" class="tab-pane" id="wms_service_tests_wms_service_ol">
+                <div id="wms_service_tests_wms_service_ol_map"></div>
+            </div>
+            <div role="tabpanel" class="tab-pane wms_service-mapserver-log" id="wms_service_tests_wms_service_log">
+                <textarea id="wms_service_tests_wms_service_log_textarea" readonly>{{aWmsServiceTestTabs.mapserver_log.file_content}}</textarea>
+            </div>
+            <div role="tabpanel" class="tab-pane wms_service-mapserver-map_file" id="wms_service_tests_wms_service_map_file">
+                <textarea id="wms_service_tests_wms_service_map_file_textarea"></textarea>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row wms-service-tests-connection-form">
+    <div data-app-wms-service-tests-connection-form="" class="col-xs-12">
+    </div>
+</div>

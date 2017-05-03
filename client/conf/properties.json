@@ -1,8 +1,8 @@
 {
     "services_alias": "rest[ENV]",
-	"web_server_name": "[VAS_URL]",
+    "web_server_name": "https://[hostname]:[PORT]/",
     "vmap_folder": "modules/vmap",
-    "proxy_url": "[VAS_URL]/proxy[ENV]/proxy.php",
+    "proxy_url": "https://[hostname]:[PORT]/proxy[ENV]/proxy.php",
     "version": "[VERSION]",
 	"build": "[BUILD]",
     "status": "unstable",

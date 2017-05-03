@@ -23,7 +23,7 @@ class LieuDit extends Cadastre {
 	 * @param type $properties properties
 	 * @param type $oConnection connection object
 	 */
-	function LieuDit($aPath, $aValues, $properties, $oConnection) {}
+	function __construct($aPath, $aValues, $properties, $oConnection) {}
 }
 
 ?>

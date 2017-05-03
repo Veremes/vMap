@@ -1,7 +1,7 @@
 <div id="{{sSelectedObjectName}}_grid" class="workspacelist-grid" data-app-workspace-list="">
         <div ng-show="::gridOptions.appHeader" id="{{sSelectedObjectName}}_grid_header" class="col-xs-12 workspacelist-grid-header no_bs_padding">
                 <!-- Filtre de recherche -->
-                <div class="row">
+                <div ng-show="::gridOptions.appHeaderSearchForm"class="row">
                         <div class="col-xs-12 workspacelist-grid-header-search">
                                 <div class="row">
                                         <!-- Bouton de recherche -->
@@ -25,12 +25,10 @@
                 <!-- Titre de l'onglet -->
                 <div ng-if="::gridOptions.appHeaderTitleBar" class="row">
                         <div class="col-xs-12 workspacelist-grid-header-title">
-                                <div class="row">
-                                        <div class="col-xs-4 no_bs_padding" data-translate="{{::gridOptions.appGridTitle}}"></div>
-                                        <div class="col-xs-8  text-right">
-                                                <button ng-repeat="action in gridOptions.appActions" type="button" name="{{::action.name}}" id="{{::action.name + '_ui_grid_add'}}" class="btn btn-primary btn-xs" ng-click="scopeEval(this, action.event)" style="margin-left: 10px;">{{::action.label}}</button>
-                                        </div>
-                                </div>
+                            <span data-translate="{{::gridOptions.appGridTitle}}"></span>
+                            <div>
+                                <button ng-repeat="action in gridOptions.appActions" type="button" name="{{::action.name}}" id="{{::action.name + '_ui_grid_add'}}" class="btn btn-primary btn-xs" ng-click="scopeEval(this, action.event)" style="margin-left: 10px;">{{::action.label}}</button>
+                            </div>
                         </div>
                 </div>
         </div>

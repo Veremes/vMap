@@ -53,7 +53,7 @@ class Ldap {
      * \param $sDomaine Nom de domaine.
      * \param $sServeur Nom ou IP du serveur utilis�.
      */
-    function Ldap($sLogin, $sMotDePasse, $sDomaine, $sServeur, $sPageEncoding = "ISO-8859-1", $lang = "fr") {
+    function __construct($sLogin, $sMotDePasse, $sDomaine, $sServeur, $sPageEncoding = "ISO-8859-1", $lang = "fr") {
         $this->lang = $lang;
         loadLang($this->sFolderLib, $this->lang);
         $this->sLogin = $sLogin;

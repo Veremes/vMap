@@ -25,7 +25,7 @@ class CRS extends Vmap {
      * @param type $properties properties
      * @param type $oConnection connection object
      */
-    function CRS($aPath, $aValues, $properties, $oConnection) {
+    function __construct($aPath, $aValues, $properties, $oConnection) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
@@ -52,8 +52,7 @@ class CRS extends Vmap {
      *     in="path",
      *     description="",
      *     required=true,
-     *     type="integer",
-     *   format="int32"
+     *     type="integer"
      *   ),
      *   @SWG\Response(
      *         response=200,

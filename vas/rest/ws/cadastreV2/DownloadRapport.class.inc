@@ -11,7 +11,7 @@ require_once __DIR__ . '/../../class/vmlib/BdDataAccess.inc';
  *
  * \author Armand Bahi <armand.bahi@veremes.com>.
  *
- * 	\brief This file contains the DownloadRapport php class
+ *  \brief This file contains the DownloadRapport php class
  *
  * This class defines the rest api for downloadrapport
  * 
@@ -37,10 +37,11 @@ class DownloadRapport extends Cadastre {
      * @param type $properties properties
      * @param type $oConnection connection object
      */
-    function downloadrapport($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
+        $this->oConnection = new Connection($this->aValues, $this->aProperties);
     }
 
     /**
@@ -79,25 +80,50 @@ class DownloadRapport extends Cadastre {
      *  )
      */
     function GET() {
-        if (!empty($this->aValues['sFileName'])) {
-            $sFile = $this->aProperties["cadastre"]["rp"]["rp_dir"] . "/" . $this->aValues['sYear'] . '/' . $this->aValues['sType'] . '/' . $this->aValues['sFileName'];
-            switch (pathinfo($sFile, PATHINFO_EXTENSION)) {
-                case 'pdf':
-                    if (file_exists($sFile)) {
-                        header('Content-Type: application/pdf');
+        if (!in_array('vmap_cadastre_user', $this->oConnection->aPrivileges)) {
+            $oError = new VitisError(0, 'INSUFFICIENT_PRIVILEGES');
+            $aXmlRacineAttribute['status'] = 0;
+            $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+            return $sMessage;
+        }
+
+        if ($this->oConnection->oError == null) {
+            if (!empty($this->aValues['sFileName'])) {
+                $aRestriction = explode('|', $_SESSION['ses_restriction']);
+                if (strpos($this->aValues['sFileName'], "../") === false && ($_SESSION['ses_restriction'] == "%" || in_array(substr($this->aValues['sFileName'], 0, 5), $aRestriction))) {
+                    $sFile = $this->aProperties["cadastre"]["rp"]["rp_dir"] . "/" . $this->aValues['sYear'] . '/' . $this->aValues['sType'] . '/' . $this->aValues['sFileName'];
+                    if (is_file($sFile)) {
+                        switch (pathinfo($sFile, PATHINFO_EXTENSION)) {
+                            case 'pdf':
+                                if (file_exists($sFile)) {
+                                    header('Content-Type: application/pdf');
+                                }
+                                break;
+                            case 'xls':
+                                if (file_exists($sFile)) {
+                                    header('Content-Type: application/vnd.ms-excel');
+                                }
+                                break;
+                            default:
+                                http_response_code(403);
+                                //echo (json_encode(array("status" => "0", "sMessage" => "forbidden")));
+                                exit;
+                                break;
+                        }
+                        header('Expires: 0');
+                        header('Cache-Control: must-revalidate');
+                        header('Pragma: public');
+                        header('Content-Length: ' . filesize($sFile));
+                        readfile($sFile);
+                    } else {
+                        return 'Une erreur est survenue lors de la génération du rapport';
                     }
-                    break;
-                case 'xls':
-                    if (file_exists($sFile)) {
-                        header('Content-Type: application/vnd.ms-excel');
-                    }
-                    break;
+                } else {
+                    http_response_code(403);
+                }
             }
-            header('Expires: 0');
-            header('Cache-Control: must-revalidate');
-            header('Pragma: public');
-            header('Content-Length: ' . filesize($sFile));
-            readfile($sFile);
+        } else {
+            http_response_code(403);
         }
     }
 

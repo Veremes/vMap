@@ -20,7 +20,7 @@ class Mj_Compte_Communal_Parcelles extends Mj {
 	* \param $properties Tableau des propri�t�s
 	* \param $sLayerTypeParcelle Chaine Type de g�om�trie des parcelles
 	*/
-	function Mj_Compte_Communal_Parcelles($aIdPar,$oBD,$properties,$sLayerTypeParcelle){
+	function __construct($aIdPar,$oBD,$properties,$sLayerTypeParcelle){
 		$i=0;
 		while ($aIdPar[$i]){
 			array_push ($this->aObjects, new Mj_Compte_Communal_Parcelle("",$aIdPar[$i],$oBD));

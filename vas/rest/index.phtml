@@ -1,6 +1,6 @@
 <?php
 
-require_once("class/vitis_lib/Error.class.inc");
+require_once("class/vitis_lib/VitisError.class.inc");
 require_once("class/vmlib/cryptUtil.inc");
 require_once("conf/properties.inc");
 
@@ -88,9 +88,9 @@ if ($paramJson2 != null) {
     $aValues = array_merge($aValues, $paramJson2);
 }
 
-//RÃ©cupÃ©ration des ressources
+//Récupération des ressources
 $aPath = explode('/', trim($_SERVER['PATH_INFO'], '/'));
-//DÃ©finition du format de sortie
+//Définition du format de sortie
 $sOutput = 'application/json';
 if (!isset($aValues['output']))
     $aValues['output'] = null;
@@ -102,7 +102,7 @@ if ($aValues['output'] == "application/xml" || $_SERVER['HTTP_ACCEPT'] == 'appli
     $sOutput = 'application/x-vm-json';
 }
 $aValues['output'] = $sOutput;
-//DÃ©finition de l'encodage
+//Définition de l'encodage
 if (empty($aValues["encoding"])) {
     $aValues['sEncoding'] = $properties["page_encoding"];
 } else {
@@ -114,9 +114,9 @@ if (empty($aValues['xslstylesheet'])) {
     $aValues['xslstylesheet'] = "";
 }
 
-//VÃ©rification d'appel Ã  une ressource
+//Vérification d'appel à une ressource
 if ($_SERVER['PATH_INFO'] == "/") {
-    $oError = new Error(5, 'Service missing.');
+    $oError = new VitisError(5, 'Service missing.');
     $aXmlRacineAttribute['status'] = 0;
     $sMessage = $oError->asDocument($aValues['xslstylesheet'], 'vitis', $aValues['sEncoding'], True, $aXmlRacineAttribute, $aValues['sSourceEncoding'], $aValues['output']);
     $bXMLError = true;
@@ -134,7 +134,7 @@ if ($_SERVER['PATH_INFO'] == "/") {
 
             require($file);
             $sClass = new $sClassName($aPath, $aValues, $properties);
-            //Appel de la mÃ©thode GET PUT POST ou DELETE de la classe
+            //Appel de la méthode GET PUT POST ou DELETE de la classe
             $sMessage = $sClass->$sMethod();
         }
     }

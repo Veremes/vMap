@@ -37,7 +37,7 @@ class PrintMapServices extends PrintServices {
      * @param type $properties properties
      * @param type $oConnection connection object
      */
-    function printmapservices($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
@@ -49,74 +49,74 @@ class PrintMapServices extends PrintServices {
      *   tags={"PrintServices"},
      *   summary="Creates a map print",
      *   description="Creates a map print",
-     *   operationId="GET",
+     *   operationId="POST",
      *   produces={"application/json"},
      * @SWG\Parameter(
      *     name="token",
-     *     in="query",
+     *     in="formData",
      *     description="user token",
      *     required=true,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="map_id",
-     *     in="query",
+     *     in="formData",
      *     description="map to print out, not required if passed map_json",
      *     required=false,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="map_json",
-     *     in="query",
+     *     in="formData",
      *     description="map to print out",
      *     required=false,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="image_size",
-     *     in="query",
+     *     in="formData",
      *     description="image resolution splited by |",
      *     required=true,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="resolution_coeff",
-     *     in="query",
+     *     in="formData",
      *     description="image size multiplicator",
      *     required=false,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="extent",
-     *     in="query",
+     *     in="formData",
      *     description="map extent, not required if passed features splited by |",
      *     required=false,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="features",
-     *     in="query",
+     *     in="formData",
      *     description="Array of EWKT features to add splited by |",
      *     required=false,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="features_zoom",
-     *     in="query",
+     *     in="formData",
      *     description="percentage of zooming",
      *     required=false,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="resolution_coeff",
-     *     in="query",
+     *     in="formData",
      *     description="size multiplicator",
      *     required=false,
      *     type="string"
      *   ),
      * @SWG\Parameter(
      *     name="quality",
-     *     in="query",
+     *     in="formData",
      *     description="image quality",
      *     required=false,
      *     type="string"

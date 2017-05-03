@@ -1,3 +1,5 @@
+/* global oVmap, nsVmap, goog */
+
 /**
 * @author: Armand Bahi
 * @Description: Fichier contenant la classe nsVmap.nsMapManager.nsMapModal.BingSuggestions
@@ -6,7 +8,7 @@
 
 goog.provide('nsVmap.nsMapManager.nsMapModal.BingSuggestions');
 
-
+goog.require('oVmap');
 
 /**
 * @classdesc
@@ -15,14 +17,9 @@ goog.provide('nsVmap.nsMapManager.nsMapModal.BingSuggestions');
 * @constructor
 * @export
 */
-nsVmap.nsMapManager.nsMapModal.BingSuggestions = function(){oVmap.log("nsVmap.nsMapManager.nsMapModal.BingSuggestions");
-
-  // Directives et controleurs Angular
-  oVmap.module.directive('appBingsuggestions', this.bingsuggestionsDirective);
-  oVmap.module.controller('AppBingsuggestionsController', this.bingsuggestionsController);
-}
-
-
+nsVmap.nsMapManager.nsMapModal.BingSuggestions = function(){
+    oVmap.log("nsVmap.nsMapManager.nsMapModal.BingSuggestions");
+};
 
 /************************************************
 ---------- DIRECTIVES AND CONTROLLERS -----------
@@ -69,6 +66,51 @@ nsVmap.nsMapManager.nsMapModal.BingSuggestions.prototype.bingsuggestionsControll
 };
 
 /**
+ * Add the layer
+ * @param {object} oLayerOptions
+ * @export
+ */
+nsVmap.nsMapManager.nsMapModal.BingSuggestions.prototype.bingsuggestionsController.prototype.addLayer = function(oLayerOptions) {
+    oVmap.log('nsVmap.nsMapManager.nsMapModal.BingSuggestions.prototype.bingsuggestionsController.prototype.addLayer');
+    
+    var sKey;
+    var sImagerySet;
+    var sCulture;
+
+    if (goog.isDefAndNotNull(oLayerOptions)) {
+        sKey = oLayerOptions['key'];
+        sImagerySet = oLayerOptions['imagerySet'];
+        sCulture = oLayerOptions['culture'];
+    }else{
+        sKey = this['sKey'];
+        sImagerySet = this['sImagerySet'];
+        sCulture = this['sCulture'];
+    }
+    
+    if (!goog.isDefAndNotNull(sKey) || sKey === '') {
+        $.notify('Veuillez renseigner la clé Bing Maps', 'error');
+        return 0;
+    }
+    if (!goog.isDefAndNotNull(sImagerySet) || sImagerySet === '') {
+        $.notify('Veuillez renseigner une couche à utiliser', 'error');
+        return 0;
+    }
+    if (!goog.isDefAndNotNull(sCulture) || sCulture === '') {
+        $.notify('Veuillez renseigner une langue à utiliser', 'error');
+        return 0;
+    }
+
+    var oLayer = {};
+    oLayer.layerType = "bing";
+    oLayer.serviceName = 'Bing Maps';
+    oLayer.key = sKey;
+    oLayer.layerName = sImagerySet;
+    oLayer.culture = sCulture;
+    
+    oVmap.getMapManager().addLayer(oLayer);
+};
+
+/**
  * reload variables
  * @export
  * @api experimental
@@ -77,4 +119,8 @@ nsVmap.nsMapManager.nsMapModal.BingSuggestions.prototype.bingsuggestionsControll
 
   this.catalog = this['catalog'] = oVmap.getMapManager().getMapModalTool().getMapCatalog();
   this.projection = this['projection'] = oVmap.getMap().getOLMap().getView().getProjection().getCode();
-}
+};
+
+// Définit la directive et le controller
+oVmap.module.directive('appBingsuggestions', nsVmap.nsMapManager.nsMapModal.BingSuggestions.prototype.bingsuggestionsDirective);
+oVmap.module.controller('AppBingsuggestionsController', nsVmap.nsMapManager.nsMapModal.BingSuggestions.prototype.bingsuggestionsController);

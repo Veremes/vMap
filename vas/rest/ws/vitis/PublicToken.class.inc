@@ -33,7 +33,7 @@ class PublicToken extends Vitis {
      * @param type $aValues parameters of the request
      * @param type $properties properties
      */
-    function PublicToken($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
@@ -71,7 +71,7 @@ class PublicToken extends Vitis {
         $_SESSION["ses_Password"] = $ciphertext;
         $_SESSION["ses_Remember"] = false;
         if ($oBd->erreurRencontree) {
-            $oError = new Error(1, $oBd->sMessage);
+            $oError = new VitisError(1, $oBd->sMessage);
             $aXmlRacineAttribute['status'] = 0;
             $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
         } else {
@@ -84,7 +84,7 @@ class PublicToken extends Vitis {
             $oMetadataAccess = new MetadataAccess($oBd, $_SESSION["ses_Login"], $_SESSION["ses_Password"], session_id(), $this->aProperties);
             $bAuthorizedIp = $oMetadataAccess->checkUserIp($_SERVER['REMOTE_ADDR']);
             if (!$bAuthorizedIp) {
-                $oError = new Error(11, 'Connection to the database forbidden with the ip \'' . $_SERVER['REMOTE_ADDR'] . '\'.');
+                $oError = new VitisError(11, 'Connection to the database forbidden with the ip \'' . $_SERVER['REMOTE_ADDR'] . '\'.');
                 $aXmlRacineAttribute['status'] = 0;
                 $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
             } else {

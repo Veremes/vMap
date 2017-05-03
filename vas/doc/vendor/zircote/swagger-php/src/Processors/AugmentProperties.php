@@ -30,6 +30,10 @@ class AugmentProperties
         'date' => ['string', 'date'],
         'datetime' => ['string', 'date-time'],
         '\datetime' => ['string', 'date-time'],
+        'datetimeimmutable' => ['string', 'date-time'],
+        '\datetimeimmutable' => ['string', 'date-time'],
+        'datetimeinterface' => ['string', 'date-time'],
+        '\datetimeinterface' => ['string', 'date-time'],
         'number' => 'number',
         'object' => 'object'
     ];
@@ -37,6 +41,7 @@ class AugmentProperties
     public function __invoke(Analysis $analysis)
     {
         $refs = [];
+        /** @var Definition $definition */
         foreach ($analysis->swagger->definitions as $definition) {
             if ($definition->definition) {
                 $refs[strtolower($definition->_context->fullyQualifiedName($definition->_context->class))] = '#/definitions/' . $definition->definition;
@@ -44,6 +49,7 @@ class AugmentProperties
         }
         
         $allProperties = $analysis->getAnnotationsOfType('\Swagger\Annotations\Property');
+        /** @var \Swagger\Annotations\Property $property */
         foreach ($allProperties as $property) {
             $context = $property->_context;
             // Use the property names for @SWG\Property()
@@ -69,7 +75,8 @@ class AugmentProperties
                         }
                         $property->type = $type;
                     } elseif ($property->ref === null && $typeMatches[2] === '') {
-                        $property->ref = @$refs[strtolower($context->fullyQualifiedName($type))];
+                        $tmpKey = strtolower($context->fullyQualifiedName($type));
+                        $property->ref = array_key_exists($tmpKey, $refs) ? $refs[$tmpKey] : null;
                     }
                     if ($typeMatches[2] === '[]') {
                         if ($property->items === null) {
@@ -78,7 +85,8 @@ class AugmentProperties
                                 '_context' => new Context(['generated' => true], $context)
                             ]);
                             if ($property->items->type === null) {
-                                $property->items->ref = @$refs[strtolower($context->fullyQualifiedName($type))];
+                                $tmpKey = strtolower($context->fullyQualifiedName($type));
+                                $property->items->ref = array_key_exists($tmpKey, $refs) ? $refs[$tmpKey] : null;
                             }
                         }
                         $property->type = 'array';
@@ -86,7 +94,7 @@ class AugmentProperties
                 }
             }
             if ($property->description === null) {
-                $property->description = $context->extractDescription();
+                $property->description = $context->phpdocContent();
             }
         }
     }

@@ -25,12 +25,12 @@ class PrintTemplate extends Vmap {
      * @param type $properties properties
      * @param type $oConnection connection object
      */
-    function PrintTemplate($aPath, $aValues, $properties, $oConnection) {
+    function __construct($aPath, $aValues, $properties, $oConnection) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
         $this->oConnection = $oConnection;
-        $this->aSelectedFields = Array("printtemplate_id", "name", "rt_format_id", "rt_orientation_id", "definition", "outputformats_id", "sql", "ressource_id", "business_object_id", "groups");        
+        $this->aSelectedFields = Array("printtemplate_id", "name", "rt_format_id", "rt_orientation_id", "definition", "outputformats_id", "groups");        
     }
 
     /**
@@ -52,8 +52,7 @@ class PrintTemplate extends Vmap {
      *     in="path",
      *     description="printtemplate id",
      *     required=true,
-     *     type="integer",
-     *   format="int32"
+     *     type="integer"
      *   ),
      *   @SWG\Response(
      *         response=200,
@@ -103,7 +102,7 @@ class PrintTemplate extends Vmap {
     function DELETE(){
         $this->oConnection->oBd->delete($this->aProperties['schema_vmap'], 'printtemplate', 'printtemplate_id', $this->aValues['my_vitis_id'], 'integer');
         if ($this->oConnection->oBd->enErreur()) {
-                $this->oError = new Error(1, $this->oConnection->oBd->getBDMessage());
+                $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
         } else {
                 $this->aFields['printtemplate_id'] = $this->aValues['my_vitis_id'];
         }

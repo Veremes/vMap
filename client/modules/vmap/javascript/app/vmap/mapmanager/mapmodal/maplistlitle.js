@@ -8,6 +8,7 @@
 
 goog.provide('nsVmap.nsMapManager.nsMapModal.MapListLitle');
 
+goog.require('oVmap');
 
 /**
  * @classdesc
@@ -18,10 +19,6 @@ goog.provide('nsVmap.nsMapManager.nsMapModal.MapListLitle');
  */
 nsVmap.nsMapManager.nsMapModal.MapListLitle = function () {
     oVmap.log("nsVmap.nsMapManager.nsMapModal.MapListLitle");
-
-    // Directives et controleurs Angular
-    oVmap.module.directive('appMaplistlitle', this.maplistlitleDirective);
-    oVmap.module.controller('AppMaplistlitleController', this.maplistlitleController);
 };
 
 
@@ -96,10 +93,10 @@ nsVmap.nsMapManager.nsMapModal.MapListLitle.prototype.maplistlitleController = f
 
         var filteredArray = goog.array.filter(maplistlitleController['catalog']['maps'], function (element, index, array) {
 
-            var filter = String(scope['filter']).toLowerCase();
-            var name = String(element['name']).toLowerCase();
-            var description = String(element['description']).toLowerCase();
-            var themeName = String(element['theme_name']).toLowerCase();
+            var filter = String(scope['filter']).toLowerCase().withoutAccents();
+            var name = String(element['name']).toLowerCase().withoutAccents();
+            var description = String(element['description']).toLowerCase().withoutAccents();
+            var themeName = String(element['theme_name']).toLowerCase().withoutAccents();
             themeName = (themeName === 'null') ? 'autres' : themeName;
 
             // Vérifie si la carte est conforme au filter
@@ -170,3 +167,7 @@ nsVmap.nsMapManager.nsMapModal.MapListLitle.prototype.maplistlitleController.pro
 
     return aThemes;
 };
+
+// Définit la directive et le controller
+oVmap.module.directive('appMaplistlitle', nsVmap.nsMapManager.nsMapModal.MapListLitle.prototype.maplistlitleDirective);
+oVmap.module.controller('AppMaplistlitleController', nsVmap.nsMapManager.nsMapModal.MapListLitle.prototype.maplistlitleController);

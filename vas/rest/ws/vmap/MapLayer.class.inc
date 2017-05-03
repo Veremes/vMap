@@ -25,12 +25,12 @@ class MapLayer extends Vmap {
      * @param type $properties properties
      * @param type $oConnection connection object
      */
-    function MapLayer($aPath, $aValues, $properties, $oConnection) {
+    function __construct($aPath, $aValues, $properties, $oConnection) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
         $this->oConnection = $oConnection;
-	$this->aSelectedFields = Array("layer_id", "name", "theme_name", "layer_visible", "map_id", "layer_opacity");
+		$this->aSelectedFields = Array("layer_id", "name", "theme_name", "layer_visible", "map_id", "layer_opacity", "layer_index");
     }
 
     /**
@@ -48,7 +48,7 @@ class MapLayer extends Vmap {
         /*
         $this->oConnection->oBd->delete($this->aProperties['schema_vmap'], 'v_map_layer', 'map_id', $this->aValues['my_vitis_id'], 'integer');
         if ($this->oConnection->oBd->enErreur()) {
-                $this->oError = new Error(1, $this->oConnection->oBd->getBDMessage());
+                $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
         } else {
                 $this->aFields[map_id] = $this->aValues['my_vitis_id'];
         }

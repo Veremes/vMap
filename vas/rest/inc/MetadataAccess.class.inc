@@ -63,7 +63,7 @@ class MetadataAccess{
 	* \param $sSID Identifiant de la session PHP en cours.
 	* \param $properties Tableau contenant les paramètres de configuration de l'application.
 	*/
-	function MetadataAccess($oBd, $sLogin, $sPassword, $sSID, $properties){
+	function __construct($oBd, $sLogin, $sPassword, $sSID, $properties){
 		$this->oBd=$oBd;
 		$this->sLogin=$sLogin;
 		$this->sPassword=$sPassword;

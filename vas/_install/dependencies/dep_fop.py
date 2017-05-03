@@ -1,6 +1,7 @@
 # coding: utf-8
 import os
 import platform
+import zipfile
 
 
 def DisplayInfos(self):
@@ -10,11 +11,17 @@ def DisplayInfos(self):
 
 def Check(self, mode):
 	if mode == 'update':
-		result = self.Tools.fileManipulator.RecursiveDelete(os.path.join(self.Tools.params['vasDirectory'], 'server', 'jre'))
+		result = self.Tools.fileManipulator.RecursiveDelete(os.path.join(self.Tools.params['vasDirectory'], 'server', 'fop'))
+		if result[0] != 0:
+			return result
 
 	if mode != 'uninstall':
-		result = self.Tools.fileManipulator.RecursiveOverwriteCopy(os.path.join(self.Tools.params['ressourcesPath'], 'dependencies', 'fop'), os.path.join(self.Tools.params['vasDirectory'], 'server', 'fop'))
-
+		try:
+			zip_ref = zipfile.ZipFile(os.path.join(self.Tools.params['ressourcesPath'], 'dependencies', 'fop', 'fop.zip'), 'r')
+			zip_ref.extractall(os.path.join(self.Tools.params['vasDirectory'], 'server'))
+			zip_ref.close()
+		except Exception as err:
+			return [1, str(err)]
 		if platform.system() == 'Windows':
 			result = self.Tools.fileManipulator.ReplaceInFile(os.path.join(self.Tools.params['vasDirectory'], 'server', 'fop', 'fop.bat'), 'set LOCAL_FOP_HOME=\n', 'set LOCAL_FOP_HOME=' + os.path.join(self.Tools.params['vasDirectory'], 'server', 'fop') + '\\' + '\nset JAVA_HOME=' + os.path.join(self.Tools.params['vasDirectory'], 'server', 'jre') + '\n')
 			if result[0] != 0:

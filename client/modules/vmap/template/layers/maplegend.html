@@ -17,13 +17,13 @@
                  ng-show="layer[0].olLayer.values.visible === true">
                 <div id="legend_father{{$index}}" data-toggle="collapse" data-target="#legend_element_{{$index}}">
                     <div style="display: inline-block; width:98%">
-                        <div class="legend_father_name">{{sLayerName}}</div>
+                        <div class="legend_father_name" title="{{sLayerName}}">{{sLayerName}}</div>
                     </div>
                 </div>
                 <div id="legend_element_{{$index}}" class="collapse in">
                     <ul class="list-group-item auto-height">
-                        <div ng-repeat="node in layer">
-                            <img ng-src="{{node.legendURL}}" class="legend-img" onerror="this.style.display='none'">
+                        <div ng-repeat="node in layer">                            
+                            <img ng-src="{{node.legendURL}}" class="legend-img" onerror="this.style.display='none'" legend-image-node>
                         </div>
                     </ul>
                 </div>

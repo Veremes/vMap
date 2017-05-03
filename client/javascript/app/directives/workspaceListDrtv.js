@@ -1,4 +1,4 @@
-/* global vitisApp */
+/* global vitisApp, goog */
 
 // Google closure
 goog.provide("vitis.directives.workspaceList");
@@ -25,21 +25,29 @@ vitisApp.appWorkspaceListDrtv = function ($timeout, $rootScope, $templateRequest
         controllerAs: 'ctrl',
         scope: true,
         link: function (scope, element, attrs) {
-
             var sSelectedObjectName;
+            var clearListenerFormExtracted;
             // Sauve l'api de ui-grid dans le scope.
             scope["gridOptions"]["onRegisterApi"] = function (gridApi) {
                 sSelectedObjectName = envSrvc["oSelectedObject"]["name"];
                 scope.$root["gridApi"][envSrvc["oSelectedObject"]["name"]] = gridApi;
                 // Initialisation du tri par défaut pour l"api rest.
-                envSrvc["oGridOptions"][envSrvc["oSelectedObject"]["name"]]["oUrlParams"] = {
-                    "order_by": envSrvc["oSelectedObject"]["sorted_by"],
-                    "sort_order": envSrvc["oSelectedObject"]["sorted_dir"]
-                };
+                if (goog.isDefAndNotNull(scope["gridOptions"]["oUrlParams"])) {
+                    envSrvc["oGridOptions"][envSrvc["oSelectedObject"]["name"]]["oUrlParams"] = scope["gridOptions"]["oUrlParams"];
+                } else {
+                    envSrvc["oGridOptions"][envSrvc["oSelectedObject"]["name"]]["oUrlParams"] = {
+                        "order_by": envSrvc["oSelectedObject"]["sorted_by"],
+                        "sort_order": envSrvc["oSelectedObject"]["sorted_dir"]
+                    };
+                }
+
                 // Evènement déclenché si la page sélectionnée change.
                 gridApi["pagination"]["on"]["paginationChanged"](scope, function (newPage, pageSize) {
                     // Change la page;
                     if (typeof (envSrvc["oGridOptions"][envSrvc["oSelectedObject"]["name"]]) !== "undefined" && typeof (scope.$root["gridApi"][envSrvc["oSelectedObject"]["name"]]) !== "undefined") {
+                        var aFilter = envSrvc["oGridOptions"][envSrvc["oSelectedObject"]["name"]]["aFilter"];
+                        //envSrvc["oGridOptions"][envSrvc["oSelectedObject"]["name"]]["aFilter"] = angular.copy(aFilterDistinct);
+                        envSrvc["oGridOptions"][envSrvc["oSelectedObject"]["name"]]["aFilter"] = angular.copy(aFilter);
                         scope["setGridPage"](newPage, pageSize, envSrvc["oGridOptions"][envSrvc["oSelectedObject"]["name"]]["aFilter"], envSrvc["oGridOptions"][envSrvc["oSelectedObject"]["name"]]["oUrlParams"]);
                         // Sauve le nombre d'éléments par page. 
                         propertiesSrvc["rows_per_page"] = envSrvc["oGridOptions"][envSrvc["oSelectedObject"]["name"]]["paginationPageSize"];
@@ -52,6 +60,10 @@ vitisApp.appWorkspaceListDrtv = function ($timeout, $rootScope, $templateRequest
                         oUrlParams["order_by"] = sortColumns[0]["field"];
                         oUrlParams["sort_order"] = sortColumns[0]["sort"]["direction"].toUpperCase();
                     }
+                    // Sauve le tri.
+                    envSrvc["oGridOptionsCopy"][envSrvc["oSelectedObject"]["name"]]["oUrlParams"]["order_by"] = oUrlParams["order_by"];
+                    envSrvc["oGridOptionsCopy"][envSrvc["oSelectedObject"]["name"]]["oUrlParams"]["sort_order"] = oUrlParams["sort_order"];
+
                     // Index de la section affichée. 
                     var iSelectedSectionIndex = 0;
                     if (typeof (envSrvc["oSectionForm"]) != "undefined" && typeof (envSrvc["oSectionForm"][envSrvc["oSelectedObject"]["name"]]) != "undefined" && typeof (envSrvc["oSectionForm"][envSrvc["oSelectedObject"]["name"]]["iSelectedSectionIndex"]) != "undefined")
@@ -104,6 +116,7 @@ vitisApp.appWorkspaceListDrtv = function ($timeout, $rootScope, $templateRequest
                 }
 
                 // Charge la 1ere page.
+                envSrvc["oGridOptionsCopy"][envSrvc["oSelectedObject"]["name"]] = angular.copy(envSrvc["oGridOptions"][envSrvc["oSelectedObject"]["name"]]);
                 if (envSrvc["oGridOptions"][envSrvc["oSelectedObject"]["name"]]["appLoadGridData"])
                     scope["setGridPage"](1, envSrvc["oGridOptions"][envSrvc["oSelectedObject"]["name"]]["paginationPageSize"], envSrvc["oGridOptions"][envSrvc["oSelectedObject"]["name"]]["aFilter"], envSrvc["oGridOptions"][envSrvc["oSelectedObject"]["name"]]["oUrlParams"]);
                 //
@@ -124,6 +137,9 @@ vitisApp.appWorkspaceListDrtv = function ($timeout, $rootScope, $templateRequest
                         $(element).find(".ui-grid-render-container-left .ui-grid-row").eq(iRowIndex).find(".ui-grid-selection-row-header-buttons").click();
                     }
                 });
+                // Hauteur auto. du "body" de la liste.
+                element[0].querySelector(".ui-grid-render-container-body").style.height = "100%";
+                element[0].querySelector(".ui-grid-render-container-body .ui-grid-viewport").style.height = "Calc(100% - 30px)";
                 // Emission d'un évènement de fin de compilation du template workspaceList.
                 $rootScope.$emit("workspaceListTplCompiled");
             });
@@ -131,22 +147,23 @@ vitisApp.appWorkspaceListDrtv = function ($timeout, $rootScope, $templateRequest
             $(element).find(".workspacelist-grid-header-search-button-arrow-right").click(function () {
                 // Compilation du template de formulaire des filtres.
                 if (!scope["searchFormCompiled"]) {
-                    $templateRequest("templates/formTpl.html").then(function(sTemplate) {
-                            $compile($("#" + envSrvc["oSelectedObject"]["name"] + "_grid_header_search_form").html(sTemplate).contents())(scope);
-                            // Attends la fin de l'affichage formulaire.
-                            var clearListener = scope.$root.$on("formExtracted", function (event) {
+                    $templateRequest("templates/formTpl.html").then(function (sTemplate) {
+                        $compile($("#" + envSrvc["oSelectedObject"]["name"] + "_grid_header_search_form").html(sTemplate).contents())(scope);
+                        // Attends la fin de l'affichage formulaire.
+                        clearListenerFormExtracted = scope.$root.$on("formExtracted", function (event, sFormDefinitionName) {
+                            if (sFormDefinitionName === envSrvc["sFormDefinitionName"]) {
                                 // Supprime le "listener".
-                                clearListener();
+                                clearListenerFormExtracted();
                                 // Sauve le formulaire par défaut des filtres.
-                                if (typeof(envSrvc["oWorkspaceList"][envSrvc["oSelectedObject"]["name"]]["oDefaultValues"]) == "undefined") {
+                                if (typeof (envSrvc["oWorkspaceList"][envSrvc["oSelectedObject"]["name"]]["oDefaultValues"]) == "undefined") {
                                     envSrvc["oWorkspaceList"][envSrvc["oSelectedObject"]["name"]]["oDefaultValues"] = angular.copy(envSrvc["oFormValues"][envSrvc["sFormDefinitionName"]]);
                                     envSrvc["oWorkspaceList"][envSrvc["oSelectedObject"]["name"]]["oValues"] = angular.copy(envSrvc["oFormValues"][envSrvc["sFormDefinitionName"]]);
-                                }
-                                else {
+                                } else {
                                     // Copie du formulaire sauvé (le formReader remet le form. à vide ?).
                                     envSrvc["oFormValues"][envSrvc["sFormDefinitionName"]] = angular.copy(envSrvc["oWorkspaceList"][envSrvc["oSelectedObject"]["name"]]["oValues"]);
                                 }
-                            });
+                            }
+                        });
                     });
                     scope["searchFormCompiled"] = true;
                 }
@@ -177,6 +194,9 @@ vitisApp.appWorkspaceListDrtv = function ($timeout, $rootScope, $templateRequest
                     scope["gridOptions"] = null;
                     $rootScope["gridApi"][sSelectedObjectName] = null;
                     envSrvc["oGridOptions"][sSelectedObjectName] = {};
+                }
+                if (goog.isFunction(clearListenerFormExtracted)) {
+                    clearListenerFormExtracted();
                 }
             });
         }

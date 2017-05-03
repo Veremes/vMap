@@ -3,12 +3,12 @@
 <installer>
 	<schema>
 		<name>s_cadastre</name>
-		<version>2016.02.00</version>
+		<version>2017.01.01</version>
 		<dependenciesCollection>
 			<dependency>
 				<nature>schema</nature>
 				<name>s_vmap</name>
-				<version>2016.02.00</version>
+				<version>2017.02.00</version>
 				<object>vmap</object>
 			</dependency>
 			<dependency>
@@ -21,22 +21,22 @@
 	<dependenciesCollection>
 		<dependency>
 			<nature>vas</nature>
-			<version>2016.02.00</version>
+			<version>2017.01.02</version>
 		</dependency>
 		<dependency>
 			<nature>web_services</nature>
 			<name>vmap</name>
-			<version>2016.02.00</version>
+			<version>2017.02.00</version>
 		</dependency>
 		<dependency>
 			<name>jre</name>
 			<nature>extern-post</nature>
-			<location>\\roussillon\Ressources\vitis\jre-8u101</location>
+			<location>jre-8u101</location>
 		</dependency>
 		<dependency>
 			<name>fop</name>
 			<nature>extern-post</nature>
-			<location>\\roussillon\Ressources\vitis\fop-2.0</location>
+			<location>fop-2.0</location>
 		</dependency>
 	</dependenciesCollection>
 </installer>

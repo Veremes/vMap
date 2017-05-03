@@ -37,7 +37,7 @@ class ReleveDePropriete extends Cadastre {
      * @param type $properties properties
      * @param type $oConnection connection object
      */
-    function relevedepropriete($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
@@ -90,6 +90,13 @@ class ReleveDePropriete extends Cadastre {
      *  )
      */
     function GET() {
+        
+        if (!in_array('vmap_cadastre_user', $this->oConnection->aPrivileges)) {
+            $oError = new VitisError(0, 'INSUFFICIENT_PRIVILEGES');
+            $aXmlRacineAttribute['status'] = 0;
+            $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+            return $sMessage;
+        }
 
         $ID_PAR = $this->aValues['ID_PAR'];
         $IDDNUPRO = $this->aValues['IDDNUPRO'];

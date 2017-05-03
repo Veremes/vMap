@@ -39,7 +39,6 @@ vitisApp.initCtrl = function ($scope, $log, $q, envSrvc, sessionSrvc, properties
          * clearFormData function.
          * Supprime toutes les données d'un formulaire (definition, valeurs).
          * @param {string} sFormDefinitionName Id d'un formulaire
-         * @expose
          **/
         $scope.$root["clearFormData"] = function (sFormDefinitionName, scope) {
             $log.info("clearFormData");
@@ -59,7 +58,6 @@ vitisApp.initCtrl = function ($scope, $log, $q, envSrvc, sessionSrvc, properties
          * connectFromUrl function.
          * Connexion à l'application avec les identifiants passés dans l'url.
          * @param {string} oConnexionId Identifiants de connexion
-         * @expose
          **/
         $scope.$root["connectFromUrl"] = function (oConnexionId) {
             $log.info("connectFromUrl");
@@ -81,8 +79,10 @@ vitisApp.initCtrl = function ($scope, $log, $q, envSrvc, sessionSrvc, properties
                             // Sauve les données de l'utilisateur.
                             userSrvc["login"] = oConnexionId["login"];
                             userSrvc["id"] = parseInt(data["user_id"]);
+                            userSrvc["privileges"] = data["privileges"];
                             sessionStorage["user_login"] = oConnexionId["login"];
                             sessionStorage["user_id"] = userSrvc["id"];
+                            sessionStorage["privileges"] = userSrvc["privileges"];
                             sessionSrvc["saveSessionToLocalStorage"]();
                             //
                             deferred.resolve();
@@ -140,6 +140,8 @@ vitisApp.initCtrl = function ($scope, $log, $q, envSrvc, sessionSrvc, properties
                                                     sessionSrvc["token"] = sLocalStorageSessionToken;
                                                     userSrvc["login"] = sessionStorage["user_login"];
                                                     userSrvc["id"] = parseInt(sessionStorage["user_id"]);
+                                                    userSrvc["privileges"] = data["privileges"];
+                                                    sessionStorage["privileges"] = data["privileges"];
                                                     // Surcharge la propriété "app_name" par le nom de l'application passé dans l'url.
                                                     propertiesSrvc["app_name"] = sessionStorage["application"].toLowerCase().charAt(0).toUpperCase() + sessionStorage["application"].slice(1);
                                                     // Titre de la page

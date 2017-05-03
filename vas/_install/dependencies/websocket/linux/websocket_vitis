@@ -1,0 +1,54 @@
+#! /bin/sh
+
+# Installation
+# - Move this to /etc/init.d/websocket_vitis
+# - chmod +x this
+#
+# Starting and stopping
+# - Start: `/etc/init.d/websocket_vitis start`
+# - Stop: `/etc/init.d/websocket_vitis stop`
+
+# author Sebastien Legrand
+
+NAME=websocket_vitis
+DESC="Daemon for the webSocket of vitis"
+PIDFILE="/var/run/${NAME}.pid"
+LOGFILE="/var/log/${NAME}.log"
+
+DAEMON="[VAS_HOME]/server/php/bin/php"
+DAEMON_OPTS="[VAS_HOME]/util/webSocket/server/server.php"
+
+START_OPTS="--start --background --make-pidfile --pidfile ${PIDFILE} --exec ${DAEMON} ${DAEMON_OPTS}"
+STOP_OPTS="--stop --pidfile ${PIDFILE}"
+
+test -x $DAEMON || exit 0
+
+set -e
+
+case "$1" in
+    start)
+        echo -n "Starting ${DESC}: "
+        start-stop-daemon $START_OPTS >> $LOGFILE
+        echo "$NAME."
+        ;;
+    stop)
+        echo -n "Stopping $DESC: "
+        start-stop-daemon $STOP_OPTS
+        echo "$NAME."
+        rm -f $PIDFILE
+        ;;
+    restart|force-reload)
+        echo -n "Restarting $DESC: "
+        start-stop-daemon $STOP_OPTS
+        sleep 1
+        start-stop-daemon $START_OPTS >> $LOGFILE
+        echo "$NAME."
+        ;;
+    *)
+        N=/etc/init.d/$NAME
+        echo "Usage: $N {start|stop|restart|force-reload}" >&2
+        exit 1
+        ;;
+esac
+
+exit 0

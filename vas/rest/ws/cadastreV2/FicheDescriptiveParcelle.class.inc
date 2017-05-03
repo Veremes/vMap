@@ -37,7 +37,7 @@ class FicheDescriptiveParcelle extends Cadastre {
      * @param type $properties properties
      * @param type $oConnection connection object
      */
-    function fichedescriptiveparcelle($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
@@ -80,13 +80,20 @@ class FicheDescriptiveParcelle extends Cadastre {
     function GET() {
 
         $ID_PAR = $this->aPath[2];
-       
+
+        if (!in_array('vmap_cadastre_user', $this->oConnection->aPrivileges)) {
+            $oError = new VitisError(0, 'INSUFFICIENT_PRIVILEGES');
+            $aXmlRacineAttribute['status'] = 0;
+            $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+            return $sMessage;
+        }
+
         // Vérifie les droits de d'utilisateur sur la commune
         if ($this->haveCommuneRights(substr($ID_PAR, 0, 5)) == false) {
-            $aReturn['error']['errorMessage'] .="L'utilisateur n'a pas les droits sur la commune";
+            $aReturn['error']['errorMessage'] .= "L'utilisateur n'a pas les droits sur la commune";
             return json_encode($aReturn);
         }
-        
+
         // Infos sur la parcelle
         $sSchema = $this->aProperties['schema_majic'];
         $sTable = 'v_vmap_maj_fiche_prc_descr';
@@ -148,6 +155,11 @@ class FicheDescriptiveParcelle extends Cadastre {
             $oIntersect = $this->vmapIntersectGet($sSchema, $sTable, $parcelleGeom, $aAttributs);
 
             $value['data'] = $oIntersect;
+            if (isset($value['data'][0]) && !empty($value['data'][0])) {
+                $value['aFields'] = array_keys($value['data'][0]);
+            } else {
+                $value['aFields'] = array();
+            }
 
             array_push($oParcelleInfos['data']['aIntersections'], $value);
         }

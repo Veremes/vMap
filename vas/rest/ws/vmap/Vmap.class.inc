@@ -68,13 +68,19 @@ class Vmap extends Vitis {
             $sSql = "SELECT " . $sAttributs . " FROM " . $sSchema . "." . $sTable . " WHERE " . $sFilter . " " . $sOptions;
         }
         $oResult = $this->oConnection->oBd->execute($sSql);
+        
+        if ($this->oConnection->oBd->enErreur()) {
+            $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
+            return $this->oError->aFields;
+        }
+        
         if (gettype($oResult) == 'object') {
             $aRecords = Array();
             while ($aLigne = $this->oConnection->oBd->ligneSuivante($oResult)) {
                 array_push($aRecords, $aLigne);
             }
         }
-
+        
         return $aRecords;
     }
 

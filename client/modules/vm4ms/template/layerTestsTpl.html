@@ -1,0 +1,34 @@
+<div class="row layer-tests">
+    <div data-app-layer-tests="" class="col-xs-12">
+        <!-- Menu -->
+        <ul class="nav nav-tabs" role="tablist">
+            <li role="presentation" class="active">
+                <a href="#layer_tests_layer_mapserver" aria-controls="layer_tests_layer_mapserver" role="tab" data-toggle="tab" ng-click="testLayerWithMapServer()">{{ 'TAB_TITLE_TEST_LAYER_MAP_SERVER_VM4MS_LAYER_DEFINITION' | translate }}</a>
+            </li>
+            <li role="presentation">
+                <a href="#layer_tests_layer_ol" aria-controls="layer_tests_layer_ol" role="tab" data-toggle="tab" ng-click="testLayerWithOpenLayers()">{{ 'TAB_TITLE_TEST_LAYER_OPENLAYERS_VM4MS_LAYER_DEFINITION' | translate }}</a>
+            </li>
+            <li role="presentation">
+                <a href="#layer_mapserver_log" aria-controls="layer_mapserver_log" role="tab" data-toggle="tab" ng-click="loadLayerMapServerLog()">{{ 'TAB_TITLE_TEST_LAYER_MAP_SERVER_LOG_VM4MS_LAYER_DEFINITION' | translate }}</a>
+            </li>
+            <li role="presentation">
+                <a href="#layer_map_file" aria-controls="layer_map_file" role="tab" data-toggle="tab" ng-click="loadLayerMapFile()">{{ 'TAB_TITLE_TEST_LAYER_MAP_FILE_VM4MS_LAYER_DEFINITION' | translate }}</a>
+            </li>
+        </ul>
+        <!-- Onglets -->
+        <div class="tab-content">
+            <div role="tabpanel" class="tab-pane active" id="layer_tests_layer_mapserver">
+                <iframe src="" id="layer_tests_layer_ms_iframe"></iframe>
+            </div>
+            <div role="tabpanel" class="tab-pane" id="layer_tests_layer_ol">
+                <div id="layer_tests_layer_ol_map"></div>
+            </div>
+            <div role="tabpanel" class="tab-pane layer-mapserver-log" id="layer_mapserver_log">
+                <textarea id="layer_mapserver_log_textarea" readonly>{{aLayerTestTabs.mapserver_log.file_content}}</textarea>
+            </div>
+            <div role="tabpanel" class="tab-pane" id="layer_map_file">
+                <textarea id="layer_map_file_textarea"></textarea>
+            </div>
+        </div>
+    </div>
+</div>

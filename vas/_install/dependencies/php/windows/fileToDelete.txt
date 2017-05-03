@@ -1,7 +1,0 @@
-install.txt
-license.txt
-news.txt
-snapshot.txt
-readme-redist-bins.txt
-php.ini-development
-php.ini-production

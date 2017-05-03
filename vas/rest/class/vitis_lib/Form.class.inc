@@ -15,7 +15,7 @@ class Form {
      * @param type $properties properties
      * @param type $oConnection connection object
      */
-    function Form($properties, $oConnection) {
+    function __construct($properties, $oConnection) {
         $this->aProperties = $properties;
         $this->oConnection = $oConnection;
     }
@@ -39,7 +39,7 @@ class Form {
         $oResult = $this->oConnection->oBd->execute($sSql);
         if ($this->oConnection->oBd->enErreur()) {
             $aXmlRacineAttribute['status'] = 0;
-            $oError = new Error(2, $this->oConnection->oBd->getBDMessage());
+            $oError = new VitisError(2, $this->oConnection->oBd->getBDMessage());
         } else {
             if (!$this->oConnection->oBd->enErreur()) {
                 while ($aLigne = $this->oConnection->oBd->ligneSuivante($oResult)) {
@@ -57,12 +57,12 @@ class Form {
      * @param type $aUnupdatableColumnNames names of the columns witch you dont want to bu updatable
      * @return array
      */
-    function generateRowsByTableColumns($aColumns, $aUnusedColumnNames = array(), $aUnupdatableColumnNames = array()) {
+    function generateRowsByTableColumns($aColumns, $aUnusedColumnNames = array(), $aUnupdatableColumnNames = array(), $aLabel = array()) {
 
         $aRows = array();
         $aTypes = array();
         $aTypes["character varying"] = "text";
-        $aTypes["integer"] = "number";
+        $aTypes["integer"] = "integer";
 
         foreach ($aColumns as $aLigne) {
 
@@ -99,7 +99,12 @@ class Form {
             }
 
             $aField['fields'][0]['name'] = $aLigne['column_name'];
-            $aField['fields'][0]['label'] = $aLigne['column_name'];
+            if (array_key_exists($aLigne['column_name'], $aLabel)) {
+                $aField['fields'][0]['label'] = $aLabel[$aLigne['column_name']];
+            } else {
+                $aField['fields'][0]['label'] = $aLigne['column_name'];
+            }
+            
             $aField['fields'][0]['disabled'] = !$aLigne['is_updatable'];
             $aField['fields'][0]['required'] = !$aLigne['is_nullable'];
             $aField['fields'][0]['nb_cols'] = 12;
@@ -140,6 +145,7 @@ class Form {
 
         return $aForm;
     }
+
 }
 
 ?>

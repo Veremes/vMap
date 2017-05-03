@@ -26,7 +26,7 @@ class Mj_Attribute extends Mj {
 	* \param $aField Tableau des libellés issue des properties.
 	* \private
 	*/
-	function Mj_Attribute($aAttributes,$aField=Array()){
+	function __construct($aAttributes,$aField=Array()){
 		$aAttribute=array();
 		$aAttribute["label"]=$aAttributes["label"];
 		$aAttribute["title"]=$aField[$aAttributes["label"]];

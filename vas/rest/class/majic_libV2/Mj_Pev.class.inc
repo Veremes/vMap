@@ -46,7 +46,7 @@ class Mj_Pev extends Mj {
 	* \param $sIdPev Identifiant de la partie d'Evaluation
 	* \param $oBD Objet de connexion PDO_BD
 	*/
-	function Mj_Pev($sIdPev,$oBD){
+	function __construct($sIdPev,$oBD){
 		include $this->sRessourcesFile;
 		$this->sSql=$aSql[$oBD->sgbd]['pev'];
 		$this->sSql=str_replace('$sIdPev', $sIdPev, $this->sSql);

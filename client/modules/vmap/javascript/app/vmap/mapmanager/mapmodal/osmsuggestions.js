@@ -8,7 +8,7 @@
 
 goog.provide('nsVmap.nsMapManager.nsMapModal.OSMSuggestions');
 
-
+goog.require('oVmap');
 
 /**
  * @classdesc
@@ -19,13 +19,7 @@ goog.provide('nsVmap.nsMapManager.nsMapModal.OSMSuggestions');
  */
 nsVmap.nsMapManager.nsMapModal.OSMSuggestions = function () {
     oVmap.log("nsVmap.nsMapManager.nsMapModal.OSMSuggestions");
-
-    // Directives et controleurs Angular
-    oVmap.module.directive('appOsmsuggestions', this.osmsuggestionsDirective);
-    oVmap.module.controller('AppOsmsuggestionsController', this.osmsuggestionsController);
 };
-
-
 
 /************************************************
  ---------- DIRECTIVES AND CONTROLLERS -----------
@@ -71,9 +65,44 @@ nsVmap.nsMapManager.nsMapModal.OSMSuggestions.prototype.osmsuggestionsController
      * @api stable
      */
     this.projection = this['projection'] = oVmap.getMap().getOLMap().getView().getProjection().getCode();
-    
+
     this['properties'] = oVmap['properties'];
 
+    this['sLayerName'] = '';
+    this['sLayerUrl'] = '';
+
+};
+
+/**
+ * Add the layer
+ * @export
+ */
+nsVmap.nsMapManager.nsMapModal.OSMSuggestions.prototype.osmsuggestionsController.prototype.addLayer = function (oLayerOptions) {
+    oVmap.log('nsVmap.nsMapManager.nsMapModal.OSMSuggestions.prototype.osmsuggestionsController.prototype.addLayer');
+
+    var sName;
+    var sUrl;
+
+    if (goog.isDefAndNotNull(oLayerOptions)) {
+        sName = oLayerOptions['name'];
+        sUrl = oLayerOptions['url'];
+    } else {
+        sName = this['sLayerName'];
+        sUrl = this['sLayerUrl'];
+    }
+
+    if (!goog.isString(sName) || sName === '') {
+        $.notify('Informations manquantes: Nom', 'error');
+        return;
+    }
+
+    var oLayer = {};
+    oLayer.url = sUrl;
+    oLayer.layerType = "osm";
+    oLayer.serviceName = 'Open Street Map';
+    oLayer.layerTitle = sName;
+
+    oVmap.getMapManager().addLayer(oLayer);
 };
 
 /**
@@ -85,3 +114,7 @@ nsVmap.nsMapManager.nsMapModal.OSMSuggestions.prototype.osmsuggestionsController
     this.catalog = this['catalog'] = oVmap.getMapManager().getMapModalTool().getMapCatalog();
     this.projection = this['projection'] = oVmap.getMap().getOLMap().getView().getProjection().getCode();
 };
+
+// Définit la directive et le controller
+oVmap.module.directive('appOsmsuggestions', nsVmap.nsMapManager.nsMapModal.OSMSuggestions.prototype.osmsuggestionsDirective);
+oVmap.module.controller('AppOsmsuggestionsController', nsVmap.nsMapManager.nsMapModal.OSMSuggestions.prototype.osmsuggestionsController);

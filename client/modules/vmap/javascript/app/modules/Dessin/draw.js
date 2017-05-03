@@ -7,6 +7,8 @@
  */
 goog.provide('nsVmap.nsToolsManager.nsModules.Draw');
 
+goog.require('oVmap');
+
 goog.require('ol.interaction.Draw');
 goog.require('ol.style.Style');
 goog.require('ol.style.Fill');
@@ -129,10 +131,6 @@ nsVmap.nsToolsManager.nsModules.Draw = function (opt_options) {
      * @private
      */
     this['features_'] = opt_options['features'];
-
-    // Directives et controleurs Angular
-    oVmap.module.directive('appDraw', this.drawDirective);
-    oVmap.module.controller('AppdrawController', this.drawController);
 };
 goog.exportProperty(nsVmap.nsToolsManager.nsModules, 'Draw', nsVmap.nsToolsManager.nsModules.Draw);
 
@@ -1546,6 +1544,10 @@ nsVmap.nsToolsManager.nsModules.Draw.prototype.drawController.prototype.removeDr
     // Désactive les interactions
     oVmap.getMap().removeActionsOnMap();
 };
+
+// Définit la directive et le controller
+oVmap.module.directive('appDraw', nsVmap.nsToolsManager.nsModules.Draw.prototype.drawDirective);
+oVmap.module.controller('AppdrawController', nsVmap.nsToolsManager.nsModules.Draw.prototype.drawController);
 
 /************************************************
  ------------ GETTERS AND SETTERS ----------------

@@ -35,7 +35,7 @@ class Tabs extends Vitis {
      * @param type $aValues parameters of the request
      * @param type $properties properties
      */
-    function Tabs($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;

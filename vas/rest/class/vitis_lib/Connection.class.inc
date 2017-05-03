@@ -56,7 +56,7 @@ class Connection {
      * @param type $aValues paramters to the object
      * @param type $aProperties properties
      */
-    function Connection($aValues, $aProperties) {
+    function __construct($aValues, $aProperties) {
         $this->aProperties = $aProperties;
         $this->aValues = $aValues;
         session_id($aValues['token']);
@@ -73,7 +73,7 @@ class Connection {
                     $this->aValues['duration'] = 10;
                 $_SESSION["ses_Date"] = date('Y-m-d H:i:s', time() + ($this->aValues['duration'] * 60));
             } else {
-                $this->oError = new Error(16, 'invalid token');
+                $this->oError = new VitisError(16, 'invalid token');
                 $bIsconnected = false;
             }
         }
@@ -103,7 +103,7 @@ class Connection {
                 $bIsValidDate = true;
             }
         } else {
-            $this->oError = new Error(15, "Token validity outpassed");
+            $this->oError = new VitisError(15, "Token validity outpassed");
         }
         //if valid date
         if ($bIsValidDate == true) {
@@ -144,7 +144,7 @@ class Connection {
             }
 
             if ($this->oBd->erreurRencontree) {
-                $this->oError = new Error(1, $this->oBd->sMessage);
+                $this->oError = new VitisError(1, $this->oBd->sMessage);
             } else {
                 $this->aValues['login'] = $_SESSION["ses_Login"];
                 $this->aValues['validity_date'] = $_SESSION["ses_Date"];
@@ -158,7 +158,7 @@ class Connection {
             }
         } else {
 
-            $this->oError = new Error(15, "Token validity outpassed");
+            $this->oError = new VitisError(15, "Token validity outpassed");
         }
     }
 

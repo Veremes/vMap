@@ -24,11 +24,21 @@ vitisApp.formSrvc = function ($translate, $rootScope, Restangular, envSrvc, prop
          * Retourne l'objet FormData (ensemble de paires clef-valeur) d'un formulaire.
          * @param {string} sFormDefinitionName Nom du formulaire.
          * @param {boolean} bReturnJson Retourne les clés/valeurs des champs du formulaire dans un objet json.
+         * @param {object} opt_options
+         * @param {object|undefined} opt_options.oFormDefinition default is envSrvc.oFormDefinition
+         * @param {object|undefined} opt_options.oFormValues default is envSrvc.oFormValues
+         * @param {array|undefined} opt_options.aParamsToSave default is empty
          **/
-        "getFormData": function (sFormDefinitionName, bReturnJson) {
+        "getFormData": function (sFormDefinitionName, bReturnJson, opt_options) {
+            if (!goog.isDefAndNotNull(opt_options)) {
+                opt_options = {};
+            }
+            var oFormDefinition = goog.isDefAndNotNull(opt_options['oFormDefinition']) ? opt_options['oFormDefinition'] : envSrvc['oFormDefinition'];
+            var oFormValues = goog.isDefAndNotNull(opt_options['oFormValues']) ? opt_options['oFormValues'] : envSrvc['oFormValues'];
+            var aParamsToSave = goog.isDefAndNotNull(opt_options['aParamsToSave']) ? opt_options['aParamsToSave'] : [];
             var aFormRowElementsList, aSelectOptions, aSelectedOptions;
-            var aFormStructure = envSrvc["oFormDefinition"][sFormDefinitionName]["rows"];
-            var aFormValues = envSrvc["oFormValues"][sFormDefinitionName];
+            var aFormStructure = oFormDefinition[sFormDefinitionName]["rows"];
+            var aFormValues = oFormValues[sFormDefinitionName];
             var iOptionIndex, ifieldIndex, iRowIndex = 0;
             var oFormKeysValues = {};
             var oFormData;
@@ -45,10 +55,19 @@ vitisApp.formSrvc = function ($translate, $rootScope, Restangular, envSrvc, prop
                             case "file_wsdata":
                             case "image_wsdata":
                                 if (document.getElementById(aFormRowElementsList[ifieldIndex]["id"]) != null) {
-                                    var oFiles = document.getElementById(aFormRowElementsList[ifieldIndex]["id"]).files;                                    
-                                    if (oFiles.length > 0) {
-                                        oFormKeysValues[aFormRowElementsList[ifieldIndex]["name"]] = oFiles[0];
+                                    var bContainFiles = true;
+                                    var oFiles = document.getElementById(aFormRowElementsList[ifieldIndex]["id"]).files;
+                                    if (goog.isDefAndNotNull(oFiles)) {
+                                        if (oFiles.length > 0) {
+                                            oFormKeysValues[aFormRowElementsList[ifieldIndex]["name"]] = oFiles[0];
+                                        } else {
+                                            bContainFiles = false;
+                                        }
                                     } else {
+                                        bContainFiles = false;
+                                    }
+
+                                    if (!bContainFiles) {
                                         var oElemValue = aFormValues[aFormRowElementsList[ifieldIndex]["name"]];
                                         if (goog.isDefAndNotNull(oElemValue)) {
                                             if (goog.isDefAndNotNull(oElemValue['aFiles'])) {
@@ -75,10 +94,26 @@ vitisApp.formSrvc = function ($translate, $rootScope, Restangular, envSrvc, prop
                                 break;
                                 // Si liste : suppression du champ si aucune option est sélectionnée.
                             case "select":
+                            case "editable_select":
                                 if (goog.isDefAndNotNull(aFormValues[aFormRowElementsList[ifieldIndex]["name"]])) {
                                     var selectedOptionValue = aFormValues[aFormRowElementsList[ifieldIndex]["name"]]["selectedOption"]["value"]
                                     if (typeof (selectedOptionValue) != "undefined" && selectedOptionValue != "?")
                                         oFormKeysValues[aFormRowElementsList[ifieldIndex]["name"]] = selectedOptionValue;
+                                }
+                                break;
+                                // Si liste : suppression du champ si aucune option est sélectionnée.
+                            case "list":
+                                if (goog.isDefAndNotNull(aFormValues[aFormRowElementsList[ifieldIndex]["name"]])) {
+                                    var aSelectOptions = aFormValues[aFormRowElementsList[ifieldIndex]["name"]]["selectedOption"]
+                                    if (goog.isArray(aSelectOptions)) {
+                                        var aSelectedOptions = [];
+                                        for (var i = 0; i < aSelectOptions.length; i++) {
+                                            if (goog.isDefAndNotNull(aSelectOptions[i]['value']) && aSelectOptions[i]['value'] != '?') {
+                                                aSelectedOptions.push(aSelectOptions[i]['value']);
+                                            }
+                                        }
+                                        oFormKeysValues[aFormRowElementsList[ifieldIndex]["name"]] = aSelectedOptions.join("|");
+                                    }
                                 }
                                 break;
                                 // Type de champ à ne pas sauver.
@@ -98,10 +133,18 @@ vitisApp.formSrvc = function ($translate, $rootScope, Restangular, envSrvc, prop
                 }
                 iRowIndex++;
             }
+
             // Retourne un objet json ou un objet "FormData".
-            if (bReturnJson === true)
+            if (bReturnJson === true) {
                 oFormData = oFormKeysValues;
-            else {
+                for (var i = 0; i < aParamsToSave.length; i++) {
+                    if (!goog.isDefAndNotNull(oFormData[aParamsToSave[i]])) {
+                        if (goog.isDefAndNotNull(oFormValues[sFormDefinitionName][aParamsToSave[i]])) {
+                            oFormData[aParamsToSave[i]] = oFormValues[sFormDefinitionName][aParamsToSave[i]];
+                        }
+                    }
+                }
+            } else {
                 // Sauve les clés et valeurs dans un objet "FormData".
                 oFormData = new FormData();
                 var aFormKeys = Object.keys(oFormKeysValues);
@@ -141,7 +184,7 @@ vitisApp.formSrvc = function ($translate, $rootScope, Restangular, envSrvc, prop
         "extractFormDefinitionInfos": function () {
 
 
-            formReaderService['extractFormDefinitionInfos']();
+            formReaderService['extractFormDefinitionInfos'](envSrvc['oFormDefinition'][envSrvc['sFormDefinitionName']]['name']);
 
 
         },

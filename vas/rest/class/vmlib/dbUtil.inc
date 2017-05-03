@@ -278,9 +278,9 @@ function getUserGroups($sSessLogin, $oBd, $sSessPassword = "", $bRights, $sSchem
                 $sListGroupName = "";
                     foreach ($aGroups as $iGroupId) {
                         if ($sListGroupName == "") {
-                            $sListGroupName = "'" . utf8_encode(strToLower(utf8_decode($iGroupId))) . "'";
+                            $sListGroupName = "'" . str_replace("'", "''", utf8_encode(strToLower(utf8_decode($iGroupId)))) . "'";
                         } else {
-                            $sListGroupName .= ", '" . utf8_encode(strToLower(utf8_decode($iGroupId))) . "'";
+                            $sListGroupName .= ", '" . str_replace("'", "''", utf8_encode(strToLower(utf8_decode($iGroupId)))) . "'";
                         }
                     }
                 $sSql = "SELECT group_id FROM " . $sSchema . ".group WHERE LOWER(name) IN (" . $sListGroupName . ")";

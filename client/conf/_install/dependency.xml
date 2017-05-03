@@ -5,17 +5,22 @@
 		<dependency>
 			<nature>modules</nature>
 			<name>vmap</name>
-			<version>2016.03.00</version>
+			<version>2017.02.00</version>
+		</dependency>
+		<dependency>
+			<nature>modules</nature>
+			<name>vm4ms</name>
+			<version>2017.01.00</version>
 		</dependency>
 		<dependency>
 			<nature>web_services</nature>
 			<name>cadastreV2</name>
-			<version>2016.02.00</version>
+			<version>2017.01.01</version>
 		</dependency>
 		<dependency>
 			<nature>web_services</nature>
 			<name>cadastre</name>
-			<version>2016.02.00</version>
+			<version>2017.01.01</version>
 		</dependency>
 	</dependenciesCollection>
 </installer>

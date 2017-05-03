@@ -37,7 +37,7 @@ class ReleveDePropriete extends Cadastre {
      * @param type $properties properties
      * @param type $oConnection connection object
      */
-    function relevedepropriete($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
@@ -91,6 +91,13 @@ class ReleveDePropriete extends Cadastre {
      */
     function GET() {
 
+        if (!in_array('vmap_cadastre_user', $this->oConnection->aPrivileges)) {
+            $oError = new VitisError(0, 'INSUFFICIENT_PRIVILEGES');
+            $aXmlRacineAttribute['status'] = 0;
+            $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+            return $sMessage;
+        }
+
         $ID_PAR = $this->aValues['ID_PAR'];
         $IDDNUPRO = $this->aValues['IDDNUPRO'];
         $sType = $this->aValues['type'];
@@ -99,41 +106,41 @@ class ReleveDePropriete extends Cadastre {
         $oBD = $this->oConnection->oBd;
         $aReturn = Array();
         // Vérifie que l'utilisateur a les droits sur la commune
-        $communeRights = false; 
+        $communeRights = false;
         if ($ID_PAR != '')
             $communeRights = $this->haveCommuneRights(substr($ID_PAR, 0, 5));
         if ($IDDNUPRO != '')
             $communeRights = $this->haveCommuneRights(substr($IDDNUPRO, 0, 5));
-            
+
         if ($communeRights == false) {
-            $aReturn['error']['errorMessage'] .="L'utilisateur n'a pas les droits sur la commune";
+            $aReturn['error']['errorMessage'] .= "L'utilisateur n'a pas les droits sur la commune";
             return json_encode($aReturn);
         }
-        
+
         // Récupère l'année
         $sYear = $this->vmapGet($this->aProperties['schema_majic'], 'v_vmap_annee', array('annee'), '', 'LIMIT 1')[0]['annee'];
 
         if (strlen($sYear) < 1) {
-            $aReturn['error']['errorMessage'] .="Impossible de récupérer l'année de référence dans le schema Majic";
+            $aReturn['error']['errorMessage'] .= "Impossible de récupérer l'année de référence dans le schema Majic";
             return json_encode($aReturn);
         }
 
         // Récupère le chemin du fichier
         switch ($sType) {
-			 case "tiers" :
+            case "tiers" :
             case "standard" :
                 $fileName = $IDDNUPRO;
                 break;
-           
+
             case "parcelle" :
                 $fileName = $ID_PAR;
                 break;
         }
 
         $filePath = $properties["cadastre"]["rp"]["rp_dir"] . "/" . $sYear . '/' . $sType . '/' . $fileName . ".pdf";
-		if (!file_exists($properties["cadastre"]["rp"]["rp_dir"])){
-			mkdir($properties["cadastre"]["rp"]["rp_dir"]);
-		}
+        if (!file_exists($properties["cadastre"]["rp"]["rp_dir"])) {
+            mkdir($properties["cadastre"]["rp"]["rp_dir"]);
+        }
         if (!file_exists($properties["cadastre"]["rp"]["rp_dir"] . "/" . $sYear))
             @mkdir($properties["cadastre"]["rp"]["rp_dir"] . "/" . $sYear);
         if (!file_exists($properties["cadastre"]["rp"]["rp_dir"] . "/" . $sYear . '/' . $sType))
@@ -145,7 +152,7 @@ class ReleveDePropriete extends Cadastre {
 
             $aReturn['data']['alreadyExists'] = true;
         } else {
-			 if (!file_exists($properties["cadastre"]["rp"]["rp_dir"])){
+            if (!file_exists($properties["cadastre"]["rp"]["rp_dir"])) {
                 mkdir($properties["cadastre"]["rp"]["rp_dir"]);
             }
             if (!file_exists($properties["cadastre"]["rp"]["rp_dir"] . "/" . $sYear)) {
@@ -154,37 +161,37 @@ class ReleveDePropriete extends Cadastre {
                     mkdir($properties["cadastre"]["rp"]["rp_dir"] . "/" . $sYear . "/tiers");
                     mkdir($properties["cadastre"]["rp"]["rp_dir"] . "/" . $sYear . "/parcelle");
                 } else {
-                    $aReturn['error']['errorMessage'] .="Erreur lors de la création des répertoires de l'année courante pour les relevés de propriété.";
+                    $aReturn['error']['errorMessage'] .= "Erreur lors de la création des répertoires de l'année courante pour les relevés de propriété.";
                     return json_encode($aReturn);
                 }
             }
 
             // Création d'un nouvel objet Relevé de Propriété
             switch ($sType) {
-				case "tiers" :
+                case "tiers" :
                 case "standard" :
                     require_once __DIR__ . '/../../class/majic_libV2/Mj_Compte_Communal.class.inc';
-                    $oRP = new Mj_Compte_Communal($IDDNUPRO, $oBD,$properties);
+                    $oRP = new Mj_Compte_Communal($IDDNUPRO, $oBD, $properties);
                     if ($oRP->isError()) {
-                        $aReturn['error']['errorMessage'] .="Erreur lors de l'extraction des données Majic.";
+                        $aReturn['error']['errorMessage'] .= "Erreur lors de l'extraction des données Majic.";
                         return json_encode($aReturn);
                     } else {
                         $sDir = $sYear . "/standard/";
-						 if ($sType === "tiers")
+                        if ($sType === "tiers")
                             $sDir = $sYear . "/tiers/";
                         $sFile = str_replace("*", "~", $IDDNUPRO);
                     }
                     break;
-                
+
                 case "parcelle" :
                     require_once __DIR__ . '/../../class/majic_libV2/Mj_Compte_Communal_Parcelle.class.inc';
                     $oRP = new Mj_Compte_Communal_Parcelle('', $ID_PAR, $oBD, $properties);
                     if ($oRP->isError()) {
-                        $aReturn['error']['errorMessage'] .="Erreur lors de l'extraction des données Majic.";
+                        $aReturn['error']['errorMessage'] .= "Erreur lors de l'extraction des données Majic.";
                         return json_encode($aReturn);
                     } else {
                         $sDir = $sYear . "/parcelle/";
-                       
+
                         $sFile = str_replace("*", "~", $ID_PAR);
                     }
                     break;
@@ -204,9 +211,9 @@ class ReleveDePropriete extends Cadastre {
 
                 $sCommand = $properties["fop_root_dir"] . "/fop -xml " . $sXMLFile . " -xsl " . $sXSLFile . " -pdf " . $sPDFFile;
 
-                
+
                 exec($sCommand, $aCommand, $iResult);
- 
+
 
                 if (!$iResult) {
                     $aReturn['data']['releveDePropriete'] = $properties['web_server_name'] . '/' . $properties['services_alias'] . '/cadastreV2/downloadrapport?sYear=' . $sYear . '&sType=' . $sType . '&sFileName=' . urlencode($sFile) . '.pdf';
@@ -217,7 +224,7 @@ class ReleveDePropriete extends Cadastre {
                     foreach ($aCommand as $sValeur) {
                         writeToErrorLog($sValeur);
                     }
-                    $aReturn['error']['errorMessage'] .="Erreur lors de la génération du fichier PDF de relevé de propriété.";
+                    $aReturn['error']['errorMessage'] .= "Erreur lors de la génération du fichier PDF de relevé de propriété.";
                     return json_encode($aReturn);
                 }
             }

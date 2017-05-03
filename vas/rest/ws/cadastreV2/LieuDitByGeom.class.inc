@@ -37,7 +37,7 @@ class LieuDitByGeom  extends Cadastre{
      * @param type $properties properties
      * @param type $oConnection connection object
      */
-    function lieuditbygeom($aPath, $aValues, $properties){
+    function __construct($aPath, $aValues, $properties){
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;

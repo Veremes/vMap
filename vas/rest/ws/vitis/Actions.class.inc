@@ -25,7 +25,7 @@ class Actions extends Vitis {
      * @param type $properties properties
      * @param type $oConnection connection object
      */
-    function Actions($aPath, $aValues, $properties, $oConnection) {
+    function __construct($aPath, $aValues, $properties, $oConnection) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
@@ -50,7 +50,7 @@ class Actions extends Vitis {
         $sSql = str_replace('[language]', $this->aProperties['language'], $sSql);
         $oPDOresult = $this->oConnection->oBd->execute($sSql);
         if ($this->oConnection->oBd->enErreur()) {
-            $oError = new Error(1, $this->oConnection->oBd->getBDMessage());
+            $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
             $aXmlRacineAttribute['status'] = 0;
             $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
         } else {

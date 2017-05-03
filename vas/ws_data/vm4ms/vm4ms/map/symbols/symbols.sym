@@ -1,0 +1,263 @@
+SYMBOLSET
+#1
+SYMBOL 
+	NAME 'tent'
+	TYPE VECTOR
+	FILLED TRUE
+	POINTS
+		0 1
+		.5 0
+		1 1
+		.75 1
+		.5 .5
+		.25 1
+		0 1
+	END
+END 
+
+#2
+SYMBOL
+	NAME 'star'
+	TYPE VECTOR
+	FILLED TRUE
+	POINTS
+		0 .375
+		.35 .375
+		.5 0
+		.65 .375
+		1 .375
+		.75 .625
+		.875 1
+		.5 .75
+		.125 1
+		.25 .625
+	END
+END 
+
+#3
+SYMBOL
+	NAME 'triangle'
+	TYPE VECTOR
+	FILLED TRUE
+	POINTS
+		0 1
+		.5 0
+		1 1
+		0 1
+	END
+END 
+
+#4
+SYMBOL
+	NAME 'square'
+	TYPE VECTOR
+	FILLED TRUE
+	POINTS
+		0 1
+		0 0
+		1 0
+		1 1
+		0 1
+	END
+END 
+
+#5
+SYMBOL
+	NAME 'plus'
+	TYPE VECTOR
+	POINTS
+		.5 0
+		.5 1
+		-99 -99
+		0 .5
+		1 .5
+	END
+END 
+
+#6
+SYMBOL
+	NAME 'cross'
+	TYPE VECTOR
+	POINTS
+		0 0
+		1 1
+		-99 -99
+		0 1
+		1 0
+	END
+END
+
+#7
+SYMBOL
+	NAME 'circle'
+	TYPE ELLIPSE
+	FILLED TRUE
+	POINTS
+		1 1
+	END
+END
+
+# 8
+SYMBOL
+	NAME 'line1'
+	TYPE VECTOR
+	TRANSPARENT 0
+	POINTS
+		0 1
+		1 1
+	END
+END 
+
+# 9
+SYMBOL
+	NAME 'line2'
+	TYPE VECTOR
+	TRANSPARENT 0
+	POINTS
+		1 0
+		1 1
+	END
+END 
+
+# 10
+SYMBOL
+	NAME 'line3'
+	TYPE VECTOR
+	TRANSPARENT 0
+	POINTS
+		0 0
+		1 1
+	END
+END 
+
+# 11
+SYMBOL
+	NAME 'line4'
+	TYPE VECTOR
+	TRANSPARENT 0
+	POINTS
+		0 1
+		1 0
+	END
+END 
+
+# 12
+SYMBOL
+	NAME 'line5'
+	TYPE VECTOR
+	TRANSPARENT 0
+	POINTS
+		1 0
+		0 1
+		0 1
+		1 0
+	END
+END 
+
+# 13
+SYMBOL
+	NAME 'line6'
+	TYPE VECTOR
+	POINTS
+		0 1
+		1 0
+		-99 -99
+		0 0
+		1 1
+	END
+END
+
+#14
+SYMBOL
+	NAME 'line7'
+	TYPE ELLIPSE 
+	FILLED FALSE
+	POINTS
+		1 1
+	END
+END
+
+#15
+SYMBOL 
+	NAME "dashed" 
+	TYPE ELLIPSE 
+	FILLED true 
+	POINTS 
+		1 1 
+	END 
+END
+
+#17
+SYMBOL   
+	NAME "hachure_diagonal"
+	TYPE vector
+	POINTS
+		0 1
+		1 0
+	END
+END
+
+#18
+SYMBOL
+	NAME 'tirete'
+	TYPE ELLIPSE
+	POINTS 1 1 END
+	FILLED true
+END
+
+#19
+SYMBOL
+	NAME 'plein'
+	TYPE ELLIPSE
+	POINTS 1 1 END
+	FILLED true
+END
+
+#27
+SYMBOL
+	NAME "|"
+	TYPE TRUETYPE
+	FONT "Arial"
+	CHARACTER "|"
+	ANTIALIAS TRUE
+END
+
+#28
+SYMBOL
+	NAME "point_line"
+	TYPE ELLIPSE
+	FILLED true
+	POINTS
+		1 1
+	END
+END
+
+#29
+SYMBOL
+	NAME "point_line_large"
+	TYPE ELLIPSE
+	FILLED true
+	POINTS
+		1 1
+	END
+END
+
+#30
+SYMBOL
+	NAME "hachure_inverse"
+	TYPE vector
+	POINTS
+		0 0
+		1 1
+	END   
+END
+
+#31
+SYMBOL
+  NAME 'tooltip'
+  TYPE PIXMAP
+  IMAGE tooltip/tooltip.gif
+  TRANSPARENT 0
+END
+
+END
