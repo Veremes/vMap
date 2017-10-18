@@ -1,3 +1,5 @@
+'use strict';
+
 // Google closure
 goog.provide("vitis.directives.logs");
 goog.require("vitis.modules.main");
@@ -54,13 +56,11 @@ vitisApp.module.directive("appLogsForm", vitisApp.appLogsFormDrtv);
  * Charge et compile le template des arborescences des logs.
  * @param {angular.$timeout} $timeout Angular timeout service.
  * @param {service} $translate Translate service.
- * @param {service} Restangular Service Restangular.
  * @param {service} propertiesSrvc Paramètres des properties.
  * @param {service} envSrvc Paramètres d'environnement.
- * @param {service} sessionSrvc Service de gestion des sessions.
  * @ngInject
  **/
-vitisApp.appLogsTreeviewContainerDrtv = function ($timeout, $translate, Restangular, propertiesSrvc, envSrvc, sessionSrvc) {
+vitisApp.appLogsTreeviewContainerDrtv = function ($timeout, $translate, propertiesSrvc, envSrvc) {
     return {
         link: function (scope, element, attrs) {
             /**
@@ -71,44 +71,44 @@ vitisApp.appLogsTreeviewContainerDrtv = function ($timeout, $translate, Restangu
                 // Cache le contenu du fichier de log.
                 $("#logs-content-container").hide();
                 // Charge l'arborescence des logs.
-                var oWebServiceBase = Restangular["one"](propertiesSrvc["services_alias"] + "/vitis", "Logs");
-                var oParams = {
-                    "token": sessionSrvc["token"],
-                    "application_name": sessionStorage["application"]
-                };
-                oWebServiceBase["customGET"]("", oParams)
-                        .then(function (data) {
-                            if (data["status"] == 1) {
-                                $timeout(function () {
-                                    data = data["tree"];
-                                    scope["oSelectedLogFile"] = {};
-                                    scope["aTreeviewLogs"] = data;
+                ajaxRequest({
+                    "method": "GET",
+                    "url": propertiesSrvc["web_server_name"] + "/" + propertiesSrvc["services_alias"] + "/vitis/Logs",
+                    "params": {"application_name": sessionStorage["application"]},
+                    "scope": scope,
+                    "success": function(response) {
+                        if (response["data"]["status"] == 1) {
+                            $timeout(function () {
+                                response["data"] = response["data"]["tree"];
+                                scope["oSelectedLogFile"] = {};
+                                scope["aTreeviewLogs"] = response["data"];
 
-                                    // Crée l'arborescence dans l'élément.
-                                    $(element)["treeview"]({
-                                        "showBorder": false,
-                                        "expandIcon": "glyphicon glyphicon-folder-close",
-                                        "collapseIcon": "glyphicon glyphicon-folder-open",
-                                        "onNodeSelected": function (event, data) {
+                                // Crée l'arborescence dans l'élément.
+                                $(element)["treeview"]({
+                                    "showBorder": false,
+                                    "expandIcon": "glyphicon glyphicon-folder-close",
+                                    "collapseIcon": "glyphicon glyphicon-folder-open",
+                                    "onNodeSelected": function (event, data) {
 
-                                            scope["oSelectedLogFile"] = data;
+                                        scope["oSelectedLogFile"] = data;
 
-                                            // Fichier trop volumineux ?
-                                            scope["getFileContent"](data, data["size"]);
+                                        // Fichier trop volumineux ?
+                                        scope["getFileContent"](data, data["size"]);
 
-                                        },
-                                        "onNodeUnselected": function (event, data) {
-                                            scope["oSelectedLogFile"] = [];
-                                        },
-                                        //"showTags": true,
-                                        "highlightSelected": true,
-                                        "multiSelect": false,
-                                        //"showCheckbox": true,
-                                        "data": scope["aTreeviewLogs"]["data"]
-                                    });
+                                    },
+                                    "onNodeUnselected": function (event, data) {
+                                        scope["oSelectedLogFile"] = [];
+                                    },
+                                    //"showTags": true,
+                                    "highlightSelected": true,
+                                    "multiSelect": false,
+                                    //"showCheckbox": true,
+                                    "data": scope["aTreeviewLogs"]["data"]
                                 });
-                            }
-                        });
+                            });
+                        }
+                    }
+                });
             };
 
             /**
@@ -123,17 +123,16 @@ vitisApp.appLogsTreeviewContainerDrtv = function ($timeout, $translate, Restangu
                         "message": sText,
                         "callback": function (bResponse) {
                             if (bResponse) {
-                                //scope["deleteFile"](aFilesToDelete);
-                                var oWebServiceBase = Restangular["one"](propertiesSrvc["services_alias"] + "/vitis", "Logs");
-                                var oParams = {
-                                    "token": sessionSrvc["token"],
-                                    "min_days": iMinDays
-                                };
-                                oWebServiceBase["customDELETE"]("", oParams)
-                                        .then(function (data) {
+                                ajaxRequest({
+                                    "method": "DELETE",
+                                    "url": propertiesSrvc["web_server_name"] + "/" + propertiesSrvc["services_alias"] + "/vitis/Logs",
+                                    "params": {"min_days": iMinDays},
+                                    "scope": scope,
+                                    "success": function(response) {
                                             // Raffraîchissement de l'arborescence.
                                             scope["loadTreeview"]();
-                                        });
+                                    }
+                                });
                             }
                         }
                     };

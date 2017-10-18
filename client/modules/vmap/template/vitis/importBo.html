@@ -5,23 +5,44 @@
                 <a href="#" 
                    type="button" 
                    class="btn btn-default btn-circle" 
-                   ng-class="{'btn-primary' : displayedStep === step}" 
+                   ng-class="{'btn-primary' : displayedStep === step, 'btn-inverse': selectedSteps[step] === false}" 
                    disabled>{{$index + 1}}</a>
                 <p data-translate="CTRL_IMPORT_BO_STEP_{{step}}"></p>
             </div>
         </div>
     </div>
-
     <!--import_folder-->
     <div ng-show="displayedStep === 'import_folder'">
         <div class="col-xs-6 col-md-offset-3">
             <div class="col-md-12">
-                <!--<h3>Import du dossier</h3>-->
                 <h3 data-translate="CTRL_IMPORT_BO_IMPORT_FOLDER"></h3>
                 <br>
                 <div class="form-group form-group-sm">
                     <label class="control-label" data-translate="CTRL_IMPORT_BO_SELECT_FILE"></label>
                     <input id="import-bo-folder-input" type="file" class="file">
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--select_elements-->
+    <div ng-show="displayedStep === 'select_elements'">
+        <div class="col-xs-6 col-md-offset-3">
+            <div class="col-md-12">
+                <h3 data-translate="CTRL_IMPORT_BO_SELECT_ELEMENTS"></h3>
+                <br>
+                <div class="form-group form-group-sm">
+                    <div class="checkbox checkbox-primary">
+                        <input id="import_bo_select_elem_sql" class="styled" type="checkbox" ng-model="selectedSteps.import_sql">
+                        <label for="import_bo_select_elem_sql" data-translate="CTRL_IMPORT_BO_STEP_import_sql"></label>
+                    </div>
+                    <div class="checkbox checkbox-primary">
+                        <input id="import_bo_select_elem_layers" class="styled" type="checkbox" ng-model="selectedSteps.import_layers">
+                        <label for="import_bo_select_elem_layers" data-translate="CTRL_IMPORT_BO_STEP_import_layers"></label>
+                    </div>
+                    <div class="checkbox checkbox-primary">
+                        <input id="import_bo_select_elem_business_object" class="styled" type="checkbox" ng-model="selectedSteps.import_bo">
+                        <label for="import_bo_select_elem_business_object" data-translate="CTRL_IMPORT_BO_STEP_import_bo"></label>
+                    </div>
                 </div>
             </div>
         </div>
@@ -130,6 +151,7 @@
                         <label class="control-label" data-translate="CTRL_IMPORT_BO_CONNECTION"></label>
                         <select class="form-control" 
                                 ng-model="oLayerDef.connection_id" 
+                                ng-change="ctrl.setWmsServices(oLayerDef.connection_id)"
                                 ng-options="connection.connection_id as connection.name for connection in aConnections">
                             <option value=""></option>
                         </select>
@@ -346,5 +368,5 @@
        ng-show="displayedStep === 'execute_import'" data-translate="CTRL_IMPORT_BO_TEST"></a>
     <a class="btn btn-default btn pull-right margin-left-10" type="button" 
        ng-click="ctrl.prevStep()" 
-       ng-show="displayedStep !== 'import_folder' && displayedStep !== 'select_database' && displayedStep !== 'finalize'" data-translate="CTRL_IMPORT_BO_PREVIOUS"></a>
+       ng-show="displayedStep !== 'import_folder' && displayedStep !== 'finalize'" data-translate="CTRL_IMPORT_BO_PREVIOUS"></a>
 </div>

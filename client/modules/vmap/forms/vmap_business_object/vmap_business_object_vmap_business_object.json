@@ -38,6 +38,11 @@
                         "nb_cols": 2
                     },{
                         "type": "text",
+                        "name": "title",
+                        "label": "FORM_TITLE_DEVELOPMENT_0",
+                        "nb_cols": 2
+                    },{
+                        "type": "text",
                         "name": "database",
                         "label": "FORM_DATABASE_DEVELOPMENT_0",
                         "nb_cols": 2
@@ -329,6 +334,18 @@
                 "fields": [
                     {
                         "type": "number",
+                        "name": "selection_buffer",
+                        "label": "FORM_BUFFER_VMAP_BUSINESS_OBJECT",
+                        "default_value": 5,
+                        "required": true,
+                        "nb_cols": 6
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "number",
                         "name": "index",
                         "label": "FORM_INDEX_VMAP_BUSINESS_OBJECT",
                         "required": true,
@@ -612,6 +629,18 @@
                 "fields": [
                     {
                         "type": "number",
+                        "name": "selection_buffer",
+                        "label": "FORM_BUFFER_VMAP_BUSINESS_OBJECT",
+                        "default_value": 5,
+                        "required": true,
+                        "nb_cols": 6
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "number",
                         "name": "index",
                         "label": "FORM_INDEX_VMAP_BUSINESS_OBJECT",
                         "required": true,
@@ -798,6 +827,14 @@
                         "type": "label",
                         "name": "event_id",
                         "label": "FORM_EVENT_VMAP_BUSINESS_OBJECT",
+                        "nb_cols": 12
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "label",
+                        "name": "selection_buffer",
+                        "label": "FORM_BUFFER_VMAP_BUSINESS_OBJECT",
                         "nb_cols": 12
                     }]
             },

@@ -1,23 +1,23 @@
 <?php
+
 /**
-* \file Proprietaires.class.inc
-* \class Proprietaires
-*
-* \author Armand Bahi <armand.bahi@veremes.com>.
-*
-* \brief This file contains the Proprietaires php class
-*
-* This class defines Rest Api to Vmap Proprietaires
-* 
-*/
+ * \file Proprietaires.class.inc
+ * \class Proprietaires
+ *
+ * \author Armand Bahi <armand.bahi@veremes.com>.
+ *
+ * \brief This file contains the Proprietaires php class
+ *
+ * This class defines Rest Api to Vmap Proprietaires
+ * 
+ */
 require_once 'Cadastre.class.inc';
 require_once 'Proprietaire.class.inc';
 require_once __DIR__ . '/../../class/vitis_lib/Connection.class.inc';
 require_once __DIR__ . '/../../class/vmlib/BdDataAccess.inc';
 
 class Proprietaires extends Cadastre {
-    
-     /**
+    /**
      * @SWG\Definition(
      *   definition="/proprietaires",
      *   allOf={
@@ -29,6 +29,7 @@ class Proprietaires extends Cadastre {
      *   description="Operations about proprietaires"
      * )
      */
+
     /**
      * construct
      * @param type $aPath url of the request
@@ -40,9 +41,9 @@ class Proprietaires extends Cadastre {
         $this->aPath = $aPath;
         $this->aProperties = $properties;
         $this->oConnection = new Connection($this->aValues, $this->aProperties);
-		$this->aSelectedFields = Array('id', 'id_com as ID_COM', 'ddenom as DDENOM', 'dnupro as DNUPRO', 'commune as COMMUNE');
+        $this->aSelectedFields = Array('id', 'id_com as ID_COM', 'ddenom as DDENOM', 'dnupro as DNUPRO', 'commune as COMMUNE');
     }
-    
+
     /**
      * @SWG\Get(path="/proprietaires",
      *   tags={"Proprietaire"},
@@ -77,7 +78,7 @@ class Proprietaires extends Cadastre {
      *     description="number of element",
      *     required=false,
      *     type="integer",
-	 *     default="4",
+     *     default="4",
      *     format="int32"
      *   ),
      * @SWG\Parameter(
@@ -116,14 +117,16 @@ class Proprietaires extends Cadastre {
      *     )
      *  )
      */
+
     /**
      * get Proprietaires
      * @return  Proprietaires
      */
     function GET() {
-        $aReturn = $this->genericGet($this->aProperties['schema_majic'], 'v_vmap_maj_pc', 'id');
+        $aReturn = $this->genericGet($this->aProperties['schema_majic'], $this->aProperties['cadastre']['views']['proprietaire'], 'id');
         return $aReturn['sMessage'];
     }
-    
+
 }
+
 ?>

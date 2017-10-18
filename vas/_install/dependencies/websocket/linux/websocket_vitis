@@ -1,4 +1,13 @@
 #! /bin/sh
+### BEGIN INIT INFO
+# Provides: websocket_vitis
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start the Vitis websocket service
+# Description: Start the Vitis websocket service
+### END INIT INFO
 
 # Installation
 # - Move this to /etc/init.d/websocket_vitis
@@ -15,8 +24,7 @@ DESC="Daemon for the webSocket of vitis"
 PIDFILE="/var/run/${NAME}.pid"
 LOGFILE="/var/log/${NAME}.log"
 
-DAEMON="[VAS_HOME]/server/php/bin/php"
-DAEMON_OPTS="[VAS_HOME]/util/webSocket/server/server.php"
+DAEMON="[VAS_HOME]/server/websocket/WebsocketService"
 
 START_OPTS="--start --background --make-pidfile --pidfile ${PIDFILE} --exec ${DAEMON} ${DAEMON_OPTS}"
 STOP_OPTS="--stop --pidfile ${PIDFILE}"

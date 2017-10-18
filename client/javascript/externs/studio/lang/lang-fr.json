@@ -52,6 +52,7 @@
             "Event" : "Evénement",
             "EventPlaceholder" : "Evénement appelé lors du submit",
             "SuggestedFields": "Champs suggérés",
+            "SuggestedFieldsSelectAll": "Tous",
             "SelectSize": {
                 "Label": "Largeur des éléments :",
                 "Size": [
@@ -231,6 +232,10 @@
                 "Schema": "Schema",
                 "Table": "Table",
                 "Filter": "Filtre",
+                "Relation": "Relation",
+                "KeyValue": "Attribut",
+                "Value": "Valeur",
+                "CompareOperator": "Opérateur",
                 "Table": "Table",
                 "Column": "Column",
                 "Server": "Adresse du serveur",
@@ -241,11 +246,15 @@
                 "Table_List_error": "Aucune table disponible",
                 "Schema_List": "Schemas",
                 "Schema_List_error": "Aucun schema disponible",
+                "Database_List": "Base de Données",
+                "Database_List_error": "Aucune database disponible",
                 "Column_List": "Colonnes",
                 "Password": "Mot de passe",
                 "Label_PH": "Texte lié à ce champ",
                 "Name_PH": "Nom de ce champ",
                 "Select": "Saisie des options",
+                "TypeSourceTitle" : "Type de Source",
+                "TypeSourceContent" : "Définition des différents types de sources disponibles : Texte : valeurs saisies directement dans le gestionnaire ou importées depuis un paramètre FME de type Choix. Valeurs de table locale : valeurs issues d'une table de base de données installée sur le même serveur que VMAP. Base de données externe : importation d'une table de base de données externe à VMAP. Service web : Exploitation d'un service web pour en récupérer les ressources.",
                 "Datasource": "source de données",
                 "Datasources": "Gestionnaire des sources de données",
                 "DatasourceManagement": "?",
@@ -253,7 +262,7 @@
                 "Select_Type": "Type de source",
                 "Select_Business_Object": "Objet métier",
                 "Select_Text": "Texte",
-                "Select_Webservice": "Service web Vitis",
+                "Select_Webservice": "Service web",
                 "Select_Table_Values": "Valeurs d'une table locale",
                 "Select_External_Database": "Base de données externe",
                 "Webservice_Class": "API",
@@ -450,6 +459,7 @@
     "FormTools": {
         "Title": "Attributs du formulaire",
         "Title_GTF": "Paramètres publiés",
+        "Tools" : "Outils",
         "Row": "Ligne",
         "InfoBulle": {
             "Up": "Déplace l'élément sélectionné vers le haut",
@@ -457,7 +467,11 @@
             "Add": "Ajoute une ligne vide",
             "AddElement": "Ajoute un attribut au formulaire",
             "AddElement_gtf": "Ajoute un paramètre publié",
-            "Delete": "Supprime un élément ou une ligne vide"
+            "Delete": "Supprime un élément ou une ligne vide",
+            "Copy": "Copie L'arborescence",
+            "Paste" : "Colle l'arborescence en écrasant l'éxistante",
+            "Labelize": "Transforme tous les champs en label",
+            "Row": "Active/Désactive les lignes"
         },
         "Buttons": {
             "Show_Lines": "Voir / modifier les lignes",

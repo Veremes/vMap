@@ -68,7 +68,7 @@ class Commune extends Cadastre {
 	 */
 	function GET() {
 		require __DIR__ . "/../vitis/" . $this->sRessourcesFile;
-		$this->aFields = $this->getFields('public', 'v_commune', 'id_com');
+		$this->aFields = $this->getFields('public', $this->aProperties['cadastre']['views']['commune'], 'id_com');
 	}
 }
 

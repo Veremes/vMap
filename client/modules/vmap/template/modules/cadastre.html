@@ -1,6 +1,5 @@
 <div class="module-title list-group-item active lighen">MODULE CADASTRE</div>
 
-
 <div id="cadastre-tools" style="margin-bottom: 10px">
 
     <!--Onglets de navigation-->
@@ -47,12 +46,12 @@
                                     <div class="squared-btn-text">Fiche descriptive</div>
                                 </div>
                             </div>
-                            <div class="col-md-4 padding-sides-2 height-md-4" style="height: 85px">
+                            <div class="col-md-4 padding-sides-2 height-md-4" style="height: 85px" ng-hide="ctrl.isCadastreLightUser">
                                 <div class="squared-btn" ng-class="{'active': ctrl.currentAction === 'cadastre-ReleveDePropriete'}" ng-click="ctrl.selectCadastreOnMap('ReleveDePropriete', ctrl.currentAction === 'cadastre-ReleveDePropriete')">
                                     <div class="squared-btn-text">Relevé de propriété</div>
                                 </div>
                             </div>
-                            <div class="col-md-4 padding-sides-2 height-md-4" style="height: 85px">
+                            <div class="col-md-4 padding-sides-2 height-md-4" style="height: 85px" ng-hide="ctrl.isCadastreLightUser">
                                 <div class="squared-btn" ng-class="{'active': ctrl.currentAction === 'cadastre-FicheUrbanisme'}" ng-click="ctrl.selectCadastreOnMap('FicheUrbanisme', ctrl.currentAction === 'cadastre-FicheUrbanisme')">
                                     <div class="squared-btn-text">Fiche d'urbanisme</div>
                                 </div>
@@ -102,7 +101,7 @@
                                     <div class="squared-btn-text">Parcelle</div>
                                 </div>
                             </div>
-                            <div class="col-md-4 padding-sides-2 padding-2 height-md-4" style="height: 89px">
+                            <div class="col-md-4 padding-sides-2 padding-2 height-md-4" style="height: 89px" ng-hide="ctrl.isCadastreLightUser">
                                 <div class="squared-btn" ng-class="{'active': ctrl.searchOnMapCurrentMode === 'bati'}" ng-click="ctrl.searchOnMapInit('bati')">
                                     <div class="squared-btn-text">Bâti</div>
                                 </div>
@@ -195,7 +194,7 @@
                     <li class="inactive">
                         <a data-toggle="pill" ng-click="ctrl.currentMode = 'parcelle'" href="#cadastre-Parcelle-form">Parcelle</a>
                     </li>
-                    <li class="inactive">
+                    <li class="inactive" ng-hide="ctrl.isCadastreLightUser">
                         <a data-toggle="pill" ng-click="ctrl.currentMode = 'bati'" href="#cadastre-Bati-par-proprietaire-form">Bâti</a>
                     </li>
                 </ul>
@@ -288,7 +287,7 @@
                         <li class="inactive">
                             <a data-toggle="pill" ng-click="ctrl.currentParcelleMode = 'adresse'" href="#cadastre-Parcelle-par-adresse-DGFiP-form">Adresse DGFiP</a>
                         </li>
-                        <li class="inactive">
+                        <li class="inactive" ng-hide="ctrl.isCadastreLightUser">
                             <a data-toggle="pill" ng-click="ctrl.currentParcelleMode = 'proprietaire'" href="#cadastre-Parcelle-par-proprietaire-form">Propriétaire</a>
                         </li>
                     </ul>
@@ -304,7 +303,6 @@
 
                     <label class="cadastre-label">Section</label>
                     <select id="Parcelle-select-section" class="form-control minus" style="width: inherit" ng-model="parcelleSection" ng-change="ctrl.putBaseElemBy2SelectOnTable(ctrl.cadastreAPI_ + '/parcelles', 'id_com', '#Parcelle-select-commune', 'id_sec', '#Parcelle-select-section', '#Parcelle-table-parcelle', 'parcelle')">
-                        <option value=""></option>
                         <option ng-repeat="parcelleSection in ctrl.aSections" value="{{parcelleSection.id_sec}}">{{parcelleSection.section}}</option>
                     </select>
 
@@ -602,57 +600,62 @@
                                 <br>
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <div class="cadastre-rapports-fiche-btn" ng-click="ctrl.displayParcelleDescriptiveSheetByTable('#Cadastre-rapports-table-parcelle')">
+                                        <button class="cadastre-rapports-fiche-btn" 
+                                                ng-click="ctrl.displayParcelleDescriptiveSheetByTable('#Cadastre-rapports-table-parcelle')"
+                                                ng-disabled="ctrl.tablesSelection['#Cadastre-rapports-table-parcelle'].length > 1">
                                             <span class="glyphicon glyphicon-download-alt"></span> Fiche descriptive
-                                        </div>
+                                        </button>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="cadastre-rapports-fiche-btn" ng-click="ctrl.displayUrbanismeSheetByTable('#Cadastre-rapports-table-parcelle')">
+                                    <div class="col-md-6" ng-hide="ctrl.isCadastreLightUser">
+                                        <button class="cadastre-rapports-fiche-btn" 
+                                                ng-click="ctrl.displayUrbanismeSheetByTable('#Cadastre-rapports-table-parcelle')"
+                                                ng-disabled="ctrl.tablesSelection['#Cadastre-rapports-table-parcelle'].length > 1">
                                             <span class="glyphicon glyphicon-download-alt"></span> Fiche d'urbanisme
-                                        </div>
+                                        </button>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="cadastre-rapports-fiche-btn" ng-click="ctrl.displayReleveDeProprieteSheetParcelle('#Cadastre-rapports-table-parcelle')">
-                                            <span class="glyphicon glyphicon-download-alt"></span> Relevé de propriété standard
-                                        </div>
+                                    <div class="col-md-6" ng-hide="ctrl.isCadastreLightUser">
+                                        <button class="cadastre-rapports-fiche-btn" 
+                                                ng-click="ctrl.displayReleveDeProprieteSheetParcelle('#Cadastre-rapports-table-parcelle')"
+                                                ng-disabled="ctrl.tablesSelection['#Cadastre-rapports-table-parcelle'].length > 1">
+                                            <span class="glyphicon glyphicon-download-alt"></span> Relevé de propriété de la parcelle
+                                        </button>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="cadastre-rapports-fiche-btn" ng-click="ctrl.displayRapportParcelle('#Cadastre-rapports-table-parcelle', 'ToutesInfos', true)">
+                                    <div class="col-md-6" ng-hide="ctrl.isCadastreLightUser">
+                                        <button class="cadastre-rapports-fiche-btn" ng-click="ctrl.displayRapportParcelle('#Cadastre-rapports-table-parcelle', 'ToutesInfos', true)">
                                             <span class="glyphicon glyphicon-download-alt"></span> Toutes les informations
-                                        </div>
+                                        </button>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="cadastre-rapports-fiche-btn" ng-click="ctrl.displayRapportParcelle('#Cadastre-rapports-table-parcelle', 'BatieNonBatie', false)">
+                                    <div class="col-md-6" ng-hide="ctrl.isCadastreLightUser">
+                                        <button class="cadastre-rapports-fiche-btn" ng-click="ctrl.displayRapportParcelle('#Cadastre-rapports-table-parcelle', 'BatieNonBatie', false)">
                                             <span class="glyphicon glyphicon-download-alt"></span> Emprises bâties/non-bâties
-                                        </div>
+                                        </button>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="cadastre-rapports-fiche-btn" ng-click="ctrl.displayRapportParcelle('#Cadastre-rapports-table-parcelle', 'Proprietaire', false)">
+                                    <div class="col-md-6" ng-hide="ctrl.isCadastreLightUser">
+                                        <button class="cadastre-rapports-fiche-btn" ng-click="ctrl.displayRapportParcelle('#Cadastre-rapports-table-parcelle', 'Proprietaire', false)">
                                             <span class="glyphicon glyphicon-download-alt"></span> Propriétaires
-                                        </div>
+                                        </button>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="cadastre-rapports-fiche-btn" ng-click="ctrl.displayRapportParcelle('#Cadastre-rapports-table-parcelle', 'SubdivisionFiscale', false)">
+                                    <div class="col-md-6" ng-hide="ctrl.isCadastreLightUser">
+                                        <button class="cadastre-rapports-fiche-btn" ng-click="ctrl.displayRapportParcelle('#Cadastre-rapports-table-parcelle', 'SubdivisionFiscale', false)">
                                             <span class="glyphicon glyphicon-download-alt"></span> Subdivisions fiscales
-                                        </div>
+                                        </button>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="cadastre-rapports-fiche-btn" ng-click="ctrl.displayRapportParcelle('#Cadastre-rapports-table-parcelle', 'EmprisePosPlu', false)">
+                                    <div class="col-md-6" ng-hide="ctrl.isCadastreLightUser">
+                                        <button class="cadastre-rapports-fiche-btn" ng-click="ctrl.displayRapportParcelle('#Cadastre-rapports-table-parcelle', 'EmprisePosPlu', false)">
                                             <span class="glyphicon glyphicon-download-alt"></span> Emprises
-                                        </div>
+                                        </button>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="cadastre-rapports-fiche-btn" ng-click="ctrl.displayRapportParcelle('#Cadastre-rapports-table-parcelle', 'Locaux', false)">
+                                    <div class="col-md-6" ng-hide="ctrl.isCadastreLightUser">
+                                        <button class="cadastre-rapports-fiche-btn" ng-click="ctrl.displayRapportParcelle('#Cadastre-rapports-table-parcelle', 'Locaux', false)">
                                             <span class="glyphicon glyphicon-download-alt"></span> Locaux
-                                        </div>
+                                        </button>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="cadastre-rapports-fiche-btn" ng-click="ctrl.displayRapportParcelle('#Cadastre-rapports-table-parcelle', 'ProprietaireLocaux', false)">
+                                    <div class="col-md-6" ng-hide="ctrl.isCadastreLightUser">
+                                        <button class="cadastre-rapports-fiche-btn" ng-click="ctrl.displayRapportParcelle('#Cadastre-rapports-table-parcelle', 'ProprietaireLocaux', false)">
                                             <span class="glyphicon glyphicon-download-alt"></span> Propriétaires des locaux
-                                        </div>
+                                        </button>
                                     </div>
                                 </div>
-
 
                                 <a id="cadastre-download-file" class="hidden" href="#" download="rapport.xls">
                                     <span class="glyphicon glyphicon-download-alt"></span> Télécharger le fichier
@@ -678,16 +681,16 @@
                                 </div>
                                 <br>
                                 <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="cadastre-rapports-fiche-btn" ng-click="ctrl.displayReleveDeProprieteSheetStandard('#Cadastre-rapports-table-comptes')" title="Relevé de propriété standard associé au compte">
+                                    <div class="col-md-6" ng-hide="ctrl.isCadastreLightUser">
+                                        <button class="cadastre-rapports-fiche-btn" ng-click="ctrl.displayReleveDeProprieteSheetStandard('#Cadastre-rapports-table-comptes')" title="Relevé de propriété standard associé au compte">
                                             <span class="glyphicon glyphicon-download-alt"></span> Relevé de propriété standard
-                                        </div>
+                                        </button>
 
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="cadastre-rapports-fiche-btn" ng-click="ctrl.displayReleveDeProprieteSheetTiers('#Cadastre-rapports-table-comptes')" title="Relevé de propriété tiers associé au compte">
-                                            <span class="glyphicon glyphicon-download-alt"></span> Relevé de propriété vers un tiers
-                                        </div>
+                                    <div class="col-md-6" ng-hide="ctrl.isCadastreLightUser">
+                                        <button class="cadastre-rapports-fiche-btn" ng-click="ctrl.displayReleveDeProprieteSheetTiers('#Cadastre-rapports-table-comptes')" title="Relevé de propriété tiers associé au compte">
+                                            <span class="glyphicon glyphicon-download-alt"></span> Relevé de propriété tiers
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -718,7 +721,7 @@
                     <tbody>
                         <tr>
                             <td class="bold padding-3">Commune:</td>
-                            <td class="padding-3">{{ctrl.oParcelleInfos.commune}}({{ctrl.oParcelleInfos.ID_COM}})</td>
+                            <td class="padding-3">{{ctrl.oParcelleInfos.commune}} ({{ctrl.oParcelleInfos.ID_COM}})</td>
                         </tr>
                         <tr>
                             <td class="bold padding-3">Surface Géographique:</td>
@@ -743,8 +746,8 @@
                     </tbody>
                 </table>
 
-                <button class="btn btn-primary btn-sm font-11 margin-sides-10 right print-hidden" data-dismiss="modal" ng-click="ctrl.displayUrbanismeSheet(ctrl.oParcelleInfos.ID_PAR)">Fiche d'urbanisme</button>
-                <button class="btn btn-primary btn-sm font-11 margin-sides-10 right print-hidden" data-dismiss="modal" onclick="$('#releve-propriete-modal-menu').modal('show')" 
+                <button class="btn btn-primary btn-sm font-11 margin-sides-10 right print-hidden" data-dismiss="modal" ng-hide="ctrl.isCadastreLightUser" ng-click="ctrl.displayUrbanismeSheet(ctrl.oParcelleInfos.ID_PAR)">Fiche d'urbanisme</button>
+                <button class="btn btn-primary btn-sm font-11 margin-sides-10 right print-hidden" data-dismiss="modal" ng-hide="ctrl.isCadastreLightUser" onclick="$('#releve-propriete-modal-menu').modal('show')" 
                         ng-click="ctrl.tmpID_PAR = ctrl.oParcelleInfos.ID_PAR; ctrl.tmpID_DNUPRO = ctrl.oParcelleInfos.ID_COM + ctrl.oParcelleInfos.aProprietaires[0].DNUPRO">Relevés de propriété</button>
                 <br>
 
@@ -863,15 +866,16 @@
                             <thead>
                                 <!-- Noms des champs -->
                                 <tr class="blue color-white">
-                                    <!--<th ng-repeat="(value, key) in node.data[0]">{{node[value]}}</th>-->
                                     <th ng-if="node[value]" ng-repeat="(key, value) in node.aFields">{{node[value]}}</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <!-- Valeurs des champs -->
                                 <tr ng-repeat="row in node.data">
-                                    <!--<td ng-repeat="(key, value) in row">{{value}}</td>-->
-                                    <td ng-if="row[value]" ng-repeat="(key, value) in node.aFields">{{row[value]}}</td>
+                                    <td ng-if="row[value]" ng-repeat="(key, value) in node.aFields">
+                                        <span ng-if="isLink(row[value])" ng-bind-html="getRenderedParsedLink(row[value])"></span>
+                                        <span ng-if="!isLink(row[value])">{{row[value]}}</span>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -1177,7 +1181,6 @@
                         </tbody>
                     </table>
                 </div>
-
 
             </div>
             <div class="modal-footer" ng-if="ctrl.sketchesLenght !== 0">

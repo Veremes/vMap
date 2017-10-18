@@ -1,6 +1,48 @@
 <div class="panel panel-veremes" id="FormToolsElement">
-    <div ng-if="ctrl.applicationName !== 'gtf'" class="panel-heading unselectable">{{::ctrl.text.Title}}</div>
-    <div ng-if="ctrl.applicationName === 'gtf'" class="panel-heading unselectable">{{::ctrl.text.Title_GTF}}</div>
+    <div class="panel-heading unselectable">
+        <!--Fichier-->
+        <div class="btn-group dropdown margin-right-10" style="float:right;">
+            <button class="btn btn-veremes dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                {{::ctrl.text.Tools}} <span class="caret"></span>
+            </button>
+             <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenu2">
+                 <li>
+                     <a title="{{::ctrl.text.InfoBulle.Copy}}"
+                        href="javascript:void(0);"
+                        ng-click="ctrl.copy()">
+                         <span class="glyphicon glyphicon-copy" aria-hidden="true"></span>
+                         {{::ctrl.text.InfoBulle.Copy}}
+                     </a>
+                 </li>
+                 <li>
+                     <a title="{{::ctrl.text.InfoBulle.Paste}}"
+                        href="javascript:void(0);"
+                        ng-click="ctrl.paste()">
+                         <span class="glyphicon glyphicon-paste" aria-hidden="true"></span>
+                         {{::ctrl.text.InfoBulle.Paste}}
+                     </a>
+                 </li>
+                 <li>
+                     <a title="{{::ctrl.text.InfoBulle.Labelize}}"
+                        href="javascript:void(0);"
+                        ng-click="ctrl.labelizeForm()">
+                         <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
+                         {{::ctrl.text.InfoBulle.Labelize}}
+                     </a>
+                 </li>
+                 <li>
+                     <a title="{{::ctrl.text.InfoBulle.Row}}"
+                        href="javascript:void(0);"
+                        ng-click="ctrl.bTreeWithLines_ = !ctrl.bTreeWithLines_">
+                         <span class="glyphicon glyphicon-menu-hamburger" aria-hidden="true"></span>
+                         {{::ctrl.text.InfoBulle.Row}}
+                     </a>
+                 </li>
+             </ul>
+        </div>
+        <div ng-if="ctrl.applicationName !== 'gtf'" class="">{{::ctrl.text.Title}}</div>
+        <div ng-if="ctrl.applicationName === 'gtf'" class="">{{::ctrl.text.Title_GTF}}</div>
+    </div>
     <div class="panel-body tree-panel">
         <div class="form-tools-btn-container">
             <div class="element-margin text-center">
@@ -17,7 +59,7 @@
                     <button ng-if="ctrl.applicationName !== 'gtf'" id="add_row_button" type="button" class="btn btn-success" ng-click="ctrl.addElement()" title="{{::ctrl.text.InfoBulle.AddElement}}">
                         <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                     </button>
-					 <button ng-if="ctrl.applicationName === 'gtf'" id="add_row_button" type="button" class="btn btn-success" ng-click="ctrl.addElement()" title="{{::ctrl.text.InfoBulle.AddElement_gtf}}">
+                    <button ng-if="ctrl.applicationName === 'gtf'" id="add_row_button" type="button" class="btn btn-success" ng-click="ctrl.addElement()" title="{{::ctrl.text.InfoBulle.AddElement_gtf}}">
                         <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                     </button>
                     <button id="rem_element_button" type="button" class="btn btn-success" ng-click="ctrl.removeElement()" title="{{::ctrl.text.InfoBulle.Delete}}">
@@ -30,13 +72,14 @@
                 <input type="checkbox" id="show-lines-checkbox" ng-model="ctrl.bTreeWithLines_">
                 <label for="show-lines-checkbox" class="control-label ng-binding unselectable">{{::ctrl.text.Buttons.Show_Lines}}</label>
             </div>
+            <hr>
         </div>
         <div class="form-tools-tree-container row">
             <div class="" id="treeWithLines" ng-show="ctrl.bTreeWithLines_"></div>
             <div class="row" id="treeView" ng-show="!ctrl.bTreeWithLines_"></div>
         </div>
     </div>
-        <div class="text-center">
-            <button id="formTools_datasoure_button" type="button" class="btn btn-success" ng-click="$parent.ctrl.showDatasourcesModal()">{{::ctrl.text.Buttons.Manage_datasources}}</button>
-        </div>
+    <div class="text-center">
+        <button id="formTools_datasoure_button" type="button" class="btn btn-success" ng-click="$parent.ctrl.showDatasourcesModal()">{{::ctrl.text.Buttons.Manage_datasources}}</button>
+    </div>
 </div>

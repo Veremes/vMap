@@ -61,11 +61,13 @@ class Vitis extends DbClass {
      */
     function getFields($sSchema, $sTable, $sIdField) {
 
-        // Format $this->aSelectedFields for spatial use
-        $this->formatSelectedFieldsForGeom($sSchema, $sTable);
+        $this->aSqlParams = array();
 
         //generate the structure of the result
         $this->addSelectedFields();
+
+        // Format $this->aSelectedFields for spatial use
+        $this->formatSelectedFieldsForGeom($sSchema, $sTable);
 
         //get the fields present in the database
         $aColumn = $this->getTableColumns($sSchema, $sTable);
@@ -84,20 +86,27 @@ class Vitis extends DbClass {
                 array_push($aFieldInTable, $sIdField);
             }
             $sSql = "SELECT ";
-            foreach ($aFieldInTable as $fields) {
-                if (strpos($fields, "(") == FALSE && strpos($fields, ")") == FALSE && strpos(strtolower($fields), " as ") == FALSE) {
-                    $fields = "\"" . $fields . "\"";
+            // les field ne sont pas passés en tant que paramètre column_name car des fois ils ont pour valeur des fonctions ex: "ST_SRID(geom) as proj"
+            foreach ($aFieldInTable as $field) {
+                if (strpos($field, "(") == FALSE && strpos($field, ")") == FALSE && strpos(strtolower($field), " as ") == FALSE) {
+                    $field = "\"" . $field . "\"";
                 }
                 if ($sSql == "SELECT ") {
-                    $sSql .= $fields;
+                    $sSql .= $field;
                 } else {
-                    $sSql .= ", " . $fields;
+                    $sSql .= ", " . $field;
                 }
             }
 
-            $sSql .= " FROM " . $sSchema . "." . $sTable . " WHERE \"" . $sIdField . "\" IN ('" . $this->aValues['my_vitis_id'] . "')";
+            $this->aSqlParams['sSchema'] = array('value' => $sSchema, 'type' => 'column_name');
+            $this->aSqlParams['sTable'] = array('value' => $sTable, 'type' => 'column_name');
+            $this->aSqlParams['sIdField'] = array('value' => $sIdField, 'type' => 'column_name');
+            $this->aSqlParams['my_vitis_id'] = array('value' => $this->aValues['my_vitis_id'], 'type' => 'string');
+
+            $sSql .= " FROM \"[sSchema]\".\"[sTable]\" WHERE \"[sIdField]\" IN ([my_vitis_id])";
+
             //Get result
-            $oResult = $this->oConnection->oBd->execute($sSql);
+            $oResult = $this->oConnection->oBd->executeWithParams($sSql, $this->aSqlParams);
             if (empty($this->oConnection->oBd->enErreur) && $this->oConnection->oBd->nombreLigne($oResult) > 0) {
                 $aData = array();
                 while ($aObject = $this->oConnection->oBd->ligneSuivante($oResult)) {
@@ -120,9 +129,13 @@ class Vitis extends DbClass {
     function getTableColumns($sSchema, $sTable) {
         require $this->sRessourcesFile;
         $aColumn = Array();
-        $sSql = str_replace('[sSchemaFramework]', $sSchema, $aSql['getTableColumn']);
-        $sSql = str_replace('[sTable]', $sTable, $sSql);
-        $oResult = $this->oConnection->oBd->execute($sSql);
+        $sSql = $aSql['getTableColumn'];
+        $aSqlParams = array(
+            'sSchemaFramework' => array('value' => $sSchema, 'type' => 'column_name'),
+            'sTable' => array('value' => $sTable, 'type' => 'column_name')
+        );
+
+        $oResult = $this->oConnection->oBd->executeWithParams($sSql, $aSqlParams);
 
         if (!empty($oResult)) {
             while ($aObject = $this->oConnection->oBd->ligneSuivante($oResult)) {
@@ -147,10 +160,13 @@ class Vitis extends DbClass {
         require $this->sRessourcesFile;
         $aColumn = Array();
         $sSql = $aSql['getGeometryColumns'];
-        $sSql = str_replace('[sSchemaFramework]', $sSchema, $sSql);
-        $sSql = str_replace('[sTable]', $sTable, $sSql);
 
-        $oResult = $this->oConnection->oBd->execute($sSql);
+        $aSqlParams = array(
+            'sSchemaFramework' => array('value' => $sSchema, 'type' => 'column_name'),
+            'sTable' => array('value' => $sTable, 'type' => 'column_name')
+        );
+
+        $oResult = $this->oConnection->oBd->executeWithParams($sSql, $aSqlParams);
 
         // vide si postGis n'est pas installé
         if (!empty($oResult)) {
@@ -180,6 +196,9 @@ class Vitis extends DbClass {
         $sParentClassName = get_class($this);
         $sChildClassName = substr($sParentClassName, 0, -1);
         $date = new DateTime();
+        $this->aSqlParams = array();
+        $this->aSqlParams['sSchema'] = array('value' => $sSchema, 'type' => 'column_name');
+        $this->aSqlParams['sTable'] = array('value' => $sTable, 'type' => 'column_name');
         if (isset($this->aValues['sEncoding']))
             $sEncoding = $this->aValues['sEncoding'];
         else
@@ -232,11 +251,12 @@ class Vitis extends DbClass {
                     // Format $this->aSelectedFields for spatial use
                     if (empty($this->aValues['result_srid']))
                         $this->aValues['result_srid'] = null;
-                    $this->formatSelectedFieldsForGeom($sSchema, $sTable, $this->aValues['result_srid']);
-                    //filter
+                    //Fields
                     $this->addSelectedFields();
+                    $this->formatSelectedFieldsForGeom($sSchema, $sTable, $this->aValues['result_srid']);
                     //get the fields present in the database
                     $aColumn = $this->getTableColumns($sSchema, $sTable);
+
                     //intersect the structure and the fields in the database to get only fields present in the database and the structure
                     $aFieldInTable = array();
                     if (empty($this->aSelectedFields)) {
@@ -246,6 +266,7 @@ class Vitis extends DbClass {
                     } else {
                         foreach ($this->aOrganizedFields as $key => $value) {
                             if (in_array($key, $aColumn) || in_array($key . " as " . $value, $aColumn)) {
+                                // Attention: Injections possible!
                                 if (strpos($key, "(") == FALSE && strpos($key, ")") == FALSE) {
                                     if ($value == "") {
                                         array_push($aFieldInTable, '"' . $key . '"');
@@ -257,11 +278,10 @@ class Vitis extends DbClass {
                                 }
                             }
                         }
-                        //$aFieldInTable = array_intersect($aColumn, $this->aSelectedFields);
                     }
                     //build request
+                    // les field ne sont pas passés en tant que paramètre column_name car des fois ils ont pour valeur des fonctions ex: "ST_SRID(geom) as proj"
                     if (!empty($aFieldInTable)) {
-
                         foreach ($aFieldInTable as $fields) {
                             if ($sSql == "SELECT " || $sSql == "SELECT DISTINCT ") {
                                 $sSql .= $fields;
@@ -270,43 +290,75 @@ class Vitis extends DbClass {
                             }
                         }
                     }
-                    $sSql .= " FROM " . $sSchema . "." . $sTable;
-                    if (!empty($this->aValues['filter'])) {
-                        //$aFilter = explode("|", $this->aValues['filter']);
 
-                        if (strpos($sSql, " WHERE ") == FALSE) {
-                            $sSql .= " WHERE " . $this->aValues['filter'];
-                        } else {
-                            $sSql .= " AND " . $this->aValues['filter'];
+                    // Filter
+                    $sSql .= " FROM \"[sSchema]\".\"[sTable]\"";
+                    if (!empty($this->aValues['filter'])) {
+                        // filtre
+                        $aDecodedFilter = $this->decodeJSONFilter($this->aValues['filter'], $sSchema, $sTable);
+                        // Ajout dans la requête
+                        $sSecuredFilter = $aDecodedFilter['request'];
+                        // Ajout des paramètres
+                        foreach ($aDecodedFilter['params'] as $key => $value) {
+                            $this->aSqlParams[$key] = $value;
+                        }
+
+                        // Ajout du filtre dans la requête
+                        if (!empty(trim($sSecuredFilter))) {
+                            if (strpos($sSql, " WHERE ") == FALSE) {
+                                $sSql .= " WHERE " . $sSecuredFilter;
+                            } else {
+                                $sSql .= " AND " . $sSecuredFilter;
+                            }
                         }
                     }
+
                     //order by
                     if (!empty($this->aValues['order_by'])) {
                         $aOrder = explode("|", $this->aValues['order_by']);
                         foreach ($aOrder as $value) {
+                            $sColumnKey = 'column_' . vitisUniqId();
                             if (strpos($sSql, "ORDER BY") == FALSE) {
-                                $sSql .= " ORDER BY " . str_replace("=", " ", "\"" . $value . "\"");
+                                $sSql .= " ORDER BY " . str_replace("=", " ", "[" . $sColumnKey . "]");
                             } else {
-                                $sSql .= ", " . str_replace("=", " ", "\"" . $value . "\"");
+                                $sSql .= ", " . str_replace("=", " ", "[" . $sColumnKey . "]");
                             }
+                            $this->aSqlParams[$sColumnKey] = array('value' => $value, 'type' => 'column_name');
                         }
                         if (!empty($this->aValues['sort_order'])) {
-                            $sSql .= " " . $this->aValues['sort_order'];
+                            switch (strtoupper($this->aValues['sort_order'])) {
+                                case 'ASC':
+                                    $sSql .= " ASC";
+                                    break;
+                                case 'DESC':
+                                    $sSql .= " DESC";
+                                    break;
+                                default:
+                                    break;
+                            }
                         }
                     }
+
                     //limit
                     if (!empty($this->aValues['limit'])) {
-                        $sSql .= " LIMIT " . $this->aValues['limit'];
+                        $sLimitKey = 'limit_' . vitisUniqId();
+                        $sSql .= " LIMIT [" . $sLimitKey . "]";
+                        $this->aSqlParams[$sLimitKey] = array('value' => $this->aValues['limit'], 'type' => 'number');
                     }
+
                     //offset
                     if (!empty($this->aValues['offset'])) {
-                        $sSql .= " OFFSET " . $this->aValues['offset'];
+                        $sOffsetKey = 'offset_' . vitisUniqId();
+                        $sSql .= " OFFSET [" . $sOffsetKey . "]";
+                        $this->aSqlParams[$sOffsetKey] = array('value' => $this->aValues['offset'], 'type' => 'number');
                     }
 
                     //get the result
-                    $oResult = $this->oConnection->oBd->execute($sSql);
+                    $oResult = $this->oConnection->oBd->executeWithParams($sSql, $this->aSqlParams);
+
                     // if no error get the result
                     $this->aValues['my_vitis_id'] = "";
+                    $aParams2 = array();
                     if (empty($this->oConnection->oBd->enErreur) && $this->oConnection->oBd->nombreLigne($oResult) > 0) {
                         while ($aLigne = $this->oConnection->oBd->ligneSuivante($oResult)) {
                             $oObject = new $sChildClassName($this->aPath, $this->aValues, $this->aProperties, $this->oConnection);
@@ -328,20 +380,30 @@ class Vitis extends DbClass {
                         }
                     }
                     $this->aFields['list_count'] = $this->oConnection->oBd->nombreLigne($oResult);
-                    $sSql = "select count(*) as total_row_number FROM " . $sSchema . "." . $sTable;
+                    $sSql = "select count(*) as total_row_number FROM \"[sSchema]\".\"[sTable]\"";
+                    $aParams2['sSchema'] = array('value' => $sSchema, 'type' => 'column_name');
+                    $aParams2['sTable'] = array('value' => $sTable, 'type' => 'column_name');
                     if (!empty($this->aValues['filter'])) {
+                        // filtre
+                        $aDecodedFilter = $this->decodeJSONFilter($this->aValues['filter'], $sSchema, $sTable);
+                        // Ajout dans la requête
+                        $sSecuredFilter = $aDecodedFilter['request'];
+                        // Ajout des paramètres
+                        foreach ($aDecodedFilter['params'] as $key => $value) {
+                            $aParams2[$key] = $value;
+                        }
 
-                        //$aFilter = explode("|", $this->aValues['filter']);
-
-                        if (strpos($sSql, " WHERE ") == FALSE) {
-                            $sSql .= " WHERE " . $this->aValues['filter'];
-                        } else {
-                            $sSql .= " AND " . $this->aValues['filter'];
+                        // Ajout à la requête
+                        if (!empty(trim($sSecuredFilter))) {
+                            if (strpos($sSql, " WHERE ") == FALSE) {
+                                $sSql .= " WHERE " . $sSecuredFilter;
+                            } else {
+                                $sSql .= " AND " . $sSecuredFilter;
+                            }
                         }
                     }
 
-
-                    $oResult = $this->oConnection->oBd->execute($sSql);
+                    $oResult = $this->oConnection->oBd->executeWithParams($sSql, $aParams2);
                     $aLigne = $this->oConnection->oBd->ligneSuivante($oResult);
                     $this->aFields['total_row_number'] = $aLigne['total_row_number'];
                 }
@@ -372,7 +434,6 @@ class Vitis extends DbClass {
     function addSelectedFields() {
         foreach ($this->aSelectedFields as $value) {
             if (strpos($value, " as ") != false) {
-
                 $aValue = explode(" as ", $value);
                 $this->aOrganizedFields[$aValue[0]] = $aValue[1];
             } else {
@@ -599,10 +660,22 @@ class Vitis extends DbClass {
 
         for ($i = 0; $i < count($this->aSelectedFields); $i++) {
             if (in_array($this->aSelectedFields[$i], $aGeomColumns)) {
-                if (!empty($sResultSRID)) {
-                    $this->aSelectedFields[$i] = "ST_AsEWKT(ST_Transform(" . $this->aSelectedFields[$i] . ", " . $sResultSRID . ")) as " . $this->aSelectedFields[$i];
-                } else {
-                    $this->aSelectedFields[$i] = "ST_AsEWKT(" . $this->aSelectedFields[$i] . ") as " . $this->aSelectedFields[$i];
+                $sColumnKey = 'column_' . vitisUniqId();
+                $sColumnName = $this->aSelectedFields[$i];
+                if (!empty($this->aOrganizedFields[$sColumnName])) {
+                    if (!empty($sResultSRID)) {
+                        $this->aSelectedFields[$i] = "ST_AsEWKT(ST_Transform([" . $sColumnKey . "], [result_srid])) as " . $this->aSelectedFields[$i];
+                        $this->aOrganizedFields["ST_AsEWKT(ST_Transform([" . $sColumnKey . "], [result_srid]))"] = $sColumnName;
+
+                        $this->aSqlParams['result_srid'] = array('value' => $sResultSRID, 'type' => 'number');
+                        $this->aSqlParams[$sColumnKey] = array('value' => $sColumnName, 'type' => 'column_name');
+                    } else {
+                        $this->aSelectedFields[$i] = "ST_AsEWKT([" . $sColumnKey . "]) as " . $this->aSelectedFields[$i];
+                        $this->aOrganizedFields["ST_AsEWKT([" . $sColumnKey . "])"] = $sColumnName;
+
+                        $this->aSqlParams[$sColumnKey] = array('value' => $sColumnName, 'type' => 'column_name');
+                    }
+                    unset($this->aOrganizedFields[$sColumnName]);
                 }
             }
         }
@@ -610,10 +683,10 @@ class Vitis extends DbClass {
 
     /**
      * return a uniq file name create with datetime and random number in range 0-100000
-     * 
+     *
      */
     function UniqFileName() {
-        $sUniqFileName = date(YmdHis) . rand(1, 100000);
+        $sUniqFileName = date('YmdHis') . rand(1, 100000);
         return $sUniqFileName;
     }
 
@@ -621,7 +694,7 @@ class Vitis extends DbClass {
      * Update a table Join (2PK with FK on other table)
      * @param string $sSchema Schema's name
      * @param string $sTable Table's name
-     * @param string $sFieldIdFromRequest Field's name for Delete row and common insert 
+     * @param string $sFieldIdFromRequest Field's name for Delete row and common insert
      * @param string $sFieldIdToUpdate Fild's name for insert list value
      * @param string $sRole Role's name
      * @param string $sNameList List's key in aValues
@@ -659,6 +732,7 @@ class Vitis extends DbClass {
      * @param string $sPath realtive path from public_dir
      */
     function postFileSave($sFieldName, $sPath, $sDir = null) {
+        $aReturn = array('sStatus' => 0, 'sMessage' => '');
         if ($sDir === null) {
             $sDir = $this->UniqFileName();
         }
@@ -674,7 +748,7 @@ class Vitis extends DbClass {
 
         if (!move_uploaded_file($_FILES[$sFieldName]['tmp_name'], $sFilePathName)) {
             writeToErrorLog(ERROR_0031 . $_FILES[$sFieldName]['name'] . " " . $sFilePathName);
-            $aReturn = array(sStatus => 1, sMessage => WORKSPACE_ERROR_COPYING_FILE);
+            $aReturn = array('sStatus' => 1, 'sMessage' => WORKSPACE_ERROR_COPYING_FILE);
         }
 
         return $aReturn;
@@ -686,7 +760,7 @@ class Vitis extends DbClass {
      * @param string $sPath relative path from public_dir
      * @param string $sSchema Schema's name
      * @param string $sTable Table's name
-     * @param string $sFieldId Field's name for get path of file to update 
+     * @param string $sFieldId Field's name for get path of file to update
      */
     function putFileUpdate($sFieldName, $sPath, $sSchema, $sTable, $sFieldId) {
         if (array_key_exists($sFieldName . '_file', $this->aValues) && array_key_exists($sFieldName . '_name', $this->aValues)) {
@@ -838,6 +912,557 @@ class Vitis extends DbClass {
                 clearDir($sDir);
             }
         }
+    }
+
+    /**
+     * Decode a JSON filter and returns an array witch contains
+     * the string request and the array parameters
+     * @param string $sJSONFilter JSON filter, can be passed by string, object or array
+     * @param string $sSchema
+     * @param string $sTable
+     * @return array
+     */
+    function decodeJSONFilter($sJSONFilter, $sSchema = null, $sTable = null) {
+
+        if (is_object($sJSONFilter) || is_array($sJSONFilter)) {
+            $sJSONFilter = json_encode($sJSONFilter);
+        }
+
+        $aJSONFilter = json_decode($sJSONFilter, true);
+        $sFilter = '';
+        $aParams = array();
+
+        // Valeurs par défaut si juste un operator est passé en paramètre
+        if (isset($aJSONFilter['column']) &&
+                isset($aJSONFilter['compare_operator'])) {
+            $aJSONFilter = array(
+                'relation' => 'AND',
+                'operators' => array($aJSONFilter)
+            );
+        }
+
+        if (empty($aJSONFilter['relation']) ||
+                !is_array($aJSONFilter['operators'])) {
+            if (strlen(trim($sJSONFilter)) > 0) {
+                writeToErrorLog(ERROR_0034 . ': missing argument on ' . $sJSONFilter);
+            }
+            return array('request' => $sFilter, 'params' => $aParams);
+        }
+
+        if (is_array($aJSONFilter['operators'])) {
+
+            // Vérifie relation
+            $sRelation = $this->checkRelationOperator($aJSONFilter['relation']);
+            if (empty($sRelation)) {
+                writeToErrorLog(ERROR_0034 . ': relation not valid');
+                return array('request' => $sFilter, 'params' => $aParams);
+            }
+
+            // Pour chacun des opérateurs
+            for ($i = 0; $i < count($aJSONFilter['operators']); $i++) {
+
+                // Filtre imbriquée ?
+                if (!empty($aJSONFilter['operators'][$i]['relation'])) {
+
+                    // Récupère récursivement le contenu du filtre imbriqué
+                    $aDecodedSubFilter = $this->decodeJSONFilter($aJSONFilter['operators'][$i], $sSchema, $sTable);
+
+                    // Ajout des paramètres
+                    foreach ($aDecodedSubFilter['params'] as $key => $value) {
+                        $aParams[$key] = $value;
+                    }
+
+                    // Ajout dans la requête
+                    if (strlen($sFilter) > 0) {
+                        $sFilter .= ' ' . $sRelation . ' ';
+                    } else {
+                        $sFilter .= '(';
+                    }
+                    $sFilter .= $aDecodedSubFilter['request'];
+                } else {
+
+                    $aOperator = $this->decodeOperator($aJSONFilter['operators'][$i], $sSchema, $sTable);
+
+                    if (!empty($aOperator)) {
+
+                        // Ajout des paramètres
+                        foreach ($aOperator['params'] as $key => $value) {
+                            $aParams[$key] = $value;
+                        }
+
+                        // Ajout dans la requête
+                        if (strlen($sFilter) > 0) {
+                            $sFilter .= ' ' . $sRelation . ' ';
+                        } else {
+                            $sFilter .= '(';
+                        }
+                        $sFilter .= $aOperator['request'];
+                    }
+                }
+            }
+            if (strlen($sFilter) > 0) {
+                $sFilter .= ')';
+            }
+        }
+
+        return array('request' => $sFilter, 'params' => $aParams);
+    }
+
+    /**
+     * Decode a filter operator and returns an array witch contains
+     * the string request and the array parameters
+     * @param array $aOperator
+     * @param string $sSchema
+     * @param string $sTable
+     * @return array
+     */
+    function decodeOperator($aOperator, $sSchema = null, $sTable = null) {
+
+        $sFilter = '';
+        $aParams = array();
+
+        // Vérifications
+        if (empty($aOperator['column']) ||
+                empty($aOperator['compare_operator']) ||
+                (!isset($aOperator['value']) || $aOperator['value'] == '')) {
+            return null;
+        }
+        if (!isset($aOperator['value']) || $aOperator['value'] == '') {
+            switch (strtoupper(trim($aOperator['compare_operator']))) {
+                case 'NULL':
+                case 'IS NULL':
+                case 'NOT NULL':
+                case 'IS NOT NULL':
+                    $aOperator['value'] = "";
+                    break;
+                default:
+                    if (strlen(trim(json_encode($aOperator))) > 0) {
+                        writeToErrorLog(ERROR_0034 . ': missing argument on ' . json_encode($aOperator));
+                    }
+                    break;
+            }
+        }
+
+
+        // Vérifie compare_operator
+        $sCompare = $this->checkCompareOperator($aOperator['compare_operator']);
+        if (empty($sCompare)) {
+            writeToErrorLog(ERROR_0034 . ': compare_operator not valid');
+            null;
+        }
+
+        // Clées à utiliser en guise de variables
+        $sColumnKey = 'column_' . vitisUniqId();
+        $sValueKey = 'value_' . vitisUniqId();
+
+        switch ($sCompare) {
+            case 'IS NULL':
+            case 'IS NOT NULL':
+                // Ajoute les paramètres
+                $aParams[$sColumnKey] = array('value' => $aOperator['column'], 'type' => 'column_name');
+                // Ajoute à la requête
+                $sFilter .= '"[' . $sColumnKey . ']" ' . $sCompare;
+                break;
+            case 'IN':
+            case 'NOT IN':
+                if (is_array($aOperator['value'])) {
+                    $sInFilter = '';
+                    for ($i = 0; $i < count($aOperator['value']); $i++) {
+                        if (strlen($sInFilter) > 0) {
+                            $sInFilter .= ', ';
+                        }
+                        // Clée à utiliser en guise de variable
+                        $sValueKey = 'value_' . vitisUniqId() . $i;
+                        // Ajout du paramètre
+                        $aParams[$sValueKey] = array('value' => $aOperator['value'][$i], 'type' => 'string');
+                        // Ajout à la requête
+                        $sInFilter .= '[' . $sValueKey . ']';
+                    }
+                    // Ajout de la colonne
+                    $aParams[$sColumnKey] = array('value' => $aOperator['column'], 'type' => 'column_name');
+                    // Ajout à la requête
+                    $sFilter .= '"[' . $sColumnKey . ']" ' . $sCompare . ' (' . $sInFilter . ')';
+                }
+                break;
+            case 'LIKE':
+
+                // Ajoute les paramètres
+                $aParams[$sColumnKey] = array('value' => $aOperator['column'], 'type' => 'column_name');
+                $aParams[$sValueKey] = array('value' => $aOperator['value'], 'type' => 'quoted_string');
+
+                $sValueFilter = '[' . $sValueKey . ']';
+                $sColumnFilter = '"[' . $sColumnKey . ']"';
+
+                if (!empty($aOperator['compare_operator_options'])) {
+                    if ($aOperator['compare_operator_options']['case_insensitive'] == 'true' ||
+                            $aOperator['compare_operator_options']['case_insensitive'] == true) {
+
+                        $sValueFilter = 'LOWER(' . $sValueFilter . ')';
+                        $sColumnFilter = 'LOWER(' . $sColumnFilter . ')';
+                    }
+                }
+
+                // Ajoute à la requête
+                $sFilter .= $sColumnFilter . ' LIKE ' . $sValueFilter;
+
+                break;
+            case 'INTERSECT':
+
+                $sGeomDefKey = 'geom_def_' . vitisUniqId();
+                $sGeomColumnKey = 'geom_column_' . vitisUniqId();
+                $aParams[$sGeomDefKey] = array('value' => $aOperator['value'], 'type' => 'geometry');
+                $aParams[$sGeomColumnKey] = array('value' => $aOperator['column'], 'type' => 'column_name');
+
+                $sSQLGeom = "[" . $sGeomDefKey . "]";
+                $sSQLColumn = "[" . $sGeomColumnKey . "]";
+
+                // compare_operator_options
+                if (!empty($aOperator['compare_operator_options'])) {
+                    // source_proj
+                    if (!empty($aOperator['compare_operator_options']['source_proj'])) {
+                        $sSourceProjKey = 'source_proj_' . vitisUniqId();
+                        $aParams[$sSourceProjKey] = array('value' => $aOperator['compare_operator_options']['source_proj'], 'type' => 'number');
+                        $sSQLSRID = "[" . $sSourceProjKey . "]";
+                        $sSRID = $aOperator['compare_operator_options']['source_proj'];
+                    }
+                    // intersect_buffer
+                    if (!empty($aOperator['compare_operator_options']['intersect_buffer'])) {
+                        $sIntersectBufferKey = 'intersect_buffer' . vitisUniqId();
+                        $aParams[$sIntersectBufferKey] = array('value' => $aOperator['compare_operator_options']['intersect_buffer'], 'type' => 'number');
+                        $sSQLBuffer = "[" . $sIntersectBufferKey . "]";
+                    }
+                    // intersect_buffer_geom_type
+                    if (!empty($aOperator['compare_operator_options']['intersect_buffer_geom_type'])) {
+                        $aIntersectTypes = explode('|', strtoupper($aOperator['compare_operator_options']['intersect_buffer_geom_type']));
+                        // Types sous vorme de variable entre crochets
+                        $aPostgisIntersectTypes = array();
+                        for ($i = 0; $i < count($aIntersectTypes); $i++) {
+                            // Types sous forme de chaine
+                            $aExcludeTypes = array();
+                            switch ($aIntersectTypes[$i]) {
+                                case 'POINT':
+                                    array_push($aExcludeTypes, 'ST_Point');
+                                    array_push($aExcludeTypes, 'ST_MultiPoint');
+                                    break;
+                                case 'LINE':
+                                    array_push($aExcludeTypes, 'ST_Linestring');
+                                    array_push($aExcludeTypes, 'ST_MultiLinestring');
+                                    break;
+                                case 'POLYGON':
+                                    array_push($aExcludeTypes, 'ST_Polygon');
+                                    array_push($aExcludeTypes, 'ST_MultiPolygon');
+                                    break;
+                                default:
+                                    break;
+                            }
+                            for ($ii = 0; $ii < count($aExcludeTypes); $ii++) {
+                                $sPostgisGeomTypeKey = 'postgis_geom_type_' . vitisUniqId() . $i . $ii;
+                                $aParams[$sPostgisGeomTypeKey] = array('value' => $aExcludeTypes[$ii], 'type' => 'string');
+                                array_push($aPostgisIntersectTypes, "[" . $sPostgisGeomTypeKey . "]");
+                            }
+                        }
+                    }
+                }
+
+                // Si le SRID source n'est pas renseigné
+                if (empty($sSQLSRID)) {
+                    if (!empty($sSchema) && !empty($sTable)) {
+                        $sSRID = $this->getColumnProjection($sSchema, $sTable, $aOperator['column']);
+                        $sSourceProjKey = 'source_proj_' . vitisUniqId();
+                        $aParams[$sSourceProjKey] = array('value' => $sSRID, 'type' => 'number');
+                        $sSQLSRID = "[" . $sSourceProjKey . "]";
+                    } else {
+                        writeToErrorLog(ERROR_0034 . ': missing $sSchema and $sTable params');
+                        break;
+                    }
+                }
+
+                if (empty($sSRID)) {
+                    $sSRID = 2154;
+                }
+                // Géométrie
+                if ($sSRID === '4326') {
+                    $sIntersectFilter = 'ST_GeomFromEWKT(' . $sSQLGeom . ')::geography';
+                } else {
+                    $sIntersectFilter = 'ST_GeomFromEWKT(' . $sSQLGeom . ')';
+                }
+                // Buffer de sélection
+                if (!empty($sSQLBuffer)) {
+                    // Mise en place du buffer
+                    if ($sSRID === '4326') {
+                        $sBufferFilter = 'ST_Buffer(' . $sIntersectFilter . ', ' . $sSQLBuffer . ')::geometry';
+                    } else {
+                        $sBufferFilter = 'ST_Buffer(' . $sIntersectFilter . ', ' . $sSQLBuffer . ')';
+                    }
+                    // Mise en place des conditions celons le type de géométrie retournée
+                    if (!empty($aPostgisIntersectTypes)) {
+                        $sCaseTypeFilter = " CASE";
+                        for ($i = 0; $i < count($aPostgisIntersectTypes); $i++) {
+                            $sCaseTypeFilter .= " WHEN ST_GeometryType(" . $sSQLColumn . ")=" . $aPostgisIntersectTypes[$i] . "";
+                            $sCaseTypeFilter .= " THEN " . $sBufferFilter;
+                        }
+                        $sCaseTypeFilter .= " ELSE " . $sIntersectFilter;
+                        $sCaseTypeFilter .= " END";
+                        $sIntersectFilter = $sCaseTypeFilter;
+                    } else {
+                        $sIntersectFilter = $sBufferFilter;
+                    }
+                }
+                // Reprojection
+                if (!empty($sSQLSRID)) {
+                    $sIntersectFilter = 'ST_Transform(' . $sIntersectFilter . ', ' . $sSQLSRID . ')';
+                }
+                // Intersection
+                if (!empty($sSQLColumn)) {
+                    $sIntersectFilter = 'ST_Intersects(' . $sIntersectFilter . ', ' . $sSQLColumn . ')';
+                }
+
+                $sFilter .= $sIntersectFilter;
+
+                break;
+            default:
+                // Ajoute les paramètres
+                $aParams[$sColumnKey] = array('value' => $aOperator['column'], 'type' => 'column_name');
+                if (is_bool($aOperator['value']))
+                    $aParams[$sValueKey] = array('value' => var_export($aOperator['value'], true), 'type' => 'boolean');
+                else
+                    $aParams[$sValueKey] = array('value' => $aOperator['value'], 'type' => 'string');
+
+                // Ajoute à la requête
+                $sFilter .= '"[' . $sColumnKey . ']"' . $sCompare . '[' . $sValueKey . ']';
+                break;
+        }
+
+        return array('request' => $sFilter, 'params' => $aParams);
+    }
+
+    /**
+     * Get a column projection
+     * @param string $sSchema
+     * @param string $sTable
+     * @param string $sColumn
+     * @return string
+     */
+    function getColumnProjection($sSchema, $sTable, $sColumn) {
+
+        $sColumnProj = null;
+        $sSchemaKey = 'schema_' . vitisUniqId();
+        $sTableKey = 'table_' . vitisUniqId();
+        $sColumnKey = 'table_' . vitisUniqId();
+
+        $aParams = array();
+        $aParams[$sSchemaKey] = array('value' => $sSchema, 'type' => 'column_name');
+        $aParams[$sTableKey] = array('value' => $sTable, 'type' => 'column_name');
+        $aParams[$sColumnKey] = array('value' => $sColumn, 'type' => 'column_name');
+        $sSQLSRID = 'SELECT st_srid("[' . $sColumnKey . ']") as column_srid FROM "[' . $sSchemaKey . ']"."[' . $sTableKey . ']" WHERE "[' . $sColumnKey . ']" is not null LIMIT 1';
+
+        $oResult = $this->oConnection->oBd->executeWithParams($sSQLSRID, $aParams);
+        if ($this->oConnection->oBd->enErreur()) {
+            writeToErrorLog($this->oConnection->oBd->getBDMessage());
+        } else {
+            if (!isset($this->oConnection->oBd->enErreur)) {
+                $this->oConnection->oBd->enErreur = false;
+            }
+            if (!$this->oConnection->oBd->enErreur && $this->oConnection->oBd->nombreLigne($oResult) > 0) {
+                $aData = array();
+                while ($aObject = $this->oConnection->oBd->ligneSuivante($oResult)) {
+                    foreach ($aObject as $sParamKey => $sParamValue) {
+                        if ($sParamKey === 'column_srid') {
+                            $sColumnProj = $sParamValue;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Nouvelle tentative avec une requête différente
+        if ($sColumnProj === null) {
+            // ne fonctionne pas dans tous les cas pour les vues
+            $sSQLSRID = "SELECT Find_SRID('[" . $sSchemaKey . "]', '[" . $sTableKey . "]', '[" . $sColumnKey . "]') as column_srid";
+
+            $oResult = $this->oConnection->oBd->executeWithParams($sSQLSRID, $aParams);
+            if ($this->oConnection->oBd->enErreur()) {
+                writeToErrorLog($this->oConnection->oBd->getBDMessage());
+            } else {
+                if (!isset($this->oConnection->oBd->enErreur)) {
+                    $this->oConnection->oBd->enErreur = false;
+                }
+                if (!$this->oConnection->oBd->enErreur && $this->oConnection->oBd->nombreLigne($oResult) > 0) {
+                    $aData = array();
+                    while ($aObject = $this->oConnection->oBd->ligneSuivante($oResult)) {
+                        foreach ($aObject as $sParamKey => $sParamValue) {
+                            if ($sParamKey === 'column_srid') {
+                                $sColumnProj = $sParamValue;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return $sColumnProj;
+    }
+
+    /**
+     * Check the given compare operator and return
+     * a well formed compare operator string
+     * @param string $sCompareOperator
+     * @return string
+     */
+    function checkCompareOperator($sCompareOperator) {
+        $sCompare = null;
+        switch (strtoupper(trim($sCompareOperator))) {
+            case '=':
+                $sCompare = '=';
+                break;
+            case '!=':
+                $sCompare = '!=';
+                break;
+            case '<>':
+                $sCompare = '<>';
+                break;
+            case '>=':
+                $sCompare = '>=';
+                break;
+            case '<=':
+                $sCompare = '<=';
+                break;
+            case '>':
+                $sCompare = '>';
+                break;
+            case '<':
+                $sCompare = '<';
+                break;
+            case 'IN':
+                $sCompare = 'IN';
+                break;
+            case 'NOT IN':
+                $sCompare = 'NOT IN';
+                break;
+            case 'NULL':
+            case 'IS NULL':
+                $sCompare = 'IS NULL';
+                break;
+            case 'NOT NULL':
+            case 'IS NOT NULL':
+                $sCompare = 'IS NOT NULL';
+                break;
+            case 'LIKE':
+                $sCompare = 'LIKE';
+                break;
+            case 'INTERSECT':
+                $sCompare = 'INTERSECT';
+                break;
+            default:
+                break;
+        }
+        return $sCompare;
+    }
+
+    /**
+     * Check the given relation operator and return
+     * a well formed relation operator string
+     * @param string $sRelationOperator
+     * @return string
+     */
+    function checkRelationOperator($sRelationOperator) {
+        $sRelation = null;
+        switch (strtoupper(trim($sRelationOperator))) {
+            case 'AND':
+                $sRelation = 'AND';
+                break;
+            case 'OR':
+                $sRelation = 'OR';
+                break;
+            default:
+                break;
+        }
+        return $sRelation;
+    }
+
+    function pictureResampler($sFilePath, $iDstWidth, $iDstHeight, $iCropX = 0, $iCropY = 0, $iOffsetX = 0, $iOffsetY = 0) {
+        // récupération de l'extension pour ouverture du fichier
+        $sType = strtolower(substr(strrchr($sFilePath, "."), 1));
+        if ($sType == 'jpeg' || $sType == 'JPG') {
+            $sType = 'jpg';
+        }
+        // Récupération du format de la source
+        list($iCurrentWidth, $iCurrentHeight) = getimagesize($sFilePath);
+        list($width, $height) = $this->sizeCalculator($iCurrentWidth, $iCurrentHeight, $iDstWidth, $iDstHeight);
+        // Ouverture de la ressource return false si format non réconnu
+        switch ($sType) {
+            case 'bmp': $img = imagecreatefromwbmp($sFilePath);
+                break;
+            //case 'gif': $img = imagecreatefromgif($sFilePath);
+            //    break;
+            case 'jpg': $img = imagecreatefromjpeg($sFilePath);
+                break;
+            case 'png': $img = imagecreatefrompng($sFilePath);
+                break;
+            default :
+                return false;
+        }
+        //Suppression du fichier sinon problème de réouverture après si jpg et doublon si autre format
+        unlink($sFilePath);
+
+        if ($img === false) {
+            writeToErrorLog("ERROR : Vitis cannot open this file");
+            return false;
+        }
+        // création de l'image de sortie
+        $image_p = imagecreatetruecolor($width, $height);
+        $white = imagecolorallocate($image_p, 255, 255, 255);
+        imagefill($image_p, 0, 0, $white);
+        // resizer
+        if (!imagecopyresampled($image_p, $img, $iOffsetX, $iOffsetY, $iCropX, $iCropY, $width, $height, $iCurrentWidth, $iCurrentHeight)) {
+            writeToErrorLog("ERROR : Vitis cannot resampling the picture");
+            return false;
+        }
+        // transformation au format jpeg pour supprimer l'alpha et gagner en taille du fichier
+        $aPath = explode(".", $sFilePath);
+        $aPath[count($aPath) - 1] = "jpg";
+        $dst = implode(".", $aPath);
+        // Enregistrement du jpeg
+        if (!imagejpeg($image_p, $dst)) {
+            writeToErrorLog("ERROR : Vitis failed to write this picture");
+            return false;
+        }
+        // Libération espace mémoire
+        imagedestroy($image_p);
+        imagedestroy($img);
+        // retour du nouveau nom de fichier
+        return $dst;
+    }
+
+    function sizeCalculator($iCurrentWidth, $iCurrentHeight, $iTargetWidth, $iTargetHeight) {
+        $iWidth = $iTargetWidth;
+        $iHeight = $iTargetHeight;
+        // si image plus grande on retourne les cibles
+        if ($iCurrentWidth > $iTargetWidth && $iCurrentHeight > $iTargetHeight) {
+            return array($iTargetWidth, $iTargetHeight);
+        }
+        // On détermine si on conserve la largeur ou la hauteur
+        if ($iCurrentWidth > $iTargetWidth && $iCurrentHeight < $iTargetHeight) {
+            $iHeight = $iCurrentHeight * $iTargetWidth / $iCurrentWidth;
+            $iWidth = $iTargetWidth;
+        } else if ($iCurrentWidth < $iTargetWidth && $iCurrentHeight > $iTargetHeight) {
+            $iHeight = $iTargetHeight;
+            $iWidth = $iCurrentWidth * $iTargetHeight / $iCurrentHeight;
+        } else {
+            // dans ce cas les les deux distance sont plus petite que le but on
+            // calcul donc le delta pour déterminer quel coté est gardé
+            $fDeltaWidth = $iCurrentWidth / $iTargetWidth;
+            $fDeltaHeight = $iCurrentHeight / $iTargetHeight;
+            if ($iDeltaWidth < $iDeltaHeight) {
+                $iHeight = $iCurrentHeight;
+                $iWidth = $iCurrentHeight * $iTargetWidth / $iTargetHeight;
+            } else {
+                $iWidth = $iCurrentWidth;
+                $iHeight = $iCurrentWidth * $iTargetHeight / $iTargetWidth;
+            }
+        }
+
+        return array($iWidth, $iHeight);
     }
 
 }

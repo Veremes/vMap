@@ -53,14 +53,13 @@ nsVmap.nsToolsManager.AdvancedSelect.prototype.AdvancedSelectDirective = functio
 /**
  * @ngInject
  * @constructor
- * @param {object} $http
  * @param {object} $scope
  * @param {object} $timeout
  * @param {object} $q
  * @returns {nsVmap.nsToolsManager.AdvancedSelect.prototype.AdvancedSelectController}
  * @export
  */
-nsVmap.nsToolsManager.AdvancedSelect.prototype.AdvancedSelectController = function ($http, $scope, $timeout, $q) {
+nsVmap.nsToolsManager.AdvancedSelect.prototype.AdvancedSelectController = function ($scope, $timeout, $q) {
     oVmap.log("nsVmap.nsToolsManager.AdvancedSelect.prototype.AdvancedSelectController");
 
     var this_ = this;
@@ -69,11 +68,6 @@ nsVmap.nsToolsManager.AdvancedSelect.prototype.AdvancedSelectController = functi
      * The vMap scope
      */
     $scope['vmapScope'] = oVmap['scope'];
-
-    /**
-     * @private
-     */
-    this.$http_ = $http;
 
     /**
      * @private
@@ -91,7 +85,7 @@ nsVmap.nsToolsManager.AdvancedSelect.prototype.AdvancedSelectController = functi
     this.$q_ = $q;
 
     /**
-     * Dummy canceler (use canceler.resolve() for cancel the $http request)
+     * Dummy canceler (use canceler.resolve() for cancel the ajax request)
      * @private
      */
     this.canceler_ = $q.defer();
@@ -380,6 +374,7 @@ nsVmap.nsToolsManager.AdvancedSelect.prototype.AdvancedSelectController.prototyp
             EWKTGeometry: EWKTGeometry,
             canceler: this.canceler_,
             useTableFormat: true,
+            buffer: oQueryableBOs[bo_id]['bo_selection_buffer'],
             callback: function (data) {
 
                 // Décrémente le compteur de requêtes
@@ -613,43 +608,47 @@ nsVmap.nsToolsManager.AdvancedSelect.prototype.AdvancedSelectController.prototyp
             continue;
         }
 
-        this.$http_({
-            method: "GET",
-            url: oVmap['properties']['api_url'] + '/vmap/businessobjects/' + bo_id,
-            params: {
-                'token': oVmap['properties']['token']
-            }
-        }).then(function successCallback(response) {
+        showAjaxLoader();
+        ajaxRequest({
+            'method': 'GET',
+            'url': oVmap['properties']['api_url'] + '/vmap/businessobjects/' + bo_id,
+            'headers': {
+                'Accept': 'application/x-vm-json'
+            },
+            'scope': this.$scope_,
+            'success': function (response) {
 
-            counter++;
+                counter++;
 
-            if (!goog.isDef(response['data'])) {
-                bootbox.alert("response['data'] undefined");
-                return 0;
-            }
-            if (goog.isDef(response['data']['errorMessage'])) {
-                bootbox.alert(response['data']['errorType'] + ': ' + response['data']['errorMessage']);
-                return 0;
-            }
-            if (!goog.isDefAndNotNull(response['data']['data'])) {
-                console.error('Aucune valeur retournée');
-                return 0;
-            }
+                if (!goog.isDef(response['data'])) {
+                    bootbox.alert("response['data'] undefined");
+                    return 0;
+                }
+                if (goog.isDef(response['data']['errorMessage'])) {
+                    bootbox.alert(response['data']['errorType'] + ': ' + response['data']['errorMessage']);
+                    return 0;
+                }
+                if (!goog.isDefAndNotNull(response['data']['data'])) {
+                    console.error('Aucune valeur retournée');
+                    return 0;
+                }
 
-            var bo_id = response['data']['data'][0]['business_object_id'];
+                var bo_id = response['data']['data'][0]['business_object_id'];
 
-            this_['oBusinessObjects'][bo_id] = response['data']['data'][0];
+                this_['oBusinessObjects'][bo_id] = response['data']['data'][0];
 
-            if (counter === aBusinessObjectsList.length) {
-                callback.call();
+                if (counter === aBusinessObjectsList.length) {
+                    callback.call();
+                }
+
+            },
+            'error': function (response) {
+                counter++;
+                if (counter === aBusinessObjectsList.length) {
+                    callback.call();
+                }
+                console.error(response);
             }
-
-        }, function errorCallback(response) {
-            counter++;
-            if (counter === aBusinessObjectsList.length) {
-                callback.call();
-            }
-            console.error(response);
         });
     }
 };
@@ -824,7 +823,10 @@ nsVmap.nsToolsManager.AdvancedSelect.prototype.AdvancedSelectController.prototyp
     }, 500);
 };
 
-
+/**
+ * 
+ * @param {string} bo_id
+ */
 nsVmap.nsToolsManager.AdvancedSelect.prototype.AdvancedSelectController.prototype.sumbitSearchForm = function (bo_id) {
     oVmap.log('nsVmap.nsToolsManager.AdvancedSelect.prototype.AdvancedSelectController.prototype.updateSelectionTable');
     oVmap.simuleClick("select_search_form_reader_" + bo_id + "_submit_buton");
@@ -847,7 +849,6 @@ nsVmap.nsToolsManager.AdvancedSelect.prototype.AdvancedSelectController.prototyp
 
     var this_ = this;
     var $scope = this.$scope_;
-    var $http = this.$http_;
     var $q = this.$q_;
 
     oFilter = goog.isDefAndNotNull(oFilter) ? oFilter : {};
@@ -856,6 +857,11 @@ nsVmap.nsToolsManager.AdvancedSelect.prototype.AdvancedSelectController.prototyp
     var i = 0;
 
     // Crée le filter
+
+    var filter = {
+        'relation': 'AND',
+        'operators': []
+    };
     for (var key in oFilter) {
         // Ne tient pas compte de geom
         if (key === geom_column)
@@ -864,10 +870,15 @@ nsVmap.nsToolsManager.AdvancedSelect.prototype.AdvancedSelectController.prototyp
         if (oFilter[key] === '')
             continue;
 
-        sFilter = (i === 0) ? "" : sFilter + ' AND ';
-        sFilter += key + "='" + oFilter[key] + "'";
+        filter['operators'].push({
+            'column': key,
+            'compare_operator': '=',
+            'value': oFilter[key]
+        });
         i++;
     }
+    sFilter = JSON.stringify(filter);
+
     // Mémorise le filter
     this.tmpSearchValues_[bo_id] = oFilter;
 
@@ -884,8 +895,7 @@ nsVmap.nsToolsManager.AdvancedSelect.prototype.AdvancedSelectController.prototyp
     var proj = this['map'].getView().getProjection().getCode().substring(5);
 
     // Ajouter get_geom, get_image, intersect_buffer
-    var params = {
-        'token': oVmap['properties']['token'],
+    var data = {
         'filter': sFilter,
         'intersect_geom': oFilter[geom_column],
         'result_srid': proj,
@@ -895,79 +905,61 @@ nsVmap.nsToolsManager.AdvancedSelect.prototype.AdvancedSelectController.prototyp
         'limit': this['limitList_']
     };
 
-    showAjaxLoader();
-
-    var bRequestOk = false;
     var canceler = $q.defer();
-    $http({
-        method: "GET",
-        url: url,
-        params: params,
-        timeout: canceler.promise
-    }).then(function successCallback(response) {
 
-        bRequestOk = true;
-        hideAjaxLoader();
+    showAjaxLoader();
+    ajaxRequest({
+        'method': 'POST',
+        'url': url,
+        'headers': {
+            'X-HTTP-Method-Override': 'GET',
+            'Accept': 'application/x-vm-json'
+        },
+        'data': data,
+        'scope': this.$scope_,
+        'timeout': 5000,
+        'abord': canceler.promise,
+        'success': function (response) {
 
-        if (!goog.isDef(response['data'])) {
-            bootbox.alert("response['data'] undefined");
-            $scope['selectedLayerId'] = "";
-            return 0;
-        }
-        if (goog.isDef(response['data']['errorMessage'])) {
-            bootbox.alert(response['data']['errorType'] + ': ' + response['data']['errorMessage']);
-            $scope['selectedLayerId'] = "";
-            return 0;
-        }
-        if (!goog.isDefAndNotNull(response['data']['data'])) {
-            $.notify("Aucune valeur retournée", "warn");
-            response['data']['data'] = [];
-        }
-
-        this_['tableSelection'][bo_id] = this_.formatTableSelection(response['data']['data'])[bo_id];
-
-        if (!goog.isDefAndNotNull(this_['tableSelection'][bo_id])) {
-            this_['tableSelection'][bo_id] = [];
-        }
-
-        // Charge les nouvelles données sur les tables
-        for (var bo_id2 in this_['tableSelection']) {
-            $('#select_table_' + bo_id2).bootstrapTable('load', this_['tableSelection'][bo_id2]);
-        }
-
-        // Vide la sélection
-        this_.removeSelections(bo_id);
-
-        // Ajoute le résultat de la requête dans la sélection
-        this_.addQueryResult({
-            data: response['data']['data'],
-            dataType: 'list'
-        });
-
-        if (response['data']['data'].length === this_['limitList_'])
-            $.notify("Limite d'objets à afficher atteinte", "warn");
-
-    }, function errorCallback(response) {
-        hideAjaxLoader();
-        console.error(response);
-    });
-    // Montre le message d'annulation de la requete si celle-ci n'est pas terminée apres un timeout
-    var showCancelRequestMessageAfterTimeout = function () {
-        setTimeout(function () {
-            if (bRequestOk === false) {
-                bootbox.confirm('Annuler la requête ?', function (result) {
-                    if (result === true) {
-                        canceler.resolve();
-                        hideAjaxLoader();
-                        $scope['selectedLayerId'] = "";
-                    } else {
-                        showCancelRequestMessageAfterTimeout();
-                    }
-                });
+            if (!goog.isDef(response['data'])) {
+                bootbox.alert("response['data'] undefined");
+                $scope['selectedLayerId'] = "";
+                return 0;
             }
-        }, 5000);
-    };
-    showCancelRequestMessageAfterTimeout();
+            if (goog.isDef(response['data']['errorMessage'])) {
+                bootbox.alert(response['data']['errorType'] + ': ' + response['data']['errorMessage']);
+                $scope['selectedLayerId'] = "";
+                return 0;
+            }
+            if (!goog.isDefAndNotNull(response['data']['data'])) {
+                $.notify("Aucune valeur retournée", "warn");
+                response['data']['data'] = [];
+            }
+
+            this_['tableSelection'][bo_id] = this_.formatTableSelection(response['data']['data'])[bo_id];
+
+            if (!goog.isDefAndNotNull(this_['tableSelection'][bo_id])) {
+                this_['tableSelection'][bo_id] = [];
+            }
+
+            // Charge les nouvelles données sur les tables
+            for (var bo_id2 in this_['tableSelection']) {
+                $('#select_table_' + bo_id2).bootstrapTable('load', this_['tableSelection'][bo_id2]);
+            }
+
+            // Vide la sélection
+            this_.removeSelections(bo_id);
+
+            // Ajoute le résultat de la requête dans la sélection
+            this_.addQueryResult({
+                data: response['data']['data'],
+                dataType: 'list'
+            });
+
+            if (response['data']['data'].length === this_['limitList_'])
+                $.notify("Limite d'objets à afficher atteinte", "warn");
+        }
+    });
 };
 
 /**
@@ -996,9 +988,10 @@ nsVmap.nsToolsManager.AdvancedSelect.prototype.AdvancedSelectController.prototyp
  * @param {object} htmlTable html index from the table (ex: #select_table_0)
  * @export
  */
-nsVmap.nsToolsManager.AdvancedSelect.prototype.AdvancedSelectController.prototype.tableRemoveSelection = function (htmlTable) {
-    oVmap.log('nsVmap.nsToolsManager.AdvancedSelect.prototype.AdvancedSelectController.prototype.tableRemoveSelection');
+nsVmap.nsToolsManager.AdvancedSelect.prototype.AdvancedSelectController.prototype.tableDeleteSelection = function (htmlTable) {
+    oVmap.log('nsVmap.nsToolsManager.AdvancedSelect.prototype.AdvancedSelectController.prototype.tableDeleteSelection');
 
+    var this_ = this;
     var tableSelection = $(htmlTable).bootstrapTable('getSelections');
     var aSelection = [];
 
@@ -1007,15 +1000,15 @@ nsVmap.nsToolsManager.AdvancedSelect.prototype.AdvancedSelectController.prototyp
         aSelection.push(tableSelection[i]['selection']);
     }
 
-    // Supprime la sélection de this['aSelections']
-    this.removeSelection(aSelection);
-
-    // Supprime la sélection de la table
-    var data = $(htmlTable).bootstrapTable('getData');
-    for (var i = 0; i < tableSelection.length; i++) {
-        goog.array.remove(data, tableSelection[i]);
-    }
-    $(htmlTable).bootstrapTable('load', data);
+    this.oSelect.deleteMultipleObjects(aSelection, function () {
+        // Supprime de la selection en cours
+        for (var i = 0; i < aSelection.length; i++) {
+            this_.removeFromTableSelection(aSelection[i]);
+            if ($('#select-list-modal').hasClass('in')) {
+            }
+        }
+        this_.displaySelectionTable(this_['aSelections']);
+    });
 };
 
 /**

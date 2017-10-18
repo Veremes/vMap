@@ -81,16 +81,13 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreDirective = function 
 
 /**
  * Cadastre controller
- * @ngInject
- * @param {object} $http
+ * @param {object} $scope
  * @export
  * @constructor
+ * @ngInject
  */
-nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController = function ($http, $scope) {
+nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController = function ($scope, $sce) {
     oVmap.log("nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController");
-
-    // test de la validité du token
-    oVmap.testToken();
 
     /**
      * Limite des valeurs sélectionnables
@@ -110,10 +107,18 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController = function
     this.draw_;
 
     /**
+     * Query buffer in mm on screen (look postgis st_buffer for more information)
+     * @type integer
+     */
+    this.buffer_ = oVmap['properties']["cadastre"]["selection_buffer"];
+
+    /**
      * temp for bootstrap table
      * type {array<object>}
      */
     this.bootstrapTableTemp = [];
+
+    this['isCadastreLightUser'] = sessionStorage['privileges'].indexOf('vmap_cadastre_user') === -1 && sessionStorage['privileges'].indexOf('vmap_cadastre_light_user') !== -1;
 
     /**
      * Current mode
@@ -154,12 +159,12 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController = function
     /**
      * @private
      */
-    this.$http_ = $http;
+    this.$scope_ = $scope;
 
     /**
      * @private
      */
-    this.$scope_ = $scope;
+    this.$sce_ = $sce;
 
     /**
      * Infos sur la parcelle à décrire dans la fiche descriptive
@@ -190,6 +195,11 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController = function
      * @type {boolean}
      */
     this['locationMultiple'] = false;
+
+    this['tablesSelection'] = {
+        '#Cadastre-rapports-table-parcelle': [],
+        '#Cadastre-rapports-table-comptes': []
+    };
 
     /**
      * List of the form elements
@@ -241,11 +251,18 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController = function
         $('.inactive').removeClass('active');
     });
 
-    $scope.parseFloat = function (value) {
+    $scope['parseFloat'] = function (value) {
         return parseFloat(value);
     };
-    $scope.trim = function (value) {
+    $scope['trim'] = function (value) {
         return value.trim();
+    };
+    $scope['isLink'] = function (sString) {
+        return oVmap.isLink(sString, 'link');
+    };
+    $scope['getRenderedParsedLink'] = function (sString) {
+        sString = oVmap.parseLink(sString, 'link');
+        return $sce.trustAsHtml(sString);
     };
 };
 
@@ -258,8 +275,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController = function
 nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.addToCard = function (type) {
     oVmap.log('nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.addToCard');
     oVmap.log('addToCard: ' + type);
-
-    $('body').css({"cursor": "wait"});
 
     var this_ = this;
 
@@ -538,7 +553,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
         oVmap.getMap().getMapTooltip().displayMessage('Cliquer sur un point pour générer la fiche descriptive');
         // Active l'évènement sur la carte		
         oVmap.getMap().setEventOnMap('singleclick', function (evt) {
-            $('body').css({"cursor": "wait"});
             this.selectRapportOnMap(evt, 'ficheDescriptive');
         }, this, 'cadastre-' + type);
 
@@ -551,7 +565,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
         oVmap.getMap().getMapTooltip().displayMessage('Cliquer sur un point pour générer le relevé de propriété');
         // Active l'évènement sur la carte
         oVmap.getMap().setEventOnMap('singleclick', function (evt) {
-            $('body').css({"cursor": "wait"});
             this.selectRapportOnMap(evt, 'releveDePropriete');
         }, this, 'cadastre-' + type);
 
@@ -564,7 +577,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
         oVmap.getMap().getMapTooltip().displayMessage('Cliquer sur un point pour générer la fiche d\'urbanisme');
         // Active l'évènement sur la carte
         oVmap.getMap().setEventOnMap('singleclick', function (evt) {
-            $('body').css({"cursor": "wait"});
             this.selectRapportOnMap(evt, 'ficheUrbanisme');
         }, this, 'cadastre-' + type);
 
@@ -580,8 +592,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
 nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.selectRapportOnMap = function (evt, type) {
     oVmap.log('nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.selectRapportOnMap');
 
-    $('body').css({"cursor": "wait"});
-
     // Construction d'une feature en wkt dans la projection de la base
     var geometry = new ol.geom.Point(evt.coordinate);
     var EWKTGeometry = oVmap.getEWKTFromGeom(geometry);
@@ -589,200 +599,130 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
     this['tmpID_PAR'] = '';
     this['tmpID_DNUPRO'] = '';
 
+    var buffer = 0.01;
+    var scale = oVmap.getMap().getScale();
+    buffer = (this.buffer_ * scale) / 1000;
+
     // Trouve la parcelle correspondante
-    var filter = 'ST_Intersects(ST_Transform(ST_GeomFromEWKT(\'' + EWKTGeometry + '\'), ' + this.cadastreProjection_.substring(5) + '), geom)';
+//    var filter = 'ST_Intersects(ST_Transform(ST_GeomFromEWKT(\'' + EWKTGeometry + '\'), ' + this.cadastreProjection_.substring(5) + '), geom)';
+    var filter = {
+        "column": "geom",
+        "compare_operator": "intersect",
+        "compare_operator_options": {
+            "source_proj": this.cadastreProjection_.substring(5),
+            "intersect_buffer": buffer,
+            "intersect_buffer_geom_type": 'point'
+        },
+        "value": EWKTGeometry
+    };
 
     var cadastreController = this;
 
-    this.$http_({
-        method: "POST",
-        headers: {
-            'X-HTTP-Method-Override': 'GET'
+    showAjaxLoader();
+    ajaxRequest({
+        'method': 'GET',
+        'url': oVmap['properties']['api_url'] + '/' + oVmap['properties']['cadastre']['api'] + '/parcelles',
+        'headers': {
+            'Accept': 'application/x-vm-json'
         },
-        url: oVmap['properties']['api_url'] + '/' + oVmap['properties']['cadastre']['api'] + '/parcelles',
-        params: {
-            'token': oVmap['properties']['token'],
+        'params': {
             'filter': filter,
-            'limit': this.limit,
+            'limit': 1,
             'result_srid': oVmap.getMap().getOLMap().getView().getProjection().getCode().substring(5)
-        }
-    }).then(function (response) {
+        },
+        'scope': this.$scope_,
+        'success': function (response) {
 
-        $('body').css({"cursor": ""});
+            // Vide les text features
+            oVmap.getMap().getTextOverlayFeatures().clear();
 
-        // Vérifie si il y a une erreur
-        if (goog.isDef(response['data']['errorMessage'])) {
-            console.error(response['data']['errorMessage']);
-            return 0;
-        }
-        if (response['status'] === 500) {
-            $.notify('Une erreur est survenue au sein du serveur', 'error');
-            return 0;
-        }
-
-        // Vide les text features
-        oVmap.getMap().getTextOverlayFeatures().clear();
-
-        // Vérifie si il y a un résultat
-        if (!goog.isDef(response['data']['data'])) {
-            console.error('Pas de données à afficher');
-            oVmap.getMap().addTextOverlayFeature('Pas de données à afficher', evt.coordinate);
-            return 0;
-        }
-
-        var data = response['data']['data'];
-
-        if (data.length >= cadastreController.limit) {
-            var sAlert = '<h4>Attention, vous avez atteint la limite d\'objects affichables sur la carte</h4>';
-            bootbox.alert(sAlert);
-        }
-
-        var id_par = data[0]['id_par'];
-        cadastreController['tmpID_PAR'] = id_par;
-
-        // Vide la locatlisation
-        if (cadastreController['locationMultiple'] === false)
-            oVmap.getMap().getLocationOverlayFeatures().clear();
-
-        // Ajoute la nouvelle localisation
-        cadastreController.addLocationGeometries(data, 'parcelle', false);
-
-        // Fiche descriptive de la parcelle
-        if (type === 'ficheDescriptive')
-            cadastreController.displayParcelleDescriptiveSheet(id_par);
-
-        // Relevé de propriété
-        if (type === 'releveDePropriete') {
-            $('#releve-propriete-modal-menu').modal('show');
-        }
-
-        // Fiche d'urbanisme
-        if (type === 'ficheUrbanisme') {
-            cadastreController.displayUrbanismeSheet(id_par);
-        }
-        if (cadastreController['cadastreAPI_'] === "cadastre") {
-            var param = "ID_PAR";
-        } else {
-            var param = "id_par";
-        }
-        // Récupère d'IDDNUPRO
-        cadastreController.$http_({
-            method: "POST",
-            headers: {
-                'X-HTTP-Method-Override': 'GET'
-            },
-            url: oVmap['properties']['api_url'] + '/' + oVmap['properties']['cadastre']['api'] + '/descriptionparcelles',
-            params: {
-                'token': oVmap['properties']['token'],
-                'filter': '"' + param + '"=\'' + id_par + '\'',
-                'limit': cadastreController.limit,
-                'result_srid': oVmap.getMap().getOLMap().getView().getProjection().getCode().substring(5)
-            }
-        }).then(function (response) {
-
-            $('body').css({"cursor": ""});
-
-            // Vérifie si il y a une erreur
-            if (goog.isDef(response['data']['errorMessage'])) {
-                console.error(response['data']['errorMessage']);
-                return 0;
-            }
-            if (response['status'] === 500) {
-                $.notify('Une erreur est survenue au sein du serveur', 'error');
-                return 0;
-            }
-
-            // Vérifie si il y a des données à afficher
+            // Vérifie si il y a un résultat
             if (!goog.isDef(response['data']['data'])) {
                 console.error('Pas de données à afficher');
+                return 0;
+            }
+
+            // Vérifie si il y a un résultat
+            if (!goog.isDef(response['data']['data'])) {
+                console.error('Pas de données à afficher');
+                oVmap.getMap().addTextOverlayFeature('Pas de données à afficher', evt.coordinate);
                 return 0;
             }
 
             var data = response['data']['data'];
 
             if (data.length >= cadastreController.limit) {
-                var sAlert = 'Attention, vous avez atteint la limite d\'objects affichables sur la carte';
-//                bootbox.alert(sAlert);
-                $.notify(sAlert, "warn");
+                var sAlert = '<h4>Attention, vous avez atteint la limite d\'objects affichables sur la carte</h4>';
+                bootbox.alert(sAlert);
             }
 
-            cadastreController['tmpID_DNUPRO'] = data[0]['ID_DNUPRO'];
+            var id_par = data[0]['id_par'];
+            cadastreController['tmpID_PAR'] = id_par;
 
-        }, function (response) {
-            console.error(response);
-            $('body').css({"cursor": ""});
-        });
+            // Vide la locatlisation
+            if (cadastreController['locationMultiple'] === false)
+                oVmap.getMap().getLocationOverlayFeatures().clear();
 
-    }, function (error) {
-        $('body').css({"cursor": ""});
-        console.error(error);
-    });
-};
+            // Ajoute la nouvelle localisation
+            cadastreController.addLocationGeometries(data, 'parcelle', false);
 
-/**
- * Get the infos from a WKTGeometry
- * @param {string} ressource type of ressource
- * @param {string} tabCode Code of the tab
- * @param {string} WKTGeometry WKT Geometry
- * @param {string} lastPointCoordinates last Point Coordinates
- * @returns {undefined}
- */
-nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.getInfosByWKTGeometry = function (ressource, tabCode, WKTGeometry, lastPointCoordinates) {
-    oVmap.log('nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.getInfosByWKTGeometry');
+            // Fiche descriptive de la parcelle
+            if (type === 'ficheDescriptive')
+                cadastreController.displayParcelleDescriptiveSheet(id_par);
 
-    $('body').css({"cursor": "wait"});
+            // Relevé de propriété
+            if (type === 'releveDePropriete') {
+                $('#releve-propriete-modal-menu').modal('show');
+            }
 
-    var cadastreController = this;
+            // Fiche d'urbanisme
+            if (type === 'ficheUrbanisme') {
+                cadastreController.displayUrbanismeSheet(id_par);
+            }
+            if (cadastreController['cadastreAPI_'] === "cadastre") {
+                var param = "ID_PAR";
+            } else {
+                var param = "id_par";
+            }
 
-    this.$http_({
-        method: "POST",
-        headers: {
-            'X-HTTP-Method-Override': 'GET'
-        },
-        url: oVmap['properties']['api_url'] + '/' + oVmap['properties']['cadastre']['api'] + '/' + ressource,
-        params: {
-            'token': oVmap['properties']['token'],
-            'geom': WKTGeometry,
-            'result_srid': oVmap.getMap().getOLMap().getView().getProjection().getCode().substring(5)
+            // Récupère d'IDDNUPRO
+            showAjaxLoader();
+            ajaxRequest({
+                'method': 'GET',
+                'url': oVmap['properties']['api_url'] + '/' + oVmap['properties']['cadastre']['api'] + '/descriptionparcelles',
+                'headers': {
+                    'Accept': 'application/x-vm-json'
+                },
+                'params': {
+//                    'filter': '"' + param + '"=\'' + id_par + '\'',
+                    'filter': {
+                        "column": param,
+                        "compare_operator": "=",
+                        "value": id_par
+                    },
+                    'limit': cadastreController.limit,
+                    'result_srid': oVmap.getMap().getOLMap().getView().getProjection().getCode().substring(5)
+                },
+                'scope': cadastreController.$scope_,
+                'success': function (response) {
+
+                    // Vérifie si il y a un résultat
+                    if (!goog.isDef(response['data']['data'])) {
+                        console.error('Pas de données à afficher');
+                        return 0;
+                    }
+
+                    var data = response['data']['data'];
+
+                    if (data.length >= cadastreController.limit) {
+                        var sAlert = 'Attention, vous avez atteint la limite d\'objects affichables sur la carte';
+                        $.notify(sAlert, "warn");
+                    }
+
+                    cadastreController['tmpID_DNUPRO'] = data[0]['ID_DNUPRO'];
+                }
+            });
         }
-    }).then(function (response) {
-
-        $('body').css({"cursor": ""});
-
-        // Vérifie si il y a une erreur
-        if (goog.isDef(response['data']['errorMessage'])) {
-            console.error(response['data']['errorMessage']);
-            return 0;
-        }
-        if (response['status'] === 500) {
-            $.notify('Une erreur est survenue au sein du serveur', 'error');
-            return 0;
-        }
-
-        // Vide les text features
-        oVmap.getMap().getTextOverlayFeatures().clear();
-
-        // Vérifie si il y a un résultat
-        if (!goog.isDef(response['data']['data'])) {
-            console.error('Pas de données à afficher');
-            oVmap.getMap().addTextOverlayFeature('Pas de données à afficher', lastPointCoordinates);
-            return 0;
-        }
-
-        var data = response['data']['data'];
-
-        // Vide la locatlisation
-        oVmap.getMap().getLocationOverlayFeatures().clear();
-        // Ajoute la géométrie
-        data = cadastreController.setSelectionGeometries(data);
-        // Ajoute les infos
-        cadastreController.addInfos(data, tabCode);
-        // Zoom sur les géométries du dernier onglet à ajouter
-        cadastreController.displayLastTab(tabCode);
-
-    }, function (error) {
-        $('body').css({"cursor": ""});
-        console.error(error);
     });
 };
 
@@ -796,10 +736,15 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
 nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.locateByWKTGeom = function (EWKTGeometry, currentMode, lastPointCoordinates) {
     oVmap.log('nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.locateByWKTGeom');
 
-    $('body').css({"cursor": "wait"});
-
     var ressource = '';
     var cadastreController = this;
+
+    var sGeomType = oVmap.getGeomFromEWKT(EWKTGeometry).getType();
+    var buffer = null;
+    if (sGeomType === 'Point' || sGeomType === 'LineString') {
+        var scale = oVmap.getMap().getScale();
+        buffer = (this.buffer_ * scale) / 1000;
+    }
 
     // Réinitialise aFormList_
     this.aFormList_.length = 0;
@@ -807,7 +752,20 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
     // Réinitialise aFormElementsDisplayed_
     this.aFormElementsDisplayed_ = 0;
 
-    var filter = 'ST_Intersects(ST_Transform(ST_GeomFromEWKT(\'' + EWKTGeometry + '\'), ' + this.cadastreProjection_.substring(5) + '), geom)';
+//    var filter = 'ST_Intersects(ST_Transform(ST_GeomFromEWKT(\'' + EWKTGeometry + '\'), ' + this.cadastreProjection_.substring(5) + '), geom)';
+    var filter = {
+        "column": "geom",
+        "compare_operator": "intersect",
+        "compare_operator_options": {
+            "source_proj": this.cadastreProjection_.substring(5)
+        },
+        "value": EWKTGeometry
+    };
+
+    if (goog.isDefAndNotNull(buffer)) {
+        filter['compare_operator_options']['intersect_buffer'] = buffer;
+        filter['compare_operator_options']['intersect_buffer_geom_type'] = 'point';
+    }
 
     if (currentMode === 'commune') {
         // Sélection de la commune
@@ -827,60 +785,56 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
         return 'mode non valide';
     }
 
-    this.$http_({
-        method: "POST",
-        headers: {
+    var limit = this.limit;
+    if (sGeomType === 'Point') {
+        limit = 1;
+    }
+
+    $('body').css({"cursor": "wait"});
+    ajaxRequest({
+        'method': 'POST',
+        'url': oVmap['properties']['api_url'] + '/' + oVmap['properties']['cadastre']['api'] + '/' + ressource,
+        'headers': {
+            'Accept': 'application/x-vm-json',
             'X-HTTP-Method-Override': 'GET'
         },
-        url: oVmap['properties']['api_url'] + '/' + oVmap['properties']['cadastre']['api'] + '/' + ressource,
-        params: {
-            'token': oVmap['properties']['token'],
+        'data': {
             'filter': filter,
-            'limit': this.limit,
+            'limit': limit,
             'result_srid': oVmap.getMap().getOLMap().getView().getProjection().getCode().substring(5)
+        },
+        'scope': this.$scope_,
+        'success': function (response) {
+            $('body').css({"cursor": ""});
+
+            // Vide les text features
+            oVmap.getMap().getTextOverlayFeatures().clear();
+
+            // Vérifie si il y a un résultat
+            if (!goog.isDef(response['data']['data'])) {
+                console.error('Pas de données à afficher');
+                oVmap.getMap().addTextOverlayFeature('Pas de données à afficher', lastPointCoordinates);
+                return 0;
+            }
+
+            var data = response['data']['data'];
+
+            if (data.length >= cadastreController.limit) {
+                var sAlert = 'Attention, vous avez atteint la limite d\'objects affichables sur la carte';
+                $.notify(sAlert, "warn");
+            }
+
+            // Vide la localisation
+            if (cadastreController['locationMultiple'] === false) {
+                oVmap.getMap().getLocationOverlayFeatures().clear();
+            }
+
+            // Ajoute la nouvelle localisation
+            cadastreController.addLocationGeometries(data, currentMode, false);
+        },
+        'error': function (response) {
+            $('body').css({"cursor": ""});
         }
-    }).then(function (response) {
-
-        $('body').css({"cursor": ""});
-
-        // Vérifie si il y a une erreur
-        if (goog.isDef(response['data']['errorMessage'])) {
-            console.error(response['data']['errorMessage']);
-            return 0;
-        }
-        if (response['status'] === 500) {
-            $.notify('Une erreur est survenue au sein du serveur', 'error');
-            return 0;
-        }
-
-        // Vide les text features
-        oVmap.getMap().getTextOverlayFeatures().clear();
-
-        // Vérifie si il y a un résultat
-        if (!goog.isDef(response['data']['data'])) {
-            console.error('Pas de données à afficher');
-            oVmap.getMap().addTextOverlayFeature('Pas de données à afficher', lastPointCoordinates);
-            return 0;
-        }
-
-        var data = response['data']['data'];
-
-        if (data.length >= cadastreController.limit) {
-            var sAlert = 'Attention, vous avez atteint la limite d\'objects affichables sur la carte';
-//            bootbox.alert(sAlert);
-            $.notify(sAlert, "warn");
-        }
-
-        // Vide la locatlisation
-        if (cadastreController['locationMultiple'] === false)
-            oVmap.getMap().getLocationOverlayFeatures().clear();
-
-        // Ajoute la nouvelle localisation
-        cadastreController.addLocationGeometries(data, currentMode, false);
-
-    }, function (error) {
-        $('body').css({"cursor": ""});
-        console.error(error);
     });
 };
 
@@ -950,9 +904,31 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
 nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.initRapportsBootstrapTables = function (rapports) {
     oVmap.log('nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.initRapportsBootstrapTables');
 
+    var this_ = this;
+
     // initialise les tables de la fenêtre rapport
     if ($('#Cadastre-rapports-table-parcelle').bootstrapTable('getOptions').dataType === undefined) {
         $(rapports).find('[data-toggle="table"]').bootstrapTable({});
+
+        // Rempli tablesSelection lorsque on clique sur une des lignes
+        var tmp = Date.now();
+        var setSelectedNumber = function (parcelleTable) {
+            if (tmp > Date.now() - 100) {
+                return null;
+            }
+            tmp = Date.now();
+            setTimeout(function () {
+                var aSelected = $(parcelleTable).bootstrapTable('getAllSelections');
+                this_['tablesSelection'][parcelleTable] = aSelected;
+            });
+        };
+
+        $('#Cadastre-rapports-table-parcelle').on('all.bs.table', function () {
+            setSelectedNumber('#Cadastre-rapports-table-parcelle');
+        });
+        $('#Cadastre-rapports-table-comptes').on('all.bs.table', function () {
+            setSelectedNumber('#Cadastre-rapports-table-comptes');
+        });
     }
 
     // Vide les tables
@@ -979,17 +955,11 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
             this['show_veremes_cadastre_parcelle'] = true;
 
             $(rapports).find('#Cadastre-rapports-table-parcelle').bootstrapTable('load', this['selection'][i]['tableParams']['data']);
-            // Si une seule ligne est proposée, alors on la sélectionne
-//			if (this['selection'][i]['tableParams']['data'].length === 1)
-//				$(rapports).find('#Cadastre-rapports-table-parcelle').bootstrapTable('check', 0);
         }
         if (this['selection'][i]['tabCode'] === 'veremes_cadastre_compte') {
             this['show_veremes_cadastre_compte'] = true;
             $(rapports).find('#Cadastre-rapports-table-comptes').bootstrapTable('load', this['selection'][i]['tableParams']['data']);
         }
-        // Si une seule ligne est proposée, alors on la sélectionne
-//		if (this['selection'][i]['tableParams']['data'].length === 1)
-//			$(rapports).find('#Cadastre-rapports-table-comptes').bootstrapTable('check', 0);
     }
 
     if (this['show_veremes_cadastre_parcelle'] || this['show_veremes_cadastre_compte']) {
@@ -1027,48 +997,36 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
 nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.displayParcelleDescriptiveSheet = function (id_par) {
     oVmap.log('nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.displayParcelleDescriptiveSheet');
 
-    $('body').css({"cursor": "wait"});
-
     // Ajoute la description de la parcelle
     var cadastreController = this;
-    var url = oVmap['properties']['api_url'] + '/' + oVmap['properties']['cadastre']['api'] + '/fichedescriptiveparcelle/' + id_par;
-    var params = {
-        'token': oVmap['properties']['token'],
-        'result_srid': oVmap.getMap().getOLMap().getView().getProjection().getCode().substring(5)
-    };
 
-    this.$http_({
-        method: "POST",
-        headers: {
+    showAjaxLoader();
+    ajaxRequest({
+        'method': 'POST',
+        'url': oVmap['properties']['api_url'] + '/' + oVmap['properties']['cadastre']['api'] + '/fichedescriptiveparcelle/' + id_par,
+        'headers': {
+            'Accept': 'application/x-vm-json',
             'X-HTTP-Method-Override': 'GET'
         },
-        url: url,
-        params: params
-    }).then(function (response) {
+        'data': {
+            'result_srid': oVmap.getMap().getOLMap().getView().getProjection().getCode().substring(5)
+        },
+        'scope': this.$scope_,
+        'success': function (response) {
 
-        // Vérifie si il y a une erreur
-        if (goog.isDef(response['data']['errorMessage'])) {
-            console.error(response['data']['errorMessage']);
-            return 0;
+            // Vérifie si il y a un résultat
+            if (!goog.isDef(response['data']['data'])) {
+                console.error('Pas de données à afficher');
+                return 0;
+            }
+            var data = response['data']['data'];
+
+            cadastreController['oParcelleInfos'] = data;
+
+            cadastreController.displayParcelleDescriptiveSheet2();
         }
-        if (response['status'] === 500) {
-            $.notify('Une erreur est survenue au sein du serveur', 'error');
-            return 0;
-        }
-
-        // Vérifie si il y a un résultat
-        if (!goog.isDef(response['data']['data'])) {
-            console.error('Pas de données à afficher');
-            return 0;
-        }
-        var data = response['data']['data'];
-
-        cadastreController['oParcelleInfos'] = data;
-
-        cadastreController.displayParcelleDescriptiveSheet2();
-    }, function (response) {
-        console.error(response);
     });
+
 };
 
 /**
@@ -1078,8 +1036,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
  */
 nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.displayParcelleDescriptiveSheet2 = function () {
     oVmap.log('nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.displayParcelleDescriptiveSheet2');
-
-    $('body').css({"cursor": ""});
 
     var data = this['oParcelleInfos'];
 
@@ -1129,9 +1085,9 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
         if (goog.isDefAndNotNull(data['aSubdivisionFiscale'][i]['DCNTSF']))
             data['aSubdivisionFiscale'][i]['DCNTSF'] = parseFloat(data['aSubdivisionFiscale'][i]['DCNTSF']) + ' m²';
         if (goog.isDefAndNotNull(data['aSubdivisionFiscale'][i]['DRCSUBA']))
-            data['aSubdivisionFiscale'][i]['DRCSUBA'] = Math.pow(10, -2) * parseFloat(data['aSubdivisionFiscale'][i]['DRCSUBA']) + ' €';
+            data['aSubdivisionFiscale'][i]['DRCSUBA'] = (Math.pow(10, -2) * parseFloat(data['aSubdivisionFiscale'][i]['DRCSUBA'])).toFixed(2) + ' €';
         if (goog.isDefAndNotNull(data['aSubdivisionFiscale'][i]['DRCSUB']))
-            data['aSubdivisionFiscale'][i]['DRCSUB'] = Math.pow(10, -2) * parseFloat(data['aSubdivisionFiscale'][i]['DRCSUB']) + ' €';
+            data['aSubdivisionFiscale'][i]['DRCSUB'] = (Math.pow(10, -2) * parseFloat(data['aSubdivisionFiscale'][i]['DRCSUB'])).toFixed(2) + ' €';
 
 
         if (goog.isDefAndNotNull(data['aSubdivisionFiscale'][i]['DCNTSF']))
@@ -1146,9 +1102,27 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
     if (goog.isDefAndNotNull(data['aSubdivisionFiscale']['totalDcntsf']))
         data['aSubdivisionFiscale']['totalDcntsf'] = parseFloat(data['aSubdivisionFiscale']['totalDcntsf']) + ' m²';
     if (goog.isDefAndNotNull(data['aSubdivisionFiscale']['totalDrcsuba']))
-        data['aSubdivisionFiscale']['totalDrcsuba'] = parseFloat(data['aSubdivisionFiscale']['totalDrcsuba']) + ' €';
+        data['aSubdivisionFiscale']['totalDrcsuba'] = parseFloat(data['aSubdivisionFiscale']['totalDrcsuba']).toFixed(2) + ' €';
     if (goog.isDefAndNotNull(data['aSubdivisionFiscale']['totalDrcsub']))
-        data['aSubdivisionFiscale']['totalDrcsub'] = parseFloat(data['aSubdivisionFiscale']['totalDrcsub']) + ' €';
+        data['aSubdivisionFiscale']['totalDrcsub'] = parseFloat(data['aSubdivisionFiscale']['totalDrcsub']).toFixed(2) + ' €';
+
+    // Liens dans les intersections
+//    var sLink;
+//    if (goog.isArray(data['aIntersections'])) {
+//        for (var i = 0; i < data['aIntersections'].length; i++) {
+//            if (goog.isArray(data['aIntersections'][i]['data'])) {
+//                for (var ii = 0; ii < data['aIntersections'][i]['data'].length; ii++) {
+//                    for (var key in data['aIntersections'][i]['data'][ii]) {
+//                        sLink = null;
+//                        if (oVmap.isLink(data['aIntersections'][i]['data'][ii][key], 'link')) {
+//                            data['aIntersections'][i]['data'][ii][key] = oVmap.parseLink(data['aIntersections'][i]['data'][ii][key], 'link');
+//                            data['aIntersections'][i]['data'][ii][key] = this.$sce_.trustAsHtml(data['aIntersections'][i]['data'][ii][key]);
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
 
     this['oParcelleInfos'] = data;
 
@@ -1189,41 +1163,30 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
         return 0;
 
     var this_ = this;
-    var url = oVmap['properties']['api_url'] + '/' + oVmap['properties']['cadastre']['api'] + '/ficheurbanisme/' + id_par;
-    var params = {
-        'token': oVmap['properties']['token'],
-        'result_srid': oVmap.getMap().getOLMap().getView().getProjection().getCode().substring(5)
-    };
 
-    this.$http_({
-        method: "POST",
-        headers: {
+    showAjaxLoader();
+    ajaxRequest({
+        'method': 'POST',
+        'url': oVmap['properties']['api_url'] + '/' + oVmap['properties']['cadastre']['api'] + '/ficheurbanisme/' + id_par,
+        'headers': {
+            'Accept': 'application/x-vm-json',
             'X-HTTP-Method-Override': 'GET'
         },
-        url: url,
-        params: params
-    }).then(function (response) {
+        'data': {
+            'result_srid': oVmap.getMap().getOLMap().getView().getProjection().getCode().substring(5)
+        },
+        'timeout': 120000,
+        'scope': this.$scope_,
+        'success': function (response) {
 
-        // Vérifie si il y a une erreur
-        if (goog.isDef(response['data']['errorMessage'])) {
-            console.error(response['data']['errorMessage']);
-            return 0;
+            // Vérifie si il y a un résultat
+            if (!goog.isDef(response['data']['data'])) {
+                console.error('Pas de données à afficher');
+                return 0;
+            }
+            var data = response['data']['data'];
+            this_.displayUrbanismeSheet2(data);
         }
-        if (response['status'] === 500) {
-            $.notify('Une erreur est survenue au sein du serveur', 'error');
-            return 0;
-        }
-
-        // Vérifie si il y a un résultat
-        if (!goog.isDef(response['data']['data'])) {
-            console.error('Pas de données à afficher');
-            return 0;
-        }
-        var data = response['data']['data'];
-        this_.displayUrbanismeSheet2(data);
-
-    }, function (response) {
-        console.error(response);
     });
 };
 
@@ -1274,6 +1237,11 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
     var today = new Date();
     var dd = today.getDate();
     var mm = today.getMonth() + 1; //January is 0
+
+    // Ajoute des 0 si besoin
+    mm = (mm > 9 ? '' : '0') + mm;
+    dd = (dd > 9 ? '' : '0') + dd;
+
     var yyyy = today.getFullYear();
 
     if (!goog.isDef(oVmap['properties']['cadastre']["fiche_urb"]))
@@ -1340,48 +1308,34 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
     if (!goog.isDef(id_bat))
         return 'id_bat undefined';
 
-    $('body').css({"cursor": "wait"});
-
     // Ajoute la description de la parcelle
     var cadastreController = this;
-    var url = oVmap['properties']['api_url'] + '/' + oVmap['properties']['cadastre']['api'] + '/fichedescriptiveinvariant/' + id_bat;
-    var params = {
-        'token': oVmap['properties']['token'],
-        'jsonformat': 'anonymous',
-        'result_srid': oVmap.getMap().getOLMap().getView().getProjection().getCode().substring(5)
-    };
 
-    this.$http_({
-        method: "POST",
-        headers: {
+    showAjaxLoader();
+    ajaxRequest({
+        'method': 'POST',
+        'url': oVmap['properties']['api_url'] + '/' + oVmap['properties']['cadastre']['api'] + '/fichedescriptiveinvariant/' + id_bat,
+        'headers': {
+            'Accept': 'application/x-vm-json',
             'X-HTTP-Method-Override': 'GET'
         },
-        url: url,
-        params: params
-    }).then(function (response) {
+        'data': {
+            'result_srid': oVmap.getMap().getOLMap().getView().getProjection().getCode().substring(5)
+        },
+        'scope': this.$scope_,
+        'success': function (response) {
 
-        // Vérifie si il y a une erreur
-        if (goog.isDef(response['data']['errorMessage'])) {
-            console.error(response['data']['errorMessage']);
-            return 0;
+            // Vérifie si il y a un résultat
+            if (!goog.isDef(response['data']['data'])) {
+                console.error('Pas de données à afficher');
+                return 0;
+            }
+            var data = response['data']['data'];
+
+            cadastreController['oInvariant'] = data;
+
+            cadastreController.displayInvariantDescriptiveSheet2();
         }
-        if (response['status'] === 500) {
-            $.notify('Une erreur est survenue au sein du serveur', 'error');
-            return 0;
-        }
-
-        // Vérifie si il y a un résultat
-        if (!goog.isDef(response['data']['data'])) {
-            console.error('Pas de données à afficher');
-            return 0;
-        }
-        var data = response['data']['data'];
-
-        cadastreController['oInvariant'] = data;
-
-        cadastreController.displayInvariantDescriptiveSheet2();
-    }, function (response) {
-        console.error(response);
     });
 };
 
@@ -1420,8 +1374,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
         // return 0;
     }
 
-    $('body').css({"cursor": ""});
-
     // Récupère la bonne adresse
     for (var i = 0; i < this['oInvariant']['proprietaires'].length; i++) {
 
@@ -1452,12 +1404,10 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
     oVmap.log('nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.displayReleveDeProprieteSheet');
 
     var params = {
-        'token': oVmap['properties']['token'],
         'type': type,
         'result_srid': oVmap.getMap().getOLMap().getView().getProjection().getCode().substring(5)
     };
 
-    var url = oVmap['properties']['api_url'] + '/' + oVmap['properties']['cadastre']['api'] + '/relevedepropriete';
     var cadastreController = this;
 
     if (goog.isDef(id_par))
@@ -1466,53 +1416,76 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
     if (goog.isDef(idnupro))
         params['IDDNUPRO'] = idnupro;
 
-    this.$http_({
-        method: "POST",
-        headers: {
+    ajaxRequest({
+        'method': 'POST',
+        'url': oVmap['properties']['api_url'] + '/' + oVmap['properties']['cadastre']['api'] + '/relevedepropriete',
+        'headers': {
+            'Accept': 'application/x-vm-json',
             'X-HTTP-Method-Override': 'GET'
         },
-        url: url,
-        params: params
-    }).then(function (response) {
-        $('body').css({"cursor": ""});
+        'data': params,
+        'scope': this.$scope_,
+        'timeout': 120000,
+        'success': function (response) {
 
-        // Vérifie si il y a une erreur
-        if (goog.isDef(response['data']['error']))
-            if (goog.isDef(response['data']['error']['errorMessage'])) {
-                console.error(response['data']['error']['errorMessage']);
-                $.notify(response['data']['error']['errorMessage'], 'error');
+            if (!goog.isDef(response['data']['data'])) {
+                console.error('Pas de données à afficher');
                 if (goog.isDef(cadastreController.releveWindow))
                     cadastreController.releveWindow.close();
                 cadastreController.releveWindow = window.open("", 'Relevé de propriété ', 'height=400,width=600');
-                cadastreController.releveWindow.document.write('<div style="width: 100%; text-align: center; margin-top: 80px">' + response['data']['error']['errorMessage'] + '</div>');
+                cadastreController.releveWindow.document.write('<div style="width: 100%; text-align: center; margin-top: 80px">Pas de données à afficher</div>');
                 return 0;
             }
-        if (response['status'] === 500) {
-            $.notify('Une erreur est survenue au sein du serveur', 'error');
-            if (goog.isDef(cadastreController.releveWindow))
-                cadastreController.releveWindow.close();
-            return 0;
-        }
+            var data = response['data']['data'];
 
-        if (!goog.isDef(response['data']['data'])) {
-            console.error('Pas de données à afficher');
-            if (goog.isDef(cadastreController.releveWindow))
-                cadastreController.releveWindow.close();
-            cadastreController.releveWindow = window.open("", 'Relevé de propriété ', 'height=400,width=600');
-            cadastreController.releveWindow.document.write('<div style="width: 100%; text-align: center; margin-top: 80px">Pas de données à afficher</div>');
-            return 0;
-        }
-        var data = response['data']['data'];
-        var releveDeProprieteLink = data['releveDePropriete'] + '&token=' + oVmap['properties']['token'];
+            ajaxRequest({
+                'method': 'GET',
+                'url': data['releveDePropriete'] + '&',
+                'headers': {
+                    'Accept': 'application/x-vm-json'
+                },
+                'scope': this.$scope_,
+                'responseType': 'blob',
+                'success': function (response) {
 
-        // Ouvre la nouvelle fenêtre
-        cadastreController.releveWindow.location.href = releveDeProprieteLink;
-    }, function (response) {
-        console.error(response);
-        $.notify('Une erreur est survenue lors de la génération du rapport', 'error');
-        if (goog.isDef(cadastreController.releveWindow))
-            cadastreController.releveWindow.close();
-        $('body').css({"cursor": ""});
+                    // IE
+                    if (window.navigator['msSaveOrOpenBlob']) {
+                        window.navigator['msSaveOrOpenBlob'](response['data'], 'releve_de_propriete_' + id_par + '.pdf');
+                        cadastreController.releveWindow.close();
+                    }
+                    // Others
+                    else {
+//                        var url = window.URL.createObjectURL(response['data']);
+//                        cadastreController.releveWindow.location.href = url;
+                        oVmap.downloadBlob(response['data'], 'releve_de_propriete_' + id_par + '.pdf');
+                        cadastreController.releveWindow.close();
+                    }
+                }
+            });
+        },
+        'error': function (response) {
+
+            if (goog.isDef(response['data']['error'])) {
+                if (goog.isDef(response['data']['error']['errorMessage'])) {
+                    console.error(response['data']['error']['errorMessage']);
+                    $.notify(response['data']['error']['errorMessage'], 'error');
+                    if (goog.isDef(cadastreController.releveWindow))
+                        cadastreController.releveWindow.close();
+                    cadastreController.releveWindow = window.open("", 'Relevé de propriété ', 'height=400,width=600');
+                    cadastreController.releveWindow.document.write('<div style="width: 100%; text-align: center; margin-top: 80px">' + response['data']['error']['errorMessage'] + '</div>');
+                    return 0;
+                }
+            }
+            if (response['status'] === 500) {
+                $.notify('Une erreur est survenue au sein du serveur', 'error');
+                if (goog.isDef(cadastreController.releveWindow))
+                    cadastreController.releveWindow.close();
+                return 0;
+            }
+            if (goog.isDef(cadastreController.releveWindow)) {
+                cadastreController.releveWindow.close();
+            }
+        }
     });
 };
 
@@ -1538,8 +1511,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
         this.releveWindow.close();
     this.releveWindow = window.open("", 'Relevé de propriété ', 'height=400,width=600');
     this.releveWindow.document.write('<div style="width: 100%; text-align: center; margin-top: 80px"><img src="images/ajax-big-loader.GIF" alt="Load img" style="width: 200px;height: 170px;"><br><br><i style="color: gray">Construction de la fiche en cours..</i></div>');
-
-    $('body').css({"cursor": "wait"});
 
     var id_par = selectedParcelles[0]['id_par'];
     this.displayReleveDeProprieteSheet('parcelle', '', id_par);
@@ -1567,8 +1538,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
         this.releveWindow.close();
     this.releveWindow = window.open("", 'Relevé de propriété ', 'height=400,width=600');
     this.releveWindow.document.write('<div style="width: 100%; text-align: center; margin-top: 80px"><img src="images/ajax-big-loader.GIF" alt="Load img" style="width: 200px;height: 170px;"><br><br><i style="color: gray">Construction de la fiche en cours..</i></div>');
-
-    $('body').css({"cursor": "wait"});
 
     var iddnupro = selectedComptes[0]['ID_COM'] + selectedComptes[0]['DNUPRO'];
 
@@ -1598,8 +1567,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
         this.releveWindow.close();
     this.releveWindow = window.open("", 'Relevé de propriété ', 'height=400,width=600');
     this.releveWindow.document.write('<div style="width: 100%; text-align: center; margin-top: 80px"><img src="images/ajax-big-loader.GIF" alt="Load img" style="width: 200px;height: 170px;"><br><br><i style="color: gray">Construction de la fiche en cours..</i></div>');
-
-    $('body').css({"cursor": "wait"});
 
     var iddnupro = selectedComptes[0]['ID_COM'] + selectedComptes[0]['DNUPRO'];
     this.displayReleveDeProprieteSheet('tiers', iddnupro);
@@ -1652,15 +1619,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
         parcelles += selectedParcelles[i]['id_par'];
     }
 
-    var params = {
-        'token': oVmap['properties']['token'],
-        'rapport_type': rapportType,
-        'parcelles': parcelles,
-        'result_srid': oVmap.getMap().getOLMap().getView().getProjection().getCode().substring(5)
-    };
-
-    var url = oVmap['properties']['api_url'] + '/' + oVmap['properties']['cadastre']['api'] + '/rapportscadastreparcelle';
-
     var this_ = this;
 
     // Ouvre une première fenêtre vide car on ne peut ouvrir une fenêtre avec window.open uniquement sur action directe
@@ -1682,69 +1640,97 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
         bootbox.alert(message);
     }
 
-
-    $('body').css({"cursor": "wait"});
-    this.$http_({
-        method: "POST",
-        headers: {
+    showAjaxLoader();
+    ajaxRequest({
+        'method': 'POST',
+        'url': oVmap['properties']['api_url'] + '/' + oVmap['properties']['cadastre']['api'] + '/rapportscadastreparcelle',
+        'headers': {
+            'Accept': 'application/x-vm-json',
             'X-HTTP-Method-Override': 'GET'
         },
-        url: url,
-        params: params
-    }).then(function (response) {
-        $('body').css({"cursor": ""});
+        'data': {
+            'rapport_type': rapportType,
+            'parcelles': parcelles,
+            'result_srid': oVmap.getMap().getOLMap().getView().getProjection().getCode().substring(5)
+        },
+        'timeout': 120000,
+        'scope': this.$scope_,
+        'success': function (response) {
 
-        // Vérifie si il y a une erreur
-        if (goog.isDef(response['data']['error']))
-            if (goog.isDef(response['data']['error']['errorMessage'])) {
-                console.error(response['data']['error']['errorMessage']);
-                $.notify(response['data']['error']['errorMessage'], 'error');
+            if (!goog.isDef(response['data']['data'])) {
+                console.error('Pas de données à afficher');
+                $.notify('Pas de données à afficher', 'warn');
                 if (bOpenWindow)
-                    this_.releveWindow.document.write('<div style="width: 100%; text-align: center; margin-top: 80px">' + response['data']['error']['errorMessage'] + '</div>');
+                    this_.releveWindow.close();
                 else
                     $('.bootbox-alert').modal('hide');
                 return 0;
             }
 
-        if (response['status'] === 500) {
-            $.notify('Une erreur est survenue au sein du serveur', 'error');
-            if (bOpenWindow)
+            var data = response['data']['data'];
+            var rapportLink = data['rapport'] + '&';
+
+            showAjaxLoader();
+            ajaxRequest({
+                'method': 'GET',
+                'url': rapportLink,
+                'headers': {
+                    'Accept': 'application/x-vm-json'
+                },
+                'scope': this.$scope_,
+                'responseType': 'blob',
+                'success': function (response) {
+
+                    // Ouvre la nouvelle fenêtre ou lance le téléchargement du fichier
+                    if (bOpenWindow) {
+                        this_.releveWindow.location.href = rapportLink;
+
+                        // IE
+                        if (window.navigator['msSaveOrOpenBlob']) {
+                            window.navigator['msSaveOrOpenBlob'](response['data'], 'vmap_cadastre_' + rapportType + '.pdf');
+                            this_.releveWindow.close();
+                        }
+                        // Others
+                        else {
+                            var url = window.URL.createObjectURL(response['data']);
+                            this_.releveWindow.location.href = url;
+                        }
+                    } else {
+                        var url = window.URL.createObjectURL(response['data']);
+                        $('#cadastre-download-file').attr('href', url);
+                        $('#cadastre-download-file').attr('download', rapportType + "." + data['format']);
+                        oVmap.simuleClick('cadastre-download-file');
+                        $('.bootbox-alert').modal('hide');
+                    }
+                }
+            });
+        },
+        'error': function (response) {
+
+            // Vérifie si il y a une erreur
+            if (goog.isDef(response['data']['error'])) {
+                if (goog.isDef(response['data']['error']['errorMessage'])) {
+                    console.error(response['data']['error']['errorMessage']);
+                    $.notify(response['data']['error']['errorMessage'], 'error');
+                    if (bOpenWindow)
+                        this_.releveWindow.document.write('<div style="width: 100%; text-align: center; margin-top: 80px">' + response['data']['error']['errorMessage'] + '</div>');
+                    else
+                        $('.bootbox-alert').modal('hide');
+                    return 0;
+                }
+            }
+            if (response['status'] === 500) {
+                $.notify('Une erreur est survenue au sein du serveur', 'error');
+                if (bOpenWindow)
+                    this_.releveWindow.close();
+                else
+                    $('.bootbox-alert').modal('hide');
+                return 0;
+            }
+            if (goog.isDef(this_.releveWindow)) {
                 this_.releveWindow.close();
-            else
-                $('.bootbox-alert').modal('hide');
-            return 0;
+            }
         }
-
-        if (!goog.isDef(response['data']['data'])) {
-            console.error('Pas de données à afficher');
-            $.notify('Pas de données à afficher', 'warn');
-            if (bOpenWindow)
-                this_.releveWindow.close();
-            else
-                $('.bootbox-alert').modal('hide');
-            return 0;
-        }
-
-        var data = response['data']['data'];
-        var rapportLink = data['rapport'] + '&token=' + oVmap['properties']['token'];
-
-        // Ouvre la nouvelle fenêtre ou lance le téléchargement du fichier
-        if (bOpenWindow) {
-            this_.releveWindow.location.href = rapportLink;
-        } else {
-            $('#cadastre-download-file').attr('href', rapportLink);
-            $('#cadastre-download-file').attr('download', rapportType + "." + data['format']);
-            oVmap.simuleClick('cadastre-download-file');
-            $('.bootbox-alert').modal('hide');
-        }
-
-
-    }, function (response) {
-        console.error(response);
-        $.notify('Une erreur est survenue lors de la génération du rapport', 'error');
-        if (goog.isDef(this_.releveWindow))
-            this_.releveWindow.close();
-        $('body').css({"cursor": ""});
     });
 };
 
@@ -1760,63 +1746,33 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
 nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.addLocationGeometries = function (aData, type, zoom) {
     oVmap.log('nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.addLocationGeometries');
 
-    $('body').css({"cursor": ""});
-
     zoom = goog.isDef(zoom) ? zoom : true;
     type = goog.isDef(type) ? type : '';
 
-    var olView = this['map'].getView();
-    var totalExtent = [];
-    var aExtents = [];
-
-    if (this['locationMultiple'] === false)
-        oVmap.getMap().getLocationOverlayFeatures().clear();
-
-    // Ajoute les features
+    var aFeatures = [];
     for (var i = aData.length - 1; i >= 0; i--) {
-
-        var geom = oVmap.getGeomFromEWKT(aData[i]['geom']);
         var feature = new ol.Feature({
-            geometry: geom
+            geometry: oVmap.getGeomFromEWKT(aData[i]['geom'])
         });
-
-        // Mémorise les étendues pour pouvoir zoomer sur l'étendue totale
-        aExtents.push(geom.getExtent());
-        totalExtent = geom.getExtent();
-
-        // Ajoute la feature sur la carte
-        oVmap.getMap().getLocationOverlaySource().addFeature(feature);
-
         // Renseigne le type d'entitée
         feature.set('type', type);
-
+        aFeatures.push(feature);
         // Renseigne les infos
         var featureInfos = {};
         for (var item in aData[i]) {
             if (item !== 'geom')
                 featureInfos[item] = aData[i][item];
         }
-        feature.set('infos', featureInfos);
+        feature.set('infos', featureInfos)
 
-        delete geom;
-        delete feature;
     }
-    // Calcul de l'étendue totale
-    for (var i = 0; i < aExtents.length; i++) {
-        if (aExtents[i][0] < totalExtent[0])
-            totalExtent[0] = aExtents[i][0];
-        if (aExtents[i][1] < totalExtent[1])
-            totalExtent[1] = aExtents[i][1];
-        if (aExtents[i][2] > totalExtent[2])
-            totalExtent[2] = aExtents[i][2];
-        if (aExtents[i][3] > totalExtent[3])
-            totalExtent[3] = aExtents[i][3];
+
+    var removeOldLocation = true;
+    if (this['locationMultiple']) {
+        removeOldLocation = false;
     }
-    if (zoom === true) {
-        setTimeout(function () {
-            olView.fit(totalExtent, oVmap.getMap().getOLMap().getSize());
-        });
-    }
+
+    oVmap.getMap().locateFeatures(aFeatures, removeOldLocation, zoom);
 };
 
 /**
@@ -1828,8 +1784,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
  */
 nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.setSelectionGeometries = function (aInfos) {
     oVmap.log('nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.setSelectionGeometries');
-
-    $('body').css({"cursor": ""});
 
     // Ajoute les features
     for (var i = aInfos.length - 1; i >= 0; i--) {
@@ -1927,52 +1881,41 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
         return 0;
     };
 
-    $('body').css({"cursor": "wait"});
-
-    this.$http_({
-        method: "POST",
-        url: url,
-        headers: {
+    showAjaxLoader();
+    ajaxRequest({
+        'method': 'POST',
+        'url': url,
+        'headers': {
+            'Accept': 'application/x-vm-json',
             'X-HTTP-Method-Override': 'GET'
         },
-        data: {
-            'token': oVmap['properties']['token'],
+        'data': {
             'filter': filter,
             'result_srid': oVmap.getMap().getOLMap().getView().getProjection().getCode().substring(5)
+        },
+        'scope': this.$scope_,
+        'success': function (response) {
+
+            // Vérifie si il y a un résultat
+            if (!goog.isDef(response['data']['data'])) {
+                console.error('Pas de données à afficher');
+                return 0;
+            }
+
+            var data = response['data']['data'];
+
+            // Vide la locatlisation
+            oVmap.getMap().getLocationOverlayFeatures().clear();
+            // Ajoute la géométrie
+            data = cadastreController.setSelectionGeometries(data);
+            // Ajoute les infos
+            cadastreController.addInfos(data, tabCode);
+            // Zoom sur les géométries du dernier onglet à ajouter
+            cadastreController.zoomOnLastTabFeatures(tabCode);
+            // Appelle le callback
+            callBack(tabCode);
         }
-    }).then(function (response) {
-
-        $('body').css({"cursor": ""});
-
-        // Vérifie si il y a une erreur
-        if (goog.isDef(response['data']['errorMessage'])) {
-            console.error(response['data']['errorMessage']);
-            return 0;
-        }
-
-        // Vérifie si il y a un résultat
-        if (!goog.isDef(response['data']['data'])) {
-            console.error('Pas de données à afficher');
-            return 0;
-        }
-
-        var data = response['data']['data'];
-
-        // Vide la locatlisation
-        oVmap.getMap().getLocationOverlayFeatures().clear();
-        // Ajoute la géométrie
-        data = cadastreController.setSelectionGeometries(data);
-        // Ajoute les infos
-        cadastreController.addInfos(data, tabCode);
-        // Zoom sur les géométries du dernier onglet à ajouter
-        cadastreController.zoomOnLastTabFeatures(tabCode);
-        // Appelle le callback
-        callBack(tabCode);
-    }, function (response) {
-        $('body').css({"cursor": ""});
-        console.error(response);
     });
-
 };
 
 /**
@@ -1992,7 +1935,12 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
     } else {
         var paramField = param.toLowerCase();
     }
-    var filter = '"' + paramField + '"' + '=' + '\'' + value + '\'';
+//    var filter = '"' + paramField + '"' + '=' + '\'' + value + '\'';
+    var filter = {
+        "column": paramField,
+        "compare_operator": "=",
+        "value": value
+    };
     this.addSelectionFromFilter(path, filter, tabCode, callBack);
 };
 
@@ -2017,7 +1965,19 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
         var paramField1 = param1.toLowerCase();
         var paramField2 = param2.toLowerCase();
     }
-    var filter = '"' + paramField1 + '"' + '=' + '\'' + value1 + '\' AND "' + paramField2 + '"' + '=' + '\'' + value2 + '\'';
+//    var filter = '"' + paramField1 + '"' + '=' + '\'' + value1 + '\' AND "' + paramField2 + '"' + '=' + '\'' + value2 + '\'';
+    var filter = {
+        "relation": "AND",
+        "operators": [{
+                "column": paramField1,
+                "compare_operator": "=",
+                "value": value1
+            }, {
+                "column": paramField2,
+                "compare_operator": "=",
+                "value": value2
+            }]
+    };
     this.addSelectionFromFilter(path, filter, tabCode, callBack);
 };
 
@@ -2033,18 +1993,33 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
  */
 nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.addSelectionFromArray = function (path, param, array, arrayParam, tabCode, callBack) {
     oVmap.log('nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.addSelectionFromTable');
-    var filter = '';
     if (this['cadastreAPI_'] === "cadastre") {
         var paramField = param;
     } else {
         var paramField = param.toLowerCase();
     }
+
+//    var filter = '';
+//    for (var i = 0; i < array.length; i++) {
+//        if (i !== 0) {
+//            filter += ' OR "' + paramField + '"' + '=' + '\'' + array[i][arrayParam] + '\'';
+//        } else {
+//            filter += '"' + paramField + '"' + '=' + '\'' + array[i][arrayParam] + '\'';
+//        }
+//    }
+
+    var filter = {
+        "relation": "OR",
+        "operators": []
+    };
     for (var i = 0; i < array.length; i++) {
-        if (i !== 0)
-            filter += ' OR "' + paramField + '"' + '=' + '\'' + array[i][arrayParam] + '\'';
-        else
-            filter += '"' + paramField + '"' + '=' + '\'' + array[i][arrayParam] + '\'';
+        filter['operators'].push({
+            "column": paramField,
+            "compare_operator": "=",
+            "value": array[i][arrayParam]
+        });
     }
+
     this.addSelectionFromFilter(path, filter, tabCode, callBack);
 };
 
@@ -2065,7 +2040,13 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
     } else {
         var paramField = param.toLowerCase();
     }
-    var filter = '"' + paramField + '"' + '=' + '\'' + $(selectorId).val() + '\'';
+//    var filter = '"' + paramField + '"' + '=' + '\'' + $(selectorId).val() + '\'';
+    var filter = {
+        "column": paramField,
+        "compare_operator": "=",
+        "value": $(selectorId).val()
+    };
+
     this.addSelectionFromFilter(path, filter, tabCode, callBack);
 };
 
@@ -2092,7 +2073,19 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
     }
     var value1 = $(selectorId1).val();
     var value2 = $(selectorId2).val();
-    var filter = '"' + paramField1 + '"' + '=' + '\'' + value1 + '\' AND "' + paramField2 + '"' + '=' + '\'' + value2 + '\'';
+//    var filter = '"' + paramField1 + '"' + '=' + '\'' + value1 + '\' AND "' + paramField2 + '"' + '=' + '\'' + value2 + '\'';
+    var filter = {
+        "relation": "AND",
+        "operators": [{
+                "column": paramField1,
+                "compare_operator": "=",
+                "value": value1
+            }, {
+                "column": paramField2,
+                "compare_operator": "=",
+                "value": value2
+            }]
+    };
     this.addSelectionFromFilter(path, filter, tabCode, callBack);
 };
 
@@ -2107,19 +2100,32 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
  */
 nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.addSelectionFromTable = function (path, param, tableId, tabCode, callBack) {
     oVmap.log('nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.addSelectionFromTable');
-    var filter = '';
     var tableSelections = $(tableId).bootstrapTable('getAllSelections');
     if (this['cadastreAPI_'] === "cadastre") {
         var paramField = param;
     } else {
         var paramField = param.toLowerCase();
     }
+//    var filter = '';
+//    for (var i = 0; i < tableSelections.length; i++) {
+//        if (i !== 0)
+//            filter += ' OR "' + paramField + '"' + '=' + '\'' + tableSelections[i][param] + '\'';
+//        else
+//            filter += '"' + paramField + '"' + '=' + '\'' + tableSelections[i][param] + '\'';
+//    }
+
+    var filter = {
+        "relation": "OR",
+        "operators": []
+    };
     for (var i = 0; i < tableSelections.length; i++) {
-        if (i !== 0)
-            filter += ' OR "' + paramField + '"' + '=' + '\'' + tableSelections[i][param] + '\'';
-        else
-            filter += '"' + paramField + '"' + '=' + '\'' + tableSelections[i][param] + '\'';
+        filter['operators'].push({
+            "column": paramField,
+            "compare_operator": "=",
+            "value": tableSelections[i][param]
+        });
     }
+
     this.addSelectionFromFilter(path, filter, tabCode, callBack);
 };
 
@@ -2148,40 +2154,39 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
     var cadastreController = this;
 
     if (value !== "") {
-        this.$http_({
-            method: "POST",
-            headers: {
+        showAjaxLoader();
+        ajaxRequest({
+            'method': 'POST',
+            'url': url,
+            'headers': {
+                'Accept': 'application/x-vm-json',
                 'X-HTTP-Method-Override': 'GET'
             },
-            url: url,
-            params: {
-                'token': oVmap['properties']['token'],
+            'data': {
                 'attributs': 'geom|proj',
-                'filter': '"' + param + '"' + '=\'' + value + '\'',
+//                'filter': '"' + param + '"' + '=\'' + value + '\'',
+                'filter': {
+                    "column": param,
+                    "compare_operator": "=",
+                    "value": value
+                },
                 'result_srid': oVmap.getMap().getOLMap().getView().getProjection().getCode().substring(5)
+            },
+            'scope': this.$scope_,
+            'success': function (response) {
+
+                // Vérifie si il y a un résultat
+                if (!goog.isDef(response['data']['data'])) {
+                    console.error('Pas de données à afficher');
+                    return 0;
+                }
+
+                var data = response['data']['data'];
+
+                cadastreController.addLocationGeometries(data);
             }
-        }).then(function (response) {
-
-            // Vérifie si il y a une erreur
-            if (goog.isDef(response['data']['errorMessage'])) {
-                console.error(response['data']['errorMessage']);
-                return 0;
-            }
-
-            // Vérifie si il y a un résultat
-            if (!goog.isDef(response['data']['data'])) {
-                console.error('Pas de données à afficher');
-                return 0;
-            }
-
-            var data = response['data']['data'];
-
-            cadastreController.addLocationGeometries(data);
-        }, function (response) {
-            console.error(response);
         });
     } else {
-//        bootbox.alert('<h4>Veuillez sélectionner au moins un objet spatial</h4>');
         $.notify('Veuillez sélectionner au moins un objet spatial', 'info');
     }
 };
@@ -2198,50 +2203,55 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
 nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.localiseFromArray = function (path, param, array, arrayParam) {
     oVmap.log('nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.localiseFromTable');
 
-    $('body').css({"cursor": "wait"});
-
     var cadastreController = this;
     var url = oVmap['properties']['api_url'] + '/' + path;
 
-    var sParams = '';
+//    var sParams = '';
+//    for (var i = 0; i < array.length; i++) {
+//        if (i !== 0)
+//            sParams += ' OR "' + param + '"' + '=' + '\'' + array[i][arrayParam] + '\'';
+//        else
+//            sParams += '"' + param + '"' + '=' + '\'' + array[i][arrayParam] + '\'';
+//    }
+
+    var filter = {
+        "relation": "OR",
+        "operators": []
+    };
     for (var i = 0; i < array.length; i++) {
-        if (i !== 0)
-            sParams += ' OR "' + param + '"' + '=' + '\'' + array[i][arrayParam] + '\'';
-        else
-            sParams += '"' + param + '"' + '=' + '\'' + array[i][arrayParam] + '\'';
+        filter['operators'].push({
+            "column": param,
+            "compare_operator": "=",
+            "value": array[i][arrayParam]
+        });
     }
 
-    cadastreController.$http_({
-        method: "POST",
-        headers: {
+    showAjaxLoader();
+    ajaxRequest({
+        'method': 'POST',
+        'url': url,
+        'headers': {
+            'Accept': 'application/x-vm-json',
             'X-HTTP-Method-Override': 'GET'
         },
-        url: url,
-        params: {
-            'token': oVmap['properties']['token'],
+        'data': {
             'attributs': 'geom|proj',
-            'filter': sParams,
+            'filter': filter,
             'result_srid': oVmap.getMap().getOLMap().getView().getProjection().getCode().substring(5)
+        },
+        'scope': this.$scope_,
+        'success': function (response) {
+
+            // Vérifie si il y a un résultat
+            if (!goog.isDef(response['data']['data'])) {
+                console.error('Pas de données à afficher');
+                return 0;
+            }
+
+            var data = response['data']['data'];
+
+            cadastreController.addLocationGeometries(data);
         }
-    }).then(function (response) {
-
-        // Vérifie si il y a une erreur
-        if (goog.isDef(response['data']['errorMessage'])) {
-            console.error(response['data']['errorMessage']);
-            return 0;
-        }
-
-        // Vérifie si il y a un résultat
-        if (!goog.isDef(response['data']['data'])) {
-            console.error('Pas de données à afficher');
-            return 0;
-        }
-
-        var data = response['data']['data'];
-
-        cadastreController.addLocationGeometries(data);
-    }, function (response) {
-        console.error(response);
     });
 };
 
@@ -2261,49 +2271,54 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
     var cadastreController = this;
     var tableSelections = $(tableId).bootstrapTable('getAllSelections');
     var url = oVmap['properties']['api_url'] + '/' + path;
-    var sParams = '';
 
     var loadHttp = function () {
-        $('body').css({"cursor": "wait"});
+//        var sParams = '';
+//        for (var i = 0; i < tableSelections.length; i++) {
+//            if (i !== 0)
+//                sParams += ' OR "' + param + '"' + '=' + '\'' + tableSelections[i][tableParam] + '\'';
+//            else
+//                sParams += '"' + param + '"' + '=' + '\'' + tableSelections[i][tableParam] + '\'';
+//        }
 
+        var filter = {
+            "relation": "OR",
+            "operators": []
+        };
         for (var i = 0; i < tableSelections.length; i++) {
-            if (i !== 0)
-                sParams += ' OR "' + param + '"' + '=' + '\'' + tableSelections[i][tableParam] + '\'';
-            else
-                sParams += '"' + param + '"' + '=' + '\'' + tableSelections[i][tableParam] + '\'';
+            filter['operators'].push({
+                "column": param,
+                "compare_operator": "=",
+                "value": tableSelections[i][tableParam]
+            });
         }
 
-        cadastreController.$http_({
-            method: "POST",
-            headers: {
+        showAjaxLoader();
+        ajaxRequest({
+            'method': 'POST',
+            'url': url,
+            'headers': {
+                'Accept': 'application/x-vm-json',
                 'X-HTTP-Method-Override': 'GET'
             },
-            url: url,
-            data: {
-                'token': oVmap['properties']['token'],
+            'data': {
                 'attributs': 'geom|proj',
-                'filter': sParams,
+                'filter': filter,
                 'result_srid': oVmap.getMap().getOLMap().getView().getProjection().getCode().substring(5)
+            },
+            'scope': this.$scope_,
+            'success': function (response) {
+
+                // Vérifie si il y a un résultat
+                if (!goog.isDef(response['data']['data'])) {
+                    console.error('Pas de données à afficher');
+                    return 0;
+                }
+
+                var data = response['data']['data'];
+
+                cadastreController.addLocationGeometries(data);
             }
-        }).then(function (response) {
-
-            // Vérifie si il y a une erreur
-            if (goog.isDef(response['data']['errorMessage'])) {
-                console.error(response['data']['errorMessage']);
-                return 0;
-            }
-
-            // Vérifie si il y a un résultat
-            if (!goog.isDef(response['data']['data'])) {
-                console.error('Pas de données à afficher');
-                return 0;
-            }
-
-            var data = response['data']['data'];
-
-            cadastreController.addLocationGeometries(data);
-        }, function (response) {
-            console.error(response);
         });
     };
 
@@ -2319,8 +2334,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
     } else if (tableSelections.length !== 0) {
         loadHttp();
     } else {
-        $('body').css({"cursor": ""});
-//        bootbox.alert('<h4>Veuillez sélectionner au moins un objet de la liste</h4>');
         $.notify('Veuillez sélectionner au moins un objet de la liste', 'info');
     }
 };
@@ -2342,7 +2355,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
     var cadastreController = this;
     var url = oVmap['properties']['api_url'] + '/' + path;
     var params = {
-        'token': oVmap['properties']['token'],
         'attributs': '-geom|proj',
         'result_srid': oVmap.getMap().getOLMap().getView().getProjection().getCode().substring(5)
     };
@@ -2355,34 +2367,26 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
 
     this[variableName].length = 0;
 
-    this.$http_({
-        method: "POST",
-        headers: {
+    showAjaxLoader();
+    ajaxRequest({
+        'method': 'POST',
+        'url': url,
+        'headers': {
+            'Accept': 'application/x-vm-json',
             'X-HTTP-Method-Override': 'GET'
         },
-        url: url,
-        params: params
-    }).then(function (response) {
-        // Vérifie si il y a une erreur
-        if (goog.isDef(response['data']['errorMessage'])) {
-            console.error(response['data']['errorMessage']);
-            return 0;
-        }
-        if (response['status'] === 500) {
-            $.notify('Une erreur est survenue au sein du serveur', 'error');
-            return 0;
-        }
+        'data': params,
+        'scope': this.$scope_,
+        'success': function (response) {
+            // Vérifie si il y a un résultat
+            if (!goog.isDef(response['data']['data'])) {
+                console.error('Pas de données à afficher');
+                return 0;
+            }
+            var data = response['data']['data'];
 
-        // Vérifie si il y a un résultat
-        if (!goog.isDef(response['data']['data'])) {
-            console.error('Pas de données à afficher');
-            return 0;
+            cadastreController[variableName] = data;
         }
-        var data = response['data']['data'];
-
-        cadastreController[variableName] = data;
-    }, function (response) {
-        console.error(response);
     });
 };
 
@@ -2398,7 +2402,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
 nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.getBaseElemBySelect = function (path, param, selector, variableName, order_by) {
     oVmap.log('nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.getBaseElemBySelect');
 
-    $('body').css('cursor', 'wait');
     order_by = goog.isDef(order_by) ? order_by : '';
     this[variableName].length = 0;
 
@@ -2406,9 +2409,13 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
     var url = oVmap['properties']['api_url'] + '/' + path;
     var value = $(selector).val();
     var params = {
-        'token': oVmap['properties']['token'],
         'attributs': '-geom|proj',
-        'filter': '"' + param + '"' + '=' + '\'' + value + '\'',
+//        'filter': '"' + param + '"' + '=' + '\'' + value + '\'',
+        'filter': {
+            "column": param,
+            "compare_operator": "=",
+            "value": value
+        },
         'jsonformat': 'anonymous',
         'result_srid': oVmap.getMap().getOLMap().getView().getProjection().getCode().substring(5)
     };
@@ -2416,38 +2423,27 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
     if (order_by !== '')
         params['order_by'] = order_by;
 
-    this.$http_({
-        method: "POST",
-        headers: {
+    showAjaxLoader();
+    ajaxRequest({
+        'method': 'POST',
+        'url': url,
+        'headers': {
+            'Accept': 'application/x-vm-json',
             'X-HTTP-Method-Override': 'GET'
         },
-        url: url,
-        params: params
-    }).then(function (response) {
+        'data': params,
+        'scope': this.$scope_,
+        'success': function (response) {
 
-        $('body').css('cursor', '');
+            // Vérifie si il y a un résultat
+            if (!goog.isDef(response['data']['data'])) {
+                console.error('Pas de données à afficher');
+                return 0;
+            }
+            var data = response['data']['data'];
 
-        // Vérifie si il y a une erreur
-        if (goog.isDef(response['data']['errorMessage'])) {
-            console.error(response['data']['errorMessage']);
-            $.notify(response['data']['errorMessage'], 'error');
-            return 0;
+            cadastreController[variableName] = data;
         }
-        if (response['status'] === 500) {
-            $.notify('Une erreur est survenue au sein du serveur', 'error');
-            return 0;
-        }
-
-        // Vérifie si il y a un résultat
-        if (!goog.isDef(response['data']['data'])) {
-            console.error('Pas de données à afficher');
-            return 0;
-        }
-        var data = response['data']['data'];
-
-        cadastreController[variableName] = data;
-    }, function (response) {
-        console.error(response);
     });
 };
 
@@ -2463,58 +2459,56 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
     oVmap.log('nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.putBaseElemOnTable');
 
     $(table).bootstrapTable('showLoading');
-    $('body').css('cursor', 'wait');
+    $(table).bootstrapTable('removeAll');
 
     order_by = goog.isDef(order_by) ? order_by : '';
 
     var params = {
-        'token': oVmap['properties']['token'],
         'filter': filter,
         'jsonformat': 'anonymous',
         'result_srid': oVmap.getMap().getOLMap().getView().getProjection().getCode().substring(5)
     };
 
-    if (order_by !== '')
+    if (order_by !== '') {
         params['order_by'] = order_by;
+    }
 
-    this.$http_({
-        method: "POST",
-        headers: {
+    showAjaxLoader();
+    ajaxRequest({
+        'method': 'POST',
+        'url': oVmap['properties']['api_url'] + '/' + path,
+        'headers': {
+            'Accept': 'application/x-vm-json',
             'X-HTTP-Method-Override': 'GET'
         },
-        url: oVmap['properties']['api_url'] + '/' + path,
-        params: params
-    }).then(function (response) {
-        $('body').css('cursor', '');
-        $(table).bootstrapTable('hideLoading');
+        'data': params,
+        'scope': this.$scope_,
+        'success': function (response) {
 
-        // Vérifie si il y a une erreur
-        if (goog.isDef(response['data']['errorMessage'])) {
-            console.error(response['data']['errorMessage']);
-            return 0;
+            $(table).bootstrapTable('hideLoading');
+
+            // Vérifie si il y a un résultat
+            if (!goog.isDef(response['data']['data'])) {
+                console.error('Pas de données à afficher');
+                return 0;
+            }
+
+            var data = response['data']['data'];
+
+            // Met à jour les données du tableau
+            $(table).bootstrapTable('load', data);
+
+            // Affiche les outils du tableau
+            $(table + "-toolbar").show();
+
+            // Si une seule ligne est proposée, alors on la sélectionne
+            if (data.length === 1) {
+                $(table).bootstrapTable('check', 0);
+            }
+        },
+        'error': function (response) {
+            $(table).bootstrapTable('hideLoading');
         }
-        if (response['status'] === 500) {
-            $.notify('Une erreur est survenue au sein du serveur', 'error');
-            return 0;
-        }
-
-        // Vérifie si il y a un résultat
-        if (!goog.isDef(response['data']['data'])) {
-            console.error('Pas de données à afficher');
-            return 0;
-        }
-
-        var data = response['data']['data'];
-
-        // Met à jour les données du tableau
-        $(table).bootstrapTable('load', data);
-
-        // Affiche les outils du tableau
-        $(table + "-toolbar").show();
-
-        // Si une seule ligne est proposée, alors on la sélectionne
-        if (data.length === 1)
-            $(table).bootstrapTable('check', 0);
     });
 };
 
@@ -2534,7 +2528,12 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
     order_by = goog.isDef(order_by) ? order_by : '';
 
     var value = $(selectorId).val();
-    var filter = '"' + param + '"' + '=' + '\'' + value + '\'';
+//    var filter = '"' + param + '"' + '=' + '\'' + value + '\'';
+    var filter = {
+        "column": param,
+        "compare_operator": "=",
+        "value": value
+    };
 
     this.putBaseElemOnTable(path, filter, table, order_by);
 };
@@ -2558,8 +2557,19 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
 
     var value1 = $(selector1).val();
     var value2 = $(selector2).val();
-    var filter = '"' + param1 + '"' + '=' + '\'' + value1 + '\' AND "' + param2 + '"' + '=' + '\'' + value2 + '\'';
-
+//    var filter = '"' + param1 + '"' + '=' + '\'' + value1 + '\' AND "' + param2 + '"' + '=' + '\'' + value2 + '\'';
+    var filter = {
+        "relation": "AND",
+        "operators": [{
+                "column": param1,
+                "compare_operator": "=",
+                "value": value1
+            }, {
+                "column": param2,
+                "compare_operator": "=",
+                "value": value2
+            }]
+    };
 
     this.putBaseElemOnTable(path, filter, table, order_by);
 };
@@ -2580,8 +2590,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
     var url = oVmap['properties']['api_url'] + '/' + path;
     var cadastreController = this;
 
-    $('body').css('cursor', 'wait');
-
     $(tableId).bootstrapTable({
         data: {}
     });
@@ -2592,73 +2600,67 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
     }
     $(tableId).bootstrapTable('showLoading');
 
-    this.$http_({
-        method: "POST",
-        headers: {
+    showAjaxLoader();
+    ajaxRequest({
+        'method': 'POST',
+        'url': url,
+        'headers': {
+            'Accept': 'application/x-vm-json',
             'X-HTTP-Method-Override': 'GET'
         },
-        url: url,
-        params: {
-            'token': oVmap['properties']['token'],
+        'data': {
             'order_by': order,
-            'filter': '"' + param + '"' + '=' + '\'' + value + '\'',
+//            'filter': '"' + param + '"' + '=' + '\'' + value + '\'',
+            'filter': {
+                "column": param,
+                "compare_operator": "=",
+                "value": value
+            },
             'jsonformat': 'anonymous',
             'result_srid': oVmap.getMap().getOLMap().getView().getProjection().getCode().substring(5)
-        }
-    }).then(function (response) {
-        $('body').css('cursor', '');
-        $(tableId).bootstrapTable('hideLoading');
+        },
+        'scope': this.$scope_,
+        'success': function (response) {
+            $(tableId).bootstrapTable('hideLoading');
 
-        // Vérifie si il y a une erreur
-        if (goog.isDef(response['data']['errorMessage'])) {
-            console.error(response['data']['errorMessage']);
-            return 0;
-        }
-        if (response['status'] === 500) {
-            $.notify('Une erreur est survenue au sein du serveur', 'error');
-            return 0;
-        }
-
-        // Vérifie si il y a un résultat
-        if (!goog.isDef(response['data']['data'])) {
-            console.error('Pas de données à afficher');
-            return 0;
-        }
-
-        var data = response['data']['data'];
-
-        // Met à jour les données du tableau
-        $(tableId).bootstrapTable('load', data);
-
-        $(tableId).off('check.bs.table uncheck.bs.table check-all.bs.table uncheck-all.bs.table');
-        $(tableId).on('check.bs.table uncheck.bs.table check-all.bs.table uncheck-all.bs.table', function (e, row) {
-            $('body').css('cursor', 'wait');
-            $("#Parcelle-par-adresse-DGFiP-select-adresse").prop('disabled', true);
-            var afterLoad = function () {
-                $("#Parcelle-par-adresse-DGFiP-select-adresse").prop('disabled', false);
-                $('body').css('cursor', '');
-            };
-            if (cadastreController['cadastreAPI_'] === "cadastre") {
-                var paramField = 'ID_RIVOLI';
-            } else {
-                var paramField = 'id_voie';
+            // Vérifie si il y a un résultat
+            if (!goog.isDef(response['data']['data'])) {
+                console.error('Pas de données à afficher');
+                return 0;
             }
-            cadastreController.getBaseElemByValue({
-                'path': oVmap["properties"]["cadastre"]["api"] + '/adresses',
-                'variableName': 'aAdresses',
-                'param': paramField,
-                'value': row['ID_RIVOLI'],
-                'order_by': 'DNVOIRI',
-                'callback': afterLoad
+
+            var data = response['data']['data'];
+
+            // Met à jour les données du tableau
+            $(tableId).bootstrapTable('load', data);
+
+            $(tableId).off('check.bs.table uncheck.bs.table check-all.bs.table uncheck-all.bs.table');
+            $(tableId).on('check.bs.table uncheck.bs.table check-all.bs.table uncheck-all.bs.table', function (e, row) {
+                $("#Parcelle-par-adresse-DGFiP-select-adresse").prop('disabled', true);
+                var afterLoad = function () {
+                    $("#Parcelle-par-adresse-DGFiP-select-adresse").prop('disabled', false);
+                };
+                if (cadastreController['cadastreAPI_'] === "cadastre") {
+                    var paramField = 'ID_RIVOLI';
+                } else {
+                    var paramField = 'id_voie';
+                }
+                cadastreController.getBaseElemByValue({
+                    'path': oVmap["properties"]["cadastre"]["api"] + '/adresses',
+                    'variableName': 'aAdresses',
+                    'param': paramField,
+                    'value': row['ID_RIVOLI'],
+                    'order_by': 'DNVOIRI',
+                    'callback': afterLoad
+                });
             });
-        });
-        // Si une seule ligne est proposée, alors on la sélectionne
-        if (data.length === 1)
-            $(tableId).bootstrapTable('check', 0);
-    }, function (response) {
-        console.error(response);
-        $('body').css({"cursor": ""});
-        $(tableId).bootstrapTable('hideLoading');
+            // Si une seule ligne est proposée, alors on la sélectionne
+            if (data.length === 1)
+                $(tableId).bootstrapTable('check', 0);
+        },
+        'error': function (response) {
+            $(tableId).bootstrapTable('hideLoading');
+        }
     });
 };
 
@@ -2691,48 +2693,41 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
 
     this[variableName].length = 0;
 
-    this.$http_({
-        method: "POST",
-        headers: {
+    showAjaxLoader();
+    ajaxRequest({
+        'method': 'POST',
+        'url': url,
+        'headers': {
+            'Accept': 'application/x-vm-json',
             'X-HTTP-Method-Override': 'GET'
         },
-        url: url,
-        params: {
-            'token': oVmap['properties']['token'],
+        'data': {
             'attributs': '-geom|proj',
-            'filter': '"' + param + '"' + '=' + '\'' + value + '\'',
+//            'filter': '"' + param + '"' + '=' + '\'' + value + '\'',
+            'filter': {
+                "column": param,
+                "compare_operator": "=",
+                "value": value
+            },
             'result_srid': oVmap.getMap().getOLMap().getView().getProjection().getCode().substring(5),
             'order_by': goog.isDefAndNotNull(orderBy) ? orderBy : ''
+        },
+        'scope': this.$scope_,
+        'success': function (response) {
+
+            // Vérifie si il y a un résultat
+            if (!goog.isDef(response['data']['data'])) {
+                console.error('Pas de données à afficher');
+                return 0;
+            }
+            var data = response['data']['data'];
+
+            // Donne la valeur à la variable
+            cadastreController[variableName] = data;
+
+            // lance le callback
+            callback();
         }
-    }).then(function (response) {
-
-        $('body').css('cursor', '');
-
-        // Vérifie si il y a une erreur
-        if (goog.isDef(response['data']['errorMessage'])) {
-            console.error(response['data']['errorMessage']);
-            return 0;
-        }
-        if (response['status'] === 500) {
-            $.notify('Une erreur est survenue au sein du serveur', 'error');
-            return 0;
-        }
-
-        // Vérifie si il y a un résultat
-        if (!goog.isDef(response['data']['data'])) {
-            console.error('Pas de données à afficher');
-            return 0;
-        }
-        var data = response['data']['data'];
-
-        // Donne la valeur à la variable
-        cadastreController[variableName] = data;
-
-        // lance le callback
-        callback();
-    }, function (response) {
-        console.error(response);
-        $('body').css({"cursor": ""});
     });
 };
 
@@ -2753,84 +2748,99 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
     var proprietaire = $(proprietaireSearchId).val().toUpperCase();
     var url = oVmap['properties']['api_url'] + '/' + oVmap['properties']['cadastre']['api'] + '/proprietaires';
     var limit = 500;
+    if (commune != "") {
+        if (proprietaire.length >= 3) {
+            $(tableId).bootstrapTable({data: {}});
+            $(tableId).bootstrapTable('showLoading');
+            $(comptesTableId).bootstrapTable('removeAll');
+            $(parcelleTableId).bootstrapTable('removeAll');
+            if (this['cadastreAPI_'] === "cadastre") {
+                var id_com = 'ID_COM';
+                var ddenom = 'DDENOM';
+            } else {
+                var id_com = 'id_com';
+                var ddenom = 'ddenom';
+            }
 
-    $(tableId).bootstrapTable({data: {}});
-    $(tableId).bootstrapTable('showLoading');
-    $('body').css('cursor', 'wait');
-    $(comptesTableId).bootstrapTable('removeAll');
-    $(parcelleTableId).bootstrapTable('removeAll');
-    if (this['cadastreAPI_'] === "cadastre") {
-        var id_com = 'ID_COM';
-        var ddenom = 'DDENOM';
-    } else {
-        var id_com = 'id_com';
-        var ddenom = 'ddenom';
-    }
+            proprietaire = proprietaire.replace(/'/g, "''");
 
-    proprietaire = proprietaire.replace(/'/g, "''");
+            showAjaxLoader();
+            ajaxRequest({
+                'method': 'POST',
+                'url': url,
+                'headers': {
+                    'Accept': 'application/x-vm-json',
+                    'X-HTTP-Method-Override': 'GET'
+                },
+                'data': {
+                    //            'filter': '"' + id_com + '"=\'' + commune + '\' AND "' + ddenom + '" LIKE \'%' + proprietaire + '%\'',
+                    'filter': {
+                        "relation": "AND",
+                        "operators": [{
+                                "column": id_com,
+                                "compare_operator": "=",
+                                "value": commune
+                            }, {
+                                "column": ddenom,
+                                "compare_operator": "LIKE",
+                                "compare_operator_options": {
+                                    "case_insensitive": true
+                                },
+                                "value": "%" + proprietaire + "%"
+                            }]
+                    },
+                    'limit': limit,
+                    'attributs': ddenom + '|' + id_com,
+                    'distinct': true,
+                    'order_by': ddenom,
+                    'result_srid': oVmap.getMap().getOLMap().getView().getProjection().getCode().substring(5)
+                },
+                'scope': this.$scope_,
+                'success': function (response) {
+                    $(tableId).bootstrapTable('hideLoading');
 
-    this.$http_({
-        method: "POST",
-        headers: {
-            'X-HTTP-Method-Override': 'GET'
-        },
-        url: url,
-        params: {
-            'token': oVmap['properties']['token'],
-            'filter': '"' + id_com + '"=\'' + commune + '\' AND "' + ddenom + '" LIKE \'%' + proprietaire + '%\'',
-            'limit': limit,
-            'attributs': ddenom + '|' + id_com,
-            'distinct': true,
-            'order_by': ddenom,
-            'result_srid': oVmap.getMap().getOLMap().getView().getProjection().getCode().substring(5)
-        }
-    }).then(function (response) {
-        $('body').css('cursor', 'default');
-        $(tableId).bootstrapTable('hideLoading');
+                    // Vérifie si il y a un résultat
+                    if (!goog.isDef(response['data']['data'])) {
+                        $(tableId).bootstrapTable('removeAll');
+                        console.error('Pas de données à afficher');
+                        return 0;
+                    }
+                    var data = response['data']['data'];
 
-        // Vérifie si il y a une erreur
-        if (goog.isDef(response['data']['errorMessage'])) {
-            console.error(response['data']['errorMessage']);
-            return 0;
-        }
-        if (response['status'] === 500) {
-            $.notify('Une erreur est survenue au sein du serveur', 'error');
-            return 0;
-        }
+                    if (data.length >= limit)
+                        $.notify('Attention: limite d\'occurrences atteinte, veuillez affiner votre recherche', 'info');
 
-        // Vérifie si il y a un résultat
-        if (!goog.isDef(response['data']['data'])) {
-            console.error('Pas de données à afficher');
-            return 0;
-        }
-        var data = response['data']['data'];
+                    // Met à jour les données du tableau
+                    $(tableId).bootstrapTable('load', data);
 
-        if (data.length >= limit)
-//            bootbox.alert('<h4>Attention: limite d\'occurrences atteinte, veuillez affiner votre recherche</h4>');
-            $.notify('Attention: limite d\'occurrences atteinte, veuillez affiner votre recherche', 'info');
+                    // Affiche les outils du tableau
+                    $(tableId + "-toolbar").show();
 
-        // Met à jour les données du tableau
-        $(tableId).bootstrapTable('load', data);
-
-        // Affiche les outils du tableau
-        $(tableId + "-toolbar").show();
-
-        if (comptesTableId !== '') {
-            $(tableId).off('check.bs.table uncheck.bs.table check-all.bs.table uncheck-all.bs.table');
-            $(tableId).on('check.bs.table uncheck.bs.table check-all.bs.table uncheck-all.bs.table', function (e, row) {
-                $(comptesTableId).bootstrapTable('removeAll');
-                $(parcelleTableId).bootstrapTable('removeAll');
-                cadastreController.getParcelleBaseComptesOnTable(row, comptesTableId, parcelleTableId);
+                    if (comptesTableId !== '') {
+                        $(tableId).off('check.bs.table uncheck.bs.table check-all.bs.table uncheck-all.bs.table');
+                        $(tableId).on('check.bs.table uncheck.bs.table check-all.bs.table uncheck-all.bs.table', function (e, row) {
+                            $(comptesTableId).bootstrapTable('removeAll');
+                            $(parcelleTableId).bootstrapTable('removeAll');
+                            cadastreController.getParcelleBaseComptesOnTable(row, comptesTableId, parcelleTableId);
+                        });
+                    }
+                    // Si une seule ligne est proposée, alors on la sélectionne
+                    if (data.length === 1) {
+                        $(tableId).bootstrapTable('check', 0);
+                    }
+                },
+                'error': function (response) {
+                    $(tableId).bootstrapTable('hideLoading');
+                }
             });
+        } else {
+            $(tableId).bootstrapTable('removeAll');
+            $.notify('Veuillez entrer au moins 3 caractères...', 'error');
         }
-        // Si une seule ligne est proposée, alors on la sélectionne
-        if (data.length === 1)
-            $(tableId).bootstrapTable('check', 0);
-    }, function (response) {
-        console.error(response);
-        $('body').css({"cursor": ""});
-        $(tableId).bootstrapTable('hideLoading');
-    });
+    } else {
+        $(tableId).bootstrapTable('removeAll');
+        $.notify('Veuillez sélectionner une commune', 'error');
+    }
 };
 
 /**
@@ -2855,56 +2865,63 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
         var ddenom = 'ddenom';
         var dnupro = 'dnupro';
     }
-    this.$http_({
-        method: "POST",
-        headers: {
+
+    showAjaxLoader();
+    ajaxRequest({
+        'method': 'POST',
+        'url': url,
+        'headers': {
+            'Accept': 'application/x-vm-json',
             'X-HTTP-Method-Override': 'GET'
         },
-        url: url,
-        params: {
-            'token': oVmap['properties']['token'],
-            'filter': '"' + id_com + '" = \'' + row['ID_COM'] + '\' AND "' + ddenom + '" = \'' + row['DDENOM'].replace(/'/g, "''") + '\'',
+        'data': {
+//            'filter': '"' + id_com + '" = \'' + row['ID_COM'] + '\' AND "' + ddenom + '" = \'' + row['DDENOM'].replace(/'/g, "''") + '\'',
+            'filter': {
+                "relation": "AND",
+                "operators": [{
+                        "column": id_com,
+                        "compare_operator": "=",
+                        "value": row['ID_COM']
+                    }, {
+                        "column": ddenom,
+                        "compare_operator": "=",
+                        "value": row['DDENOM'].replace(/'/g, "''")
+                    }]
+            },
             'attributs': id_com + '|' + dnupro,
             'order_by': dnupro,
             'result_srid': oVmap.getMap().getOLMap().getView().getProjection().getCode().substring(5)
+        },
+        'scope': this.$scope_,
+        'success': function (response) {
+            $(tableId).bootstrapTable('hideLoading');
+
+            // Vérifie si il y a un résultat
+            if (!goog.isDef(response['data']['data'])) {
+                console.error('Pas de données à afficher');
+                return 0;
+            }
+            var data = response['data']['data'];
+
+            // Met à jour les données du tableau
+            $(tableId).bootstrapTable('load', data);
+
+            // Affiche les outils du tableau
+            $(tableId + "-toolbar").show();
+
+            $(tableId).off('check.bs.table uncheck.bs.table check-all.bs.table uncheck-all.bs.table');
+            $(tableId).on('check.bs.table uncheck.bs.table check-all.bs.table uncheck-all.bs.table', function (e, row) {
+                $(parcelleTableId).bootstrapTable('removeAll');
+                cadastreController.getBaseParcellesByProprietaireOnTable(row['ID_COM'], $(tableId).bootstrapTable('getAllSelections'), parcelleTableId);
+            });
+            // Si une seule ligne est proposée, alors on la sélectionne
+            if (data.length === 1) {
+                $(tableId).bootstrapTable('check', 0);
+            }
+        },
+        'error': function (response) {
+            $(tableId).bootstrapTable('hideLoading');
         }
-    }).then(function (response) {
-        $(tableId).bootstrapTable('hideLoading');
-
-        // Vérifie si il y a une erreur
-        if (goog.isDef(response['data']['errorMessage'])) {
-            console.error(response['data']['errorMessage']);
-            return 0;
-        }
-        if (response['status'] === 500) {
-            $.notify('Une erreur est survenue au sein du serveur', 'error');
-            return 0;
-        }
-
-        // Vérifie si il y a un résultat
-        if (!goog.isDef(response['data']['data'])) {
-            console.error('Pas de données à afficher');
-            return 0;
-        }
-        var data = response['data']['data'];
-
-        // Met à jour les données du tableau
-        $(tableId).bootstrapTable('load', data);
-
-        // Affiche les outils du tableau
-        $(tableId + "-toolbar").show();
-
-        $(tableId).off('check.bs.table uncheck.bs.table check-all.bs.table uncheck-all.bs.table');
-        $(tableId).on('check.bs.table uncheck.bs.table check-all.bs.table uncheck-all.bs.table', function (e, row) {
-            $(parcelleTableId).bootstrapTable('removeAll');
-            cadastreController.getBaseParcellesByProprietaireOnTable(row['ID_COM'], $(tableId).bootstrapTable('getAllSelections'), parcelleTableId);
-        });
-        // Si une seule ligne est proposée, alors on la sélectionne
-        if (data.length === 1)
-            $(tableId).bootstrapTable('check', 0);
-    }, function (response) {
-        console.error(response);
-        $(tableId).bootstrapTable('hideLoading');
     });
 };
 
@@ -2931,61 +2948,82 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
             var dnupro = 'dnupro';
             var id_par = 'id_par';
         }
-        var filter = '';
+//        var filter = '';
+//        for (var i = 0; i < tableSelections.length; i++) {
+//            if (i === 0)
+//                filter += '( "' + id_com + '"=\'' + tableSelections[i]['ID_COM'] + '\' AND "' + dnupro + '"=\'' + tableSelections[i]['DNUPRO'] + '\' )';
+//            else
+//                filter += ' OR ( "' + id_com + '"=\'' + tableSelections[i]['ID_COM'] + '\' AND "' + dnupro + '"=\'' + tableSelections[i]['DNUPRO'] + '\' )';
+//        }
+
+        var filter = {
+            "relation": "OR",
+            "operators": []
+        };
         for (var i = 0; i < tableSelections.length; i++) {
-            if (i === 0)
-                filter += '( "' + id_com + '"=\'' + tableSelections[i]['ID_COM'] + '\' AND "' + dnupro + '"=\'' + tableSelections[i]['DNUPRO'] + '\' )';
-            else
-                filter += ' OR ( "' + id_com + '"=\'' + tableSelections[i]['ID_COM'] + '\' AND "' + dnupro + '"=\'' + tableSelections[i]['DNUPRO'] + '\' )';
+            filter['operators'].push({
+                "relation": "AND",
+                "operators": [{
+                        "column": id_com,
+                        "compare_operator": "=",
+                        "value": tableSelections[i]['ID_COM']
+                    }, {
+                        "column": dnupro,
+                        "compare_operator": "=",
+                        "value": tableSelections[i]['DNUPRO']
+                    }]
+            });
         }
 
-        oVmap.log(filter);
-
-        this.$http_({
-            method: "POST",
-            headers: {
+        showAjaxLoader();
+        ajaxRequest({
+            'method': 'POST',
+            'url': url,
+            'headers': {
+                'Accept': 'application/x-vm-json',
                 'X-HTTP-Method-Override': 'GET'
             },
-            url: url,
-            params: {
-                'token': oVmap['properties']['token'],
+            'data': {
                 'attributs': id_par,
                 'filter': filter,
                 'order_by': id_par,
                 'result_srid': oVmap.getMap().getOLMap().getView().getProjection().getCode().substring(5)
+            },
+            'scope': this.$scope_,
+            'success': function (response) {
+                $(tableId).bootstrapTable('hideLoading');
+
+                // Vérifie si il y a une erreur
+                if (goog.isDef(response['data']['errorMessage'])) {
+                    console.error(response['data']['errorMessage']);
+                    return 0;
+                }
+                if (response['status'] === 500) {
+                    $.notify('Une erreur est survenue au sein du serveur', 'error');
+                    return 0;
+                }
+
+                // Vérifie si il y a un résultat
+                if (!goog.isDef(response['data']['data'])) {
+                    console.error('Pas de données à afficher');
+                    return 0;
+                }
+                var data = response['data']['data'];
+
+                // Met à jour les données du tableau
+                $(tableId).bootstrapTable('load', data);
+
+                // Affiche les outils du tableau
+                $(tableId + "-toolbar").show();
+
+                // Si une seule ligne est proposée, alors on la sélectionne
+                if (data.length === 1) {
+                    $(tableId).bootstrapTable('check', 0);
+                }
+            },
+            'error': function (response) {
+                $(tableId).bootstrapTable('hideLoading');
             }
-        }).then(function (response) {
-            $(tableId).bootstrapTable('hideLoading');
-
-            // Vérifie si il y a une erreur
-            if (goog.isDef(response['data']['errorMessage'])) {
-                console.error(response['data']['errorMessage']);
-                return 0;
-            }
-            if (response['status'] === 500) {
-                $.notify('Une erreur est survenue au sein du serveur', 'error');
-                return 0;
-            }
-
-            // Vérifie si il y a un résultat
-            if (!goog.isDef(response['data']['data'])) {
-                console.error('Pas de données à afficher');
-                return 0;
-            }
-            var data = response['data']['data'];
-
-            // Met à jour les données du tableau
-            $(tableId).bootstrapTable('load', data);
-
-            // Affiche les outils du tableau
-            $(tableId + "-toolbar").show();
-
-            // Si une seule ligne est proposée, alors on la sélectionne
-            if (data.length === 1)
-                $(tableId).bootstrapTable('check', 0);
-        }, function (response) {
-            console.error(response);
-            $(tableId).bootstrapTable('hideLoading');
         });
     }
 };
@@ -3008,78 +3046,95 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
     var proprietaire = $(proprietaireSearchId).val().toUpperCase().replace(/'/g, "''");
     var url = oVmap['properties']['api_url'] + '/' + oVmap['properties']['cadastre']['api'] + '/proprietaires';
 
-    $('body').css('cursor', 'wait');
-    $(tableId).bootstrapTable({data: {}});
-    $(tableId).bootstrapTable('showLoading');
-    $(comptesTableId).bootstrapTable('removeAll');
-    $(invariantsTableId).bootstrapTable('removeAll');
-    $(parcellesTableId).bootstrapTable('removeAll');
-    if (this['cadastreAPI_'] === "cadastre") {
-        var id_com = 'ID_COM';
-        var ddenom = 'DDENOM';
-    } else {
-        var id_com = 'id_com';
-        var ddenom = 'ddenom';
-    }
-    this.$http_({
-        method: "POST",
-        headers: {
-            'X-HTTP-Method-Override': 'GET'
-        },
-        url: url,
-        params: {
-            'token': oVmap['properties']['token'],
-            'filter': '"' + id_com + '"=\'' + commune + '\' AND "' + ddenom + '" LIKE \'%' + proprietaire + '%\'',
-            'limit': '50',
-            'attributs': ddenom + '|' + id_com,
-            'distinct': true,
-            'order_by': ddenom,
-            'result_srid': oVmap.getMap().getOLMap().getView().getProjection().getCode().substring(5)
-        }
-    }).then(function (response) {
-        $('body').css('cursor', 'default');
-        $(tableId).bootstrapTable('hideLoading');
+    if (commune != "") {
+        if (proprietaire.length >= 3) {
+            $(tableId).bootstrapTable({data: {}});
+            $(tableId).bootstrapTable('showLoading');
+            $(comptesTableId).bootstrapTable('removeAll');
+            $(invariantsTableId).bootstrapTable('removeAll');
+            $(parcellesTableId).bootstrapTable('removeAll');
+            if (this['cadastreAPI_'] === "cadastre") {
+                var id_com = 'ID_COM';
+                var ddenom = 'DDENOM';
+            } else {
+                var id_com = 'id_com';
+                var ddenom = 'ddenom';
+            }
 
-        // Vérifie si il y a une erreur
-        if (goog.isDef(response['data']['errorMessage'])) {
-            console.error(response['data']['errorMessage']);
-            return 0;
-        }
-        if (response['status'] === 500) {
-            $.notify('Une erreur est survenue au sein du serveur', 'error');
-            return 0;
-        }
+            showAjaxLoader();
+            ajaxRequest({
+                'method': 'POST',
+                'url': url,
+                'headers': {
+                    'Accept': 'application/x-vm-json',
+                    'X-HTTP-Method-Override': 'GET'
+                },
+                'data': {
+                    //            'filter': '"' + id_com + '"=\'' + commune + '\' AND "' + ddenom + '" LIKE \'%' + proprietaire + '%\'',
+                    'filter': {
+                        "relation": "AND",
+                        "operators": [{
+                                "column": id_com,
+                                "compare_operator": "=",
+                                "value": commune
+                            }, {
+                                "column": ddenom,
+                                "compare_operator": "LIKE",
+                                "compare_operator_options": {
+                                    "case_insensitive": true
+                                },
+                                "value": "%" + proprietaire + "%"
+                            }]
+                    },
+                    'limit': '50',
+                    'attributs': ddenom + '|' + id_com,
+                    'distinct': true,
+                    'order_by': ddenom,
+                    'result_srid': oVmap.getMap().getOLMap().getView().getProjection().getCode().substring(5)
+                },
+                'scope': this.$scope_,
+                'success': function (response) {
+                    $(tableId).bootstrapTable('hideLoading');
 
-        // Vérifie si il y a un résultat
-        if (!goog.isDef(response['data']['data'])) {
-            console.error('Pas de données à afficher');
-            return 0;
-        }
-        var data = response['data']['data'];
+                    // Vérifie si il y a un résultat
+                    if (!goog.isDef(response['data']['data'])) {
+                        console.error('Pas de données à afficher');
+                        return 0;
+                    }
+                    var data = response['data']['data'];
 
-        // Met à jour les données du tableau
-        $(tableId).bootstrapTable('load', data);
+                    // Met à jour les données du tableau
+                    $(tableId).bootstrapTable('load', data);
 
-        // Affiche les outils du tableau
-        $(tableId + "-toolbar").show();
+                    // Affiche les outils du tableau
+                    $(tableId + "-toolbar").show();
 
-        if (comptesTableId !== '') {
-            $(tableId).off('check.bs.table uncheck.bs.table check-all.bs.table uncheck-all.bs.table');
-            $(tableId).on('check.bs.table uncheck.bs.table check-all.bs.table uncheck-all.bs.table', function (e, row) {
-                $(comptesTableId).bootstrapTable('removeAll');
-                $(invariantsTableId).bootstrapTable('removeAll');
-                $(parcellesTableId).bootstrapTable('removeAll');
-                cadastreController.getBatiBaseComptesOnTable(row, comptesTableId, invariantsTableId, parcellesTableId);
+                    if (comptesTableId !== '') {
+                        $(tableId).off('check.bs.table uncheck.bs.table check-all.bs.table uncheck-all.bs.table');
+                        $(tableId).on('check.bs.table uncheck.bs.table check-all.bs.table uncheck-all.bs.table', function (e, row) {
+                            $(comptesTableId).bootstrapTable('removeAll');
+                            $(invariantsTableId).bootstrapTable('removeAll');
+                            $(parcellesTableId).bootstrapTable('removeAll');
+                            cadastreController.getBatiBaseComptesOnTable(row, comptesTableId, invariantsTableId, parcellesTableId);
+                        });
+                    }
+                    // Si une seule ligne est proposée, alors on la sélectionne
+                    if (data.length === 1) {
+                        $(tableId).bootstrapTable('check', 0);
+                    }
+                },
+                'error': function (response) {
+                    $(tableId).bootstrapTable('hideLoading');
+                }
             });
+        } else {
+            $(tableId).bootstrapTable('removeAll');
+            $.notify('Veuillez entrer au moins 3 caractères...', 'error');
         }
-        // Si une seule ligne est proposée, alors on la sélectionne
-        if (data.length === 1)
-            $(tableId).bootstrapTable('check', 0);
-    }, function (response) {
-        console.error(response);
-        $('body').css({"cursor": ""});
-        $(tableId).bootstrapTable('hideLoading');
-    });
+    } else {
+        $(tableId).bootstrapTable('removeAll');
+        $.notify('Veuillez sélectionner une commune', 'error');
+    }
 };
 
 /**
@@ -3106,59 +3161,66 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
         var ddenom = 'ddenom';
         var dnupro = 'dnupro';
     }
-    this.$http_({
-        method: "POST",
-        headers: {
+
+    showAjaxLoader();
+    ajaxRequest({
+        'method': 'POST',
+        'url': url,
+        'headers': {
+            'Accept': 'application/x-vm-json',
             'X-HTTP-Method-Override': 'GET'
         },
-        url: url,
-        params: {
-            'token': oVmap['properties']['token'],
-            'filter': '"' + id_com + '" = \'' + row['ID_COM'] + '\' AND "' + ddenom + '" = \'' + row['DDENOM'].replace(/'/g, "''") + '\'',
+        'data': {
+//            'filter': '"' + id_com + '" = \'' + row['ID_COM'] + '\' AND "' + ddenom + '" = \'' + row['DDENOM'].replace(/'/g, "''") + '\'',
+            'filter': {
+                "relation": "AND",
+                "operators": [{
+                        "column": id_com,
+                        "compare_operator": "=",
+                        "value": row['ID_COM']
+                    }, {
+                        "column": ddenom,
+                        "compare_operator": "=",
+                        "value": row['DDENOM'].replace(/'/g, "''")
+                    }]
+            },
             'attributs': dnupro + '|' + id_com,
             'order_by': dnupro,
             'result_srid': oVmap.getMap().getOLMap().getView().getProjection().getCode().substring(5)
+        },
+        'scope': this.$scope_,
+        'success': function (response) {
+            $(tableId).bootstrapTable('hideLoading');
+
+            // Vérifie si il y a un résultat
+            if (!goog.isDef(response['data']['data'])) {
+                console.error('Pas de données à afficher');
+                return 0;
+            }
+            var data = response['data']['data'];
+
+            // Met à jour les données du tableau
+            $(tableId).bootstrapTable('load', data);
+
+            // Affiche les outils du tableau
+            $(tableId + "-toolbar").show();
+
+            $(tableId).off('check.bs.table uncheck.bs.table check-all.bs.table uncheck-all.bs.table');
+            $(tableId).on('check.bs.table uncheck.bs.table check-all.bs.table uncheck-all.bs.table', function (e, row) {
+                $(invariantsTableId).bootstrapTable('removeAll');
+                $(parcellesTableId).bootstrapTable('removeAll');
+
+                cadastreController.getBatiBaseInvariantsOnTable($(tableId).bootstrapTable('getAllSelections'), invariantsTableId, parcellesTableId);
+            });
+
+            // Si une seule ligne est proposée, alors on la sélectionne
+            if (data.length === 1) {
+                $(tableId).bootstrapTable('check', 0);
+            }
+        },
+        'error': function (response) {
+            $(tableId).bootstrapTable('hideLoading');
         }
-    }).then(function (response) {
-        $(tableId).bootstrapTable('hideLoading');
-
-        // Vérifie si il y a une erreur
-        if (goog.isDef(response['data']['errorMessage'])) {
-            console.error(response['data']['errorMessage']);
-            return 0;
-        }
-        if (response['status'] === 500) {
-            $.notify('Une erreur est survenue au sein du serveur', 'error');
-            return 0;
-        }
-
-        // Vérifie si il y a un résultat
-        if (!goog.isDef(response['data']['data'])) {
-            console.error('Pas de données à afficher');
-            return 0;
-        }
-        var data = response['data']['data'];
-
-        // Met à jour les données du tableau
-        $(tableId).bootstrapTable('load', data);
-
-        // Affiche les outils du tableau
-        $(tableId + "-toolbar").show();
-
-        $(tableId).off('check.bs.table uncheck.bs.table check-all.bs.table uncheck-all.bs.table');
-        $(tableId).on('check.bs.table uncheck.bs.table check-all.bs.table uncheck-all.bs.table', function (e, row) {
-            $(invariantsTableId).bootstrapTable('removeAll');
-            $(parcellesTableId).bootstrapTable('removeAll');
-
-            cadastreController.getBatiBaseInvariantsOnTable($(tableId).bootstrapTable('getAllSelections'), invariantsTableId, parcellesTableId);
-        });
-
-        // Si une seule ligne est proposée, alors on la sélectionne
-        if (data.length === 1)
-            $(tableId).bootstrapTable('check', 0);
-    }, function (response) {
-        console.error(response);
-        $(tableId).bootstrapTable('hideLoading');
     });
 };
 
@@ -3176,7 +3238,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
     if (tableSelections.length !== 0) {
         var cadastreController = this;
         var url = oVmap['properties']['api_url'] + '/' + oVmap['properties']['cadastre']['api'] + '/invariants';
-        var filter = '';
         if (this['cadastreAPI_'] === "cadastre") {
             var id_com = 'ID_COM';
             var dnupro = 'DNUPRO';
@@ -3186,68 +3247,81 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
             var dnupro = 'dnupro';
             var attributs = 'INVAR|ID_PAR|id_local'
         }
+//        var filter = '';
+//        for (var i = 0; i < tableSelections.length; i++) {
+//            if (i === 0)
+//                filter += '("' + dnupro + '"=\'' + tableSelections[i]['DNUPRO'] + '\' AND "' + id_com + '"=\'' + tableSelections[i]['ID_COM'] + '\')';
+//            else
+//                filter += ' OR ("' + dnupro + '"=\'' + tableSelections[i]['DNUPRO'] + '\' AND "' + id_com + '"=\'' + tableSelections[i]['ID_COM'] + '\')';
+//        }
+
+        var filter = {
+            "relation": "OR",
+            "operators": []
+        };
         for (var i = 0; i < tableSelections.length; i++) {
-            if (i === 0)
-                filter += '("' + dnupro + '"=\'' + tableSelections[i]['DNUPRO'] + '\' AND "' + id_com + '"=\'' + tableSelections[i]['ID_COM'] + '\')';
-            else
-                filter += ' OR ("' + dnupro + '"=\'' + tableSelections[i]['DNUPRO'] + '\' AND "' + id_com + '"=\'' + tableSelections[i]['ID_COM'] + '\')';
+            filter['operators'].push({
+                "relation": "AND",
+                "operators": [{
+                        "column": dnupro,
+                        "compare_operator": "=",
+                        "value": tableSelections[i]['DNUPRO']
+                    }, {
+                        "column": id_com,
+                        "compare_operator": "=",
+                        "value": tableSelections[i]['ID_COM']
+                    }]
+            });
         }
 
-        oVmap.log(filter);
-
         $(tableId).bootstrapTable('showLoading');
-        this.$http_({
-            method: "POST",
-            headers: {
+
+        showAjaxLoader();
+        ajaxRequest({
+            'method': 'POST',
+            'url': url,
+            'headers': {
+                'Accept': 'application/x-vm-json',
                 'X-HTTP-Method-Override': 'GET'
             },
-            url: url,
-            params: {
-                'token': oVmap['properties']['token'],
+            'data': {
                 'filter': filter,
                 'attributs': attributs,
                 'jsonformat': 'anonymous',
                 'order_by': 'INVAR',
                 'result_srid': oVmap.getMap().getOLMap().getView().getProjection().getCode().substring(5)
+            },
+            'scope': this.$scope_,
+            'success': function (response) {
+                $(tableId).bootstrapTable('hideLoading');
+
+                // Vérifie si il y a des données à afficher
+                if (!goog.isDef(response['data']['data'])) {
+                    console.error('Pas de données à afficher');
+                    return 0;
+                }
+                var data = response['data']['data'];
+
+                // Met à jour les données du tableau
+                $(tableId).bootstrapTable('load', data);
+
+                // Affiche les outils du tableau
+                $(tableId + "-toolbar").show();
+
+                $(tableId).off('check.bs.table uncheck.bs.table check-all.bs.table uncheck-all.bs.table');
+                $(tableId).on('check.bs.table uncheck.bs.table check-all.bs.table uncheck-all.bs.table', function (e, row) {
+                    $(parcellesTableId).bootstrapTable('removeAll');
+                    cadastreController.getBatiBaseParcellesOnTable($(tableId).bootstrapTable('getAllSelections'), parcellesTableId);
+                });
+
+                // Si une seule ligne est proposée, alors on la sélectionne
+                if (data.length === 1) {
+                    $(tableId).bootstrapTable('check', 0);
+                }
+            },
+            'error': function (response) {
+                $(tableId).bootstrapTable('hideLoading');
             }
-        }).then(function (response) {
-            $(tableId).bootstrapTable('hideLoading');
-
-            // Vérifie si il y a une erreur
-            if (goog.isDef(response['data']['errorMessage'])) {
-                console.error(response['data']['errorMessage']);
-                return 0;
-            }
-            if (response['status'] === 500) {
-                $.notify('Une erreur est survenue au sein du serveur', 'error');
-                return 0;
-            }
-
-            // Vérifie si il y a des données à afficher
-            if (!goog.isDef(response['data']['data'])) {
-                console.error('Pas de données à afficher');
-                return 0;
-            }
-            var data = response['data']['data'];
-
-            // Met à jour les données du tableau
-            $(tableId).bootstrapTable('load', data);
-
-            // Affiche les outils du tableau
-            $(tableId + "-toolbar").show();
-
-            $(tableId).off('check.bs.table uncheck.bs.table check-all.bs.table uncheck-all.bs.table');
-            $(tableId).on('check.bs.table uncheck.bs.table check-all.bs.table uncheck-all.bs.table', function (e, row) {
-                $(parcellesTableId).bootstrapTable('removeAll');
-                cadastreController.getBatiBaseParcellesOnTable($(tableId).bootstrapTable('getAllSelections'), parcellesTableId);
-            });
-
-            // Si une seule ligne est proposée, alors on la sélectionne
-            if (data.length === 1)
-                $(tableId).bootstrapTable('check', 0);
-        }, function (response) {
-            console.error(response);
-            $(tableId).bootstrapTable('hideLoading');
         });
     }
 };
@@ -3266,61 +3340,68 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
 
         var url = oVmap['properties']['api_url'] + '/' + oVmap['properties']['cadastre']['api'] + '/parcelles';
 
-        var filter = '';
+//        var filter = '';
+//        for (var i = 0; i < tableSelections.length; i++) {
+//            if (i === 0)
+//                filter += '"id_par"=\'' + tableSelections[i]['ID_PAR'] + '\'';
+//            else
+//                filter += ' OR "id_par"=\'' + tableSelections[i]['ID_PAR'] + '\'';
+//        }
+
+        var filter = {
+            "relation": "OR",
+            "operators": []
+        };
         for (var i = 0; i < tableSelections.length; i++) {
-            if (i === 0)
-                filter += '"id_par"=\'' + tableSelections[i]['ID_PAR'] + '\'';
-            else
-                filter += ' OR "id_par"=\'' + tableSelections[i]['ID_PAR'] + '\'';
+            filter['operators'].push({
+                "relation": "AND",
+                "operators": [{
+                        "column": "id_par",
+                        "compare_operator": "=",
+                        "value": tableSelections[i]['ID_PAR']
+                    }]
+            });
         }
 
-        oVmap.log(filter);
-
-        this.$http_({
-            method: "POST",
-            headers: {
+        showAjaxLoader();
+        ajaxRequest({
+            'method': 'POST',
+            'url': url,
+            'headers': {
+                'Accept': 'application/x-vm-json',
                 'X-HTTP-Method-Override': 'GET'
             },
-            url: url,
-            params: {
-                'token': oVmap['properties']['token'],
+            'data': {
                 'filter': filter,
                 'attributs': 'id_par',
                 'order_by': 'parcelle',
                 'result_srid': oVmap.getMap().getOLMap().getView().getProjection().getCode().substring(5)
+            },
+            'scope': this.$scope_,
+            'success': function (response) {
+                $(tableId).bootstrapTable('hideLoading');
+
+                // Vérifie si il y a des données à afficher
+                if (!goog.isDef(response['data']['data'])) {
+                    console.error('Pas de données à afficher');
+                    return 0;
+                }
+                var data = response['data']['data'];
+
+                // Met à jour les données du tableau
+                $(tableId).bootstrapTable('load', data);
+
+                // Affiche les outils du tableau
+                $(tableId + "-toolbar").show();
+
+                // Si une seule ligne est proposée, alors on la sélectionne
+                if (data.length === 1) {
+                    $(tableId).bootstrapTable('check', 0);
+                }
+            },
+            'error': function (response) {
+                $(tableId).bootstrapTable('hideLoading');
             }
-        }).then(function (response) {
-            $(tableId).bootstrapTable('hideLoading');
-
-            // Vérifie si il y a une erreur
-            if (goog.isDef(response['data']['errorMessage'])) {
-                console.error(response['data']['errorMessage']);
-                return 0;
-            }
-            if (response['status'] === 500) {
-                $.notify('Une erreur est survenue au sein du serveur', 'error');
-                return 0;
-            }
-
-            // Vérifie si il y a des données à afficher
-            if (!goog.isDef(response['data']['data'])) {
-                console.error('Pas de données à afficher');
-                return 0;
-            }
-            var data = response['data']['data'];
-
-            // Met à jour les données du tableau
-            $(tableId).bootstrapTable('load', data);
-
-            // Affiche les outils du tableau
-            $(tableId + "-toolbar").show();
-
-            // Si une seule ligne est proposée, alors on la sélectionne
-            if (data.length === 1)
-                $(tableId).bootstrapTable('check', 0);
-        }, function (response) {
-            console.error(response);
-            $(tableId).bootstrapTable('hideLoading');
         });
     }
 };
@@ -3340,7 +3421,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
     var lastElement = aFormList_[aFormList_.length - 1];
 
     if (aFormList_.length === aFormElementsDisplayed_) {
-        $('body').css({"cursor": ""});
         oVmap.getToolsManager().getInfoContainer().zoomOnTabFeatures(lastElement);
         oVmap.getToolsManager().getInfoContainer().showBar();
     }
@@ -3740,12 +3820,31 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
             var id_com = 'id_com';
             var dnupro = 'dnupro';
         }
-        var filter = '';
+//        var filter = '';
+//        for (var i = 0; i < aComptes.length; i++) {
+//            if (i !== 0)
+//                filter += 'OR ("' + id_com + '"=\'' + aComptes[i]['ID_COM'] + '\' AND "' + dnupro + '"=\'' + aComptes[i]['DNUPRO'] + '\')';
+//            else
+//                filter += '("' + id_com + '"=\'' + aComptes[i]['ID_COM'] + '\' AND "' + dnupro + '"=\'' + aComptes[i]['DNUPRO'] + '\')';
+//        }
+
+        var filter = {
+            "relation": "OR",
+            "operators": []
+        };
         for (var i = 0; i < aComptes.length; i++) {
-            if (i !== 0)
-                filter += 'OR ("' + id_com + '"=\'' + aComptes[i]['ID_COM'] + '\' AND "' + dnupro + '"=\'' + aComptes[i]['DNUPRO'] + '\')';
-            else
-                filter += '("' + id_com + '"=\'' + aComptes[i]['ID_COM'] + '\' AND "' + dnupro + '"=\'' + aComptes[i]['DNUPRO'] + '\')';
+            filter['operators'].push({
+                "relation": "AND",
+                "operators": [{
+                        "column": id_com,
+                        "compare_operator": "=",
+                        "value": aComptes[i]['ID_COM']
+                    }, {
+                        "column": dnupro,
+                        "compare_operator": "=",
+                        "value": aComptes[i]['DNUPRO']
+                    }]
+            });
         }
 
         this.addSelectionFromFilter(oVmap["properties"]["cadastre"]["api"] + '/proprietaires', filter, 'veremes_cadastre_compte');
@@ -3801,8 +3900,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
         var id_comF = 'id_com';
     }
 
-    $('body').css({"cursor": "wait"});
-
     // Réinitialise aFormList_
     this.aFormList_.length = 0;
 
@@ -3843,7 +3940,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
             oVmap.getToolsManager().getInfoContainer().addTab({tabCode: 'veremes_cadastre_compte', tabName: 'Compte', actions: ['delete']});
 
         var aComptes = $(tableComptes).bootstrapTable('getAllSelections');
-        var filter = '';
         if (this['cadastreAPI_'] === "cadastre") {
             var id_com = 'ID_COM';
             var dnupro = 'DNUPRO';
@@ -3853,11 +3949,31 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
             var dnupro = 'dnupro';
             var id_local = 'id_local';
         }
+//        var filter = '';
+//        for (var i = 0; i < aComptes.length; i++) {
+//            if (i !== 0)
+//                filter += 'OR ("' + id_com + '"=\'' + aComptes[i]['ID_COM'] + '\' AND "' + dnupro + '"=\'' + aComptes[i]['DNUPRO'] + '\')';
+//            else
+//                filter += '("' + id_com + '"=\'' + aComptes[i]['ID_COM'] + '\' AND "' + dnupro + '"=\'' + aComptes[i]['DNUPRO'] + '\')';
+//        }
+
+        var filter = {
+            "relation": "OR",
+            "operators": []
+        };
         for (var i = 0; i < aComptes.length; i++) {
-            if (i !== 0)
-                filter += 'OR ("' + id_com + '"=\'' + aComptes[i]['ID_COM'] + '\' AND "' + dnupro + '"=\'' + aComptes[i]['DNUPRO'] + '\')';
-            else
-                filter += '("' + id_com + '"=\'' + aComptes[i]['ID_COM'] + '\' AND "' + dnupro + '"=\'' + aComptes[i]['DNUPRO'] + '\')';
+            filter['operators'].push({
+                "relation": "AND",
+                "operators": [{
+                        "column": id_com,
+                        "compare_operator": "=",
+                        "value": aComptes[i]['ID_COM']
+                    }, {
+                        "column": dnupro,
+                        "compare_operator": "=",
+                        "value": aComptes[i]['DNUPRO']
+                    }]
+            });
         }
 
         this.addSelectionFromFilter(oVmap["properties"]["cadastre"]["api"] + '/proprietaires', filter, 'veremes_cadastre_compte');

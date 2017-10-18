@@ -122,7 +122,7 @@ class Ressources extends Vitis {
                     }
                     if (in_array("objects", $aFields)) {
                         require_once'Tabs.class.inc';
-                        $aValues = array("filter" => "ressource_id='" .  $sClass->aFields["ressource_id"]."' AND lang = '".$this->aProperties['language']."'", "distinct" => "true", "token" => $this->aValues['token']);
+						$aValues = array("filter" => '{"relation": "AND","operators":[{"column": "ressource_id","compare_operator": "=","value": "' . $sClass->aFields["ressource_id"] . '"}, {"column": "lang","compare_operator": "=","value": "' . $this->aProperties["language"] . '"}]}', "token" => $this->aValues['token'], 'order_by' => 'index');
                         $oTabs = new Tabs($this->aPath, $aValues, $this->aProperties);
                         $oTabs->GET();
                         array_push($sClass->aObjects, $oTabs);

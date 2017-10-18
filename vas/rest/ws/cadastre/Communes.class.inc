@@ -123,7 +123,7 @@ class Communes extends Cadastre {
      * @return  Communes
      */
     function GET() {
-        $aReturn = $this->genericGet('public', 'v_commune', 'id_com');
+        $aReturn = $this->genericGet('public', $this->aProperties['cadastre']['views']['commune'], 'id_com');
         return $aReturn['sMessage'];
     }
 

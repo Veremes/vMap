@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- WS ANC -->
+<installer>
+	<schema>
+		<name>s_anc</name>
+		<version>2017.01.00</version>
+		<dependenciesCollection>
+			<dependency>
+				<nature>schema</nature>
+				<name>s_vitis</name>
+				<version>2017.02.00</version>
+				<object>vas</object>
+			</dependency>
+			<dependency>
+				<name>postgis</name>
+				<version>2.0</version>
+				<nature>extern-pre</nature>
+			</dependency>
+		</dependenciesCollection>
+	</schema>
+	<dependenciesCollection>
+		<dependency>
+			<nature>vas</nature>
+			<version>2017.02.00</version>
+		</dependency>
+	</dependenciesCollection>
+</installer>

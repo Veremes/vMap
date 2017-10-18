@@ -1,24 +1,23 @@
 <?php
 
 /**
-* \file Adresses.class.inc
-* \class Adresses
-*
-* \author Armand Bahi <armand.bahi@veremes.com>.
-*
-* \brief This file contains the Adresses php class
-*
-* This class defines Rest Api to Vmap Adresses
-* 
-*/
+ * \file Adresses.class.inc
+ * \class Adresses
+ *
+ * \author Armand Bahi <armand.bahi@veremes.com>.
+ *
+ * \brief This file contains the Adresses php class
+ *
+ * This class defines Rest Api to Vmap Adresses
+ * 
+ */
 require_once 'Cadastre.class.inc';
 require_once 'Adresse.class.inc';
 require_once __DIR__ . '/../../class/vitis_lib/Connection.class.inc';
 require_once __DIR__ . '/../../class/vmlib/BdDataAccess.inc';
 
 class Adresses extends Cadastre {
-    
-     /**
+    /**
      * @SWG\Definition(
      *   definition="/adresses",
      *   allOf={
@@ -30,6 +29,7 @@ class Adresses extends Cadastre {
      *   description="Operations about Adresses"
      * )
      */
+
     /**
      * construct
      * @param type $aPath url of the request
@@ -41,9 +41,9 @@ class Adresses extends Cadastre {
         $this->aPath = $aPath;
         $this->aProperties = $properties;
         $this->oConnection = new Connection($this->aValues, $this->aProperties);
-		$this->aSelectedFields = Array(id_par, 'id_com as ID_COM', 'id_par as ID_PAR', 'ccodep as CCODEP', 'ccodir as CCODIR', 'ccocom as CCOCOM', 'ccopre as CCOPRE', 'ccosec as CCOSEC', 'dnupla as DNUPLA', 'cenr as CENR', 'dcntpa as DCNTPA', 'dsrpar as DSRPAR', ' dnupro as DNUPRO', 'jdata as JDATAT', 'dreflf as DREFLF', 'gpdl as GPDL', 'cprsecr as CPRSECR', 'ccosecr as CCOSECR', 'dnuplar as DNUPLAR', 'dnupdl as DNUPDL', 'gurbpa as GURBPA', 'dparpi as DPARPI', 'ccoarp as CCOARP', 'gparnf as GPARNF', 'gparbat as  GPARBAT', 'ccovoi as CCOVOI', 'ccoriv as CCORIV', 'ccocif as CCOCIF', 'id_voie as ID_RIVOLI', 'id_dnupro as ID_DNUPRO', 'dnvoiri as DNVOIRI', 'dindic as DINDIC', 'l_nature_voie as L_NATURE_VOIE', 'dvoilib as DVOILIB');
+        $this->aSelectedFields = Array(id_par, 'id_com as ID_COM', 'id_par as ID_PAR', 'ccodep as CCODEP', 'ccodir as CCODIR', 'ccocom as CCOCOM', 'ccopre as CCOPRE', 'ccosec as CCOSEC', 'dnupla as DNUPLA', 'cenr as CENR', 'dcntpa as DCNTPA', 'dsrpar as DSRPAR', ' dnupro as DNUPRO', 'jdata as JDATAT', 'dreflf as DREFLF', 'gpdl as GPDL', 'cprsecr as CPRSECR', 'ccosecr as CCOSECR', 'dnuplar as DNUPLAR', 'dnupdl as DNUPDL', 'gurbpa as GURBPA', 'dparpi as DPARPI', 'ccoarp as CCOARP', 'gparnf as GPARNF', 'gparbat as  GPARBAT', 'ccovoi as CCOVOI', 'ccoriv as CCORIV', 'ccocif as CCOCIF', 'id_voie as ID_RIVOLI', 'id_dnupro as ID_DNUPRO', 'dnvoiri as DNVOIRI', 'dindic as DINDIC', 'l_nature_voie as L_NATURE_VOIE', 'dvoilib as DVOILIB');
     }
-    
+
     /**
      * @SWG\Get(path="/adresses",
      *   tags={"Adresse"},
@@ -78,7 +78,7 @@ class Adresses extends Cadastre {
      *     description="number of element",
      *     required=false,
      *     type="integer",
-	 *     default="4",
+     *     default="4",
      *     format="int32"
      *   ),
      * @SWG\Parameter(
@@ -117,14 +117,16 @@ class Adresses extends Cadastre {
      *     )
      *  )
      */
+
     /**
      * get Adresses
      * @return  Adresses
      */
     function GET() {
-        $aReturn = $this->genericGet($this->aProperties['schema_majic'], 'v_vmap_nb_10_parcelle', 'id_par');
+        $aReturn = $this->genericGet($this->aProperties['schema_majic'], $this->aProperties['cadastre']['views']['adresse'], 'id_par');
         return $aReturn['sMessage'];
     }
-    
+
 }
+
 ?>

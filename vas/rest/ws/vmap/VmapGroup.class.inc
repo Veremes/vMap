@@ -80,9 +80,9 @@ class VmapGroup  extends Vmap {
     function getMaps(){
         require $this->sRessourcesFile;
         if (in_array("maps", $this->aSelectedFields)){
-                $sSql = str_replace('[sSchemaVmap]', $this->aProperties['schema_vmap'], $aSql['getGroupMaps']);
-                $sSql = str_replace('[group_id]', $this->aValues['my_vitis_id'], $sSql);
-		$oPDOresult =$this->oConnection->oBd->execute ($sSql);
+                $aParams['sSchemaVmap'] = array('value' => $this->aProperties['schema_vmap'], 'type' => 'schema_name');
+                $aParams['group_id'] = array('value' => $this->aValues['my_vitis_id'], 'type' => 'number');
+                $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['getGroupMaps'], $aParams);
 		$sListMapId = "";
 		$aListMapName = array();
 		while($aLigne=$this->oConnection->oBd->ligneSuivante ($oPDOresult)) {
@@ -105,9 +105,9 @@ class VmapGroup  extends Vmap {
     function getPrintTemplates(){
         require $this->sRessourcesFile;
         if (in_array("print_templates", $this->aSelectedFields)){
-                $sSql = str_replace('[sSchemaVmap]', $this->aProperties['schema_vmap'], $aSql['getGroupPrintTemplates']);
-                $sSql = str_replace('[group_id]', $this->aValues['my_vitis_id'], $sSql);
-		$oPDOresult =$this->oConnection->oBd->execute ($sSql);
+                $aParams['sSchemaVmap'] = array('value' => $this->aProperties['schema_vmap'], 'type' => 'schema_name');
+                $aParams['group_id'] = array('value' => $this->aValues['my_vitis_id'], 'type' => 'number');
+                $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['getGroupPrintTemplates'], $aParams);
 		$sListPrintTemplateId = "";
 		$aListPrintTemplateName = array();
 		while($aLigne=$this->oConnection->oBd->ligneSuivante ($oPDOresult)) {

@@ -1,4 +1,5 @@
-/* global vitisApp */
+/* global vitisApp, goog, entity */
+'use strict';
 
 // Google closure
 goog.provide("vitis.controllers.workspaceList");
@@ -11,15 +12,13 @@ goog.require("vitis.modules.main");
  * 
  * @param {angular.$scope} $scope Angular scope.
  * @param {angular.$log} $log Angular log service.
- * @param {service} Restangular Service Restangular.
  * @param {service} envSrvc Paramètres d'environnement.
- * @param {service} sessionSrvc Service de gestion des sessions.
  * @param {service} propertiesSrvc Paramètres des properties.
- * @param {service} formSrvc Service de gestion des formulaires.
  * @param {service} modesSrvc Liste des modes et objets de l'utilisateur.
+ * @param {service} uiGridExporterService Modes pour l'export des grid list
  * @ngInject
  **/
-vitisApp.workspaceListCtrl = function ($scope, $log, Restangular, envSrvc, sessionSrvc, propertiesSrvc, formSrvc, modesSrvc) {
+vitisApp.workspaceListCtrl = function ($scope, $log, envSrvc, propertiesSrvc, modesSrvc, uiGridExporterService) {
     $log.info("initWorkspaceList");
     $scope.$emit("initWorkspaceList", $scope);
     // Sauve le nouveau scope crée dans la définition de l'onglet. 
@@ -31,20 +30,10 @@ vitisApp.workspaceListCtrl = function ($scope, $log, Restangular, envSrvc, sessi
     $scope["edit_column"] = envSrvc["oSelectedObject"]["edit_column"];
     $scope["show_column"] = envSrvc["oSelectedObject"]["show_column"];
     // Vérifie si un précédent filtre de recherche existe (si le mode ne doit pas être rechargé automatiquement).
-    var aFilter, oUrlParams;
-    /*
-    if (!envSrvc["oSelectedMode"]["reload"]) {
-        var oGridOptionsCopy = envSrvc["oGridOptions"][envSrvc["oSelectedObject"]["name"]];
-        if (typeof (oGridOptionsCopy) !== "undefined" && typeof (oGridOptionsCopy["aFilter"]) !== "undefined")
-            aFilter = oGridOptionsCopy["aFilter"];
-
-        if (typeof (oGridOptionsCopy) !== "undefined" && typeof (oGridOptionsCopy["oUrlParams"]) !== "undefined")
-            oUrlParams = oGridOptionsCopy["oUrlParams"];
-    } else
-        envSrvc["oFormValues"][envSrvc["sFormDefinitionName"]] = {};
-    */
+    var oFilter;
     // Paramétrage du module ui-grid (si pas déja fait).
     if (Object.keys($scope["gridOptions"]).length === 0) {
+        $log.info("Init GridOptions");
         $scope["gridOptions"] = {
             "enableRowSelection": true,
             "enableSelectAll": true,
@@ -57,7 +46,7 @@ vitisApp.workspaceListCtrl = function ($scope, $log, Restangular, envSrvc, sessi
             "enableColumnMenus": false,
             "enableColumnResizing": true, // Redimensionnement des colonnes.
             //"enableColumnMoving": true,      // Déplacement des colonnes.
-            "paginationPageSizes": [10, 20, 50, 100, 200, 500],
+            "paginationPageSizes": [5, 10, 20, 50, 100, 200, 500],
             "appHeader": true, // Barre d'entête de la liste.
             "appHeaderTitleBar": true, // Barre (boutons...) sous le form. de recherche.
             "appHeaderSearchForm": true, // Formulaire de recherche.
@@ -70,106 +59,195 @@ vitisApp.workspaceListCtrl = function ($scope, $log, Restangular, envSrvc, sessi
             "appEnableDragAndDrop": false, // Activation ou désactivation du drag'n drop.
             "appDragAndDropEvent": {}, // Evènements pour le drag'n drop.
             "appActions": [], // Boutons d'actions.
-            "appShowActions": true // Affichage des boutons d'actions.
+            "appShowActions": true, // Affichage des boutons d'actions.
+            "exporterCsvFilename": new String(envSrvc["oSelectedObject"]['label'])
         };
     }
+    // Sauve l'objet ui-grid.
+    var sSelectedObjectName = envSrvc["oSelectedObject"]["name"];
+    $scope['sSelectedObjectName'] = sSelectedObjectName;
+    $scope["sSelectedSectionName"] = envSrvc["sSelectedSectionName"];
+    envSrvc["sSelectedGridOptionsName"] = sSelectedObjectName;
+    if (envSrvc["sSelectedSectionName"] != "")
+        envSrvc["sSelectedGridOptionsName"] += "_" + envSrvc["sSelectedSectionName"];
+    $scope["sSelectedGridOptionsName"] = envSrvc["sSelectedGridOptionsName"];
+    envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]] = $scope["gridOptions"];
+    
     // Sauve la définition originale de la liste.
-    if (typeof(envSrvc["oDefaultGridOptions"][envSrvc["oSelectedObject"]["name"]]) == "undefined")
-        envSrvc["oDefaultGridOptions"][envSrvc["oSelectedObject"]["name"]] = angular.copy($scope["gridOptions"]);
+    if (typeof (envSrvc["oDefaultGridOptions"][envSrvc["sSelectedGridOptionsName"]]) === "undefined")
+        envSrvc["oDefaultGridOptions"][envSrvc["sSelectedGridOptionsName"]] = angular.copy($scope["gridOptions"]);
     // Récupère un filtre et les valeurs de formulaires sauvegardés.
-    if (typeof(envSrvc["oWorkspaceList"][envSrvc["oSelectedObject"]["name"]]) == "undefined")
-        envSrvc["oWorkspaceList"][envSrvc["oSelectedObject"]["name"]] = {};
+    if (typeof (envSrvc["oWorkspaceList"][envSrvc["sSelectedGridOptionsName"]]) === "undefined")
+        envSrvc["oWorkspaceList"][envSrvc["sSelectedGridOptionsName"]] = {};
     else {
-        if (typeof(envSrvc["oWorkspaceList"][envSrvc["oSelectedObject"]["name"]]["aFilter"]) != "undefined")
-            aFilter = angular.copy(envSrvc["oWorkspaceList"][envSrvc["oSelectedObject"]["name"]]["aFilter"]);
-        if (typeof(envSrvc["oWorkspaceList"][envSrvc["oSelectedObject"]["name"]]["oFormValue"]) != "undefined")
-            envSrvc["oFormValues"][envSrvc["sFormDefinitionName"]] = angular.copy(envSrvc["oWorkspaceList"][envSrvc["oSelectedObject"]["name"]]["oFormValue"]);
+        if (typeof (envSrvc["oWorkspaceList"][envSrvc["sSelectedGridOptionsName"]]["oFilter"]) !== "undefined")
+            oFilter = angular.copy(envSrvc["oWorkspaceList"][envSrvc["sSelectedGridOptionsName"]]["oFilter"]);
+        if (typeof (envSrvc["oWorkspaceList"][envSrvc["sSelectedGridOptionsName"]]["oFormValue"]) !== "undefined")
+            envSrvc["oFormValues"][envSrvc["sFormDefinitionName"]] = angular.copy(envSrvc["oWorkspaceList"][envSrvc["sSelectedGridOptionsName"]]["oFormValue"]);
     }
     // Paramètres des filtres
-    if (typeof (aFilter) !== "undefined")
-        $scope["gridOptions"]["aFilter"] = aFilter;
+    if (typeof (oFilter) !== "undefined")
+        $scope["gridOptions"]["oFilter"] = oFilter;
     // Paramètres de tri.
-    if (typeof(envSrvc["oGridOptionsCopy"][envSrvc["oSelectedObject"]["name"]]) != "undefined")
-        $scope["gridOptions"]["oUrlParams"] = angular.copy(envSrvc["oGridOptionsCopy"][envSrvc["oSelectedObject"]["name"]]["oUrlParams"]);
+    if (typeof (envSrvc["oGridOptionsCopy"][envSrvc["sSelectedGridOptionsName"]]) !== "undefined")
+        $scope["gridOptions"]["oUrlParams"] = angular.copy(envSrvc["oGridOptionsCopy"][envSrvc["sSelectedGridOptionsName"]]["oUrlParams"]);
 
     // Template pour activer le drag'n drop.
     if ($scope["gridOptions"]["appEnableDragAndDrop"] === true)
         $scope["gridOptions"]["rowTemplate"] = '<div grid="grid" class="ui-grid-draggable-row" draggable="true"><div ng-repeat="(colRenderIndex, col) in colContainer.renderedColumns track by col.colDef.name" class="ui-grid-cell" ng-class="{ \'ui-grid-row-header-cell\': col.isRowHeader, \'custom\': true }" ui-grid-cell></div></div>';
 
-    // Charge la liste des enregistrements de l'onglet
-    var sSelectedObjectName = envSrvc["oSelectedObject"]["name"];
-    $scope['sSelectedObjectName'] = sSelectedObjectName;
-    // Sauve l'objet ui-grid.
-    envSrvc["oGridOptions"][sSelectedObjectName] = $scope["gridOptions"];
-
     // Titre de la liste.
     // Chargement de la définition des colonnes (si pas déja fait).
     var sResourceId = envSrvc["getSectionWebServiceResourceId"]();
-    
+
     // Index de la section affichée.
     var iSelectedSectionIndex = 0;
-    if (typeof (envSrvc["oSectionForm"]) != "undefined" && typeof (envSrvc["oSectionForm"][envSrvc["oSelectedObject"]["name"]]) != "undefined" && typeof (envSrvc["oSectionForm"][envSrvc["oSelectedObject"]["name"]]["iSelectedSectionIndex"]) != "undefined")
+    if (typeof (envSrvc["oSectionForm"]) !== "undefined" && typeof (envSrvc["oSectionForm"][envSrvc["oSelectedObject"]["name"]]) !== "undefined" && typeof (envSrvc["oSectionForm"][envSrvc["oSelectedObject"]["name"]]["iSelectedSectionIndex"]) !== "undefined")
         iSelectedSectionIndex = envSrvc["oSectionForm"][envSrvc["oSelectedObject"]["name"]]["iSelectedSectionIndex"];
     // Recharge les ressources de l'onglet si la liste est dans une section.
     if (iSelectedSectionIndex > 0)
-        delete envSrvc["oSelectedObject"]["sections"][0]["columns"]
+        delete envSrvc["oSelectedObject"]["sections"][0]["columns"];
     //
     if (sResourceId !== null && typeof ($scope["gridOptions"]["columnDefs"]) === "undefined") {
         // Si 1er affichage de l'onglet : chargement des colonnes et boutons de la liste.
-        if (typeof (envSrvc["oSelectedObject"]["sections"][iSelectedSectionIndex]["columns"]) === "undefined") {
-            // Nom du service web (vitis, gtf...)
-            var oWebServiceBase = Restangular["one"](propertiesSrvc["services_alias"] + "/vitis");
-            // Charge la définition des colonnes de la liste.
-            var oParams = {
-                "token": sessionSrvc["token"]
-            };
-            oWebServiceBase["customGET"]("ressources/" + sResourceId, oParams)
-                    .then(function (data) {
-                        if (data["status"] === 1) {
-                            var aResourceId = envSrvc["explodeWebServiceResourceId"](sResourceId);
-                            var aData = data["ressources"][0][aResourceId[1]][0]["columns"];
-                            if (aData.length > 0) {
-                                // Formatte les colonnes pour ui-grid.
-                                aData = $scope.$root["formatGridColumn"](aData, sSelectedObjectName);
-                                // Sauve le nom du champ qui correspond à l'id.
-                                //envSrvc["sIdField"] = aData[0]["field"];
-                                envSrvc["oSelectedObject"]["sIdField"] = aData[0]["field"];
-                                // Ajoute la colonne d'actions (boutons "update" & "display")
-                                if (typeof($scope["gridOptions"]["appShowActions"]) == "undefined" || $scope["gridOptions"]["appShowActions"] !== false) {
-                                    if (envSrvc["oSelectedObject"]["edit_column"] !== null || envSrvc["oSelectedObject"]["show_column"] !== null) {
-                                        aData.unshift({
-                                            "name": "",
-                                            "field": "actions",
-                                            //"cellClass":"workspace-list-action",
-                                            "cellTemplate": "<app-ui-grid-action></app-ui-grid-action>",
-                                            "width": 60,
-                                            "enableSorting": false,
-                                            "enableColumnMoving": false,
-                                            "enableColumnResizing": false
-                                        });
-                                    }
+        if (!goog.isDefAndNotNull(envSrvc["oSelectedObject"]["sections"][iSelectedSectionIndex]["columns"])) {
+            envSrvc["oWorkspaceList"][envSrvc["oSelectedObject"]["name"]]["oldPaginationSave"] = 1;
+            ajaxRequest({
+                "method": "GET",
+                "url": propertiesSrvc["web_server_name"] + "/" + propertiesSrvc["services_alias"] + "/vitis/ressources/" + sResourceId,
+                "scope": $scope,
+                "success": function (response) {
+                    if (response["data"]["status"] === 1) {
+                        var aResourceId = envSrvc["explodeWebServiceResourceId"](sResourceId);
+                        var aData = response["data"]["ressources"][0][aResourceId[1]][0]["columns"];
+                        if (aData.length > 0) {
+                            // Formatte les colonnes pour ui-grid.
+                            aData = $scope.$root["formatGridColumn"](aData, sSelectedObjectName);
+                            $log.info($scope.$root["formatGridColumn"](aData, sSelectedObjectName));
+                            // Sauve le nom du champ qui correspond à l'id.
+                            //envSrvc["sIdField"] = aData[0]["field"];
+                            envSrvc["oSelectedObject"]["sIdField"] = aData[0]["field"];
+                            // Ajoute la colonne d'actions (boutons "update" & "display")
+                            if (typeof ($scope["gridOptions"]["appShowActions"]) == "undefined" || $scope["gridOptions"]["appShowActions"] !== false) {
+                                if (envSrvc["oSelectedObject"]["edit_column"] !== null || envSrvc["oSelectedObject"]["show_column"] !== null) {
+                                    aData.unshift({
+                                        "name": "",
+                                        "field": "actions",
+                                        //"cellClass":"workspace-list-action",
+                                        "cellTemplate": "<app-ui-grid-action></app-ui-grid-action>",
+                                        "width": 60,
+                                        "enableSorting": false,
+                                        "enableColumnMoving": false,
+                                        "enableColumnResizing": false
+                                    });
                                 }
-                                // Sauvegarde et mise à jour de la définition des colonnes.
-                                envSrvc["oSelectedObject"]["sections"][iSelectedSectionIndex]["columns"] = aData.slice(0);
-                                $scope["gridOptions"]["columnDefs"] = envSrvc["oSelectedObject"]["sections"][iSelectedSectionIndex]["columns"].slice(0);
-                                // Sauvegarde et mise à jour de la définition des actions (boutons).
-                                var aActions = data["ressources"][0][aResourceId[1]][1]["actions"];
-                                if (typeof (aActions) !== "undefined")
-                                    envSrvc["oSelectedObject"]["sections"][iSelectedSectionIndex]["actions"] = $scope.$root["formatGridAction"](aActions, sSelectedObjectName);
-                                else
-                                    envSrvc["oSelectedObject"]["sections"][iSelectedSectionIndex]["actions"] = [];
-                                if (envSrvc["sMode"] != "display")
-                                    $scope["gridOptions"]["appActions"] = envSrvc["oSelectedObject"]["sections"][iSelectedSectionIndex]["actions"].slice(0);
                             }
+                            // Sauvegarde et mise à jour de la définition des colonnes.
+                            envSrvc["oSelectedObject"]["sections"][iSelectedSectionIndex]["columns"] = aData.slice(0);
+                            $scope["gridOptions"]["columnDefs"] = envSrvc["oSelectedObject"]["sections"][iSelectedSectionIndex]["columns"].slice(0);
+                            // désactivation de l'édition de la cellule par défaut
+                            for (var i = 0; i < $scope["gridOptions"]["columnDefs"].length; i++) {
+                                $scope["gridOptions"]["columnDefs"][i]["cellEditableCondition"] = false;
+                            }
+                            // Sauvegarde et mise à jour de la définition des actions (boutons).
+                            var aActions = response["data"]["ressources"][0][aResourceId[1]][1]["actions"];
+                            if (typeof (aActions) !== "undefined") {
+                                envSrvc["oSelectedObject"]["sections"][iSelectedSectionIndex]["actions"] = $scope.$root["formatGridAction"](aActions, sSelectedObjectName);
+                            } else {
+                                envSrvc["oSelectedObject"]["sections"][iSelectedSectionIndex]["actions"] = [];
+                            }
+                            if (envSrvc["sMode"] != "display") {
+                                $scope["gridOptions"]["appActions"] = envSrvc["oSelectedObject"]["sections"][iSelectedSectionIndex]["actions"].slice(0);
+                            }
+                            // Emission d'un évènement de fin d'ajout des boutons d'actions pour post traitement (utilisé dans WAB)
+                            $scope.$root.$emit("workspaceListHeaderActionsAdded", $scope["gridOptions"]);
                         }
-                    });
+                    }
+                }
+            });
         } else {
+            envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["paginationCurrentPage"] = envSrvc["oWorkspaceList"][envSrvc["sSelectedGridOptionsName"]]["oldPaginationSave"];
             // Mise à jour de la définition des colonnes.
             $scope["gridOptions"]["columnDefs"] = envSrvc["oSelectedObject"]["sections"][iSelectedSectionIndex]["columns"].slice(0);
+            // désactivation de l'édition de la cellule par défaut
+            for (var i = 0; i < $scope["gridOptions"]["columnDefs"].length; i++) {
+                $scope["gridOptions"]["columnDefs"][i]["cellEditableCondition"] = false;
+            }
             // Mise à jour de la définition des actions (boutons).
             if (envSrvc["sMode"] != "display")
                 $scope["gridOptions"]["appActions"] = envSrvc["oSelectedObject"]["sections"][iSelectedSectionIndex]["actions"].slice(0);
+            // Emission d'un évènement de fin d'ajout des boutons d'actions pour post traitement (utilisé dans WAB)
+            $scope.$root.$emit("workspaceListHeaderActionsAdded", $scope["gridOptions"]);
         }
     }
+
+    $scope['showExportModal'] = function () {
+        $log.info("showExportModal");
+        $('#ExportModal').modal('show');
+        envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["oUrlParams"]['limit'] = 10000;
+    };
+    
+    $scope['exportCSVFormat'] = function () {
+        $log.info("ExportCSVFormat");
+
+        var sResourceId = envSrvc["getSectionWebServiceResourceId"]();
+        var aResourceId = envSrvc["explodeWebServiceResourceId"](sResourceId);
+        
+        var oUrlParams = envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["oUrlParams"];
+        
+        var e = document.getElementById("SelectValue");
+        var testSelect = e.options[e.selectedIndex].text;
+        var FilenameXLSX = $scope['gridOptions']['exporterCsvFilename'] + '.xlsx';
+        var FilenameCSV = $scope['gridOptions']['exporterCsvFilename'] + '.csv';
+        
+        var aExportColumnHeaders = [];
+        var aExportData = [];
+        for (i = 0; i < envSrvc["oSelectedObject"]["sections"][0]["columns"].length; i++) {
+            if (envSrvc["oSelectedObject"]["sections"][0]["columns"][i].name !== "") {
+                aExportColumnHeaders.push(envSrvc["oSelectedObject"]["sections"][0]["columns"][i]);
+            }
+        }
+        
+        ajaxRequest({
+            "method": "GET",
+            "url": propertiesSrvc["web_server_name"] + "/" + propertiesSrvc["services_alias"] + "/" + aResourceId[0] + "/" + aResourceId[1],
+            "params": angular.copy(oUrlParams),
+            "scope": $scope,
+            "success": function (response) {
+                
+                if (response["data"]["status"] === 1) {
+                    
+                    var aData = response["data"][aResourceId[1]];
+                    for (i = 0; i < aData.length; i++) {
+                        var values = [];
+                        var value = {};
+                        angular.forEach(aExportColumnHeaders, function (column) {
+                            if (response["data"][aResourceId[1]][i][column['field']] !== null) {
+                                
+                                value = response["data"][aResourceId[1]][i][column['field']];
+                                
+                            } else {
+                                value = "null";
+                                
+                            }
+                            if (response["data"][aResourceId[1]][i][column['field']] === "") {
+                                value= "null";
+                            }
+                            values[column['field']] = value ;
+                        });
+                        aExportData.push(values);
+                    };
+
+                    if (testSelect === ".XLSX") {
+                        alasql("SELECT * INTO XLSX(" + "'" + FilenameXLSX + "'" + " ,{headers:true}) FROM ? ", [aExportData]);
+                    }
+                    if (testSelect === ".CSV") {
+                        alasql("SELECT * INTO CSV(" + "'" + FilenameCSV + "'" + " ,{headers:true}) FROM ? ", [aExportData]);
+                    }
+                }
+            }
+        });
+    };
 };
+
 vitisApp.module.controller("workspaceListCtrl", vitisApp.workspaceListCtrl);

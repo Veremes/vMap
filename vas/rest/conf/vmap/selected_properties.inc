@@ -13,7 +13,9 @@ $aAdminFields = Array(
     'controls.*',
     'selection.*',
     'print.*',
-    'cadastre.api'
+    'cadastre.api',
+    'vmap_geocoders',
+    'vmap_default_geocoders'
 );
 $aUserFields = Array(
     'phantomjs_root_path',
@@ -26,7 +28,9 @@ $aUserFields = Array(
     'controls.*',
     'selection.*',
     'print.*',
-    'cadastre.api'
+    'cadastre.api',
+    'vmap_geocoders',
+    'vmap_default_geocoders'
 );
 
 $properties['aAdminFields'] = array_merge($properties['aAdminFields'], $aAdminFields);

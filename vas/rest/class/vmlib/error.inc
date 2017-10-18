@@ -60,4 +60,7 @@ define('ERROR_0032', "Le fichier SubForm.class.inc du traitement [sLabelName] n'
 
 // vmlib\dbUtil.inc
 define('ERROR_0033', 'Invalid credentials'); // -> TEXT_INVALID_CREDENTIALS
+
+// vitis/vitis.class.inc
+define('ERROR_0034', 'Invalid filter');
 ?>

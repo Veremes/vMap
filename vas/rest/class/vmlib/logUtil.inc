@@ -48,17 +48,22 @@ require_once("phpUtil.inc");
  * \return un bool�en, true si l'�criture a fonctionn� sinon false.
  */
 function writeToLog($sString, $sFileName) {
+    if (empty($sFileName))
+        return false;
     global $properties, $sMessageLogError, $sFolderLib;
 
-// Fred 05/06/2013 : Si le r�pertoire de log n'existe pas : cr�ation	
+    // Fred 05/06/2013 : Si le r�pertoire de log n'existe pas : cr�ation	
     if (!is_dir(dirname($sFileName)))
         mkdir(dirname($sFileName), 0777, true);
-
+    if (empty(pathinfo($sFileName, PATHINFO_EXTENSION)))
+        return false;
+ 
     loadLang($sFolderLib, $properties["language"], $sFolderLib . "/");
     $sString = str_replace(chr(13), '[\n]', $sString);
     $sString = str_replace(chr(10), '[\n]', $sString);
     $handle = fopen($sFileName, 'a');
-    if (fwrite($handle, date("d/n/Y H:i:s") . $properties["log_delim"] . $sString . CR . LF) === false) {
+    $sPrelog = date("d/n/Y H:i:s").' '.$_SESSION['ses_Login'].' '.$_SERVER['REMOTE_ADDR'] . ':' . $_SERVER['REMOTE_PORT'];
+    if (fwrite($handle, $sPrelog . $properties["log_delim"] . $sString . CR . LF) === false) {
         fclose($handle);
         if (is_writable($sFileName)) {
             $sMessageLogError = ERROR_IMPOSSIBLE_WRITE . $sFileName . ERROR_RIGHTS_ON_FILE . " (" . $sString . ").";
@@ -87,6 +92,19 @@ function writeToSqlLog($sString) {
 }
 
 /**
+ * Ajoute la cha�ne de caract�re au fichier des log SQL.
+ * \param $sString Cha�ne de caract�res.
+ */
+function writeToSqlErrorLog($sString) {
+    global $properties;
+    if (isSet($properties["log_mode"])) {
+        if ($properties["log_mode"] == true) {
+            writeToLog($sString, $properties["sql_error_log_file"]);
+        }
+    }
+}
+
+/**
  * Ajoute la cha�ne de caract�re au fichier des log ERROR.
  * \param $sString Cha�ne de caract�res.
  */
@@ -95,6 +113,19 @@ function writeToErrorLog($sString) {
     if (isSet($properties["log_mode"])) {
         if ($properties["log_mode"] == true) {
             writeToLog($sString, $properties["error_log_file"]);
+        }
+    }
+}
+
+/**
+ * Ajoute la cha�ne de caract�re au fichier des log Proxy.
+ * \param $sString Cha�ne de caract�res.
+ */
+function writeToProxyLog($sString) {
+    global $properties;
+    if (isSet($properties["log_mode"])) {
+        if ($properties["log_mode"] == true) {
+            writeToLog($sString, $properties["proxy_log_file"]);
         }
     }
 }

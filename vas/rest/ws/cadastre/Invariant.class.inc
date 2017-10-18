@@ -68,7 +68,7 @@ class Invariant extends Cadastre {
 	 */
 	function GET() {
 		require __DIR__ . "/../vitis/" . $this->sRessourcesFile;
-		$this->aFields = $this->getFields('public', 'v_bati_a00_ident_local', 'ID_BAT');
+		$this->aFields = $this->getFields('public', $this->aProperties['cadastre']['views']['invariant'], 'ID_BAT');
 	}
 
 }

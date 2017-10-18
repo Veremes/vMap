@@ -378,6 +378,7 @@ class Querys extends Vmap {
      * @return array
      */
     function queryBusinessObject($type, $bOnlyResult = false) {
+        require $this->sRessourcesFile;
 
         // Objet BusinessObject correspondant
         $oBusinessObject = new BusinessObject($this->aPath, $this->aValues, $this->aProperties, $this->oConnection);
@@ -417,10 +418,12 @@ class Querys extends Vmap {
 
         // Chaine sql
         if ($type === 'form') {
-            $sSql = 'SELECT * FROM ' . $schema . '.' . $table;
+            $sSql = 'SELECT * FROM "' . $schema . '"."' . $table . '"';
         } else {
             $sSql = $oBusinessObject->aFields['sql_' . $type];
         }
+
+        $aParams = array();
 
         // Valeurs par défaut
         $intersect_column = empty($intersect_column) ? $geom_column : $intersect_column;
@@ -438,6 +441,16 @@ class Querys extends Vmap {
             return $aReturn['sMessage'];
         }
 
+        // filtre
+        $aDecodedFilter = $this->decodeJSONFilter($filter, $schema, $table);
+
+        // Ajout dans la requête
+        $sSecuredFilter = $aDecodedFilter['request'];
+        // Ajout des paramètres
+        foreach ($aDecodedFilter['params'] as $key => $value) {
+            $aParams[$key] = $value;
+        }
+
         // Position des attributs dans la requête
         $iAttributesPos = $this->getAttributsPosition($sSql);
 
@@ -451,43 +464,61 @@ class Querys extends Vmap {
                 $intersect_column_proj = '2154';
             }
 
-            // Ajoute le buffer et reprojette la géométrie d'intersection
-            $geometry = 'ST_GeomFromEWKT(\'' . $intersect_geom . '\')';
-            $geometry = 'ST_Buffer(' . $geometry . ', ' . $intersect_buffer . ')';
-            $geometry = 'ST_Transform(' . $geometry . ', ' . $intersect_column_proj . ')';
+            $aParams['intersect_buffer'] = array('value' => $intersect_buffer, 'type' => 'number');
+            $aParams['intersect_geom'] = array('value' => $intersect_geom, 'type' => 'geometry');
+            $aParams['intersect_column'] = array('value' => $intersect_column, 'type' => 'column_name');
+            $aParams['intersect_column_proj'] = array('value' => $intersect_column_proj, 'type' => 'integer');
 
-            if (strlen($filter) === 0) {
-                $filter = 'st_intersects(' . $geometry . ', ' . $intersect_column . ')';
+            // Buffer pour les coordsys non métriques
+            if ($result_srid == '4326') {
+                $sGeometryFilter = 'ST_Intersects(ST_Transform(ST_Buffer(ST_GeomFromEWKT([intersect_geom])::geography, [intersect_buffer]::float)::geometry, [intersect_column_proj]::integer), [intersect_column])';
             } else {
-                $filter .= ' AND st_intersects(' . $geometry . ', ' . $intersect_column . ')';
+                $sGeometryFilter = 'ST_Intersects(ST_Transform(ST_Buffer(ST_GeomFromEWKT([intersect_geom]), [intersect_buffer]::float), [intersect_column_proj]::integer), [intersect_column])';
+            }
+            if (strlen($sSecuredFilter) === 0) {
+                $sSecuredFilter = $sGeometryFilter;
+            } else {
+                $sSecuredFilter .= ' AND (' . $sGeometryFilter . ')';
             }
         }
 
         // Début de la requête
-        $sSql = substr_replace($sSql, ' ' . $bo_id_field . ' as bo_id_value,', $iAttributesPos, 0);
+        $aParams['bo_id_field'] = array('value' => $bo_id_field, 'type' => 'column_name');
+        $sSql = substr_replace($sSql, ' "[bo_id_field]" as bo_id_value,', $iAttributesPos, 0);
 
         if ($get_geom === true || $get_geom === 'true') {
+            $aParams['geom_field'] = array('value' => $geom_field, 'type' => 'column_name');
             if (!empty($result_srid)) {
-                $geom_field_geojson = 'ST_AsEWKT(ST_Transform(' . $geom_field . ', ' . $result_srid . ')) as bo_intersect_geom';
+                $aParams['result_srid'] = array('value' => $result_srid, 'type' => 'integer');
+                $geom_field_geojson = 'ST_AsEWKT(ST_Transform([geom_field], [result_srid]::integer)) as bo_intersect_geom';
             } else {
-                $geom_field_geojson = 'ST_AsEWKT(' . $geom_field . ') as bo_intersect_geom';
+                $geom_field_geojson = 'ST_AsEWKT([geom_field]) as bo_intersect_geom';
             }
             $sSql = substr_replace($sSql, ' ' . $geom_field_geojson . ',', $iAttributesPos, 0);
         }
 
         // Fin de la requête
-        if (!empty($filter) && strlen($filter) > 1)
-            $sSql .= ' WHERE ' . $filter;
-        if (!empty($sorted_by))
-            $sSql .= ' ORDER BY ' . $sorted_by;
-        if (!empty($limit))
-            $sSql .= ' LIMIT ' . $limit;
-        if (!empty($offset))
-            $sSql .= ' OFFSET ' . $offset;
+        if (!empty($sSecuredFilter) && strlen($sSecuredFilter) > 1) {
+            $sSql .= ' WHERE ' . $sSecuredFilter;
+        }
+        if (!empty($sorted_by)) {
+            $sSql .= ' ORDER BY [sorted_by]';
+            $aParams['sorted_by'] = array('value' => $sorted_by, 'type' => 'column_name');
+        }
+        if (!empty($limit)) {
+            $sSql .= ' LIMIT [limit]';
+            $aParams['limit'] = array('value' => $limit, 'type' => 'string');
+        }
+        if (!empty($offset)) {
+            $sSql .= ' OFFSET [offset]';
+            $aParams['offset'] = array('value' => $offset, 'type' => 'string');
+        }
 
         // Execute la requête
         $this->aValues['my_vitis_id'] = "";
-        $oResult = $this->oConnection->oBd->execute($sSql);
+
+        $oResult = $this->oConnection->oBd->executeWithParams($sSql, $aParams);
+
         if ($this->oConnection->oBd->enErreur()) {
             $aXmlRacineAttribute['status'] = 0;
             writeToErrorLog($this->oConnection->oBd->getBDMessage());
@@ -730,12 +761,18 @@ class Querys extends Vmap {
     /**
      * Get the projection of a column from an SQL request
      * @param type $sSql SQL request witch contains the table, schema etc..
-     * @param type $geometryField name of the column to look the projection
+     * @param type $columnName name of the column to look the projection
      */
     function getColumnProjection($sSql, $iAttributesPos, $columnName) {
-        $sSql_tmp = substr_replace($sSql, ' ST_SRID(' . $columnName . ') as bo_intersect_column_srid,', $iAttributesPos, 0) . ' limit 1';
+        $sSql_tmp = substr_replace($sSql, ' ST_SRID([intersect_column]) as bo_intersect_column_srid,', $iAttributesPos, 0) . ' limit 1';
 
-        $oResult = $this->oConnection->oBd->execute($sSql_tmp);
+        $aParams = array(
+            'intersect_column' => array('value' => $columnName, 'type' => 'column_name')
+        );
+
+        $oResult = $this->oConnection->oBd->executeWithParams($sSql_tmp, $aParams);
+
+
         if ($this->oConnection->oBd->enErreur()) {
             writeToErrorLog($this->oConnection->oBd->getBDMessage());
         } else {
@@ -828,8 +865,8 @@ class Querys extends Vmap {
         // Définit si il a des fichiers a uploader
         $bUploadFiles = false;
         foreach ($this->aValues as $key => $value) {
-            if (strpos($key, '_file')) {
-                $sName = substr($key, 0, strpos($key, '_file'));
+            if (strrpos($key, '_file')) {
+                $sName = substr($key, 0, strrpos($key, '_file'));
                 if (isset($this->aValues[$sName . '_name'])) {
                     $bUploadFiles = true;
                 }
@@ -873,9 +910,9 @@ class Querys extends Vmap {
     function extractFilesFromValues($aValues, $sDirPath) {
 
         foreach ($aValues as $key => $value) {
-            if (strpos($key, '_file')) {
+            if (strrpos($key, '_file')) {
 
-                $sName = substr($key, 0, strpos($key, '_file'));
+                $sName = substr($key, 0, strrpos($key, '_file'));
                 $sFileName = $aValues[$sName . '_name'];
 
                 if (!empty($sFileName)) {
@@ -886,7 +923,7 @@ class Querys extends Vmap {
                     }
 
                     // Cŕee le fichier sur le serveur
-                    $fp = fopen($sDirColumnPath . '/' . utf8_decode($sFileName), "w");
+                    $fp = fopen($sDirColumnPath . '/' . $sFileName, "w");
                     fwrite($fp, $value);
                     fclose($fp);
 
@@ -908,7 +945,7 @@ class Querys extends Vmap {
      * @return string Path to the created directory
      */
     function createElementFilesFolder($sBoId, $sId) {
-        
+
         // Répertoires présents ?
         if (is_dir($this->aProperties['ws_data_dir'])) {
             $sDirPath = $this->aProperties['ws_data_dir'] . '/vitis';
@@ -977,7 +1014,7 @@ class Querys extends Vmap {
      * @return array containing the status and the message
      */
     function POST() {
-        
+
         $sBusinessObjectId = $this->aPath['2'];
 
         if (!isset($sBusinessObjectId)) {
@@ -1000,7 +1037,8 @@ class Querys extends Vmap {
             $this->oConnection->oBd = new Vm($this->oConnection->oBd->login, $this->oConnection->oBd->mdp, $bo_database, $this->oConnection->oBd->serveur, $this->oConnection->oBd->port, $this->oConnection->oBd->sgbd, $this->oConnection->oBd->sPageEncoding);
         }
 
-        $this->aValues['my_vitis_id'] = $this->aValues[$bo_id_field];
+        // $this->aValues['my_vitis_id'] = $this->aValues[$bo_id_field];
+        unset($this->aValues['my_vitis_id']);
 
         $aReturn = $this->genericPost($bo_schema, $bo_table, '', $bo_id_field);
 
@@ -1017,18 +1055,17 @@ class Querys extends Vmap {
             }
             // Écriture du fichier
             foreach ($_FILES as $sName => $aFile) {
-                                
-                $sFileColumn = substr($sName, 0, strpos($sName, '_attached_content'));
 
-                $sDirColumnPath = $sDirPath . '/' . $sFileColumn;
+                $sDirColumnPath = $sDirPath . '/' . $sName;
                 if (!is_dir($sDirColumnPath)) {
                     mkdir($sDirColumnPath, 0777, true);
                 }
 
+                $this->aValues[$sName] = $aFile['name'];
+
                 // Écrit le fichier dans son enplacement
                 uploadFile($sName, "", $sDirColumnPath . "/" . $aFile['name'], $aFile['size'] + 1);
             }
-
             $this->genericPut($bo_schema, $bo_table, $bo_id_field);
         }
 
@@ -1090,7 +1127,7 @@ class Querys extends Vmap {
         if (!isset($sBusinessObjectId)) {
             return 'business_object_id required';
         }
-        
+
         if (empty($this->aValues['idList']) && !empty($this->aPath['3'])) {
             $this->aValues['idList'] = $this->aPath['3'];
         }
@@ -1120,7 +1157,7 @@ class Querys extends Vmap {
             $this->oConnection->oBd = new Vm($this->oConnection->oBd->login, $this->oConnection->oBd->mdp, $bo_database, $this->oConnection->oBd->serveur, $this->oConnection->oBd->port, $this->oConnection->oBd->sgbd, $this->oConnection->oBd->sPageEncoding);
         }
 
-        $this->oConnection->oBd->delete($bo_schema, $bo_table, $bo_id_field, $sIdList);
+        $this->oConnection->oBd->delete($bo_schema, $bo_table, $bo_id_field, $this->aValues['idList']);
 
         if ($this->oConnection->oBd->enErreur()) {
             $aXmlRacineAttribute['status'] = 0;

@@ -121,9 +121,16 @@ class UserPrintTemplates extends Vmap {
             $old_filter = '';
         }
         if (isset($this->aValues['filter']) && $this->aValues['filter'] != "") {
-            $this->aValues['filter'] = '(' . ($this->aValues['filter']) . ')' . " AND group_id in ($sesGroup)";
+            $aFilter = array(
+                'relation' => 'AND',
+                'operators' => array(
+                    $this->aValues['filter'],
+                    array('column' => 'group_id', 'compare_operator' => 'IN', 'value' => '[' . $sesGroup . ']')
+                )
+            );
+            $this->aValues['filter'] = $aFilter;
         } else {
-            $this->aValues['filter'] = "group_id in ($sesGroup)";
+            $this->aValues['filter'] = '{"column":"group_id","compare_operator":"IN","value":[' . $sesGroup . ']}';
         }
         $aReturn = $this->genericGet($this->aProperties['schema_vmap'], 'v_user_template', 'printtemplate_id');
         $this->aValues['filter'] = $old_filter;
@@ -150,10 +157,13 @@ class UserPrintTemplates extends Vmap {
                 $oUserPrintTemplate->variables = array();
                 $oUserPrintTemplates->userprinttemplates[] = $oUserPrintTemplate;
                 $oUserPrintTemplates->data[] = $oUserPrintTemplate;
-                // Paramètres du modèle d'impression.
-                $sSql = str_replace('[printtemplate_id]', $oPrintTemplate->aFields["printtemplate_id"], $aSql['getPrintTemplateParameters']);
-                $sSql = str_replace('[sSchemaVmap]', $this->aProperties['schema_vmap'], $sSql);
-                $resultat = $this->oConnection->oBd->execute($sSql);
+                // Paramètres du modèle d'impression.                
+                $sSql = $aSql['getPrintTemplateParameters'];
+                $aSQLParams = array(
+                    'sSchemaVmap' => array('value' => $this->aProperties['schema_vmap'], 'type' => 'column_name'),
+                    'printtemplate_id' => array('value' => $oPrintTemplate->aFields["printtemplate_id"], 'type' => 'number')
+                );
+                $resultat = $this->oConnection->oBd->executeWithParams($sSql, $aSQLParams);
                 if ($this->oConnection->oBd->enErreur()) {
                     $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                     $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());

@@ -43,7 +43,7 @@ class SectionByGeom extends Cadastre {
         $this->aProperties = $properties;
         $this->oConnection = new Connection($this->aValues, $this->aProperties);
         $this->sSchema = $this->aProperties['schema_cadastre'];
-        $this->sTable = 'v_section';
+        $this->sTable = 'v_vmap_section_cadastrale';
         $this->aAttributs = Array("id_com", "id_sec", "code_com", "section", "pre", "idu", "texte", "geom");
     }
 
@@ -82,7 +82,7 @@ class SectionByGeom extends Cadastre {
      * @return the token
      */
     function GET() {
-        
+
         if (!in_array('vmap_cadastre_user', $this->oConnection->aPrivileges)) {
             $oError = new VitisError(0, 'INSUFFICIENT_PRIVILEGES');
             $aXmlRacineAttribute['status'] = 0;

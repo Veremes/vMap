@@ -15,7 +15,6 @@ goog.require("vitis.modules.main");
  * @param {angular.$compile} $compile Angular compile.
  * @param {angular.$timeout} $timeout Angular timeout service.
  * @param {angular.$rootScope} $rootScope Angular rootScope.
- * @param {service} Restangular Service Restangular.
  * @param {service} propertiesSrvc Paramètres des properties.
  * @param {service} envSrvc Paramètres d'environnement.
  * @param {service} sessionSrvc Service de gestion des sessions.
@@ -23,7 +22,7 @@ goog.require("vitis.modules.main");
  * @param {service} modesSrvc Liste des modes et objets de l'utilisateur.
  * @ngInject
  **/
-vitisApp.wmsServiceTestsCtrl = function ($log, $scope, $templateRequest, $compile, $timeout, $rootScope, Restangular, propertiesSrvc, envSrvc, sessionSrvc, formSrvc, modesSrvc) {
+vitisApp.wmsServiceTestsCtrl = function ($log, $scope, $templateRequest, $compile, $timeout, $rootScope, propertiesSrvc, envSrvc, sessionSrvc, formSrvc, modesSrvc) {
     // Initialisation
     $log.info("initWmsServiceTests");
     // Etat de l'affichage des onglets.
@@ -59,10 +58,8 @@ vitisApp.wmsServiceTestsCtrl = function ($log, $scope, $templateRequest, $compil
         if (goog.isDefAndNotNull(propertiesSrvc["ms_cgi_url"]) && propertiesSrvc["ms_cgi_url"] != "") {
             if (!$scope["aWmsServiceTestTabs"]["get_capabilities"]["loaded"] || bRefresh === true) {
                 // Requête pour créer et récupérer le fichier ".map" du service wms.
-                var oWebServiceBase = Restangular["one"](propertiesSrvc["services_alias"] + "/vm4ms/WmsServices", "MapFile");
                 var oFormData = new FormData();
                 oFormData.append("wmsservice_id", envSrvc["sId"]);
-                oFormData.append("token", sessionSrvc["token"]);
                 oFormData.append("type", "test");
                 if (typeof (envSrvc["oFormValues"][envSrvc["sFormDefinitionName"]]) != "undefined") {
                     var sUserLogin = envSrvc["oFormValues"][envSrvc["sFormDefinitionName"]]["wms_service_login"];
@@ -72,56 +69,57 @@ vitisApp.wmsServiceTestsCtrl = function ($log, $scope, $templateRequest, $compil
                         oFormData.append("user_password", sUserPassword);
                     }
                 }
-                var sPath = "";
-                var oParams = {"token": sessionSrvc["token"]};
-                oWebServiceBase["customPOST"](oFormData, sPath, oParams)
-                        .then(function (data) {
-                            if (data["status"] == 1) {
-                                var oWmsService = envSrvc["extractWebServiceData"]("wmsservices", data)[0];
-                                var sServiceUrl = propertiesSrvc["ms_cgi_url"] + "/test/" + sessionSrvc["token"];
-                                if (envSrvc["sId"] != propertiesSrvc["private_wms_service"])
-                                    sServiceUrl += "_" + oWmsService["wmsservice_id"];
-                                //$scope["aWmsServiceTestTabs"]["map_file"] = oWmsService["map_file"];
-                                // {"showErrorMessage":false}
-                                $scope.$root["getCapabilities"](sServiceUrl, {"showErrorMessage":false}).then(function (oGetCapabilities) {
-                                    if (goog.isDefAndNotNull(oGetCapabilities)) {
-                                        $scope["aWmsServiceTestTabs"]["get_capabilities"]["oCodeMirrorEditor"]["setValue"](oGetCapabilities["xml"]);
-                                        $scope["oGetCapabilities"] = oGetCapabilities;
-                                        $scope["oGetCapabilities"]["service_url"] = sServiceUrl;
-                                        if (typeof (oWmsService["layers_sources"]) != "undefined")
-                                            $scope["oGetCapabilities"]["layers_sources"] = oWmsService["layers_sources"];
-                                    }
-                                    else {
-                                        // Affiche la section des logs en cas d'erreur.
-                                        $timeout(function () {
-                                            // Cache les onglets "GetCapabilities", "MapServer" et "OL3".
-                                            document.querySelector(".wms-service-tests .nav-tabs > li:nth-child(1)").style.display = "none";
-                                            document.querySelector(".wms-service-tests .nav-tabs > li:nth-child(2)").style.display = "none";
-                                            document.querySelector(".wms-service-tests .nav-tabs > li:nth-child(3)").style.display = "none";
-                                            // Affiche les logs.
-                                            document.querySelector(".wms-service-tests .nav-tabs > li > a[aria-controls='wms_service_tests_wms_service_log']").click();
-                                        });
-                                    }
-                                });
-                            } else {
-                                // Supprime le précédent getCapabilities.
-                                delete $scope["oGetCapabilities"];
-                                // Vide les onglets
-                                $scope["clearWmsServiceTestsTabs"]();
-                                // Rechargement obligatoire de tous les onglets.
-                                $scope["aWmsServiceTestTabs"]["get_capabilities"]["loaded"] = false;
-                                $scope["aWmsServiceTestTabs"]["openlayers_test"]["loaded"] = false;
-                                $scope["aWmsServiceTestTabs"]["maplayer_test"]["loaded"] = false;
-                                //
-                                var oOptions = {
-                                    "className": "modal-danger"
-                                };
-                                // Message d'erreur ?
-                                if (data["errorMessage"] != null)
-                                    oOptions["message"] = data["errorMessage"];
-                                $scope.$root["modalWindow"]("alert", "REQUEST_ERROR", oOptions);
-                            }
-                        });
+                ajaxRequest({
+                    "method": "POST",
+                    "url": propertiesSrvc["web_server_name"] + "/" + propertiesSrvc["services_alias"] + "/vm4ms/WmsServices/MapFile",
+                    "data": oFormData,
+                    "scope": $scope,
+                    "success": function (response) {
+                        if (response["data"]["status"] == 1) {
+                            var oWmsService = envSrvc["extractWebServiceData"]("wmsservices", response["data"])[0];
+                            var sServiceUrl = propertiesSrvc["ms_cgi_url"] + "/test/" + oWmsService["map_file_hash"];
+                            if (envSrvc["sId"] != propertiesSrvc["private_wms_service"])
+                                sServiceUrl += "_" + oWmsService["wmsservice_id"];
+                            $scope["aWmsServiceTestTabs"]["map_file_hash"] = oWmsService["map_file_hash"];
+                            $scope.$root["getCapabilities"](sServiceUrl, {"showErrorMessage": false}).then(function (oGetCapabilities) {
+                                if (goog.isDefAndNotNull(oGetCapabilities)) {
+                                    $scope["aWmsServiceTestTabs"]["get_capabilities"]["oCodeMirrorEditor"]["setValue"](oGetCapabilities["xml"]);
+                                    $scope["oGetCapabilities"] = oGetCapabilities;
+                                    $scope["oGetCapabilities"]["service_url"] = sServiceUrl;
+                                    if (typeof (oWmsService["layers_sources"]) != "undefined")
+                                        $scope["oGetCapabilities"]["layers_sources"] = oWmsService["layers_sources"];
+                                } else {
+                                    // Affiche la section des logs en cas d'erreur.
+                                    $timeout(function () {
+                                        // Cache les onglets "GetCapabilities", "MapServer" et "OL3".
+                                        document.querySelector(".wms-service-tests .nav-tabs > li:nth-child(1)").style.display = "none";
+                                        document.querySelector(".wms-service-tests .nav-tabs > li:nth-child(2)").style.display = "none";
+                                        document.querySelector(".wms-service-tests .nav-tabs > li:nth-child(3)").style.display = "none";
+                                        // Affiche les logs.
+                                        document.querySelector(".wms-service-tests .nav-tabs > li > a[aria-controls='wms_service_tests_wms_service_log']").click();
+                                    });
+                                }
+                            });
+                        } else {
+                            // Supprime le précédent getCapabilities.
+                            delete $scope["oGetCapabilities"];
+                            // Vide les onglets
+                            $scope["clearWmsServiceTestsTabs"]();
+                            // Rechargement obligatoire de tous les onglets.
+                            $scope["aWmsServiceTestTabs"]["get_capabilities"]["loaded"] = false;
+                            $scope["aWmsServiceTestTabs"]["openlayers_test"]["loaded"] = false;
+                            $scope["aWmsServiceTestTabs"]["maplayer_test"]["loaded"] = false;
+                            //
+                            var oOptions = {
+                                "className": "modal-danger"
+                            };
+                            // Message d'erreur ?
+                            if (response["data"]["errorMessage"] != null)
+                                oOptions["message"] = response["data"]["errorMessage"];
+                            $scope.$root["modalWindow"]("alert", "REQUEST_ERROR", oOptions);
+                        }
+                    }
+                });
                 //
                 $scope["aWmsServiceTestTabs"]["get_capabilities"]["loaded"] = true;
             }
@@ -168,6 +166,7 @@ vitisApp.wmsServiceTestsCtrl = function ($log, $scope, $templateRequest, $compil
                                 });
                             }
                             var oMapFormElement = formSrvc["getFormElementDefinition"]("wms_service_test_map", $scope["sFormDefinitionName"]);
+                            oMapFormElement["map_options"]["bLayersTreeOpen"] = true;
                             oMapFormElement["map_options"]["proj"] = sProj;
                             oMapFormElement["map_options"]["tree"]["children"][0]["view"]["projection"] = sProj;
 
@@ -191,30 +190,38 @@ vitisApp.wmsServiceTestsCtrl = function ($log, $scope, $templateRequest, $compil
                             //oMapFormElement["map_options"]["tree"]["children"][0]["view"]["extent"] = $scope["oGetCapabilities"]["json"]["Capability"]["Layer"]["Layer"][0]["BoundingBox"][0]["extent"];
                             // Couches du flux WMS.
                             if (typeof ($scope["oGetCapabilities"]["json"]["Capability"]["Layer"]) != "undefined") {
-                                $scope["oGetCapabilities"]["json"]["Capability"]["Layer"]["Layer"].forEach(function (oLayer, iLayerIndex) {
+
+                                var oService = {
+                                    "name": 'Service',
+                                    "children": []
+                                };
+
+                                var aLayers = angular.copy($scope["oGetCapabilities"]["json"]["Capability"]["Layer"]["Layer"]);
+
+                                // Réordonne les couches à afficher par nom
+                                aLayers.sort(function (a, b) {
+                                    return a["Name"].localeCompare(b["Name"]);
+                                });
+
+                                aLayers.forEach(function (oLayer, iLayerIndex) {
                                     // Définition de la couche.
                                     var oChildrenLayer = {
                                         "name": oLayer["Name"],
-                                        "children": [
-                                            {
-                                                "name": oLayer["Name"],
-                                                "layerType": "imagewms",
-                                                "visible": true,
-                                                "legend": "true",
-                                                "select": true,
-                                                "url": $scope["oGetCapabilities"]["service_url"],
-                                                "params": {
-                                                    "LAYERS": oLayer["Name"],
-                                                    "VERSION": "1.3.0",
-                                                    "TIMESTAMP": new Date().getTime()
-                                                },
-                                                "index": iLayerIndex + 1
-                                            }
-                                        ]
+                                        "layerType": "imagewms",
+                                        "visible": false,
+                                        "legend": "true",
+                                        "select": true,
+                                        "url": $scope["oGetCapabilities"]["service_url"],
+                                        "params": {
+                                            "LAYERS": oLayer["Name"],
+                                            "VERSION": "1.3.0",
+                                            "TIMESTAMP": new Date().getTime()
+                                        },
+                                        "index": iLayerIndex + 1
                                     };
                                     // Source de la couche.
                                     if (typeof ($scope["oGetCapabilities"]["layers_sources"][oLayer["Name"]]) != "undefined") {
-                                        oChildrenLayer["children"][0]["attributions"] = [
+                                        oChildrenLayer["attributions"] = [
                                             new ol.Attribution({
                                                 html: $scope["oGetCapabilities"]["layers_sources"][oLayer["Name"]]
                                             })
@@ -222,8 +229,11 @@ vitisApp.wmsServiceTestsCtrl = function ($log, $scope, $templateRequest, $compil
                                         ];
                                     }
                                     // Ajout de la couche.
-                                    oMapFormElement["map_options"]["tree"]["children"].push(oChildrenLayer);
+                                    oService['children'].push(oChildrenLayer);
                                 });
+
+                                // Ajout du service.
+                                oMapFormElement["map_options"]["tree"]["children"].push(oService);
                             }
                             // Attends la création de la carte.
                             var clearListener2 = $scope.$root.$on("OpenLayersMapCreated", function (event, oMap) {
@@ -266,38 +276,57 @@ vitisApp.wmsServiceTestsCtrl = function ($log, $scope, $templateRequest, $compil
         if (goog.isDefAndNotNull(propertiesSrvc["ms_cgi_url"]) && propertiesSrvc["ms_cgi_url"] != "") {
             if (!$scope["aWmsServiceTestTabs"]["maplayer_test"]["loaded"] || bRefresh === true) {
                 if (typeof ($scope["oGetCapabilities"]) != "undefined" && typeof ($scope["oGetCapabilities"]["json"]) != "undefined") {
-                    // Liste des couches du flux WMS de test et de la couche à tester.
-                    var aLayers = [];
                     if (typeof ($scope["oGetCapabilities"]["json"]["Capability"]["Layer"]) != "undefined") {
-                        $scope["oGetCapabilities"]["json"]["Capability"]["Layer"]["Layer"].forEach(function (oLayer) {
-                            aLayers.push(oLayer["Name"]);
-                        });
-                    }
-                    // Url de mapserver dans l'iframe.
-                    $scope["aWmsServiceTestTabs"]["map_file"]
-                    var sServiceUrl = propertiesSrvc["ms_cgi_url"] + "/test/" + sessionSrvc["token"];
-                    if (envSrvc["sId"] != propertiesSrvc["private_wms_service"])
-                        sServiceUrl += "_" + envSrvc["sId"];
-                    var sIframeUrl = sServiceUrl + "?ms_cgi_url=" + propertiesSrvc["ms_cgi_url"] + "&LAYERS=" + aLayers.join(" ") + "&no_cache=" + new Date().getTime();
-                    document.getElementById("wms_service_tests_wms_service_ms_iframe").contentWindow.location.href = sIframeUrl;
-                    //
-                    $scope["aWmsServiceTestTabs"]["maplayer_test"]["loaded"] = true;
 
-                    $("#wms_service_tests_wms_service_ms_iframe").load(function () {
-                        var this_ = this;
-                        // injecte css
-                        $('link').each(function () {
-                            if (this.rel === 'stylesheet' && this.type === 'text/css') {
-                                var cssLink = document.createElement("link");
-                                cssLink.href = this.href;
-                                cssLink.rel = "stylesheet";
-                                cssLink.type = "text/css";
-                                this_.contentWindow.document.body.appendChild(cssLink);
+                        $scope['aMSTestLayers'] = [];
+                        $('#wms_service_tests_layer_select_modal').modal('show');
+
+                        $scope["testWmsServiceSelectedLayersWithMapServer"] = function (aLayers) {
+                            $log.info("testWmsServiceSelectedLayersWithMapServer", aLayers);
+
+                            $('#wms_service_tests_layer_select_modal').modal('hide');
+                            // Url de mapserver dans l'iframe.
+                            $scope["aWmsServiceTestTabs"]["map_file"]
+                            var sServiceUrl = propertiesSrvc["ms_cgi_url"] + "/test/" + $scope["aWmsServiceTestTabs"]["map_file_hash"];
+                            if (envSrvc["sId"] != propertiesSrvc["private_wms_service"])
+                                sServiceUrl += "_" + envSrvc["sId"];
+                            var sIframeUrl = sServiceUrl + "?ms_cgi_url=" + propertiesSrvc["ms_cgi_url"] + "&LAYERS=" + aLayers.join(" ") + "&no_cache=" + new Date().getTime();
+                            // Hauteur et largeur de l'image générée par MapServer.
+                            var oIframeWontainer = document.getElementById("wms_service_tests_wms_service_mapserver");
+                            if (oIframeWontainer !== null) {
+                                var iMapFileWidth = parseInt(oIframeWontainer.clientWidth * 0.75) - 23;
+                                var iMapFileHeight = oIframeWontainer.clientHeight - 83;
+                                sIframeUrl += "&MAPSIZE=" + iMapFileWidth + "+" + iMapFileHeight;
                             }
-                        });
-                        // style
-                        this.contentWindow.document.body.style.overflow = "auto";
-                    });
+                            // Chargement de l'image dans l'iframe.
+                            document.getElementById("wms_service_tests_wms_service_ms_iframe").contentWindow.location.href = sIframeUrl;
+                            //
+                            $scope["aWmsServiceTestTabs"]["maplayer_test"]["loaded"] = true;
+
+                            $("#wms_service_tests_wms_service_ms_iframe").load(function () {
+                                var this_ = this;
+                                // injecte css
+                                $('link').each(function () {
+                                    if (this.rel === 'stylesheet' && this.type === 'text/css') {
+                                        var cssLink = document.createElement("link");
+                                        cssLink.href = this.href;
+                                        cssLink.rel = "stylesheet";
+                                        cssLink.type = "text/css";
+                                        this_.contentWindow.document.body.appendChild(cssLink);
+                                    }
+                                });
+                                // style
+                                this.contentWindow.document.body.style.overflow = "auto";
+                            });
+                        }
+
+                        $scope["testWmsServiceSelectAllLayers"] = function () {
+                            $scope['aMSTestLayers'] = [];
+                            $scope["oGetCapabilities"]["json"]["Capability"]["Layer"]["Layer"].forEach(function (oLayer) {
+                                $scope['aMSTestLayers'].push(oLayer["Name"]);
+                            });
+                        }
+                    }
                 }
             }
         } else {
@@ -366,27 +395,26 @@ vitisApp.wmsServiceTestsCtrl = function ($log, $scope, $templateRequest, $compil
     $scope["loadWmsServiceMapServerLog"] = function (bRefresh) {
         $log.info("loadWmsServiceMapServerLog");
         if (!$scope["aWmsServiceTestTabs"]["mapserver_log"]["loaded"] || bRefresh === true) {
-            var oWebServiceBase = Restangular["one"](propertiesSrvc["services_alias"] + "/vm4ms", "wmsservices");
-            // Requête pour récupérer le chemin vers le fichier ".map" du service wms.
-            var $oParams = {
-                "token": sessionSrvc["token"]
-            };
-            oWebServiceBase["customGET"](envSrvc["sId"] + "/MapServerLog", $oParams)
-                    .then(function (data) {
-                        if (data["status"] == 1) {
-                            var oMapServerLogs = envSrvc["extractWebServiceData"]("wmsservices", data)[0];
-                            $scope["aWmsServiceTestTabs"]["mapserver_log"]["file_content"] = oMapServerLogs["log_file_content"];
-                        } else {
-                            //
-                            var oOptions = {
-                                "className": "modal-danger"
-                            };
-                            // Message d'erreur ?
-                            if (data["errorMessage"] != null)
-                                oOptions["message"] = data["errorMessage"];
-                            $scope.$root["modalWindow"]("alert", "REQUEST_ERROR", oOptions);
-                        }
-                    });
+            ajaxRequest({
+                "method": "GET",
+                "url": propertiesSrvc["web_server_name"] + "/" + propertiesSrvc["services_alias"] + "/vm4ms/wmsservices/" + envSrvc["sId"] + "/MapServerLog",
+                "scope": $scope,
+                "success": function (response) {
+                    if (response["data"]["status"] == 1) {
+                        var oMapServerLogs = envSrvc["extractWebServiceData"]("wmsservices", response["data"])[0];
+                        $scope["aWmsServiceTestTabs"]["mapserver_log"]["file_content"] = oMapServerLogs["log_file_content"];
+                    } else {
+                        //
+                        var oOptions = {
+                            "className": "modal-danger"
+                        };
+                        // Message d'erreur ?
+                        if (response["data"]["errorMessage"] != null)
+                            oOptions["message"] = response["data"]["errorMessage"];
+                        $scope.$root["modalWindow"]("alert", "REQUEST_ERROR", oOptions);
+                    }
+                }
+            });
             //
             $scope["aWmsServiceTestTabs"]["mapserver_log"]["loaded"] = true;
         }
@@ -400,29 +428,31 @@ vitisApp.wmsServiceTestsCtrl = function ($log, $scope, $templateRequest, $compil
     $scope["loadWmsServiceMapFile"] = function (bRefresh) {
         $log.info("loadWmsServiceMapFile");
         if (!$scope["aWmsServiceTestTabs"]["map_file"]["loaded"] || bRefresh === true) {
-            var oWebServiceBase = Restangular["one"](propertiesSrvc["services_alias"] + "/vm4ms", "wmsservices");
-            // Requête pour récupérer les infos du fichier ".map".
-            var $oParams = {
+            var oParams = {
                 "wmsservice_id": envSrvc["sId"],
-                "token": sessionSrvc["token"],
                 "type": "test"
             };
-            oWebServiceBase["customGET"](envSrvc["sId"] + "/MapFile", $oParams)
-                    .then(function (data) {
-                        if (data["status"] == 1) {
-                            var oWmsService = envSrvc["extractWebServiceData"]("wmsservices", data)[0];
-                            $scope["aWmsServiceTestTabs"]["map_file"]["oCodeMirrorEditor"]["setValue"](oWmsService["map_file_content"]);
-                        } else {
-                            //
-                            var oOptions = {
-                                "className": "modal-danger"
-                            };
-                            // Message d'erreur ?
-                            if (data["errorMessage"] != null)
-                                oOptions["message"] = data["errorMessage"];
-                            $scope.$root["modalWindow"]("alert", "REQUEST_ERROR", oOptions);
-                        }
-                    });
+            ajaxRequest({
+                "method": "GET",
+                "url": propertiesSrvc["web_server_name"] + "/" + propertiesSrvc["services_alias"] + "/vm4ms/wmsservices/" + envSrvc["sId"] + "/MapFile",
+                "params": oParams,
+                "scope": $scope,
+                "success": function (response) {
+                    if (response["data"]["status"] == 1) {
+                        var oWmsService = envSrvc["extractWebServiceData"]("wmsservices", response["data"])[0];
+                        $scope["aWmsServiceTestTabs"]["map_file"]["oCodeMirrorEditor"]["setValue"](oWmsService["map_file_content"]);
+                    } else {
+                        //
+                        var oOptions = {
+                            "className": "modal-danger"
+                        };
+                        // Message d'erreur ?
+                        if (response["data"]["errorMessage"] != null)
+                            oOptions["message"] = response["data"]["errorMessage"];
+                        $scope.$root["modalWindow"]("alert", "REQUEST_ERROR", oOptions);
+                    }
+                }
+            });
             //
             $scope["aWmsServiceTestTabs"]["map_file"]["loaded"] = true;
         }

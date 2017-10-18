@@ -111,11 +111,14 @@ class VmapUsers extends Vmap {
         // Styles d'impression à rattacher au usere ?
         if (!empty($this->aValues['print_styles'])) {
             $aPrintStyles = explode('|', $this->aValues['print_styles']);
-            foreach ($aPrintStyles as $iPrintStyleId) {
-                $sSql = str_replace('[printstyle_id]', $iPrintStyleId, $aSql['insertUserPrintStyles']);
-                $sSql = str_replace('[user_id]', $this->aValues["my_vitis_id"], $sSql);
-                $sSql = str_replace('[sSchemaVmap]', $this->aProperties['schema_vmap'], $sSql);
-                $resultat = $this->oConnection->oBd->execute($sSql);
+            foreach ($aPrintStyles as $iPrintStyleId) {                
+                $sSql = $aSql['insertUserPrintStyles'];
+                $aSQLParams = array(
+                    'sSchemaVmap' => array('value' => $this->aProperties['schema_vmap'], 'type' => 'column_name'),
+                    'user_id' => array('value' => $this->aValues["my_vitis_id"], 'type' => 'number'),
+                    'printstyle_id' => array('value' => $iPrintStyleId, 'type' => 'number')
+                );
+                $resultat = $this->oConnection->oBd->executeWithParams($sSql, $aSQLParams);
                 if ($this->oConnection->oBd->enErreur()) {
                     $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                     $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());

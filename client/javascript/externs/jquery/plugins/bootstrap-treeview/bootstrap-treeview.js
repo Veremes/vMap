@@ -614,6 +614,7 @@
                 treeItem
                         .append($(_this.template.link)
                                 .attr('href', node.href)
+                                .attr('target', (typeof(node.target) !== "undefined")?node.target:"")
                                 .append(node.text)
                                 );
             }
@@ -724,7 +725,7 @@
         item: '<li class="list-group-item"></li>',
         indent: '<span class="indent"></span>',
         icon: '<span class="icon"></span>',
-        link: '<a href="#" style="color:inherit;"></a>',
+        link: '<a href="#" style="color:inherit;" target=""></a>',
         badge: '<span class="badge"></span>'
     };
 

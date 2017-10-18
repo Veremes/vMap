@@ -43,7 +43,7 @@ class ParcelleByGeom extends Cadastre {
         $this->aProperties = $properties;
         $this->oConnection = new Connection($this->aValues, $this->aProperties);
         $this->sSchema = $this->aProperties['schema_cadastre'];
-        $this->sTable = 'v_parcelle';
+        $this->sTable = $this->aProperties['cadastre']['views']['parcelle'];
         $this->aAttributs = Array("id_com", "code_com", "parcelle", "section", "pre", "coar", "codm", "indp", "idu", "ID_PAR", "sup_fiscale", "numero", "feuille", "geom");
     }
 

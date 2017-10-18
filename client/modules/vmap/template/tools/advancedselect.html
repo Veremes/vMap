@@ -11,7 +11,7 @@
                     style="width: 80%"
                     ng-class="{'white color-gray': ctrl.currentAction === 'basicTools-selectByPoint' || ctrl.currentAction === 'basicTools-selectByLineString' || ctrl.currentAction === 'basicTools-selectByPolygon' || ctrl.currentAction === 'basicTools-selectByCircle'}"
                     ng-click="ctrl.selectGeomType !== '' ? ctrl.startSelection(ctrl.selectGeomType, ctrl.currentAction === 'basicTools-selectBy' + ctrl.selectGeomType) : angular.noop">
-                Séleciton graphique
+                Sélection graphique
             </button>
             <button type="button" 
                     class="btn btn-sm btn-default dropdown-toggle" 
@@ -142,6 +142,9 @@
                                 </table>
                             </div>
                             <div class="select_modal_table_buttons">
+                                <button class="btn btn-default" ng-click="ctrl.tableDeleteSelection('#select_table_' + bo_id)" ng-show="bo.user_rights.indexOf('DELETE') !== -1">
+                                    <span class="icon-trash"></span> Supprimer les enregistrements
+                                </button>
                                 <button class="btn btn-default" ng-click="ctrl.tableAddToCard('#select_table_' + bo_id, false)">
                                     <span class="icon-shopping_basket"></span> Ajouter au panier
                                 </button>

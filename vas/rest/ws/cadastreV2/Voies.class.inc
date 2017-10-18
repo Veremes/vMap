@@ -1,23 +1,23 @@
 <?php
+
 /**
-* \file Voies.class.inc
-* \class Voies
-*
-* \author Armand Bahi <armand.bahi@veremes.com>.
-*
-* \brief This file contains the Voies php class
-*
-* This class defines Rest Api to Vmap Voies
-* 
-*/
+ * \file Voies.class.inc
+ * \class Voies
+ *
+ * \author Armand Bahi <armand.bahi@veremes.com>.
+ *
+ * \brief This file contains the Voies php class
+ *
+ * This class defines Rest Api to Vmap Voies
+ * 
+ */
 require_once 'Cadastre.class.inc';
 require_once 'Voie.class.inc';
 require_once __DIR__ . '/../../class/vitis_lib/Connection.class.inc';
 require_once __DIR__ . '/../../class/vmlib/BdDataAccess.inc';
 
 class Voies extends Cadastre {
-    
-     /**
+    /**
      * @SWG\Definition(
      *   definition="/voies",
      *   allOf={
@@ -29,6 +29,7 @@ class Voies extends Cadastre {
      *   description="Operations about Voies"
      * )
      */
+
     /**
      * construct
      * @param type $aPath url of the request
@@ -40,9 +41,9 @@ class Voies extends Cadastre {
         $this->aPath = $aPath;
         $this->aProperties = $properties;
         $this->oConnection = new Connection($this->aValues, $this->aProperties);
-		$this->aSelectedFields = Array('id_voie as ID_RIVOLI', 'l_nature_voie as L_NATURE_VOIE', 'dvoilib as DVOILIB');
+        $this->aSelectedFields = Array('id_voie as ID_RIVOLI', 'l_nature_voie as L_NATURE_VOIE', 'dvoilib as DVOILIB');
     }
-    
+
     /**
      * @SWG\Get(path="/voies",
      *   tags={"Voie"},
@@ -77,7 +78,7 @@ class Voies extends Cadastre {
      *     description="number of element",
      *     required=false,
      *     type="integer",
-	 *     default="4",
+     *     default="4",
      *     format="int32"
      *   ),
      * @SWG\Parameter(
@@ -116,6 +117,7 @@ class Voies extends Cadastre {
      *     )
      *  )
      */
+
     /**
      * get Voies
      * @return  Voies
@@ -123,9 +125,10 @@ class Voies extends Cadastre {
     function GET() {
         $this->aValues['filter'] = str_replace("id_rivoli", "id_voie", $this->aValues['filter']);
         $this->aValues['filter'] = str_replace("ID_COM", "id_com", $this->aValues['filter']);
-        $aReturn = $this->genericGet($this->aProperties['schema_majic'], 'v_vmap_maj_fv', 'id_voie');
+        $aReturn = $this->genericGet($this->aProperties['schema_majic'], $this->aProperties['cadastre']['views']['voie'], 'id_voie');
         return $aReturn['sMessage'];
     }
-    
+
 }
+
 ?>

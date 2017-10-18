@@ -1,6 +1,6 @@
 goog.provide('ol.ImageCanvas');
 
-goog.require('goog.asserts');
+goog.require('ol');
 goog.require('ol.ImageBase');
 goog.require('ol.ImageState');
 
@@ -29,7 +29,7 @@ ol.ImageCanvas = function(extent, resolution, pixelRatio, attributions,
   var state = opt_loader !== undefined ?
       ol.ImageState.IDLE : ol.ImageState.LOADED;
 
-  goog.base(this, extent, resolution, pixelRatio, state, attributions);
+  ol.ImageBase.call(this, extent, resolution, pixelRatio, state, attributions);
 
   /**
    * @private
@@ -44,7 +44,7 @@ ol.ImageCanvas = function(extent, resolution, pixelRatio, attributions,
   this.error_ = null;
 
 };
-goog.inherits(ol.ImageCanvas, ol.ImageBase);
+ol.inherits(ol.ImageCanvas, ol.ImageBase);
 
 
 /**
@@ -73,11 +73,10 @@ ol.ImageCanvas.prototype.handleLoad_ = function(err) {
 
 
 /**
- * Trigger drawing on canvas.
+ * @inheritDoc
  */
 ol.ImageCanvas.prototype.load = function() {
   if (this.state == ol.ImageState.IDLE) {
-    goog.asserts.assert(this.loader_, 'this.loader_ must be set');
     this.state = ol.ImageState.LOADING;
     this.changed();
     this.loader_(this.handleLoad_.bind(this));

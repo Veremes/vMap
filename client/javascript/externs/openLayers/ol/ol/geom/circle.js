@@ -1,12 +1,11 @@
 goog.provide('ol.geom.Circle');
 
-goog.require('goog.asserts');
+goog.require('ol');
 goog.require('ol.extent');
 goog.require('ol.geom.GeometryLayout');
 goog.require('ol.geom.GeometryType');
 goog.require('ol.geom.SimpleGeometry');
 goog.require('ol.geom.flat.deflate');
-goog.require('ol.proj');
 
 
 /**
@@ -21,16 +20,17 @@ goog.require('ol.proj');
  * @api
  */
 ol.geom.Circle = function(center, opt_radius, opt_layout) {
-  goog.base(this);
+  ol.geom.SimpleGeometry.call(this);
   var radius = opt_radius ? opt_radius : 0;
   this.setCenterAndRadius(center, radius, opt_layout);
 };
-goog.inherits(ol.geom.Circle, ol.geom.SimpleGeometry);
+ol.inherits(ol.geom.Circle, ol.geom.SimpleGeometry);
 
 
 /**
  * Make a complete copy of the geometry.
  * @return {!ol.geom.Circle} Clone.
+ * @override
  * @api
  */
 ol.geom.Circle.prototype.clone = function() {
@@ -136,7 +136,7 @@ ol.geom.Circle.prototype.getType = function() {
 
 /**
  * @inheritDoc
- * @api stable
+ * @api
  */
 ol.geom.Circle.prototype.intersectsExtent = function(extent) {
   var circleExtent = this.getExtent();
@@ -150,7 +150,7 @@ ol.geom.Circle.prototype.intersectsExtent = function(extent) {
       return true;
     }
 
-    return ol.extent.forEachCorner(extent, this.containsCoordinate, this);
+    return ol.extent.forEachCorner(extent, this.intersectsCoordinate, this);
   }
   return false;
 
@@ -164,8 +164,6 @@ ol.geom.Circle.prototype.intersectsExtent = function(extent) {
  */
 ol.geom.Circle.prototype.setCenter = function(center) {
   var stride = this.stride;
-  goog.asserts.assert(center.length == stride,
-      'center array length should match stride');
   var radius = this.flatCoordinates[stride] - this.flatCoordinates[0];
   var flatCoordinates = center.slice();
   flatCoordinates[stride] = flatCoordinates[0] + radius;
@@ -209,6 +207,18 @@ ol.geom.Circle.prototype.setCenterAndRadius = function(center, radius, opt_layou
 
 
 /**
+ * @inheritDoc
+ */
+ol.geom.Circle.prototype.getCoordinates = function() {};
+
+
+/**
+ * @inheritDoc
+ */
+ol.geom.Circle.prototype.setCoordinates = function(coordinates, opt_layout) {};
+
+
+/**
  * @param {ol.geom.GeometryLayout} layout Layout.
  * @param {Array.<number>} flatCoordinates Flat coordinates.
  */
@@ -224,8 +234,6 @@ ol.geom.Circle.prototype.setFlatCoordinates = function(layout, flatCoordinates) 
  * @api
  */
 ol.geom.Circle.prototype.setRadius = function(radius) {
-  goog.asserts.assert(this.flatCoordinates,
-      'truthy this.flatCoordinates expected');
   this.flatCoordinates[this.stride] = this.flatCoordinates[0] + radius;
   this.changed();
 };
@@ -244,13 +252,13 @@ ol.geom.Circle.prototype.setRadius = function(radius) {
  * correspond to the shape that would be obtained by transforming every point
  * of the original circle.
  *
- * @param {ol.proj.ProjectionLike} source The current projection.  Can be a
+ * @param {ol.ProjectionLike} source The current projection.  Can be a
  *     string identifier or a {@link ol.proj.Projection} object.
- * @param {ol.proj.ProjectionLike} destination The desired projection.  Can be a
+ * @param {ol.ProjectionLike} destination The desired projection.  Can be a
  *     string identifier or a {@link ol.proj.Projection} object.
  * @return {ol.geom.Circle} This geometry.  Note that original geometry is
  *     modified in place.
  * @function
- * @api stable
+ * @api
  */
 ol.geom.Circle.prototype.transform;

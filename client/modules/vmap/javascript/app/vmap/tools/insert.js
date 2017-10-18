@@ -9,7 +9,6 @@ goog.provide('nsVmap.nsToolsManager.Insert');
 
 goog.require('oVmap');
 
-goog.require('nsVmap.olFunctions');
 goog.require('ol.layer.Vector');
 goog.require('ol.format.GeoJSON');
 goog.require('ol.style.Style');
@@ -54,14 +53,13 @@ nsVmap.nsToolsManager.Insert.prototype.inserttoolDirective = function () {
 /**
  * @ngInject
  * @constructor
- * @param {object} $http
  * @param {object} $scope
  * @param {object} $rootScope
  * @param {object} $q
  * @returns {nsVmap.nsToolsManager.Insert.prototype.inserttoolController}
  * @export
  */
-nsVmap.nsToolsManager.Insert.prototype.inserttoolController = function ($http, $scope, $rootScope, $q) {
+nsVmap.nsToolsManager.Insert.prototype.inserttoolController = function ($scope, $rootScope, $q) {
     oVmap.log("nsVmap.nsToolsManager.Insert.prototype.inserttoolController");
 
     /**
@@ -74,11 +72,6 @@ nsVmap.nsToolsManager.Insert.prototype.inserttoolController = function ($http, $
      * @type nsVmap.nsToolsManager.Insert.prototype.inserttoolController
      */
     var this_ = this;
-
-    /**
-     * @private
-     */
-    this.$http_ = $http;
 
     /**
      * @private
@@ -96,7 +89,7 @@ nsVmap.nsToolsManager.Insert.prototype.inserttoolController = function ($http, $
     this.$q_ = $q;
 
     /**
-     * Dummy canceler (use canceler.resolve() for cancel the $http request)
+     * Dummy canceler (use canceler.resolve() for cancel the ajax request)
      * @private
      */
     this.canceler_ = $q.defer();
@@ -317,10 +310,16 @@ nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.reloadImpa
     oVmap.log('nsVmap.nsToolsManager.Insert.inserttoolController.reloadImpactedLayer');
 
     var aLayers = this['map'].getLayers().getArray();
+    var aBos;
 
     for (var i = 0; i < aLayers.length; i++) {
-        if (aLayers[i].get('bo_id') === sBusinessObjectID) {
-            aLayers[i].refreshWithTimestamp();
+        aBos = aLayers[i].get('business_objects');
+        if (goog.isArray(aBos)) {
+            for (var ii = 0; ii < aBos.length; ii++) {
+                if (aBos[ii]['business_object_id'] === sBusinessObjectID) {
+                    aLayers[i].refreshWithTimestamp();
+                }
+            }
         }
     }
 };
@@ -394,7 +393,9 @@ nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.validateFo
     $scope.isFormValid_ = false;
 
     setTimeout(function () {
-        oVmap.simuleClick("basictools-insert-form-reader-submit-btn");
+//        oVmap.simuleClick("basictools-insert-form-reader-submit-btn");
+        var oFormReaderScope = this_.getEditFormReaderScope();
+        oFormReaderScope['sendForm']();
         setTimeout(function () {
             if ($scope.isFormValid_) {
                 // Récupère les valeurs sous un format propice à l'insertion (sans "selectedOption")
@@ -412,18 +413,18 @@ nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.validateFo
  */
 nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.getBOValuesFromFormValues = function (oFormValues) {
     oVmap.log('nsVmap.nsToolsManager.Insert.inserttoolController.getBOValuesFromFormValues');
-    
+
     var $scope = this.$scope_;
     var formSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["formSrvc"]);
-    
+
     var oFormValuesValues = goog.object.clone(oFormValues);
-        
+
     var oFormValuesValues = formSrvc['getFormData']('insert', true, {
         'oFormDefinition': $scope['oInsertObject']['oFormDefinition'],
         'oFormValues': oFormValuesValues,
         'aParamsToSave': ['geom']
     });
-    
+
     return oFormValuesValues;
 };
 
@@ -499,13 +500,10 @@ nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.updateInse
 
     var this_ = this;
     var $scope = this.$scope_;
-    var $http = this.$http_;
     var $q = this.$q_;
 
     var oFormReaderScope = this.getEditFormReaderScope();
     var boId = $scope['selectedBoId'];
-
-    showAjaxLoader();
 
     // Vide les variables oInsertObject
     $scope['oInsertObject']['oResult'] = {};
@@ -524,92 +522,94 @@ nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.updateInse
 
     var bRequestOk = false;
     var canceler = $q.defer();
-    $http({
-        method: 'GET',
-        url: oVmap['properties']['api_url'] + '/vmap/businessobjects/' + boId,
-        params: {
-            'token': oVmap['properties']['token']
+    showAjaxLoader();
+    ajaxRequest({
+        'method': 'GET',
+        'url': oVmap['properties']['api_url'] + '/vmap/businessobjects/' + boId,
+        'headers': {
+            'Accept': 'application/x-vm-json'
         },
-        timeout: canceler.promise
-    }).then(function successCallback(response) {
+        'scope': this.$scope_,
+        'abord': canceler.promise,
+        'success': function (response) {
 
-        bRequestOk = true;
-        hideAjaxLoader();
+            bRequestOk = true;
 
-        if (!goog.isDef(response['data'])) {
-            bootbox.alert("response['data'] undefined");
+            if (!goog.isDef(response['data'])) {
+                bootbox.alert("response['data'] undefined");
+                $scope['selectedBoId'] = "";
+                return 0;
+            }
+            if (goog.isDef(response['data']['errorMessage'])) {
+                bootbox.alert(response['data']['errorType'] + ': ' + response['data']['errorMessage']);
+                $scope['selectedBoId'] = "";
+                return 0;
+            }
+            if (!goog.isDefAndNotNull(response['data']['data'])) {
+                bootbox.alert('Aucune valeur retournée, impossible de charger le formulaire correspondant à la couche');
+                $scope['selectedBoId'] = "";
+                return 0;
+            }
+            if (!goog.isDefAndNotNull(response['data']['data'][0]['json_form'][0])) {
+                bootbox.alert('Impossible de charger le formulaire correspondant à la couche');
+                $scope['selectedBoId'] = "";
+                return 0;
+            }
+
+            // Formulaire
+            $scope['oInsertObject']['oFormDefinition'] = response['data']['data'][0]['json_form'][0];
+            $scope['oInsertObject']['oFormDefinition_js'] = response['data']['data'][0]['json_form_js'];
+            $scope['oInsertObject']['add_form_size'] = response['data']['data'][0]['add_form_size'];
+
+            // sBusinessObjectID
+            $scope['oInsertObject']['sBusinessObjectID'] = boId;
+
+            // Champs comtenant la géométrie
+            if (goog.isDef(response['data']['data'][0]['geom_column']))
+                $scope['oInsertObject']['sGeomColumn'] = response['data']['data'][0]['geom_column'];
+            if (goog.isDef(response['data']['data'][0]['geom_type']))
+                $scope['oInsertObject']['sGeomType'] = response['data']['data'][0]['geom_type'];
+
+            if ($scope['oInsertObject']['sGeomType'] === 'GEOMETRYCOLLECTION') {
+                this_['addPartGeomType'] = '';
+            } else if ($scope['oInsertObject']['sGeomType'] === 'POLYGON' || $scope['oInsertObject']['sGeomType'] === 'MULTIPOLYGON') {
+                this_['addPartGeomType'] = 'Polygon';
+            } else if ($scope['oInsertObject']['sGeomType'] === 'LINESTRING' || $scope['oInsertObject']['sGeomType'] === 'MULTILINESTRING') {
+                this_['addPartGeomType'] = 'LineString';
+            } else if ($scope['oInsertObject']['sGeomType'] === 'POINT' || $scope['oInsertObject']['sGeomType'] === 'MULTIPOINT') {
+                this_['addPartGeomType'] = 'Point';
+            }
+
+            // Ajout du bouton caché submit
+            $scope['oInsertObject']['oFormDefinition']['insert']['rows'].push({
+                "fields": [{
+                        "type": "button",
+                        "class": "btn-ungroup btn-group-sm",
+                        "nb_cols": 12,
+                        "buttons": [{
+                                "visibleAllTabs": true,
+                                "type": "submit",
+                                "label": "Sauvegarder",
+                                "name": "form_submit",
+                                "class": "btn-primary hidden",
+                                "id": "basictools-insert-form-reader-submit-btn"
+                            }
+                        ]
+                    }
+                ]
+            });
+            $scope['oInsertObject']['oFormDefinition']['insert']['event'] = function () {
+                $scope.isFormValid_ = true;
+            };
+
+            // Rafraichit le formulaire
+            oFormReaderScope['ctrl']['refreshForm']();
+
+        },
+        'error': function (response) {
             $scope['selectedBoId'] = "";
-            return 0;
+            bootbox.alert(response);
         }
-        if (goog.isDef(response['data']['errorMessage'])) {
-            bootbox.alert(response['data']['errorType'] + ': ' + response['data']['errorMessage']);
-            $scope['selectedBoId'] = "";
-            return 0;
-        }
-        if (!goog.isDefAndNotNull(response['data']['data'])) {
-            bootbox.alert('Aucune valeur retournée, impossible de charger le formulaire correspondant à la couche');
-            $scope['selectedBoId'] = "";
-            return 0;
-        }
-        if (!goog.isDefAndNotNull(response['data']['data'][0]['json_form'][0])) {
-            bootbox.alert('Impossible de charger le formulaire correspondant à la couche');
-            $scope['selectedBoId'] = "";
-            return 0;
-        }
-
-        // Formulaire
-        $scope['oInsertObject']['oFormDefinition'] = response['data']['data'][0]['json_form'][0];
-        $scope['oInsertObject']['oFormDefinition_js'] = response['data']['data'][0]['json_form_js'];
-        $scope['oInsertObject']['add_form_size'] = response['data']['data'][0]['add_form_size'];
-
-        // sBusinessObjectID
-        $scope['oInsertObject']['sBusinessObjectID'] = boId;
-
-        // Champs comtenant la géométrie
-        if (goog.isDef(response['data']['data'][0]['geom_column']))
-            $scope['oInsertObject']['sGeomColumn'] = response['data']['data'][0]['geom_column'];
-        if (goog.isDef(response['data']['data'][0]['geom_type']))
-            $scope['oInsertObject']['sGeomType'] = response['data']['data'][0]['geom_type'];
-
-        if ($scope['oInsertObject']['sGeomType'] === 'GEOMETRYCOLLECTION') {
-            this_['addPartGeomType'] = '';
-        } else if ($scope['oInsertObject']['sGeomType'] === 'POLYGON' || $scope['oInsertObject']['sGeomType'] === 'MULTIPOLYGON') {
-            this_['addPartGeomType'] = 'Polygon';
-        } else if ($scope['oInsertObject']['sGeomType'] === 'LINESTRING' || $scope['oInsertObject']['sGeomType'] === 'MULTILINESTRING') {
-            this_['addPartGeomType'] = 'LineString';
-        } else if ($scope['oInsertObject']['sGeomType'] === 'POINT' || $scope['oInsertObject']['sGeomType'] === 'MULTIPOINT') {
-            this_['addPartGeomType'] = 'Point';
-        }
-
-        // Ajout du bouton caché submit
-        $scope['oInsertObject']['oFormDefinition']['insert']['rows'].push({
-            "fields": [{
-                    "type": "button",
-                    "class": "btn-ungroup btn-group-sm",
-                    "nb_cols": 12,
-                    "buttons": [{
-                            "visibleAllTabs": true,
-                            "type": "submit",
-                            "label": "Sauvegarder",
-                            "name": "form_submit",
-                            "class": "btn-primary hidden",
-                            "id": "basictools-insert-form-reader-submit-btn"
-                        }
-                    ]
-                }
-            ]
-        });
-        $scope['oInsertObject']['oFormDefinition']['insert']['event'] = function () {
-            $scope.isFormValid_ = true;
-        };
-
-        // Rafraichit le formulaire
-        oFormReaderScope['ctrl']['refreshForm']();
-
-    }, function errorCallback(response) {
-        hideAjaxLoader();
-        $scope['selectedBoId'] = "";
-        bootbox.alert(response);
     });
 
     // Montre le message d'annulation de la requete si celle-ci n'est pas terminée apres un timeout
@@ -838,6 +838,18 @@ nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.startDrawi
         type: type,
         features: this.oOverlayFeatures_
     }, 'basicTools-insert-insert' + type);
+
+
+    this.draw_.on('drawend',
+            function (evt) {
+                // Si la géométrie est un cercle, alors elle est remplacée par un polygone à 32 côtés
+                var feature = evt.feature;
+                if (feature.getGeometry() instanceof ol.geom.Circle) {
+                    var circleGeom = feature.getGeometry();
+                    var polygonGeom = new ol.geom.Polygon.fromCircle(circleGeom);
+                    feature.setGeometry(polygonGeom);
+                }
+            }, this);
 };
 
 /**
@@ -998,55 +1010,50 @@ nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.sendInsert
     }
 
     var this_ = this;
-    var $http = this.$http_;
     var data = this.getFormDataFromValues(oResult);
 
-    $http({
-        method: 'POST',
-        url: oVmap['properties']['api_url'] + '/vmap/querys/' + sBusinessObjectID,
-        data: data,
-        params: {
-            'token': oVmap['properties']['token']
-        }
-    }).then(function successCallback(response) {
+    showAjaxLoader();
+    ajaxRequest({
+        'method': 'POST',
+        'url': oVmap['properties']['api_url'] + '/vmap/querys/' + sBusinessObjectID,
+        'headers': {
+            'Accept': 'application/x-vm-json'
+        },
+        'data': data,
+        'scope': this.$scope_,
+        'success': function (response) {
 
-        bRequestOk = true;
-        hideAjaxLoader();
-
-        if (!goog.isDef(response['data'])) {
-            bootbox.alert("response['data'] undefined");
-            return 0;
-        }
-        if (response['status'] !== 200) {
-            if (response['status'] === 500) {
-                $.notify("Erreur interne du serveur", "error");
-            } else {
-                if (goog.isDefAndNotNull(response['statusText'])) {
-                    $.notify(response['statusText'], "error");
-                } else {
-                    $.notify("Erreur " + response['status'], "error");
-                }
+            if (!goog.isDef(response['data'])) {
+                bootbox.alert("response['data'] undefined");
+                return 0;
             }
-            return 0;
-        }
-        if (goog.isDef(response['data']['errorMessage'])) {
-            bootbox.alert(response['data']['errorType'] + ': ' + response['data']['errorMessage']);
-            return 0;
-        }
+            if (response['status'] !== 200) {
+                if (response['status'] === 500) {
+                    $.notify("Erreur interne du serveur", "error");
+                } else {
+                    if (goog.isDefAndNotNull(response['statusText'])) {
+                        $.notify(response['statusText'], "error");
+                    } else {
+                        $.notify("Erreur " + response['status'], "error");
+                    }
+                }
+                return 0;
+            }
+            if (goog.isDef(response['data']['errorMessage'])) {
+                bootbox.alert(response['data']['errorType'] + ': ' + response['data']['errorMessage']);
+                return 0;
+            }
 
-        if (response['data']['status'] === 1) {
-            $.notify("Opération réalisée avec succès, les couches de la carte se mettent à jour", "info");
-            // Recharge le formulaire
-            this_.updateInsertForm();
-            // Recharge la carte
-            this_.reloadImpactedLayer(sBusinessObjectID);
-            // Enlève l'outil en cours (insertion)
-            oVmap.getToolsManager().getBasicTools().toggleOutTools();
+            if (response['data']['status'] === 1) {
+                $.notify("Opération réalisée avec succès, les couches de la carte se mettent à jour", "info");
+                // Recharge le formulaire
+                this_.updateInsertForm();
+                // Recharge la carte
+                this_.reloadImpactedLayer(sBusinessObjectID);
+                // Enlève l'outil en cours (insertion)
+                oVmap.getToolsManager().getBasicTools().toggleOutTools();
+            }
         }
-
-    }, function errorCallback(response) {
-        hideAjaxLoader();
-        bootbox.alert(response);
     });
 };
 

@@ -480,39 +480,65 @@ class ActiveDirectory extends Vitis {
      * Test domain
      */
     Public function testDomain() {
-        $aValues = $this->aValues;
-        $aValues['my_vitis_id'] = $this->aValues['domain_id'];
-        // Infos du domaine
-        $oDomain = new Domain($this->aPath, $aValues, $this->aProperties, $this->oConnection);
-        $oDomain->GET();
-        $this->aValues = array_merge($oDomain->aFields, $this->aValues);
-        $this->aValues['my_vitis_id'] = $oDomain->aFields['domain_id'];
-        //
-        $aResult = array();
-        // Informations de l'AD stocké dans un tableau
-        $sLoginLdap = $this->aValues['login'] . '@' . $this->aValues['domain'];
-        $aLdap = array('sIdLdap' => $this->aValues['domain_id'], 'sType' => $this->aValues['type'], 'sLdapName' => $this->aValues['domain'], 'sLoginLdap' => $sLoginLdap, 'sPwdLdap' => $this->aValues['password'], 'sServer' => $this->aValues['server'], 'sPort' => $this->aValues['port']);
-        $aLdap['sObject'] = $this->aValues['object'];
-        // Utilisateur ou groupe ?
-        if ($this->aValues['object'] == "person")
-            $aLdap['sDnResearch'] = $this->aValues['dn_search_user'];
-        else
-            $aLdap['sDnResearch'] = $this->aValues['dn_search_group'];
-        // Connexion au serveur AD.
-        $oLdap = new Ldap(serialize($aLdap));
-        $sLdapConn = $oLdap->connectLdap();
-        $aReturn = array('sStatus' => 0, 'sMessage' => '');
-        if (ldap_error($sLdapConn) == "Success") {
-            $this->aObjects[0]->aFields = $aLdap;
-            $aReturn['oLdap'] = $oLdap;
-        } else {
-            if (ldap_error($sLdapConn) == "Invalid credentials")
-                $sError = 'ERROR_INVALID_CREDENTIALS_ACTIVE_DIRECTORY_USERS_USER';
-            else if (ldap_error($sLdapConn) == "Can't contact LDAP server")
-                $sError = 'ERROR_CONTACT_DOMAIN_ACTIVE_DIRECTORY_USERS_USER';
+        $bIsError = false;
+         $aValues = $this->aValues;
+        if (empty($this->aValues['domain_id'])){
+            require $this->sRessourcesFile;
+            $aParams['sSchemaFramework'] = array('value' => $this->aProperties['schema_framework'], 'type' => 'schema_name');
+            $aParams['domain'] = array('value' => $this->aValues['domain'], 'type' => 'string');
+            $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['getAdId'], $aParams);
+            if ($this->oConnection->oBd->enErreur()) {
+                $aReturn = array('sStatus' => 1, 'sMessage' => $this->oConnection->oBd->getBDMessage());
+                $bIsError = true;
+            }else{
+                $oResult = $this->oConnection->oBd->objetSuivant($oPDOresult);
+                $aValues['my_vitis_id'] = $oResult->domain_id;
+            }
+        }else{
+            $aValues['my_vitis_id'] = $this->aValues['domain_id'];
+        }
+     
+        if ($bIsError == false){
+           
+            // Infos du domaine
+            $oDomain = new Domain($this->aPath, $aValues, $this->aProperties, $this->oConnection);
+            $oDomain->GET();
+            $this->aValues = array_merge($oDomain->aFields, $this->aValues);
+            $this->aValues['my_vitis_id'] = $oDomain->aFields['domain_id'];
+            //
+            $aResult = array();
+            // Informations de l'AD stocké dans un tableau
+            $sLoginLdap = $this->aValues['login'] . '@' . $this->aValues['domain'];
+
+            $aLdap = array('sIdLdap' =>  $this->aValues['my_vitis_id'], 'sType' => $this->aValues['type'], 'sLdapName' => $this->aValues['domain'], 'sLoginLdap' => $sLoginLdap, 'sPwdLdap' => $this->aValues['password'], 'sServer' => $this->aValues['server'], 'sPort' => $this->aValues['port']);
+
+            $aLdap['sObject'] = $this->aValues['object'];
+
+            // Utilisateur ou groupe ?
+            if ($this->aValues['object'] == "person")
+                $aLdap['sDnResearch'] = $this->aValues['dn_search_user'];
             else
-                $sError = ldap_error($sLdapConn);
-            $aReturn = array('sStatus' => 1, 'sMessage' => $sError);
+                $aLdap['sDnResearch'] = $this->aValues['dn_search_group'];
+            // Connexion au serveur AD.
+            $oLdap = new Ldap(serialize($aLdap));
+            $sLdapConn = $oLdap->connectLdap();
+            $aReturn = array('sStatus' => 0, 'sMessage' => '');
+            if (ldap_error($sLdapConn) == "Success") {
+                if (empty($this->aObjects)) {
+                    $this->aObjects = array();
+                    $this->aObjects[0] = new stdClass();
+                }
+                $this->aObjects[0]->aFields = $aLdap;
+                $aReturn['oLdap'] = $oLdap;
+            } else {
+                if (ldap_error($sLdapConn) == "Invalid credentials")
+                    $sError = 'ERROR_INVALID_CREDENTIALS_ACTIVE_DIRECTORY_USERS_USER';
+                else if (ldap_error($sLdapConn) == "Can't contact LDAP server")
+                    $sError = 'ERROR_CONTACT_DOMAIN_ACTIVE_DIRECTORY_USERS_USER';
+                else
+                    $sError = ldap_error($sLdapConn);
+                $aReturn = array('sStatus' => 1, 'sMessage' => $sError);
+            }
         }
         return $aReturn;
     }
@@ -576,7 +602,7 @@ class ActiveDirectory extends Vitis {
             $aReturn = array('sStatus' => 0, 'sMessage' => '');
             if (ldap_error($sLdapConn) == "Success") {
                 $sFilter = "(&(objectclass=person)";
-                if ($_REQUEST["search_account"] != "") {
+                if (!empty($_REQUEST["search_account"]) && $_REQUEST["search_account"] != "") {
                     $sFilter .= "(" . $oLdap->userprincipalname . "=" . $_REQUEST["search_account"] . "*)";
                 }
                 if (!empty($_REQUEST["search_department"])) {
@@ -649,7 +675,7 @@ class ActiveDirectory extends Vitis {
             $aReturn = array('sStatus' => 0, 'sMessage' => '');
             if (ldap_error($sLdapConn) == "Success") {
                 $sFilter = "(&(|(objectClass=groupOfNames)(objectClass=groupOfUniqueNames)(objectclass=group))(!(objectClass=person))";
-                if ($this->aValues['search_group'] != "") {
+                if (!empty($_REQUEST["search_group"]) && $this->aValues['search_group'] != "") {
                     $sFilter .= "(cn=" . $this->aValues['search_group'] . "*)"; // $sFilter .="(cn=".$_REQUEST["name_ad"]."*)";
                 }
                 $sFilter .= ")";
@@ -669,27 +695,26 @@ class ActiveDirectory extends Vitis {
         $aReturn = array('sStatus' => 0, 'sMessage' => '');
         $aUserGroup = Array();
         // Login de l'utilisateur.
-        $sSql = $aSql['getUserLogin'];
-        $sSql = str_replace('[iUserId]', $this->aPath[3], $sSql);
-        $sSql = str_replace('[sSchemaFramework]', $this->aProperties["schema_framework"], $sSql);
-        $resultat = $this->oConnection->oBd->execute($sSql);
+        $aParams['sSchemaFramework'] = array('value' => $this->aProperties['schema_framework'], 'type' => 'schema_name');
+        $aParams['iUserId'] = array('value' => $this->aPath[3], 'type' => 'number');
+        $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['getUserLogin'], $aParams);
         if ($this->oConnection->oBd->enErreur()) {
             $aReturn = array('sStatus' => 1, 'sMessage' => $this->oConnection->oBd->getBDMessage());
         } else {
             // Groupes du domaine dont l'utilisateur est membre.
-            $oResult = $this->oConnection->oBd->objetSuivant($resultat);
+            $oResult = $this->oConnection->oBd->objetSuivant($oPDOresult);
             $aGroupListId = getUserGroups2($oResult->login, $this->oConnection->oBd, $this->aProperties["mixed_rights_management"], $this->aProperties["schema_framework"]);
             // Liste des groupes de l'utilisateur.
-            $sSql = $aSql['getUserGroups'];
-            $sSql = str_replace('[iUserId]', $this->aPath[3], $sSql);
-            $sSql = str_replace('[sSchemaFramework]', $this->aProperties["schema_framework"], $sSql);
-            $resultat = $this->oConnection->oBd->execute($sSql);
+            $aParams = array();
+            $aParams['sSchemaFramework'] = array('value' => $this->aProperties['schema_framework'], 'type' => 'schema_name');
+            $aParams['iUserId'] = array('value' => $this->aPath[3], 'type' => 'number');
+            $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['getUserGroups'], $aParams);
             if ($this->oConnection->oBd->enErreur()) {
                 $aReturn = array('sStatus' => 1, 'sMessage' => $this->oConnection->oBd->getBDMessage());
             } else {
                 $sGroup = "";
                 $sIdGroup = "";
-                while ($oGroup = $this->oConnection->oBd->objetSuivant($resultat)) {
+                while ($oGroup = $this->oConnection->oBd->objetSuivant($oPDOresult)) {
                     $aUserGroup[$oGroup->group_id] = $oGroup->name;
                     if ($sGroup == "") {
                         $sGroup = $oGroup->name;

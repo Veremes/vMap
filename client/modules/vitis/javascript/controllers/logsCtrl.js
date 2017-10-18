@@ -1,4 +1,5 @@
 'use strict';
+
 // Google closure
 goog.provide("vitis.controllers.logs");
 goog.require("vitis.modules.main");
@@ -10,13 +11,11 @@ goog.require("vitis.modules.main");
  * @param {angular.$log} $log Angular log service.
  * @param {angular.$scope} $scope Angular scope.
  * @param {service} $translate Translate service.
- * @param {service} Restangular Service Restangular.
  * @param {service} envSrvc Paramètres d'environnement.
- * @param {service} sessionSrvc Service de gestion des sessions.
  * @param {service} propertiesSrvc Paramètres des properties.
  * @ngInject
  **/
-vitisApp.logsCtrl = function ($rootScope, $log, $scope, $translate, Restangular, envSrvc, sessionSrvc, propertiesSrvc) {
+vitisApp.logsCtrl = function ($rootScope, $log, $scope, $translate, envSrvc, propertiesSrvc) {
     // Initialisation
     $log.info("initLogs");
     // Valeurs du formulaire de log.
@@ -42,15 +41,17 @@ vitisApp.logsCtrl = function ($rootScope, $log, $scope, $translate, Restangular,
             }
             iLogSize *= 1024;
             if (size < iLogSize) {
-                var oWebServiceBase = Restangular["one"](propertiesSrvc["services_alias"] + "/vitis", "logs");
                 var oParams = {
-                    "token": sessionSrvc["token"],
                     "folder": oLogFile['folder']
                 };
-                oWebServiceBase["customGET"](oLogFile['log_directory'] + "/file/" + oLogFile['name'], oParams)
-                        .then(function (data) {
-                            if (data["status"] == 1) {
-                                $scope["sLogContent"] = data["file"];
+                ajaxRequest({
+                    "method": "GET",
+                    "url": propertiesSrvc["web_server_name"] + "/" + propertiesSrvc["services_alias"] + "/vitis/logs/" + oLogFile['log_directory'] + "/file/" + oLogFile['name'],
+                    "params": oParams,
+                    "scope": $scope,
+                    "success": function(response) {
+                            if (response["data"]["status"] == 1) {
+                                $scope["sLogContent"] = response["data"]["file"];
                                 $rootScope["sLogPath"] = oLogFile['path'];
                                 if (typeof ($scope["sLogContent"]) != "undefined") {
                                     // Redimensionne et affiche le <textarea> du log.
@@ -62,13 +63,14 @@ vitisApp.logsCtrl = function ($rootScope, $log, $scope, $translate, Restangular,
                                 // Affichage de la fenêtre modale d'erreur.
                                 var oOptions = {
                                     "className": "modal-danger",
-                                    "message": data["errorMessage"],
+                                    "message": response["data"]["errorMessage"],
                                     "appDuration": 2000
                                 };
                                 $scope["modalWindow"]("dialog", "LOADING_FILE_ERROR_LOGS", oOptions);
 
                             }
-                        });
+                        }
+                    });
 
             } else {
                 $rootScope["sLogPath"] = oLogFile['path'];
@@ -93,34 +95,37 @@ vitisApp.logsCtrl = function ($rootScope, $log, $scope, $translate, Restangular,
      **/
     $rootScope["deleteFile"] = function (oLogFile) {
         if (goog.isDefAndNotNull(oLogFile)) {
-            var oWebServiceBase = Restangular["one"](propertiesSrvc["services_alias"] + "/vitis", "logs");
             var oParams = {
-                "token": sessionSrvc["token"],
                 "folder": oLogFile['folder']
             };
-            oWebServiceBase["customDELETE"](oLogFile['log_directory'] + '/file/' + oLogFile['name'], oParams)
-                    .then(function (data) {
-                        var sTitle, sMessage;
-                        var oOptions = {};
-                        if (data["status"] == 1) {
-                            // Affichage du message de succés.
-                            sTitle = "DELETE_FILE_SUCCESS_LOGS";
-                            $translate(sTitle).then(function (sTranslation) {
-                                $.notify(sTranslation, "success");
-                            });
-                            // Raffraîchissement de l'arborescence.
-                            setTimeout(function () {
-                                $scope["loadTreeview"]();
-                            });
-                        } else {
-                            // Paramètres de la fenêtre modale.
-                            sTitle = "DELETE_FILE_ERROR_LOGS";
-                            // Affichage de la fenêtre modale.
-                            oOptions["className"] = "modal-danger";
-                            oOptions["message"] = data["errorMessage"];
-                            $scope["modalWindow"]("dialog", sTitle, oOptions);
-                        }
-                    });
+            ajaxRequest({
+                "method": "DELETE",
+                "url": propertiesSrvc["web_server_name"] + "/" + propertiesSrvc["services_alias"] + "/vitis/logs/" + oLogFile['log_directory'] + "/file/" + oLogFile['name'],
+                "params": oParams,
+                "scope": $scope,
+                "success": function(response) {
+                    var sTitle, sMessage;
+                    var oOptions = {};
+                    if (response["data"]["status"] == 1) {
+                        // Affichage du message de succés.
+                        sTitle = "DELETE_FILE_SUCCESS_LOGS";
+                        $translate(sTitle).then(function (sTranslation) {
+                            $.notify(sTranslation, "success");
+                        });
+                        // Raffraîchissement de l'arborescence.
+                        setTimeout(function () {
+                            $scope["loadTreeview"]();
+                        });
+                    } else {
+                        // Paramètres de la fenêtre modale.
+                        sTitle = "DELETE_FILE_ERROR_LOGS";
+                        // Affichage de la fenêtre modale.
+                        oOptions["className"] = "modal-danger";
+                        oOptions["message"] = response["data"]["errorMessage"];
+                        $scope["modalWindow"]("dialog", sTitle, oOptions);
+                    }
+                }
+            });
         }
     };
 

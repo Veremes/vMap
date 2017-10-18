@@ -119,7 +119,7 @@ class PgsqlDataAccess {
             $sErrorMessage = $oBd->getBDMessage();
         } else {
             if (!$aLigne = $oBd->ligneSuivante($resultat)) {
-                $sSql = "CREATE USER \"" . $sLogin . "\" PASSWORD '" . $sPassword . "' IN ROLE " . $this->sRoleUser;
+                $sSql = "CREATE USER \"" . $sLogin . "\" PASSWORD 'md5" . md5($sPassword . $sLogin) . "' IN ROLE " . $this->sRoleUser;
                 $oBd->execute($sSql);
                 if ($oBd->erreurRencontree) {
                     $sErrorMessage = $oBd->getBDMessage();
@@ -186,7 +186,7 @@ class PgsqlDataAccess {
         $oBd = $this->oBd;
         $sServer = $this->sServer;
         $sErrorMessage = "";
-        $sSql = 'ALTER Role "' . $sLogin . '" PASSWORD \'' . $sPassword . '\'';
+        $sSql = 'ALTER Role "' . $sLogin . '" PASSWORD \'' . 'md5' . md5($sPassword . $sLogin) . '\'';
         $oBd->execute($sSql);
         if ($oBd->erreurRencontree)
             $sErrorMessage = $oBd->getBDMessage();

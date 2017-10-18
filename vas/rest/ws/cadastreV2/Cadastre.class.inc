@@ -15,12 +15,17 @@ class Cadastre extends Vmap {
      */
     function haveCommuneRights($id_com) {
         // Vérifie si on a les droits sur la commune
-        $aCommunes = $this->vmapGet($this->aProperties['schema_cadastre'], 'v_vmap_commune', array('id_com'), "id_com='" . $id_com . "'", 'limit 1', 'vmap_cadastre_user', 'vmap_cadastre_user');        
+        $aFilter = array(
+            'column' => 'id_com',
+            'compare_operator' => '=',
+            'value' => $id_com
+        );
+        $aCommunes = $this->vmapGet($this->aProperties['schema_cadastre'], $this->aProperties['cadastre']['views']['commune'], array('id_com'), $aFilter, array('limit' => 1));
         if (sizeOf($aCommunes) > 0)
             return true;
         else
             return false;
-    }    
+    }
 
 }
 

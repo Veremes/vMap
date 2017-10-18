@@ -129,7 +129,7 @@ class Ldap {
 		$i=0;
 		for ($i=0;$i<$aInfo['count'];$i++) {
 			if ($sObject == "person"){
-				if($aInfo[$i][$this->userprincipalname][0]!='') {
+				if(!empty($aInfo[$i][$this->userprincipalname][0]) && $aInfo[$i][$this->userprincipalname][0] != '') {
                                     $aUser = array('userprincipalname'=>'', 'displayname'=>'', 'email'=>'', 'company'=>'', 'department'=>'');
                                     if (!empty($aInfo[$i][$this->userprincipalname]))
                                         $aUser['userprincipalname'] = $aInfo[$i][$this->userprincipalname][0];

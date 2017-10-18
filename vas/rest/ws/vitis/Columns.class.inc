@@ -40,13 +40,11 @@ class Columns extends Vitis {
         require $this->sRessourcesFile;
         require_once "Column.class.inc";
         $aFields = null;
-        // 
-        $sSql = str_replace('[sSchemaFramework]', $this->aProperties['schema_framework'], $aSql['getTableColumns']);
-        $sSql = str_replace('[sRessource]', $this->aValues['ressource_id'], $sSql);
-        $sSql = str_replace('[module]', $this->aValues['module'], $sSql);
-        $sSql = str_replace('[language]', $this->aProperties['language'], $sSql);
- 
-        $oPDOresult = $this->oConnection->oBd->execute($sSql);
+        //
+        $aParams['sSchemaFramework'] = array('value' => $this->aProperties['schema_framework'], 'type' => 'schema_name');
+        $aParams['sRessource'] = array('value' => $this->aValues['ressource_id'], 'type' => 'string');
+        $aParams['language'] = array('value' => $this->aProperties['language'], 'type' => 'string');
+        $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['getTableColumns'], $aParams);
         if ($this->oConnection->oBd->enErreur()) {
             $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
             $aXmlRacineAttribute['status'] = 0;

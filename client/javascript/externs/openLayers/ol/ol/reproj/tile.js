@@ -1,14 +1,12 @@
 goog.provide('ol.reproj.Tile');
 
-goog.require('goog.asserts');
+goog.require('ol');
 goog.require('ol.Tile');
 goog.require('ol.TileState');
 goog.require('ol.events');
 goog.require('ol.events.EventType');
 goog.require('ol.extent');
 goog.require('ol.math');
-goog.require('ol.object');
-goog.require('ol.proj');
 goog.require('ol.reproj');
 goog.require('ol.reproj.Triangulation');
 
@@ -38,7 +36,7 @@ ol.reproj.Tile = function(sourceProj, sourceTileGrid,
     pixelRatio, gutter, getTileFunction,
     opt_errorThreshold,
     opt_renderEdges) {
-  goog.base(this, tileCoord, ol.TileState.IDLE);
+  ol.Tile.call(this, tileCoord, ol.TileState.IDLE);
 
   /**
    * @private
@@ -66,12 +64,6 @@ ol.reproj.Tile = function(sourceProj, sourceTileGrid,
 
   /**
    * @private
-   * @type {Object.<number, HTMLCanvasElement>}
-   */
-  this.canvasByContext_ = {};
-
-  /**
-   * @private
    * @type {ol.tilegrid.TileGrid}
    */
   this.sourceTileGrid_ = sourceTileGrid;
@@ -96,7 +88,7 @@ ol.reproj.Tile = function(sourceProj, sourceTileGrid,
 
   /**
    * @private
-   * @type {Array.<ol.events.Key>}
+   * @type {Array.<ol.EventsKey>}
    */
   this.sourcesListenerKeys_ = null;
 
@@ -181,13 +173,6 @@ ol.reproj.Tile = function(sourceProj, sourceTileGrid,
     var sourceRange = sourceTileGrid.getTileRangeForExtentAndZ(
         sourceExtent, this.sourceZ_);
 
-    var tilesRequired = sourceRange.getWidth() * sourceRange.getHeight();
-    if (!goog.asserts.assert(
-        tilesRequired < ol.RASTER_REPROJECTION_MAX_SOURCE_TILES,
-        'reasonable number of tiles is required')) {
-      this.state = ol.TileState.ERROR;
-      return;
-    }
     for (var srcX = sourceRange.minX; srcX <= sourceRange.maxX; srcX++) {
       for (var srcY = sourceRange.minY; srcY <= sourceRange.maxY; srcY++) {
         var tile = getTileFunction(this.sourceZ_, srcX, srcY, pixelRatio);
@@ -202,7 +187,7 @@ ol.reproj.Tile = function(sourceProj, sourceTileGrid,
     }
   }
 };
-goog.inherits(ol.reproj.Tile, ol.Tile);
+ol.inherits(ol.reproj.Tile, ol.Tile);
 
 
 /**
@@ -212,29 +197,15 @@ ol.reproj.Tile.prototype.disposeInternal = function() {
   if (this.state == ol.TileState.LOADING) {
     this.unlistenSources_();
   }
-  goog.base(this, 'disposeInternal');
+  ol.Tile.prototype.disposeInternal.call(this);
 };
 
 
 /**
  * @inheritDoc
  */
-ol.reproj.Tile.prototype.getImage = function(opt_context) {
-  if (opt_context !== undefined) {
-    var image;
-    var key = goog.getUid(opt_context);
-    if (key in this.canvasByContext_) {
-      return this.canvasByContext_[key];
-    } else if (ol.object.isEmpty(this.canvasByContext_)) {
-      image = this.canvas_;
-    } else {
-      image = /** @type {HTMLCanvasElement} */ (this.canvas_.cloneNode(false));
-    }
-    this.canvasByContext_[key] = image;
-    return image;
-  } else {
-    return this.canvas_;
-  }
+ol.reproj.Tile.prototype.getImage = function() {
+  return this.canvas_;
 };
 
 
@@ -258,8 +229,8 @@ ol.reproj.Tile.prototype.reproject_ = function() {
   } else {
     var z = this.wrappedTileCoord_[0];
     var size = this.targetTileGrid_.getTileSize(z);
-    var width = goog.isNumber(size) ? size : size[0];
-    var height = goog.isNumber(size) ? size : size[1];
+    var width = typeof size === 'number' ? size : size[0];
+    var height = typeof size === 'number' ? size : size[1];
     var targetResolution = this.targetTileGrid_.getResolution(z);
     var sourceResolution = this.sourceTileGrid_.getResolution(this.sourceZ_);
 
@@ -286,9 +257,6 @@ ol.reproj.Tile.prototype.load = function() {
 
     var leftToLoad = 0;
 
-    goog.asserts.assert(!this.sourcesListenerKeys_,
-        'this.sourcesListenerKeys_ should be null');
-
     this.sourcesListenerKeys_ = [];
     this.sourceTiles_.forEach(function(tile, i, arr) {
       var state = tile.getState();
@@ -304,8 +272,6 @@ ol.reproj.Tile.prototype.load = function() {
                   state == ol.TileState.EMPTY) {
                 ol.events.unlistenByKey(sourceListenKey);
                 leftToLoad--;
-                goog.asserts.assert(leftToLoad >= 0,
-                    'leftToLoad should not be negative');
                 if (leftToLoad === 0) {
                   this.unlistenSources_();
                   this.reproject_();
@@ -324,7 +290,7 @@ ol.reproj.Tile.prototype.load = function() {
     });
 
     if (leftToLoad === 0) {
-      ol.global.setTimeout(this.reproject_.bind(this), 0);
+      setTimeout(this.reproject_.bind(this), 0);
     }
   }
 };
@@ -334,8 +300,6 @@ ol.reproj.Tile.prototype.load = function() {
  * @private
  */
 ol.reproj.Tile.prototype.unlistenSources_ = function() {
-  goog.asserts.assert(this.sourcesListenerKeys_,
-      'this.sourcesListenerKeys_ should not be null');
   this.sourcesListenerKeys_.forEach(ol.events.unlistenByKey);
   this.sourcesListenerKeys_ = null;
 };

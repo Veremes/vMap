@@ -39,9 +39,9 @@
                              onclick="oVmap.getMapManager().loadMap(this)"
                              data-dismiss="modal">
 
-                            <div onclick="$('#maplistlitle-container').removeClass('open')" ng-class="{'border-black': map.used === true}">			
+                            <div onclick="$('#maplistlitle-container').removeClass('open')" ng-class="{'border-black': map.used === true}" style="overflow:hidden" ng-attr-title="{{map.name}}">
                                 <div class="img-map" style="background-image: url('{{map.thumbnail}}')"></div>
-                                {{map.name}}
+                                <span>{{map.name}}</span>
                             </div>
                         </div>
                     </div>
@@ -53,9 +53,9 @@
                          onclick="oVmap.getMapManager().loadMap(this)"
                          data-dismiss="modal">
 
-                        <div onclick="$('#maplistlitle-container').removeClass('open')" ng-class="{'border-black': map.used === true}">			
+                        <div onclick="$('#maplistlitle-container').removeClass('open')" ng-class="{'border-black': map.used === true}" style="overflow:hidden" ng-attr-title="{{map.name}}">
                             <div class="img-map" style="background-image: url('{{map.thumbnail}}')"></div>
-                            {{map.name}}
+                            <span>{{map.name}}</span>
                         </div>
                     </div>
                 </div>

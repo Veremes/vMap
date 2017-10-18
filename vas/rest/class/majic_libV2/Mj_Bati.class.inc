@@ -3,16 +3,16 @@
 * \file Mj_Bati.class.inc
 * \brief Mj_Bati.class.inc \n \n Ce fichier contient la classe php Mj_Bati
 * 
-* Cette classe permet de s�lectionner les attributs n�cessaires afin de traiter la partie bati. 
+* Cette classe permet de sélectionner les attributs nécessaires afin de traiter la partie bati. 
 *
 * \author Damien Bedel
 * \author Olivier Gayte <olivier.gayte@veremes.com>
 */
 /**
 * \class Mj_Bati
-* \brief Mj_Bati Class \n \n Mj_Bati est une classe PHP qui h�rite de la classe Mj.
+* \brief Mj_Bati Class \n \n Mj_Bati est une classe PHP qui hérite de la classe Mj.
 *
-* Cette classe permet de s�lectionner les attributs n�cessaires afin de traiter la partie b�ti. 
+* Cette classe permet de sélectionner les attributs nécessaires afin de traiter la partie bâti. 
 *
 * \author Damien Bedel
 * \author Olivier Gayte <olivier.gayte@veremes.com>
@@ -23,16 +23,16 @@ require_once ("Mj_Lot_Local.class.inc");
 
 class Mj_Bati extends Mj {
 	/**
-	* Tableau associatif comportant la liste des objets Pev du b�ti
+	* Tableau associatif comportant la liste des objets Pev du bâti
 	*/
 	var $aPev=array();
 	/**
-	* Tableau associatif comportant la liste des objets Lot_Local du b�ti
+	* Tableau associatif comportant la liste des objets Lot_Local du bâti
 	*/
 	var $aLotLocal=array();
 
 	/**
-	* \param $sIdBat Identifiant de b�ti
+	* \param $sIdBat Identifiant de bâti
 	* \param $oBD Objet de connexion PDO_BD
 	*/
 	function __construct($sIdBat,$oBD, $sEncryptedKey=''){
@@ -54,7 +54,7 @@ class Mj_Bati extends Mj {
 		$this->aObjects=array_merge ($this->aPev, $this->aLotLocal, $this->aPro);
 	}
 	/**
-	* Cette m�thode permet de r�cup�rer les ID_PRO en fonction d'un ID_DNUPRO donn�.
+	* Cette méthode permet de récupérer les ID_PRO en fonction d'un ID_DNUPRO donné.
 	* \return Retourne un tableau de ID_PRO.
 	*/
 	function get_aId_Pro($oBD){
@@ -80,7 +80,7 @@ class Mj_Bati extends Mj {
 		$oPDOresult=$oBD->fermeResultat();
 	}	
 	/**
-	* Cette m�thode permet de r�cup�rer la liste des objets Proprietaire
+	* Cette méthode permet de récupérer la liste des objets Proprietaire
 	* \return Retourne un tableau d'objets Proprietaire
 	*/
 	function get_aPro($oBD){
@@ -96,8 +96,8 @@ class Mj_Bati extends Mj {
 		return $aPro;
 	}
 	/**
-	* Cette m�thode permet de r�cup�rer les Id_Pev en fonction d'un Id_Bat donn�.
-	* \return Retourne un tableau de cha�nes de caract�res.
+	* Cette méthode permet de récupérer les Id_Pev en fonction d'un Id_Bat donné.
+	* \return Retourne un tableau de chaînes de caractères.
 	*/
 	function get_aId_Pev($oBD){
 		if($this->isEmpty()){
@@ -121,7 +121,7 @@ class Mj_Bati extends Mj {
 		return $aIdPev;
 	}	
 	/**
-	* Cette m�thode permet de r�cup�rer la liste des objets Pev du b�ti
+	* Cette méthode permet de récupérer la liste des objets Pev du bâti
 	* \return Retourne un tableau d'objets Pev
 	*/
 	function get_aPev($oBD){
@@ -137,8 +137,8 @@ class Mj_Bati extends Mj {
 		return $aPev;
 	}
 	/**
-	* Cette m�thode permet de r�cup�rer les Klot en fonction d'un Id_Bat donn�
-	* \return Retourne un tableau de cha�nes de caract�res
+	* Cette méthode permet de récupérer les Klot en fonction d'un Id_Bat donné
+	* \return Retourne un tableau de chaînes de caractères
 	*/
 	function get_aKlot($oBD){
 		if($this->isEmpty()){
@@ -162,7 +162,7 @@ class Mj_Bati extends Mj {
 		return $aKlot;
 	}	
 	/**
-	* Cette m�thode permet de r�cup�rer la liste des objets Lot-Local du b�ti
+	* Cette méthode permet de récupérer la liste des objets Lot-Local du bâti
 	* \return Retourne un tableau d'objets Lot-Local
 	*/
 	function get_aLot_Local($oBD){
@@ -179,8 +179,8 @@ class Mj_Bati extends Mj {
 	}
 	
 	/**
-	* Cette m�thode permet de construire un tableau correspondant au relev� de propri�t�.
-	* \return Retourne un tableau associatif correspondant au relev� de propri�t�.
+	* Cette méthode permet de construire un tableau correspondant au relevé de propriété.
+	* \return Retourne un tableau associatif correspondant au relevé de propriété.
 	*/
 	function getExportFields(){
 		$aExportFields=array();
@@ -233,8 +233,8 @@ class Mj_Bati extends Mj {
 		return $aExportFields;
 	}
 	/**
-	* Cette m�thode permet de r�cup�rer les deux derniers caract�res de l'attribut Jdatat et d'y ajouter 1.
-	* \return Retourne une cha�ne de caract�res.
+	* Cette méthode permet de récupérer les deux derniers caractères de l'attribut Jdatat et d'y ajouter 1.
+	* \return Retourne une chaîne de caractères.
 	*/
 	function getJdatat_full(){
 		$sjdatat=$this->aFields['jdatat'];
@@ -250,8 +250,8 @@ class Mj_Bati extends Mj {
 		return $sNewJdatat_full;
 	}
 	/**
-	* Cette m�thode permet de r�cup�rer les deux derniers caract�res de l'attribut Jdatat et d'y ajouter 1.
-	* \return Retourne une cha�ne de caract�res.
+	* Cette méthode permet de récupérer les deux derniers caractères de l'attribut Jdatat et d'y ajouter 1.
+	* \return Retourne une chaîne de caractères.
 	*/
 	function getJdatat(){
 		$sNewJdatat=$this->aFields['jdatat'];
@@ -271,8 +271,8 @@ class Mj_Bati extends Mj {
 		return $sNewJdatat;
 	}
 	/**
-	* Cette m�thode permet de supprimer le code commune de l'attribut invar.
-	* \return Retourne une cha�ne de caract�res.
+	* Cette méthode permet de supprimer le code commune de l'attribut invar.
+	* \return Retourne une chaîne de caractères.
 	*/
 	function getNumeroInvar(){
 		$sNumeroInvar=$this->aFields['invar'];
@@ -280,16 +280,16 @@ class Mj_Bati extends Mj {
 		return $sNumeroInvar;
 	}
 	/**
-	* Cette m�thode permet de concat�ner les attributs dnvoiri et indic.
-	* \return Retourne une cha�ne de caract�res.
+	* Cette méthode permet de concaténer les attributs dnvoiri et indic.
+	* \return Retourne une chaîne de caractères.
 	*/
 	function getVoirie(){
 		$sVoirie=ltrim($this->aFields['dnvoiri'],'0').$this->aFields['dindic'];
 		return $sVoirie;
 	}
 	/**
-	* Cette m�thode permet de r�cup�rer la valeur de l'attribut 's_tar' dans le tableau aPev.
-	* \return Retourne une cha�ne de caract�res.
+	* Cette méthode permet de récupérer la valeur de l'attribut 's_tar' dans le tableau aPev.
+	* \return Retourne une chaîne de caractères.
 	*/
 	function getSTar(){
 		if(count($this->aPev)==1){
@@ -299,8 +299,8 @@ class Mj_Bati extends Mj {
 		}
 	}
 	/**
-	* Cette m�thode permet de r�cup�rer la valeur de l'attribut 'af' dans le tableau aPev.
-	* \return Retourne une cha�ne de caract�res.
+	* Cette méthode permet de récupérer la valeur de l'attribut 'af' dans le tableau aPev.
+	* \return Retourne une chaîne de caractères.
 	*/
 	function getAf(){
 		if(count($this->aPev)==1){
@@ -310,8 +310,8 @@ class Mj_Bati extends Mj {
 		}
 	}
 	/**
-	* Cette m�thode permet de r�cup�rer la valeur de l'attribut 'cat' dans le tableau aPev.
-	* \return Retourne une cha�ne de caract�res.
+	* Cette méthode permet de récupérer la valeur de l'attribut 'cat' dans le tableau aPev.
+	* \return Retourne une chaîne de caractères.
 	*/
 	function getCat(){
 		if(count($this->aPev)==1){
@@ -321,7 +321,7 @@ class Mj_Bati extends Mj {
 		}
 	}
 	/**
-	* Cette m�tode permet de r�cup�rer la somme du revenu cadastral pour un b�ti avec exon�ration de type EP, CD, CR, DR ou NI.
+	* Cette méthode permet de récupérer la somme du revenu cadastral pour un bâti avec exonération de type EP, CD, CR, DR ou NI.
 	* \return Retourne un entier.
 	*/
 	/*function getRevenuCadastralAvecExo(){
@@ -334,7 +334,7 @@ class Mj_Bati extends Mj {
 		return $iRevenuCadastralAvecExo;
 	}*/
 	/**
-	* Cette m�tode permet de r�cup�rer la somme du revenu cadastral pour un b�ti avec exon�ration de type PP.
+	* Cette méthode permet de récupérer la somme du revenu cadastral pour un bâti avec exonération de type PP.
 	* \return Retourne un entier.
 	*/
 	/*function getRevenuCadastralAvecPP(){
@@ -347,7 +347,7 @@ class Mj_Bati extends Mj {
 		return $iRevenuCadastralAvecPP;
 	}
 	/**
-	* Cette m�tode permet de r�cup�rer la somme du revenu cadastral pour un b�ti.
+	* Cette méthode permet de récupérer la somme du revenu cadastral pour un bâti.
 	* \return Retourne un entier.
 	*/
 	function getRevenuCadastral(){
@@ -358,7 +358,7 @@ class Mj_Bati extends Mj {
 		return $iRevenuCadastral;
 	}
 	/**
-	* Cette m�tode permet de r�cup�rer la somme du revenu cadastral pour un b�ti.
+	* Cette méthode permet de récupérer la somme du revenu cadastral pour un bâti.
 	* \return Retourne un float.
 	*/
 	function getRevenuCadastralfloat(){
@@ -369,7 +369,7 @@ class Mj_Bati extends Mj {
 		return $fRevenuCadastral;
 	}
 	/**
-	* Cette m�thode permet de r�cup�rer la somme des exon�rations pour un b�ti.
+	* Cette méthode permet de récupérer la somme des exonérations pour un bâti.
 	* \return Retourne un entier.
 	*/
 	function getExoneration($sLccodem){
@@ -384,7 +384,7 @@ class Mj_Bati extends Mj {
 		return $iExoneration;
 	}
 	/**
-	* Cette m�thode permet de r�cup�rer la somme des exon�rations pour un b�ti.
+	* Cette méthode permet de récupérer la somme des exonérations pour un bâti.
 	* \return Retourne un float.
 	*/
 	function getExonerationfloat($sLccodem){
@@ -399,94 +399,94 @@ class Mj_Bati extends Mj {
 		return $fExoneration;
 	}
 	/**
-	* Cette m�thode permet de retourner la nature du local.
-	* \return Retourne une cha�ne de caract�res qui peut �tre valide (la cha�ne de caract�res a �t� v�rifi�e d'apr�s des exemples de relev�s de propri�t�) ou non valide (la cha�ne de caract�res n'a pas pu �tre v�rifi�e).
+	* Cette méthode permet de retourner la nature du local.
+	* \return Retourne une chaîne de caractères qui peut être valide (la chaîne de caractères a été vérifiée d'après des exemples de relevés de propriété) ou non valide (la chaîne de caractères n'a pas pu être vérifiée).
 	*/
 	function getNatLoc(){
 		switch($this->aFields["cconlc"]){
 			case 'MA' :
-				$sNatLoc="MAIS"; // Cas valid�
+				$sNatLoc="MAIS"; // Cas validé
 			break;
 			case 'AP' :
-				$sNatLoc="APP"; // Cas valid�
+				$sNatLoc="APP"; // Cas validé
 			break;
 			case 'DE' :
 				$sNatLoc=$this->getNatureDep(); // Cf fonction getNatureDep()
 			break;
 			case 'DC' :
-				$sNatLoc="DLC"; // cas non valid�
+				$sNatLoc="DLC"; // cas non validé
 			break;
 			case 'LC' :
-				$sNatLoc="L.COM"; // Cas valid�
+				$sNatLoc="L.COM"; // Cas validé
 			break;
 			case 'CM' :
-				$sNatLoc="CM"; // Cas valid�
+				$sNatLoc="CM"; // Cas validé
 			break;
 			case 'CA' :
-				$sNatLoc="CA"; // Cas valid�
+				$sNatLoc="CA"; // Cas validé
 			break;
 			case 'CD' :
-				$sNatLoc="DEP.C"; // Cas valid�
+				$sNatLoc="DEP.C"; // Cas validé
 			break;
 			case 'CB' :
-				$sNatLoc="L.DIV"; // Cas valid�
+				$sNatLoc="L.DIV"; // Cas validé
 			break;
 			case 'ME' :
-				$sNatLoc="M.EXC"; // Cas valid�
+				$sNatLoc="M.EXC"; // Cas validé
 			break;
 			case 'MP' :
-				$sNatLoc="M.PAR"; // Cas valid�
+				$sNatLoc="M.PAR"; // Cas validé
 			break;
 			case 'SM' :
-				$sNatLoc="SOLM"; // Cas non valid�
+				$sNatLoc="SOLM"; // Cas non validé
 			break;
 			case 'AU' :
-				$sNatLoc="AU"; // Cas valid�
+				$sNatLoc="AU"; // Cas validé
 			break;
 			case 'CH' :
-				$sNatLoc="CHANT"; // Cas valid�
+				$sNatLoc="CHANT"; // Cas validé
 			break;
 			case 'U ' :
-				$sNatLoc="E.IND"; // Cas valid�
+				$sNatLoc="E.IND"; // Cas validé
 			break;
 			case 'US' :
-				$sNatLoc="US"; // Cas valid�
+				$sNatLoc="US"; // Cas validé
 			break;
 			case 'UG' :
-				$sNatLoc="AGAZ"; // Cas non valid�
+				$sNatLoc="AGAZ"; // Cas non validé
 			break;
 			case 'UE' :
-				$sNatLoc="UE"; // Cas valid�
+				$sNatLoc="UE"; // Cas validé
 			break;
 			case 'U1' :
-				$sNatLoc="GARE"; // Cas non valid�
+				$sNatLoc="GARE"; // Cas non validé
 			break;
 			case 'U2' :
-				$sNatLoc="GTRI"; // Cas non valid�
+				$sNatLoc="GTRI"; // Cas non validé
 			break;
 			case 'U3' :
-				$sNatLoc="GAMAT"; // Cas non valid�
+				$sNatLoc="GAMAT"; // Cas non validé
 			break;
 			case 'U4' :
-				$sNatLoc="GAMAG"; // Cas non valid�
+				$sNatLoc="GAMAG"; // Cas non validé
 			break;
 			case 'U5' :
-				$sNatLoc="GDETI"; // Cas non valid�
+				$sNatLoc="GDETI"; // Cas non validé
 			break;
 			case 'U6' :
-				$sNatLoc="GDERE"; // Cas non valid�
+				$sNatLoc="GDERE"; // Cas non validé
 			break;
 			case 'U7' :
-				$sNatLoc="GMATR"; // Cas non valid�
+				$sNatLoc="GMATR"; // Cas non validé
 			break;
 			case 'U8' :
-				$sNatLoc="GEMR"; // Cas non valid�
+				$sNatLoc="GEMR"; // Cas non validé
 			break;
 			case 'U9' :
-				$sNatLoc="GSTUS"; // Cas non valid�
+				$sNatLoc="GSTUS"; // Cas non validé
 			break;
 			case 'AT' :
-				$sNatLoc="AT"; // Cas valid�
+				$sNatLoc="AT"; // Cas validé
 			break;
 			default :
 				$sNatLoc=substr($this->aFields["cconlc"],0,4);
@@ -495,70 +495,70 @@ class Mj_Bati extends Mj {
 		return $sNatLoc;
 	}
 	/**
-	* Cette m�thode permet de retourner la nature de d�pendance.
-	* \return Retourne une cha�ne de caract�res qui peut �tre valide (la cha�ne de caract�res a �t� v�rifi�e d'apr�s des exemples de relev�s de propri�t�) ou non valide (la cha�ne de caract�res n'a pas pu �tre v�rifi�e).
+	* Cette méthode permet de retourner la nature de dépendance.
+	* \return Retourne une chaîne de caractères qui peut être valide (la chaîne de caractères a été vérifiée d'après des exemples de relevés de propriété) ou non valide (la chaîne de caractères n'a pas pu être vérifiée).
 	*/
 	function getNatureDep(){
 		switch($this->aFields["cconad"]){
 			case 'GA' :
-				$sNatureDep="GAR"; // Cas valid�
+				$sNatureDep="GAR"; // Cas validé
 			break;
 			case 'CV' :
-				$sNatureDep="CAVE"; // Cas valid�
+				$sNatureDep="CAVE"; // Cas validé
 			break;
 			case 'GR' :
-				$sNatureDep="GREN"; // Cas valid�
+				$sNatureDep="GREN"; // Cas validé
 			break;
 			case 'TR' :
-				$sNatureDep="TERR"; // Cas non valid�
+				$sNatureDep="TERR"; // Cas non validé
 			break;
 			case 'GP' :
-				$sNatureDep="GPARK"; // Cas valid�
+				$sNatureDep="GPARK"; // Cas validé
 			break;
 			case 'GC' :
-				$sNatureDep="GRCA"; // Cas non valid�
+				$sNatureDep="GRCA"; // Cas non validé
 			break;
 			case 'BX' :
-				$sNatureDep="BOX"; // Cas valid�
+				$sNatureDep="BOX"; // Cas validé
 			break;
 			case 'PK' :
-				$sNatureDep="PARK"; // Cas valid�
+				$sNatureDep="PARK"; // Cas validé
 			break;
 			case 'CL' :
-				$sNatureDep="CELL"; // Cas non valid�
+				$sNatureDep="CELL"; // Cas non validé
 			break;
 			case 'BD' :
-				$sNatureDep="BUAN"; // Cas non valid�
+				$sNatureDep="BUAN"; // Cas non validé
 			break;
 			case 'BC' :
-				$sNatureDep="BUCH"; // Cas non valid�
+				$sNatureDep="BUCH"; // Cas non validé
 			break;
 			case 'RS' :
-				$sNatureDep="REMI"; // Cas non valid�
+				$sNatureDep="REMI"; // Cas non validé
 			break;
 			case 'TT' :
-				$sNatureDep="TT"; // Cas valid�
+				$sNatureDep="TT"; // Cas validé
 			break;
 			case 'PI' :
-				$sNatureDep="P.IND"; // Cas valid�
+				$sNatureDep="P.IND"; // Cas validé
 			break;
 			case 'PA' :
-				$sNatureDep="AGREM"; // Cas valid�
+				$sNatureDep="AGREM"; // Cas validé
 			break;
 			case 'CD' :
-				$sNatureDep="CHDO"; // Cas non valid�
+				$sNatureDep="CHDO"; // Cas non validé
 			break;
 			case 'DC' :
-				$sNatureDep="DEP.C"; // Cas valid�
+				$sNatureDep="DEP.C"; // Cas validé
 			break;
 			case 'JH' :
-				$sNatureDep="J.HIV"; // Cas valid�
+				$sNatureDep="J.HIV"; // Cas validé
 			break;
 			case 'PS' :
-				$sNatureDep="PISC"; // Cas valid�
+				$sNatureDep="PISC"; // Cas validé
 			break;
 			case 'SR' :
-				$sNatureDep="SERR"; // Cas non valid�
+				$sNatureDep="SERR"; // Cas non validé
 			break;
 			default :
 				$sNatureDep=substr($this->aFields["cconad"],0,4);
@@ -567,15 +567,15 @@ class Mj_Bati extends Mj {
 		return $sNatureDep;
 	}
 	/**
-	* Cette m�thode permet de formater un d�cimal pour l'affichage.
+	* Cette méthode permet de formater un décimal pour l'affichage.
 	* \return Retourne une chaine
 	*/
 	function setFloatToText($fFloat){
 		return number_format($fFloat,2,'.','');
 	}
 	/**
-	* Cette m�thode permet de retourner l'occupation du logement
-	* \return Retourne une cha�ne de caract�res qui peut �tre valide (la cha�ne de caract�res a �t� v�rifi�e d'apr�s des exemples de relev�s de propri�t�) ou non valide (la cha�ne de caract�res n'a pas pu �tre v�rifi�e).
+	* Cette méthode permet de retourner l'occupation du logement
+	* \return Retourne une chaîne de caractères qui peut être valide (la chaîne de caractères a été vérifiée d'après des exemples de relevés de propriété) ou non valide (la chaîne de caractères n'a pas pu être vérifiée).
 	*/
 	function getOccupation(){
 		switch($this->aFields["dnatlc"]){
@@ -583,16 +583,16 @@ class Mj_Bati extends Mj {
 				$sOccupation="Proprietaire ou  Usufruitier";
 			break;
 			case 'L' :
-				$sOccupation="Location autre que propri�taire ou usufruitier";
+				$sOccupation="Location autre que propriétaire ou usufruitier";
 			break;
 			case 'V' :
 				$sOccupation="Vacant";
 			break;
 			case 'T' :
-				$sOccupation="Location, non affect�e � l�habitation, soumise � TVA";
+				$sOccupation="Location, non affectée à l'habitation, soumise à TVA";
 			break;
 			case 'D' :
-				$sOccupation="Habitation principale occup�e par le propri�taire";
+				$sOccupation="Habitation principale occupée par le propriétaire";
 			break;
 			default :
 				$sOccupation=substr($this->aFields["dnatlc"],0,1);

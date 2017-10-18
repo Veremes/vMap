@@ -512,3 +512,51 @@ form .checkbox {
     display: block;
     padding: 0 !important;
 }
+
+// Les messages de "$.notify()" s'affichent au-dessus des champs de form.
+.tab-content .notifyjs-wrapper, .tab-content .notifyjs-arrow, .tab-content .notifyjs-container{
+    z-index: 2;
+}
+
+// Formulaire dans une fenêtre modale.
+.dialog-modal-window-section-form .modal-dialog {
+    height: 100%;
+}
+.dialog-modal-window-section-form .bootbox-body, .dialog-modal-window-section-form .bootbox-body > div {
+    height: 100%;
+}
+.dialog-modal-window-section-form .modal-body {
+    padding: 0 0 4px 0;
+}
+
+// Boutons des méthodes des modules de Wab.
+.wab-method-button > div {
+    width: auto;
+    padding-right: 0;
+    padding-left: 4px;
+}
+.wab-method-button > div:first-child {
+    padding-left: 15px;
+}
+
+// Champ de formulaire "treeview".
+.treeview-container .treeview > .list-group > .list-group-item {
+    width: auto;
+    border: none;
+}
+.treeview-container .treeview {
+    padding: 10px;
+    background-color: #ffffff;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+}
+
+// Largeur max. pour les tooltips sur les boutons.
+.tooltip .tooltip-inner {
+    max-width: 700px;
+}
+
+// Vignettes.
+.form-thumbnail img {
+    width: auto;
+}

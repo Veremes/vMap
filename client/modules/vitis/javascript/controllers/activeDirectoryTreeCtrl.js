@@ -1,3 +1,5 @@
+'use strict';
+
 // Google closure
 goog.provide("vitis.controllers.activeDirectoryTree");
 goog.require("vitis.modules.main");
@@ -9,14 +11,11 @@ goog.require("vitis.modules.main");
  * @param {angular.$scope} $scope Angular scope.
  * @param {service} $q Angular q service.
  * @param {service} $translate Translate service.
- * @param {service} Restangular Service Restangular.
  * @param {service} envSrvc Paramètres d'environnement.
  * @param {service} propertiesSrvc Paramètres des properties.
- * @param {service} sessionSrvc Service de gestion des sessions.
- * @param {service} formSrvc Service de gestion des formulaires.
  * @ngInject
  **/
-vitisApp.activeDirectoryTreeCtrl = function ($log, $scope, $q, $translate, Restangular, envSrvc, propertiesSrvc, sessionSrvc, formSrvc) {
+vitisApp.activeDirectoryTreeCtrl = function ($log, $scope, $q, $translate, envSrvc, propertiesSrvc) {
         // Initialisation
         $log.info("initActiveDirectoryTree");
         // Provisoire
@@ -125,24 +124,27 @@ vitisApp.activeDirectoryTreeCtrl = function ($log, $scope, $q, $translate, Resta
          **/
         $scope["loadAdTreeBranch"] = function(sBranch) {
                 // Test du domaine
-                var oWebServiceBase = Restangular["one"](propertiesSrvc["services_alias"] + "/vitis", "ActiveDirectory");
                 var oParams = {
                         "domain_id": $scope["oLdap"]["sIdLdap"],
                         "login": $scope["oLdap"]["sLoginLdap"].split("@")[0],
                         "password": $scope["oLdap"]["sPwdLdap"],
                         //"branch": sBranch,
                         //"language": propertiesSrvc["language"],
-                        "token": sessionSrvc["token"],
                         "object": $scope["oActiveDirectoryParameters"]["sObject"]
                 };
                 // Charge les enregistrements de la branche.
-                oWebServiceBase["customGET"]($scope["oActiveDirectoryParameters"]["sWebServicePath"] + "/" + sBranch, oParams)
-                        .then(function(data){
-                                if (data["status"] == 1) {
-                                        // MAJ de la liste des enregistrements.
-                                        $scope["gridOptions"]["data"] = envSrvc["extractWebServiceData"]("activedirectory", data)[0][$scope["oActiveDirectoryParameters"]["sWebServicePath"].toLowerCase()];
-                                }
-                        });
+                ajaxRequest({
+                    "method": "GET",
+                    "url": propertiesSrvc["web_server_name"] + "/" + propertiesSrvc["services_alias"] + "/vitis/ActiveDirectory/" + $scope["oActiveDirectoryParameters"]["sWebServicePath"] + "/" + sBranch,
+                    "params": oParams,
+                    "scope": $scope,
+                    "success": function(response) {
+                        if (response["data"]["status"] == 1) {
+                            // MAJ de la liste des enregistrements.
+                            $scope["gridOptions"]["data"] = envSrvc["extractWebServiceData"]("activedirectory", response["data"])[0][$scope["oActiveDirectoryParameters"]["sWebServicePath"].toLowerCase()];
+                        }
+                    }
+                });
         };
         
         /**
@@ -150,19 +152,17 @@ vitisApp.activeDirectoryTreeCtrl = function ($log, $scope, $q, $translate, Resta
          * Importation des utilisateurs sélectionnés.
          **/
         $scope["importAdSelection"] = function() {
-                var aSelection = $scope.$root["gridApi"][$scope["sSelectedObjectName"]]["selection"]["getSelectedRows"]();
+                var aSelection = $scope.$root["gridApi"][envSrvc["sSelectedGridOptionsName"]]["selection"]["getSelectedRows"]();
                 $scope["aSelection"] = angular.copy(aSelection);
                 var i = 0;
                 // Paramètres du service web.
-                var oWebServiceBase = Restangular["one"](propertiesSrvc["services_alias"] + "/vitis", $scope["oActiveDirectoryParameters"]["sWebServicePath"].toLowerCase());
                 var oParams = {
-                        "token": sessionSrvc["token"],
                         "domain_id": $scope["oLdap"]["sIdLdap"],
                         "ldap_name": $scope["oLdap"]["sLdapName"]
                 };
-                var sHeaders = {"Content-Type": undefined};
+                //var sHeaders = {"Content-Type": undefined};
                 while (i < aSelection.length) {
-						oParams["action"] = 'importFromAd';
+                        oParams["action"] = 'importFromAd';
                         if ($scope["oActiveDirectoryParameters"]["sObject"] == "person") {
                                 oParams["company"] = aSelection[i]["company"];
                                 oParams["department"] = aSelection[i]["department"];
@@ -172,31 +172,35 @@ vitisApp.activeDirectoryTreeCtrl = function ($log, $scope, $q, $translate, Resta
                         }
                         else
                                 oParams["name"] = aSelection[i]["name"];
-                                
                         // Importation d'un enregistrement sélectionné.
-                        oWebServiceBase["customPOST"](oWebServiceBase, "", oParams, sHeaders)
-                                .then(function(data){
-                                        if (data["status"] == 1) {
-                                                $scope["aSelection"].shift();
-                                                // Si l'importation est terminée avec succés: message ?
-                                                if ($scope["aSelection"].length == 0) {
-                                                        $translate("SUCCESFULL_IMPORTATION_" + envSrvc["oSelectedObject"]["name"].toUpperCase()).then(function (sTranslation) {
-                                                                $.notify(sTranslation, "success");
-                                                        });
-                                                        // Supprime la sélection.
-                                                        $scope.$root["gridApi"][$scope["sSelectedObjectName"]]["selection"]["clearSelectedRows"]();
-                                                }
-                                        }
-                                        else {
-                                                // Message d'erreur.
-                                                $scope["aSelection"] = [];
-                                                var oOptions = {"className": "modal-danger"};
-                                                // Message d'erreur ?
-                                                if (data["errorMessage"] != null)
-                                                        oOptions["message"] = data["errorMessage"];
-                                                $scope["modalWindow"]("alert", "FORM_VALIDATION_ERROR", oOptions);
-                                        }
-                                });
+                        ajaxRequest({
+                            "method": "POST",
+                            "url": propertiesSrvc["web_server_name"] + "/" + propertiesSrvc["services_alias"] + "/vitis/" + $scope["oActiveDirectoryParameters"]["sWebServicePath"].toLowerCase(),
+                            "params": oParams,
+                            "scope": $scope,
+                            "success": function(response) {
+                                if (response["data"]["status"] == 1) {
+                                    $scope["aSelection"].shift();
+                                    // Si l'importation est terminée avec succés: message ?
+                                    if ($scope["aSelection"].length == 0) {
+                                            $translate("SUCCESFULL_IMPORTATION_" + envSrvc["oSelectedObject"]["name"].toUpperCase()).then(function (sTranslation) {
+                                                    $.notify(sTranslation, "success");
+                                            });
+                                            // Supprime la sélection.
+                                            $scope.$root["gridApi"][envSrvc["sSelectedGridOptionsName"]]["selection"]["clearSelectedRows"]();
+                                    }
+                                }
+                                else {
+                                    // Message d'erreur.
+                                    $scope["aSelection"] = [];
+                                    var oOptions = {"className": "modal-danger"};
+                                    // Message d'erreur ?
+                                    if (response["data"]["errorMessage"] != null)
+                                            oOptions["message"] = response["data"]["errorMessage"];
+                                    $scope["modalWindow"]("alert", "FORM_VALIDATION_ERROR", oOptions);
+                                }
+                            }
+                        });
                         i++;
                 }
         }
@@ -209,14 +213,12 @@ vitisApp.activeDirectoryTreeCtrl = function ($log, $scope, $q, $translate, Resta
         $scope["searchAdTree"] = function(sObject) {
                 var deferred = $q.defer();
                 var promise = deferred.promise;
-                var oWebServiceBase = Restangular["one"](propertiesSrvc["services_alias"] + "/vitis", "ActiveDirectory");
                 var oParams = {
                         "domain_id": $scope["oLdap"]["sIdLdap"],
                         "login": $scope["oLdap"]["sLoginLdap"].split("@")[0],
                         "password": $scope["oLdap"]["sPwdLdap"],
                         //"branch": sBranch,
                         //"language": propertiesSrvc["language"],
-                        "token": sessionSrvc["token"]
                         //"object": "sObject"
                 };
                 // Valeurs du formulaire.
@@ -229,14 +231,19 @@ vitisApp.activeDirectoryTreeCtrl = function ($log, $scope, $q, $translate, Resta
                         i++;
                 }
                 // Charge les enregistrements de la branche.
-                oWebServiceBase["customGET"]($scope["oActiveDirectoryParameters"]["sWebServicePath"], oParams)
-                        .then(function(data){
-                                if (data["status"] == 1) {
-                                        // MAJ de la liste des enregistrements.
-                                        $scope["gridOptions"]["data"] = envSrvc["extractWebServiceData"]("activedirectory", data)[0][$scope["oActiveDirectoryParameters"]["sWebServicePath"].toLowerCase()];
-                                }
-                                deferred.resolve();
-                        });
+                ajaxRequest({
+                    "method": "GET",
+                    "url": propertiesSrvc["web_server_name"] + "/" + propertiesSrvc["services_alias"] + "/vitis/ActiveDirectory/" + $scope["oActiveDirectoryParameters"]["sWebServicePath"],
+                    "params": oParams,
+                    "scope": $scope,
+                    "success": function(response) {
+                        if (response["data"]["status"] == 1) {
+                                // MAJ de la liste des enregistrements.
+                                $scope["gridOptions"]["data"] = envSrvc["extractWebServiceData"]("activedirectory", response["data"])[0][$scope["oActiveDirectoryParameters"]["sWebServicePath"].toLowerCase()];
+                        }
+                        deferred.resolve();
+                    }
+                });
                 // Retourne la promesse.
                 return promise;
         };

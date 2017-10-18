@@ -1,0 +1,280 @@
+{
+    "display": {
+        "name": "anc_saisie_anc_controle_controle_schema-form",
+        "title": "ANC_SAISIE_ANC_CONTROLE_CONTROLE_SCHEMA_TITLE",
+        "input_size": "xxs",
+        "nb_cols": 12,
+        "javascript": false,
+        "rows": [
+            {
+                "fields": [
+                    {
+                        "type": "button",
+                        "class": "btn-ungroup btn-group-sm",
+                        "nb_cols": 12,
+                        "name": "display_button",
+                        "id": "display_button",
+                        "buttons": [
+                            {
+                                "type": "button",
+                                "name": "return_list",
+                                "label": "FORM_RETURN_LIST",
+                                "class": "btn-primary",
+                                "event": "setMode(\"search\")"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "search": {
+        "name": "anc_saisie_anc_controle_controle_schema-form",
+        "title": "ANC_SAISIE_ANC_CONTROLE_CONTROLE_SCHEMA_TITLE",
+        "input_size": "xxs",
+        "nb_cols": 12,
+        "javascript": false,
+        "rows": [
+
+        ]
+    },
+    "insert": {
+        "name": "anc_saisie_anc_controle_controle_schema-form",
+        "title": "ANC_SAISIE_ANC_CONTROLE_CONTROLE_SCHEMA_TITLE_INSERT",
+        "input_size": "xxs",
+        "nb_cols": 12,
+        "javascript": false,
+        "rows": [
+
+        ],
+        "event": "sendSimpleForm()"
+    },
+    "update": {
+        "name": "anc_saisie_anc_controle_controle_schema-form",
+        "title": "ANC_SAISIE_ANC_CONTROLE_CONTROLE_SCHEMA_TITLE",
+        "input_size": "xxs",
+        "nb_cols": 12,
+        "javascript": false,
+        "rows": [
+            {
+                "fields": [
+                    {
+                        "type": "map_workbench",
+                        "name": "composants",
+                        "label": "",
+                        "required": false,
+                        "nb_cols": 12,
+                        "id": "Element_0_1_1",
+                        "style": {
+                            "height": "350px"
+                        },
+                        "grid_height": "150px",
+                        "map_options": {
+                            "proj": "EPSG:3857",
+                            "base_proj": "EPSG:4326",
+                            "output_format": "geojson",
+                            "type": "OSM",
+                            "center": {
+                                "extent": [
+                                    -1309672.0426382099,
+                                    5253975.576209875,
+                                    1517886.5076870301,
+                                    6476968.028772695
+                                ],
+                                "coord": [
+                                    104107.23252441005,
+                                    5865471.802491285
+                                ],
+                                "scale": 12720279
+                            },
+                            "controls": {
+                                "MP": true,
+                                "ZO": true,
+                                "SL": true,
+                                "CP": true
+                            },
+                            "layers": [],
+                            "interactions": {
+                                "multi_geometry": true,
+                                "full_screen": false,
+                                "layer_tree": false,
+                                "remove_all": false,
+                                "remove": true,
+                                "modify": true,
+                                "point": true,
+                                "line": true,
+                                "polygon": true,
+                                "select": true
+                            },
+                            "coord_accuracy": 8
+                        },
+                        "attributes_def": [{
+                                "label": "Type",
+                                "name": "composant_type"
+                            }, 
+                            {
+                                "label": "Nom",
+                                "name": "label"
+                            }, 
+                            {
+                                "label": "Observations",
+                                "name": "observations"
+                            }],
+                        "custom_form": {
+                            "form": {
+                                "display": {
+                                    "name": "custom-form",
+                                    "title": "1",
+                                    "input_size": "xxs",
+                                    "nb_cols": 12,
+                                    "javascript": false,
+                                    "rows": [],
+                                    "tabs": {
+                                        "position": "top",
+                                        "list": [
+                                            {
+                                                "label": "Tab 0",
+                                                "elements": []
+                                            }
+                                        ]
+                                    }
+                                },
+                                "search": {
+                                    "name": "custom-form",
+                                    "title": "1",
+                                    "input_size": "xxs",
+                                    "nb_cols": 12,
+                                    "javascript": false,
+                                    "rows": [],
+                                    "tabs": {
+                                        "position": "top",
+                                        "list": [
+                                            {
+                                                "label": "Tab 0",
+                                                "elements": []
+                                            }
+                                        ]
+                                    }
+                                },
+                                "insert": {
+                                    "name": "custom-form",
+                                    "title": "1",
+                                    "input_size": "xxs",
+                                    "nb_cols": 12,
+                                    "javascript": false,
+                                    "rows": [],
+                                    "tabs": {
+                                        "position": "top",
+                                        "list": [
+                                            {
+                                                "label": "Tab 0",
+                                                "elements": []
+                                            }
+                                        ]
+                                    }
+                                },
+                                "update": {
+                                    "name": "custom-subform",
+                                    "title": "1",
+                                    "input_size": "xxs",
+                                    "nb_cols": 12,
+                                    "javascript": false,
+                                    "rows": [
+                                        {
+                                            "fields": [
+                                                {
+                                                    "type": "select",
+                                                    "name": "composant_type",
+                                                    "label": "Type",
+                                                    "required": false,
+                                                    "nb_cols": 12,
+                                                    "id": "Element_0_1_1",
+                                                    "datasource": {
+                                                        "datasource_id": "datasource_1",
+                                                        "sort_order": "ASC",
+                                                        "distinct": "true",
+                                                        "label_key": "composant_type",
+                                                        "order_by": "composant_type",
+                                                        "id_key": "composant_type",
+                                                        "attributs": "composant_type|composant_type"
+                                                    },
+                                                    "id_from": "Element_0_1_1_from"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "fields": [
+                                                {
+                                                    "type": "text",
+                                                    "label": "Nom",
+                                                    "name": "label",
+                                                    "required": false,
+                                                    "nb_cols": 12
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "fields": [
+                                                {
+                                                    "type": "text",
+                                                    "label": "Observations",
+                                                    "name": "observations",
+                                                    "required": false,
+                                                    "nb_cols": 12
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "datasources": {
+                                    "datasource_1": {
+                                        "type": "web_service",
+                                        "dataType": "webService",
+                                        "name": "datasource_1",
+                                        "description": "",
+                                        "ressource_id": "anc/ComposantTypeFeatureStyles",
+                                        "webservice": {
+                                            "name": "anc"
+                                        },
+                                        "ressource": {
+                                            "name": "ComposantTypeFeatureStyles"
+                                        }
+                                    }
+                                }
+                            },
+                            "featureStructure": {}
+                        }
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "button",
+                        "class": "btn-ungroup btn-group-sm",
+                        "nb_cols": 12,
+                        "name": "update_button",
+                        "id": "update_button",
+                        "buttons": [
+                            {
+                                "type": "submit",
+                                "name": "form_submit",
+                                "label": "FORM_UPDATE",
+                                "class": "btn-primary"
+                            },
+                            {
+                                "type": "button",
+                                "name": "return_list",
+                                "label": "FORM_RETURN_LIST",
+                                "class": "btn-primary",
+                                "event": "setMode(\"search\")"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "event": "sendSimpleForm()",
+        "afterEvent": "setMode(\"search\")"
+    }
+}

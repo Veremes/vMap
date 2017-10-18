@@ -54,7 +54,7 @@
 
 		</Styles>
 		 <Worksheet ss:Name="Feuil1">
-			<Table ss:ExpandedColumnCount="7" x:FullColumns="1" x:FullRows="1" ss:DefaultColumnWidth="60" ss:DefaultRowHeight="15">
+			<Table ss:DefaultColumnWidth="60" ss:DefaultRowHeight="15">
 				<Column ss:AutoFitWidth="0" ss:Width="85"/>
 				<Column ss:AutoFitWidth="0" ss:Width="125"/>
 				<Column ss:AutoFitWidth="0" ss:Width="115"/>

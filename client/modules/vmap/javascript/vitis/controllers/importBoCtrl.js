@@ -7,18 +7,16 @@ goog.require('oVmap');
  * ImportBo controller
  * @param {object} $scope
  * @param {object} $log
- * @param {object} $http
  * @param {object} $q
  * @returns {nsVmap.importBoCtrl}
  * @export
  * @ngInject
  */
-nsVmap.importBoCtrl = function ($scope, $log, $http, $q, $translate) {
+nsVmap.importBoCtrl = function ($scope, $log, $q, $translate) {
     $log.info("nsVmap.importBoCtrl");
 
     this.$log_ = $log;
     this.$scope_ = $scope;
-    this.$http_ = $http;
     this.$q_ = $q;
     this.$translate_ = $translate;
     this.mainScope_ = angular.element(vitisApp.appMainDrtv).scope();
@@ -58,7 +56,7 @@ nsVmap.importBoCtrl = function ($scope, $log, $http, $q, $translate) {
     /**
      * Sql to execute
      */
-    $scope['sSql'] = '';
+    $scope['sSql'] = null;
 
     // Listes
     $scope['aDatabases'] = [];
@@ -83,6 +81,13 @@ nsVmap.importBoCtrl = function ($scope, $log, $http, $q, $translate) {
     $scope['oEventForm'] = null;
     $scope['oReportForm'] = null;
 
+    // Éléments à importer
+    $scope['selectedSteps'] = {
+        'import_sql': true,
+        'import_layers': true,
+        'import_bo': true
+    };
+
     // Execution import    
     $scope['oImportSteps'] = {
         'test': null,
@@ -103,18 +108,7 @@ nsVmap.importBoCtrl = function ($scope, $log, $http, $q, $translate) {
     $scope['bImportOk'] = false;
 
     // Étapes
-    $scope['steps'] = ['import_folder', 'select_database', 'import_schema', 'import_coordsys', 'import_sql', 'import_layers', 'import_bo', 'execute_import', 'finalize'];
-    $scope['steps_trads'] = {
-        'import_folder': 'Import',
-        'select_database': 'Base de données',
-        'import_schema': 'Schema',
-        'import_coordsys': 'Coordsys',
-        'import_sql': 'SQL',
-        'import_layers': 'Couches',
-        'import_bo': 'Objet Métier',
-        'execute_import': 'Execution',
-        'finalize': 'Fin'
-    };
+    $scope['steps'] = ['import_folder', 'select_elements', 'select_database', 'import_schema', 'import_coordsys', 'import_sql', 'import_layers', 'import_bo', 'execute_import', 'finalize'];
 
     // Traductions
     this.importTranslations_();
@@ -137,6 +131,11 @@ nsVmap.importBoCtrl.prototype.submitStep = function (step) {
         case 'import_folder':
             this.importFolder_();
             break;
+        case 'select_elements':
+            this.validateSelectedSteps_().then(function () {
+                this_.nextStep();
+            });
+            break;
         case 'select_database':
             this.validateDatabase_().then(function () {
                 this_.nextStep();
@@ -154,9 +153,6 @@ nsVmap.importBoCtrl.prototype.submitStep = function (step) {
             break;
         case 'import_layers':
             this.validateLayers_().then(function () {
-
-                console.log("nextStep!!!");
-
                 this_.nextStep();
             });
             break;
@@ -242,12 +238,39 @@ nsVmap.importBoCtrl.prototype.goStep = function (step) {
 
     var this_ = this;
 
+    // Cas où il faille ignorer l'étape
+    switch (step) {
+        case 'import_sql':
+        case 'import_layers':
+        case 'import_bo':
+            if (this.$scope_['selectedSteps'][step] === false) {
+                var currentIndex = this.$scope_['steps'].indexOf(this.$scope_['displayedStep']);
+                var stepIndex = this.$scope_['steps'].indexOf(step);
+                if (currentIndex !== -1 && stepIndex !== -1) {
+                    this.$scope_['displayedStep'] = step;
+                    if (currentIndex < stepIndex) {
+                        this_.nextStep();
+                        return true;
+                    }
+                    if (currentIndex > stepIndex) {
+                        this_.prevStep();
+                        return true;
+                    }
+                }
+                break;
+            }
+            break;
+    }
+
     // Fonctions à appeler lors du changement
     switch (step) {
         case 'select_database':
             this.loadDatabases_().then(function () {
                 this_.$scope_['displayedStep'] = step;
             });
+            break;
+        case 'select_elements':
+            this_.$scope_['displayedStep'] = step;
             break;
         case 'import_schema':
             this.loadSchemas_().then(function () {
@@ -267,7 +290,6 @@ nsVmap.importBoCtrl.prototype.goStep = function (step) {
             this.loadLayers_().then(function () {
                 this_.$scope_['displayedStep'] = step;
             });
-            ;
             break;
         case 'import_bo':
             this.loadBo_();
@@ -471,6 +493,7 @@ nsVmap.importBoCtrl.prototype.importTranslations_ = function () {
     aTranslationsCodes.push('CTRL_IMPORT_BO_ERROR_SELECT_FOLDER');
     aTranslationsCodes.push('CTRL_IMPORT_BO_ERROR_NO_FOLDER_RESULT');
     aTranslationsCodes.push('CTRL_IMPORT_BO_ERROR_NO_DB_CONNECTION');
+    aTranslationsCodes.push('CTRL_IMPORT_BO_ERROR_ANY_SELECTED_STEP_SELECTED');
     aTranslationsCodes.push('CTRL_IMPORT_BO_ERROR_NO_DB_VALID');
     aTranslationsCodes.push('CTRL_IMPORT_BO_ERROR_NO_SCHEMA_VALID');
     aTranslationsCodes.push('CTRL_IMPORT_BO_ERROR_NO_COORDSYS_VALID');
@@ -521,47 +544,50 @@ nsVmap.importBoCtrl.prototype.importFolder_ = function () {
     var oFormData_ = new FormData();
     oFormData_.append('package_definition', aFiles[0]);
 
-    this.$http_({
-        method: 'POST',
-        url: this['oProperties']['web_server_name'] + '/' + this['oProperties']['services_alias'] + '/vmap/businessobjects/package_definition',
-        data: oFormData_,
-        params: {
-            'token': this['sToken']
-        }
-    }).then(function successCallback(response) {
+    ajaxRequest({
+        'method': 'POST',
+        'url': this['oProperties']['web_server_name'] + '/' + this['oProperties']['services_alias'] + '/vmap/businessobjects/package_definition',
+        'headers': {
+            'Accept': 'application/x-vm-json'
+        },
+        'data': oFormData_,
+        'scope': this.$scope_,
+        'success': function (response) {
 
-        if (!goog.isDefAndNotNull(response['data'])) {
-            $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], "error");
-            return null;
-        }
-        if (goog.isDefAndNotNull(response['data'])) {
-            if (goog.isDefAndNotNull(response['data']['errorMessage'])) {
-                angular.element(vitisApp.appMainDrtv).scope()["modalWindow"]("dialog", "Erreur serveur", {
-                    "className": "modal-danger",
-                    "message": response['data']['errorMessage']
-                });
+            if (!goog.isDefAndNotNull(response['data'])) {
+                $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], "error");
                 return null;
             }
-        }
-        if (!goog.isDefAndNotNull(response['data']['businessobjects'])) {
-            $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_NO_FOLDER_RESULT'], "error");
-            return null;
-        }
-        if (!goog.isDefAndNotNull(response['data']['businessobjects'][0])) {
-            $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_NO_FOLDER_RESULT'], "error");
-            return null;
-        }
-        if (response['data']['status'] !== 1) {
+            if (goog.isDefAndNotNull(response['data'])) {
+                if (goog.isDefAndNotNull(response['data']['errorMessage'])) {
+                    angular.element(vitisApp.appMainDrtv).scope()["modalWindow"]("dialog", "Erreur serveur", {
+                        "className": "modal-danger",
+                        "message": response['data']['errorMessage']
+                    });
+                    return null;
+                }
+            }
+            if (!goog.isDefAndNotNull(response['data']['businessobjects'])) {
+                $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_NO_FOLDER_RESULT'], "error");
+                return null;
+            }
+            if (!goog.isDefAndNotNull(response['data']['businessobjects'][0])) {
+                $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_NO_FOLDER_RESULT'], "error");
+                return null;
+            }
+            if (response['data']['status'] !== 1) {
+                $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], "error");
+                return null;
+            }
+
+            this_.$scope_['oImportedBo'] = response['data']['businessobjects'][0];
+
+            this_.nextStep();
+
+        },
+        'error': function (response) {
             $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], "error");
-            return null;
         }
-
-        this_.$scope_['oImportedBo'] = response['data']['businessobjects'][0];
-
-        this_.nextStep();
-
-    }, function errorCallback(response) {
-        $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], "error");
     });
 };
 
@@ -650,25 +676,27 @@ nsVmap.importBoCtrl.prototype.getJsonForm_ = function (sForm) {
         var sUrl = this['oProperties']['web_server_name'] + '/' + sessionStorage['appEnv'] + '/modules/vmap/forms/vmap_business_object/vmap_business_object_vmap_business_object_event.json';
     }
 
-    this.$http_({
-        method: 'GET',
-        url: sUrl,
-        params: {
+    ajaxRequest({
+        'method': 'GET',
+        'url': sUrl,
+        'headers': {
+            'Accept': 'application/x-vm-json'
+        },
+        'params': {
             'vitis_version': this['oProperties']['build']
-        }
-    }).then(function successCallback(response) {
-
-        if (!goog.isDefAndNotNull(response['data'])) {
+        },
+        'scope': this.$scope_,
+        'success': function (response) {
+            if (!goog.isDefAndNotNull(response['data'])) {
+                $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], "error");
+                return null;
+            }
+            var oForm = response['data'];
+            deferred.resolve(this_.prepareForm_(oForm, sForm));
+        },
+        'error': function (response) {
             $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], "error");
-            return null;
         }
-
-        var oForm = response['data'];
-
-        deferred.resolve(this_.prepareForm_(oForm, sForm));
-
-    }, function errorCallback(response) {
-        $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], "error");
     });
 
     return deferred.promise;
@@ -749,46 +777,38 @@ nsVmap.importBoCtrl.prototype.loadDatabases_ = function () {
 
     if (!goog.isDefAndNotNull(this.$scope_['usedDatabase'])) {
         goog.array.clear(this.$scope_['aDatabases']);
-        this.$http_({
-            method: 'GET',
-            url: this['oProperties']['web_server_name'] + '/' + this['oProperties']['services_alias'] + '/vitis/genericquerys',
-            params: {
-                'attributs': 'datname',
-                'server': 'localhost',
-                'port': '5432',
-                'schema': 'pg_catalog',
-                'table': 'pg_database',
-                'filter': 'datistemplate = false',
-                'order_by': 'datname',
-                'sort_order': 'ASC',
-                'distinct': 'true',
-                'token': this['sToken']
-            }
-        }).then(function successCallback(response) {
+        ajaxRequest({
+            'method': 'GET',
+            'url': this['oProperties']['web_server_name'] + '/' + this['oProperties']['services_alias'] + '/vitis/genericquerys/databases',
+            'headers': {
+                'Accept': 'application/x-vm-json'
+            },
+            'scope': this.$scope_,
+            'success': function (response) {
 
-            if (!goog.isDefAndNotNull(response['data'])) {
-                $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], "error");
-                return null;
-            }
-            if (!goog.isDefAndNotNull(response['data']['data'])) {
-                console.error("Aucun résultat: databases", response);
-                return null;
-            }
+                if (!goog.isDefAndNotNull(response['data'])) {
+                    $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], "error");
+                    return null;
+                }
+                if (!goog.isDefAndNotNull(response['data']['data'])) {
+                    console.error("Aucun résultat: databases", response);
+                    return null;
+                }
 
-            for (var i = 0; i < response['data']['data'].length; i++) {
-                if (goog.isDefAndNotNull(response['data']['data'][i]['datname'])) {
-                    if (aUnallowedDatabases.indexOf(response['data']['data'][i]['datname']) === -1) {
-                        this_.$scope_['aDatabases'].push(response['data']['data'][i]['datname']);
+                for (var i = 0; i < response['data']['data'].length; i++) {
+                    if (goog.isDefAndNotNull(response['data']['data'][i]['database'])) {
+                        if (aUnallowedDatabases.indexOf(response['data']['data'][i]['database']) === -1) {
+                            this_.$scope_['aDatabases'].push(response['data']['data'][i]['database']);
+                        }
                     }
                 }
+
+                this_.$scope_['usedDatabase'] = this_['oProperties']['database'];
+                deferred.resolve();
+            },
+            'error': function (response) {
+                $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], "error");
             }
-
-            this_.$scope_['usedDatabase'] = this_['oProperties']['database']
-
-            deferred.resolve();
-
-        }, function errorCallback(response) {
-            $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], "error");
         });
     } else {
         setTimeout(function () {
@@ -811,54 +831,51 @@ nsVmap.importBoCtrl.prototype.loadSchemas_ = function () {
     var aUnallowedSchemas = ['pg_catalog', 'information_schema'];
 
     goog.array.clear(this.$scope_['aSchemas']);
-    this.$http_({
-        method: 'GET',
-        url: this['oProperties']['web_server_name'] + '/' + this['oProperties']['services_alias'] + '/vitis/genericquerys',
-        params: {
-            'attributs': 'schemaname',
-            'database': this.$scope_['usedDatabase'],
-            'schema': 'pg_catalog',
-            'table': 'pg_tables',
-            'distinct': 'true',
-            'sort_order': 'ASC',
-            'token': this['sToken']
-        }
-    }).then(function successCallback(response) {
 
-        if (!goog.isDefAndNotNull(response['data'])) {
+    ajaxRequest({
+        'method': 'GET',
+        'url': this['oProperties']['web_server_name'] + '/' + this['oProperties']['services_alias'] + '/vitis/genericquerys/' + this.$scope_['usedDatabase'] + '/schemas',
+        'headers': {
+            'Accept': 'application/x-vm-json'
+        },
+        'scope': this.$scope_,
+        'success': function (response) {
+
+            if (!goog.isDefAndNotNull(response['data'])) {
+                $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], "error");
+                return null;
+            }
+            if (!goog.isDefAndNotNull(response['data']['data'])) {
+                console.error("Aucun résultat: schemas", response);
+                return null;
+            }
+
+            for (var i = 0; i < response['data']['data'].length; i++) {
+                if (goog.isDefAndNotNull(response['data']['data'][i]['schema_name'])) {
+                    if (aUnallowedSchemas.indexOf(response['data']['data'][i]['schema_name']) === -1) {
+                        this_.$scope_['aSchemas'].push(response['data']['data'][i]['schema_name']);
+                    }
+                }
+            }
+
+            // Pré-rempli le choix du schéma à utiliser
+            setTimeout(function () {
+                if (goog.isDefAndNotNull(this_.$scope_['usedSchema'])) {
+                    if (this_.$scope_['aSchemas'].indexOf(this_.$scope_['usedSchema']) !== -1) {
+                        this_.$scope_['selectedExistingSchema'] = this_.$scope_['usedSchema'];
+                        this_.$scope_['creatingNewSchema'] = '';
+                    } else {
+                        this_.$scope_['creatingNewSchema'] = this_.$scope_['usedSchema'];
+                        this_.$scope_['selectedExistingSchema'] = '';
+                    }
+                }
+            });
+
+            deferred.resolve();
+        },
+        'error': function (response) {
             $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], "error");
-            return null;
         }
-        if (!goog.isDefAndNotNull(response['data']['data'])) {
-            console.error("Aucun résultat: schemas", response);
-            return null;
-        }
-
-        for (var i = 0; i < response['data']['data'].length; i++) {
-            if (goog.isDefAndNotNull(response['data']['data'][i]['schemaname'])) {
-                if (aUnallowedSchemas.indexOf(response['data']['data'][i]['schemaname']) === -1) {
-                    this_.$scope_['aSchemas'].push(response['data']['data'][i]['schemaname']);
-                }
-            }
-        }
-
-        // Pré-rempli le choix du schéma à utiliser
-        setTimeout(function () {
-            if (goog.isDefAndNotNull(this_.$scope_['usedSchema'])) {
-                if (this_.$scope_['aSchemas'].indexOf(this_.$scope_['usedSchema']) !== -1) {
-                    this_.$scope_['selectedExistingSchema'] = this_.$scope_['usedSchema'];
-                    this_.$scope_['creatingNewSchema'] = '';
-                } else {
-                    this_.$scope_['creatingNewSchema'] = this_.$scope_['usedSchema'];
-                    this_.$scope_['selectedExistingSchema'] = '';
-                }
-            }
-        });
-
-        deferred.resolve();
-
-    }, function errorCallback(response) {
-        $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], "error");
     });
 
     return deferred.promise;
@@ -876,45 +893,49 @@ nsVmap.importBoCtrl.prototype.loadCoordsys_ = function () {
 
     if (!goog.isDefAndNotNull(this_.$scope_['oCoordsys'])) {
         goog.array.clear(this_.$scope_['aCoordsys']);
-        this.$http_({
-            method: 'GET',
-            url: this['oProperties']['web_server_name'] + '/' + this['oProperties']['services_alias'] + '/vm4ms/coordinatesystems',
-            params: {
-                'token': this['sToken'],
+        ajaxRequest({
+            'method': 'GET',
+            'url': this['oProperties']['web_server_name'] + '/' + this['oProperties']['services_alias'] + '/vm4ms/coordinatesystems',
+            'headers': {
+                'Accept': 'application/x-vm-json'
+            },
+            'params': {
                 'order_by': 'coordsys_id'
-            }
-        }).then(function successCallback(response) {
+            },
+            'scope': this.$scope_,
+            'success': function (response) {
 
-            if (!goog.isDefAndNotNull(response['data'])) {
-                $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], "error");
-                return null;
-            }
-            if (!goog.isDefAndNotNull(response['data']['data'])) {
-                console.error("Aucun résultat: coordinatesystems", response);
-                return null;
-            }
+                if (!goog.isDefAndNotNull(response['data'])) {
+                    $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], "error");
+                    return null;
+                }
+                if (!goog.isDefAndNotNull(response['data']['data'])) {
+                    console.error("Aucun résultat: coordinatesystems", response);
+                    return null;
+                }
 
-            this_.$scope_['aCoordsys'] = response['data']['data'];
+                this_.$scope_['aCoordsys'] = response['data']['data'];
 
-            // Pré-rempli le choix du coordsys à utiliser
-            if (goog.isDefAndNotNull(this_.$scope_['oImportedBo']['sql'])) {
-                if (goog.isDefAndNotNull(this_.$scope_['oImportedBo']['sql']['structure'])) {
-                    if (goog.isDefAndNotNull(this_.$scope_['oImportedBo']['sql']['structure']['srid'])) {
-                        var sProposedSRID = this_.$scope_['oImportedBo']['sql']['structure']['srid'];
+                // Pré-rempli le choix du coordsys à utiliser
+                if (goog.isDefAndNotNull(this_.$scope_['oImportedBo']['sql'])) {
+                    if (goog.isDefAndNotNull(this_.$scope_['oImportedBo']['sql']['structure'])) {
+                        if (goog.isDefAndNotNull(this_.$scope_['oImportedBo']['sql']['structure']['srid'])) {
+                            var sProposedSRID = this_.$scope_['oImportedBo']['sql']['structure']['srid'];
 
-                        for (var i = 0; i < this_.$scope_['aCoordsys'].length; i++) {
-                            if (parseFloat(this_.$scope_['aCoordsys'][i]['coordsys_id']) === parseFloat(sProposedSRID)) {
-                                this_.$scope_['oCoordsys'] = this_.$scope_['aCoordsys'][i];
+                            for (var i = 0; i < this_.$scope_['aCoordsys'].length; i++) {
+                                if (parseFloat(this_.$scope_['aCoordsys'][i]['coordsys_id']) === parseFloat(sProposedSRID)) {
+                                    this_.$scope_['oCoordsys'] = this_.$scope_['aCoordsys'][i];
+                                }
                             }
                         }
                     }
                 }
+
+                deferred.resolve();
+            },
+            'error': function (response) {
+                $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], "error");
             }
-
-            deferred.resolve();
-
-        }, function errorCallback(response) {
-            $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], "error");
         });
     } else {
         setTimeout(function () {
@@ -945,27 +966,30 @@ nsVmap.importBoCtrl.prototype.loadSql_ = function () {
         'gutters': ["CodeMirror-linenumbers", "CodeMirror-foldgutter"]
     };
 
-    this.$scope_['sSql'] = '';
+    if (!goog.isDefAndNotNull(this.$scope_['sSql'])) {
 
-    // Schéma
-    if (this.isNewSchema_(this.$scope_['usedSchema'])) {
-        if (this.$scope_['usedSchema'].length > 0) {
-            this.$scope_['sSql'] += '\n--';
-            this.$scope_['sSql'] += '\n-- Creation Schema';
-            this.$scope_['sSql'] += '\n--';
-            this.$scope_['sSql'] += '\n';
-            this.$scope_['sSql'] += '\nCREATE SCHEMA [TABLE_SCHEMA] AUTHORIZATION u_vitis;';
-            this.$scope_['sSql'] += '\nGRANT ALL ON SCHEMA [TABLE_SCHEMA] TO u_vitis;';
-            this.$scope_['sSql'] += '\n';
-            this.$scope_['sSql'] += '\n';
+        this.$scope_['sSql'] = '';
+
+        // Schéma
+        if (this.isNewSchema_(this.$scope_['usedSchema'])) {
+            if (this.$scope_['usedSchema'].length > 0) {
+                this.$scope_['sSql'] += '\n--';
+                this.$scope_['sSql'] += '\n-- Creation Schema';
+                this.$scope_['sSql'] += '\n--';
+                this.$scope_['sSql'] += '\n';
+                this.$scope_['sSql'] += '\nCREATE SCHEMA [TABLE_SCHEMA] AUTHORIZATION u_vitis;';
+                this.$scope_['sSql'] += '\nGRANT ALL ON SCHEMA [TABLE_SCHEMA] TO u_vitis;';
+                this.$scope_['sSql'] += '\n';
+                this.$scope_['sSql'] += '\n';
+            }
         }
-    }
 
-    // Definition tables
-    if (goog.isDefAndNotNull(this.$scope_['oImportedBo'])) {
-        if (goog.isDefAndNotNull(this.$scope_['oImportedBo']['sql'])) {
-            if (goog.isDefAndNotNull(this.$scope_['oImportedBo']['sql']['table'])) {
-                this.$scope_['sSql'] += this.$scope_['oImportedBo']['sql']['table'];
+        // Definition tables
+        if (goog.isDefAndNotNull(this.$scope_['oImportedBo'])) {
+            if (goog.isDefAndNotNull(this.$scope_['oImportedBo']['sql'])) {
+                if (goog.isDefAndNotNull(this.$scope_['oImportedBo']['sql']['table'])) {
+                    this.$scope_['sSql'] += this.$scope_['oImportedBo']['sql']['table'];
+                }
             }
         }
     }
@@ -1028,106 +1052,80 @@ nsVmap.importBoCtrl.prototype.loadLayers_ = function () {
 
     // Load la liste des connexions
     if (!goog.isDefAndNotNull(this_.$scope_['aConnections'])) {
-        this.$http_({
-            method: 'GET',
-            url: this['oProperties']['web_server_name'] + '/' + this['oProperties']['services_alias'] + '/vm4ms/layerconnections',
-            params: {
-                'token': this['sToken'],
+        ajaxRequest({
+            'method': 'GET',
+            'url': this['oProperties']['web_server_name'] + '/' + this['oProperties']['services_alias'] + '/vm4ms/layerconnections',
+            'headers': {
+                'Accept': 'application/x-vm-json'
+            },
+            'params': {
                 'order_by': 'name',
-                'filter': 'database=\'' + this_.$scope_['usedDatabase'] + '\''
-            }
-        }).then(function successCallback(response) {
+//                'filter': 'database=\'' + this_.$scope_['usedDatabase'] + '\''
+                'filter': '{"relation": "OR","operators": [{"column":"database","compare_operator":"=","value":"' + this_.$scope_['usedDatabase'] + '"}, {"column":"database","compare_operator":"IS NULL","value":""}]}'
+            },
+            'scope': this.$scope_,
+            'success': function (response) {
 
-            if (!goog.isDefAndNotNull(response['data'])) {
+                if (!goog.isDefAndNotNull(response['data'])) {
+                    $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], "error");
+                    return null;
+                }
+                if (response['data']['list_count'] === 0) {
+                    $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_NO_DB_CONNECTION'], 'warning');
+                    response['data']['data'] = [];
+                }
+                if (!goog.isDefAndNotNull(response['data']['data'])) {
+                    console.error("Aucun résultat: layerconnections", response);
+                    return null;
+                }
+
+                this_.$scope_['aConnections'] = response['data']['data'];
+
+                if (goog.isDefAndNotNull(this_.$scope_['aVmapServices'])) {
+                    deferred.resolve();
+                }
+            },
+            'error': function (response) {
                 $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], "error");
                 return null;
             }
-            if (response['data']['list_count'] === 0) {
-                $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_NO_DB_CONNECTION'], 'warning');
-                response['data']['data'] = [];
-            }
-            if (!goog.isDefAndNotNull(response['data']['data'])) {
-                console.error("Aucun résultat: layerconnections", response);
-                return null;
-            }
-
-            this_.$scope_['aConnections'] = response['data']['data'];
-
-            if (goog.isDefAndNotNull(this_.$scope_['aWmsServices']) && goog.isDefAndNotNull(this_.$scope_['aVmapServices'])) {
-                deferred.resolve();
-            }
-
-        }, function errorCallback(response) {
-            $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], "error");
         });
     } else {
         setTimeout(function () {
             deferred.resolve();
         });
     }
-
-    // Load la liste des flux
-    if (!goog.isDefAndNotNull(this_.$scope_['aWmsServices'])) {
-        this.$http_({
-            method: 'GET',
-            url: this['oProperties']['web_server_name'] + '/' + this['oProperties']['services_alias'] + '/vm4ms/wmsservices',
-            params: {
-                'token': this['sToken'],
-                'order_by': 'wmsservice_id'
-            }
-        }).then(function successCallback(response) {
-
-            if (!goog.isDefAndNotNull(response['data'])) {
-                $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], "error");
-                return null;
-            }
-            if (!goog.isDefAndNotNull(response['data']['data'])) {
-                console.error("Aucun résultat: wmsservices", response);
-                return null;
-            }
-
-            this_.$scope_['aWmsServices'] = response['data']['data'];
-
-            if (goog.isDefAndNotNull(this_.$scope_['aConnections']) && goog.isDefAndNotNull(this_.$scope_['aVmapServices'])) {
-                deferred.resolve();
-            }
-
-        }, function errorCallback(response) {
-            $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], "error");
-        });
-    } else {
-        setTimeout(function () {
-            deferred.resolve();
-        });
-    }
-
     // Load la liste des services vMap
     if (!goog.isDefAndNotNull(this_.$scope_['aVmapServices'])) {
-        this.$http_({
-            method: 'GET',
-            url: this['oProperties']['web_server_name'] + '/' + this['oProperties']['services_alias'] + '/vmap/services',
-            params: {
-                'token': this['sToken']
-            }
-        }).then(function successCallback(response) {
+        ajaxRequest({
+            'method': 'GET',
+            'url': this['oProperties']['web_server_name'] + '/' + this['oProperties']['services_alias'] + '/vmap/services',
+            'headers': {
+                'Accept': 'application/x-vm-json'
+            },
+            'scope': this.$scope_,
+            'success': function (response) {
 
-            if (!goog.isDefAndNotNull(response['data'])) {
+                if (!goog.isDefAndNotNull(response['data'])) {
+                    $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], "error");
+                    return null;
+                }
+                if (!goog.isDefAndNotNull(response['data']['data'])) {
+                    console.error("Aucun résultat: services", response);
+                    return null;
+                }
+
+                this_.$scope_['aVmapServices'] = response['data']['data'];
+
+                if (goog.isDefAndNotNull(this_.$scope_['aConnections'])) {
+                    deferred.resolve();
+                }
+
+            },
+            'error': function (response) {
                 $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], "error");
                 return null;
             }
-            if (!goog.isDefAndNotNull(response['data']['data'])) {
-                console.error("Aucun résultat: services", response);
-                return null;
-            }
-
-            this_.$scope_['aVmapServices'] = response['data']['data'];
-
-            if (goog.isDefAndNotNull(this_.$scope_['aConnections']) && goog.isDefAndNotNull(this_.$scope_['aWmsServices'])) {
-                deferred.resolve();
-            }
-
-        }, function errorCallback(response) {
-            $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], "error");
         });
     } else {
         setTimeout(function () {
@@ -1318,6 +1316,36 @@ nsVmap.importBoCtrl.prototype.loadBoFormValues_ = function (opt_options) {
 
 
 // Fonctions de validation
+
+/**
+ * Check if the given schema is valid
+ * @returns {defer.promise}
+ */
+nsVmap.importBoCtrl.prototype.validateSelectedSteps_ = function () {
+    this.$log_.info("nsVmap.importBoCtrl.validateSelectedSteps_");
+
+    var this_ = this;
+    var deferred = this.$q_.defer();
+    var bIsValid = false;
+
+    setTimeout(function () {
+
+        if (this_.$scope_['selectedSteps']['import_sql'] !== false ||
+                this_.$scope_['selectedSteps']['import_layers'] !== false ||
+                this_.$scope_['selectedSteps']['import_bo'] !== false) {
+            bIsValid = true;
+        }
+
+        if (bIsValid) {
+            deferred.resolve(true);
+        } else {
+            $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_ANY_SELECTED_STEP_SELECTED'], "error");
+        }
+
+    });
+
+    return deferred.promise;
+};
 
 /**
  * Check if the given schema is valid
@@ -1629,7 +1657,6 @@ nsVmap.importBoCtrl.prototype.testRessource_ = function (oObject, sObjectUniqueF
     this.$log_.info("nsVmap.importBoCtrl.testRessource_");
 
     var this_ = this;
-
     var deferred = this.$q_.defer();
 
     if (!this.checkObjectKeys_(oObject, aRequiredKeys)) {
@@ -1647,45 +1674,49 @@ nsVmap.importBoCtrl.prototype.testRessource_ = function (oObject, sObjectUniqueF
     }
 
     // Test de l'existance de l'objet
-    this.$http_({
-        method: 'GET',
-        url: this['oProperties']['web_server_name'] + '/' + this['oProperties']['services_alias'] + '/' + sRessource,
-        params: {
-            'token': this['sToken'],
-            'filter': '"' + sObjectUniqueField + '"=\'' + oObject[sObjectUniqueField] + '\''
-        }
-    }).then(function successCallback(response) {
+    ajaxRequest({
+        'method': 'GET',
+        'url': this['oProperties']['web_server_name'] + '/' + this['oProperties']['services_alias'] + '/' + sRessource,
+        'headers': {
+            'Accept': 'application/x-vm-json'
+        },
+        'params': {
+//            'filter': '"' + sObjectUniqueField + '"=\'' + oObject[sObjectUniqueField] + '\''
+            'filter': '{"column":"' + sObjectUniqueField + '","compare_operator":"=","value":"' + oObject[sObjectUniqueField] + '"}'
+        },
+        'scope': this.$scope_,
+        'success': function (response) {
 
-        if (!goog.isDefAndNotNull(response['data'])) {
+            if (!goog.isDefAndNotNull(response['data'])) {
+                $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], "error");
+                console.error(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], oObject[sObjectUniqueField]);
+                deferred.resolve(false);
+                return null;
+            }
+            if (!goog.isDefAndNotNull(response['data']['list_count'])) {
+                $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], "error");
+                console.error(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], oObject[sObjectUniqueField]);
+                deferred.resolve(false);
+                return null;
+            }
+
+            if (response['data']['list_count'] > 0) {
+                console.error(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_OBJECT_ALREADY_EXISTS'], oObject[sObjectUniqueField]);
+                this_.mainScope_["modalWindow"]("dialog", "Error", {
+                    "className": "modal-danger",
+                    "message": this_['oTranslations']['CTRL_IMPORT_BO_ERROR_OBJECT_ALREADY_EXISTS'] + oObject[sObjectUniqueField]
+                });
+
+                deferred.resolve(false);
+            } else {
+                deferred.resolve(true);
+            }
+
+        },
+        'error': function (response) {
             $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], "error");
-            console.error(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], oObject[sObjectUniqueField]);
-            deferred.resolve(false);
-            return null;
         }
-        if (!goog.isDefAndNotNull(response['data']['list_count'])) {
-            $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], "error");
-            console.error(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], oObject[sObjectUniqueField]);
-            deferred.resolve(false);
-            return null;
-        }
-
-        if (response['data']['list_count'] > 0) {
-            console.error(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_OBJECT_ALREADY_EXISTS'], oObject[sObjectUniqueField]);
-            this_.mainScope_["modalWindow"]("dialog", "Error", {
-                "className": "modal-danger",
-                "message": this_['oTranslations']['CTRL_IMPORT_BO_ERROR_OBJECT_ALREADY_EXISTS'] + oObject[sObjectUniqueField]
-            });
-
-            deferred.resolve(false);
-        } else {
-            deferred.resolve(true);
-        }
-
-    }, function errorCallback(response) {
-        $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], "error");
-        console.error(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], oObject[sObjectUniqueField]);
     });
-
 
     return deferred.promise;
 };
@@ -1702,9 +1733,14 @@ nsVmap.importBoCtrl.prototype.testBo_ = function () {
     var oBo = this.$scope_['oBoDef'];
     var aRequiredKeys = ['business_object_id', 'title', 'database', 'schema', 'table', 'id_field', 'sql_summary', 'sql_list', 'geom_column', 'index'];
 
-    this.testRessource_(oBo, 'business_object_id', 'vmap/businessobjects', aRequiredKeys).then(function (bTestResult) {
-        deferred.resolve(bTestResult);
-    });
+    // Cas ou il faille sauter l'étape
+    if (this.$scope_['selectedSteps']['import_bo'] === false) {
+        deferred.resolve(true);
+    } else {
+        this.testRessource_(oBo, 'business_object_id', 'vmap/businessobjects', aRequiredKeys).then(function (bTestResult) {
+            deferred.resolve(bTestResult);
+        });
+    }
 
     return deferred.promise;
 };
@@ -1722,27 +1758,32 @@ nsVmap.importBoCtrl.prototype.testReports_ = function () {
     var aRequiredKeys = ['name', 'rt_format_id', 'rt_orientation_id', 'outputformats_id', 'business_object_id', 'htmldefinition'];
     var iTested = 0;
 
-    if (goog.isDefAndNotNull(this.$scope_['aReportsDef'])) {
-        for (var i = 0; i < aReports.length; i++) {
-            this.testRessource_(aReports[i], 'name', 'vmap/printreports', aRequiredKeys).then(function (bTestResult) {
+    // Cas ou il faille sauter l'étape
+    if (this.$scope_['selectedSteps']['import_bo'] === false) {
+        deferred.resolve(true);
+    } else {
+        if (goog.isDefAndNotNull(this.$scope_['aReportsDef'])) {
+            for (var i = 0; i < aReports.length; i++) {
+                this.testRessource_(aReports[i], 'name', 'vmap/printreports', aRequiredKeys).then(function (bTestResult) {
 
-                // Incémente le nombre d'objets ayant étés testés
-                iTested++;
+                    // Incémente le nombre d'objets ayant étés testés
+                    iTested++;
 
-                // Promesse
-                if (bTestResult === false) {
-                    deferred.resolve(false);
-                } else {
-                    if (iTested === aReports.length) {
-                        deferred.resolve(true);
+                    // Promesse
+                    if (bTestResult === false) {
+                        deferred.resolve(false);
+                    } else {
+                        if (iTested === aReports.length) {
+                            deferred.resolve(true);
+                        }
                     }
-                }
+                });
+            }
+        } else {
+            setTimeout(function () {
+                deferred.resolve(true);
             });
         }
-    } else {
-        setTimeout(function () {
-            deferred.resolve(true);
-        });
     }
 
     return deferred.promise;
@@ -1760,14 +1801,19 @@ nsVmap.importBoCtrl.prototype.testEvent_ = function () {
     var oEvent = this.$scope_['oEventDef'];
     var aRequiredKeys = ['event_id'];
 
-    if (goog.isDefAndNotNull(this.$scope_['oEventDef'])) {
-        this.testRessource_(oEvent, 'event_id', 'vmap/businessobjectevents', aRequiredKeys).then(function (bTestResult) {
-            deferred.resolve(bTestResult);
-        });
+    // Cas ou il faille sauter l'étape
+    if (this.$scope_['selectedSteps']['import_bo'] === false) {
+        deferred.resolve(true);
     } else {
-        setTimeout(function () {
-            deferred.resolve(true);
-        });
+        if (goog.isDefAndNotNull(this.$scope_['oEventDef'])) {
+            this.testRessource_(oEvent, 'event_id', 'vmap/businessobjectevents', aRequiredKeys).then(function (bTestResult) {
+                deferred.resolve(bTestResult);
+            });
+        } else {
+            setTimeout(function () {
+                deferred.resolve(true);
+            });
+        }
     }
 
     return deferred.promise;
@@ -1786,40 +1832,45 @@ nsVmap.importBoCtrl.prototype.testLayers_ = function () {
     var iTested = 0;
     var this_ = this;
 
-    for (var i = 0; i < aLayersDef.length; i++) {
-        // Permet la sauvegarde de i
-        (function (i) {
-            // Test de l'existance de la couche
-            this_.testRessource_(aLayersDef[i], 'name', 'vm4ms/layers', aRequiredKeys).then(function (bTestResult) {
-                // Test de l'existance du calque
-                var oVmapLayer = {
-                    'service_id': 'vm4ms_' + aLayersDef[i]['wmsservice_id'],
-                    'name': aLayersDef[i]['title'],
-                    'layer_list': aLayersDef[i]['name'],
-                    'bo_id': '[BUSINESS_OBJECT]',
-                    'is_dynamic': true,
-                    'is_filtered': false
-                };
-                if (bTestResult === false) {
-                    deferred.resolve(false);
-                } else {
-                    this_.testRessource_(oVmapLayer, 'name', 'vmap/layers', []).then(function (bTestResult) {
+    // Cas ou il faille sauter l'étape
+    if (this.$scope_['selectedSteps']['import_layers'] === false) {
+        deferred.resolve(true);
+    } else {
+        for (var i = 0; i < aLayersDef.length; i++) {
+            // Permet la sauvegarde de i
+            (function (i) {
+                // Test de l'existance de la couche
+                this_.testRessource_(aLayersDef[i], 'name', 'vm4ms/layers', aRequiredKeys).then(function (bTestResult) {
+                    // Test de l'existance du calque
+                    var oVmapLayer = {
+                        'service_id': 'vm4ms_' + aLayersDef[i]['wmsservice_id'],
+                        'name': aLayersDef[i]['title'],
+                        'layer_list': aLayersDef[i]['name'],
+                        'bo_id_list': '[BUSINESS_OBJECT]',
+                        'is_dynamic': true,
+                        'is_filtered': false
+                    };
+                    if (bTestResult === false) {
+                        deferred.resolve(false);
+                    } else {
+                        this_.testRessource_(oVmapLayer, 'name', 'vmap/layers', []).then(function (bTestResult) {
 
-                        // Incémente le nombre d'objets ayant étés testés
-                        iTested++;
+                            // Incémente le nombre d'objets ayant étés testés
+                            iTested++;
 
-                        // Promesse
-                        if (bTestResult === false) {
-                            deferred.resolve(false);
-                        } else {
-                            if (iTested === aLayersDef.length) {
-                                deferred.resolve(true);
+                            // Promesse
+                            if (bTestResult === false) {
+                                deferred.resolve(false);
+                            } else {
+                                if (iTested === aLayersDef.length) {
+                                    deferred.resolve(true);
+                                }
                             }
-                        }
-                    });
-                }
-            });
-        })(i);
+                        });
+                    }
+                });
+            })(i);
+        }
     }
 
     return deferred.promise;
@@ -1836,11 +1887,16 @@ nsVmap.importBoCtrl.prototype.testSchema_ = function () {
     var deferred = this.$q_.defer();
 
     setTimeout(function () {
-        if (goog.isDefAndNotNull(this_.$scope_['usedSchema'])) {
+        // Cas ou il faille sauter l'étape
+        if (this_.$scope_['selectedSteps']['import_sql'] === false) {
             deferred.resolve(true);
         } else {
-            $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_NO_DEFINED_SCHEMA'], "error");
-            deferred.resolve(false);
+            if (goog.isDefAndNotNull(this_.$scope_['usedSchema'])) {
+                deferred.resolve(true);
+            } else {
+                $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_NO_DEFINED_SCHEMA'], "error");
+                deferred.resolve(false);
+            }
         }
     });
 
@@ -1858,78 +1914,81 @@ nsVmap.importBoCtrl.prototype.testTables_ = function () {
     var deferred = this.$q_.defer();
 
     setTimeout(function () {
-        if (goog.isDefAndNotNull(this_.$scope_['usedSchema'])) {
+        if (this_.$scope_['selectedSteps']['import_sql'] === false) {
+            deferred.resolve(true);
+        } else {
+            if (goog.isDefAndNotNull(this_.$scope_['usedSchema'])) {
+                // Si le schéma doit être crée
+                if (this_.isNewSchema_(this_.$scope_['usedSchema'])) {
+                    deferred.resolve(true);
+                } else {
+                    ajaxRequest({
+                        'method': 'GET',
+                        'url': this_['oProperties']['web_server_name'] + '/' + this_['oProperties']['services_alias'] + '/vitis/genericquerys',
+                        'headers': {
+                            'Accept': 'application/x-vm-json'
+                        },
+                        'params': {
+                            'attributs': 'tablename',
+                            'schema': 'pg_catalog',
+                            'table': 'pg_tables',
+                            'distinct': 'true',
+                            'sort_order': 'ASC',
+                            'filter': '{"column":"schemaname","compare_operator":"=","value":"' + this_.$scope_['usedSchema'] + '"}'
+                        },
+                        'scope': this.$scope_,
+                        'success': function (response) {
 
-            // Si le schéma doit être crée
-            if (this_.isNewSchema_(this_.$scope_['usedSchema'])) {
+                            if (!goog.isDefAndNotNull(response['data'])) {
+                                $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], "error");
+                                deferred.resolve(false);
+                                return null;
+                            }
+                            if (!goog.isDefAndNotNull(response['data']['data'])) {
+                                $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], "error");
+                                deferred.resolve(false);
+                                return null;
+                            }
 
-                deferred.resolve(true);
+                            // Tables du schema
+                            var aSchemaTables = [];
+                            for (var i = 0; i < response['data']['data'].length; i++) {
+                                if (goog.isDefAndNotNull(response['data']['data'][i]['tablename'])) {
+                                    aSchemaTables.push(response['data']['data'][i]['tablename']);
+                                }
+                            }
+
+                            // Tables à importer
+                            var aImportedTables = this_.$scope_['oImportedBo']['sql']['structure']['tables'];
+                            if (!goog.isDefAndNotNull(aImportedTables)) {
+                                $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_NO_TABLES_TO_IMPORT'], "error");
+                                console.error(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_NO_TABLES_TO_IMPORT']);
+                                deferred.resolve(false);
+                                return null;
+                            }
+
+                            // Les tables existenet déjà ?
+                            for (var i = 0; i < aImportedTables.length; i++) {
+                                if (aSchemaTables.indexOf(aImportedTables[i]) !== -1) {
+                                    $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_TABLE_ALREADY_PRESENT'] + ": " + aImportedTables[i], "error");
+                                    deferred.resolve(false);
+                                    return null;
+                                }
+                            }
+
+                            deferred.resolve(true);
+
+                        },
+                        'error': function (response) {
+                            $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], "error");
+                        }
+                    });
+                }
 
             } else {
-
-                // Test si les tables existent pas déjà
-                this_.$http_({
-                    method: 'GET',
-                    url: this_['oProperties']['web_server_name'] + '/' + this_['oProperties']['services_alias'] + '/vitis/genericquerys',
-                    params: {
-                        'attributs': 'tablename',
-                        'schema': 'pg_catalog',
-                        'table': 'pg_tables',
-                        'distinct': 'true',
-                        'sort_order': 'ASC',
-                        'filter': 'schemaname=\'' + this_.$scope_['usedSchema'] + '\'',
-                        'token': this_['sToken']
-                    }
-                }).then(function successCallback(response) {
-
-                    if (!goog.isDefAndNotNull(response['data'])) {
-                        $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], "error");
-                        deferred.resolve(false);
-                        return null;
-                    }
-                    if (!goog.isDefAndNotNull(response['data']['data'])) {
-                        $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], "error");
-                        deferred.resolve(false);
-                        return null;
-                    }
-
-                    // Tables du schema
-                    var aSchemaTables = [];
-                    for (var i = 0; i < response['data']['data'].length; i++) {
-                        if (goog.isDefAndNotNull(response['data']['data'][i]['tablename'])) {
-                            aSchemaTables.push(response['data']['data'][i]['tablename']);
-                        }
-                    }
-
-                    // Tables à importer
-                    var aImportedTables = this_.$scope_['oImportedBo']['sql']['structure']['tables'];
-                    if (!goog.isDefAndNotNull(aImportedTables)) {
-                        $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_NO_TABLES_TO_IMPORT'], "error");
-                        console.error(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_NO_TABLES_TO_IMPORT']);
-                        deferred.resolve(false);
-                        return null;
-                    }
-
-                    // Les tables existenet déjà ?
-                    for (var i = 0; i < aImportedTables.length; i++) {
-                        if (aSchemaTables.indexOf(aImportedTables[i]) !== -1) {
-                            $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_TABLE_ALREADY_PRESENT'] + ": " + aImportedTables[i], "error");
-                            deferred.resolve(false);
-                            return null;
-                        }
-                    }
-
-                    deferred.resolve(true);
-
-                }, function errorCallback(response) {
-                    $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], "error");
-                });
-
+                $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_NO_DEFINED_SCHEMA'], "error");
+                deferred.resolve(false);
             }
-
-        } else {
-            $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_NO_DEFINED_SCHEMA'], "error");
-            deferred.resolve(false);
         }
     });
 
@@ -1947,7 +2006,7 @@ nsVmap.importBoCtrl.prototype.testTables_ = function () {
  * @param {string} sRessource (ex: vmap/businessobjects)
  * @param {string} sObjectId
  * @param {array} aUnsavedParams Params to delete before POST
- * @param {boolean} bFileData if true send the oObject values as files
+ * @param {boolean} oFileData if defined send the oObject values as files
  * @returns {defer.promise}
  * @private
  */
@@ -1965,10 +2024,22 @@ nsVmap.importBoCtrl.prototype.importObject_ = function (oObject, sRessource, sOb
     // Remplace les balises
     for (var key in oValues) {
         if (goog.isString(oValues[key])) {
-            oValues[key] = oValues[key].replace(/\[TABLE_SCHEMA\]/g, this.$scope_['usedSchema']);
-            oValues[key] = oValues[key].replace(/\[DATABASE\]/g, this.$scope_['usedDatabase']);
-            oValues[key] = oValues[key].replace(/\[SRID\]/g, this.$scope_['oCoordsys']['coordsys_id']);
-            oValues[key] = oValues[key].replace(/\[BUSINESS_OBJECT\]/g, this.$scope_['oBoDef']['business_object_id']);
+            if (goog.isDefAndNotNull(this.$scope_['usedSchema'])) {
+                oValues[key] = oValues[key].replace(/\[TABLE_SCHEMA\]/g, this.$scope_['usedSchema']);
+            }
+            if (goog.isDefAndNotNull(this.$scope_['usedDatabase'])) {
+                oValues[key] = oValues[key].replace(/\[DATABASE\]/g, this.$scope_['usedDatabase']);
+            }
+            if (goog.isDefAndNotNull(this.$scope_['oCoordsys'])) {
+                if (goog.isDefAndNotNull(this.$scope_['oCoordsys']['coordsys_id'])) {
+                    oValues[key] = oValues[key].replace(/\[SRID\]/g, this.$scope_['oCoordsys']['coordsys_id']);
+                }
+            }
+            if (goog.isDefAndNotNull(this.$scope_['oBoDef'])) {
+                if (goog.isDefAndNotNull(this.$scope_['oBoDef']['business_object_id'])) {
+                    oValues[key] = oValues[key].replace(/\[BUSINESS_OBJECT\]/g, this.$scope_['oBoDef']['business_object_id']);
+                }
+            }
             if (goog.isDefAndNotNull(this.$scope_['oEventDef'])) {
                 oValues[key] = oValues[key].replace(/\[EVENT\]/g, this.$scope_['oEventDef']['event_id']);
             }
@@ -1977,10 +2048,22 @@ nsVmap.importBoCtrl.prototype.importObject_ = function (oObject, sRessource, sOb
     if (goog.isDefAndNotNull(oFileData)) {
         for (var key in oFileData) {
             if (goog.isString(oFileData[key])) {
-                oFileData[key] = oFileData[key].replace(/\[TABLE_SCHEMA\]/g, this.$scope_['usedSchema']);
-                oFileData[key] = oFileData[key].replace(/\[DATABASE\]/g, this.$scope_['usedDatabase']);
-                oFileData[key] = oFileData[key].replace(/\[SRID\]/g, this.$scope_['oCoordsys']['coordsys_id']);
-                oFileData[key] = oFileData[key].replace(/\[BUSINESS_OBJECT\]/g, this.$scope_['oBoDef']['business_object_id']);
+                if (goog.isDefAndNotNull(this.$scope_['usedSchema'])) {
+                    oFileData[key] = oFileData[key].replace(/\[TABLE_SCHEMA\]/g, this.$scope_['usedSchema']);
+                }
+                if (goog.isDefAndNotNull(this.$scope_['usedDatabase'])) {
+                    oFileData[key] = oFileData[key].replace(/\[DATABASE\]/g, this.$scope_['usedDatabase']);
+                }
+                if (goog.isDefAndNotNull(this.$scope_['oCoordsys'])) {
+                    if (goog.isDefAndNotNull(this.$scope_['oCoordsys']['coordsys_id'])) {
+                        oFileData[key] = oFileData[key].replace(/\[SRID\]/g, this.$scope_['oCoordsys']['coordsys_id']);
+                    }
+                }
+                if (goog.isDefAndNotNull(this.$scope_['oBoDef'])) {
+                    if (goog.isDefAndNotNull(this.$scope_['oBoDef']['business_object_id'])) {
+                        oFileData[key] = oFileData[key].replace(/\[BUSINESS_OBJECT\]/g, this.$scope_['oBoDef']['business_object_id']);
+                    }
+                }
                 if (goog.isDefAndNotNull(this.$scope_['oEventDef'])) {
                     oFileData[key] = oFileData[key].replace(/\[EVENT\]/g, this.$scope_['oEventDef']['event_id']);
                 }
@@ -2007,64 +2090,67 @@ nsVmap.importBoCtrl.prototype.importObject_ = function (oObject, sRessource, sOb
         }
     }
 
-    this.$http_({
-        method: 'POST',
-        url: this['oProperties']['web_server_name'] + '/' + this['oProperties']['services_alias'] + '/' + sRessource,
-        data: oFormData_,
-        params: {
-            'token': this['sToken']
-        }
-    }).then(function successCallback(response) {
+    ajaxRequest({
+        'method': 'POST',
+        'url': this['oProperties']['web_server_name'] + '/' + this['oProperties']['services_alias'] + '/' + sRessource,
+        'headers': {
+            'Accept': 'application/x-vm-json'
+        },
+        'data': oFormData_,
+        'scope': this.$scope_,
+        'success': function (response) {
 
-        if (!goog.isDefAndNotNull(response['data'])) {
-            $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END_1'] + this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END_2_IMPORT'] + sRessource, "error");
-            console.error(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END_1'] + this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END_2_IMPORT'] + sRessource);
-            deferred.resolve({
-                status: false
-            });
-            return null;
-        }
-        if (goog.isDefAndNotNull(response['data'])) {
-            if (goog.isDefAndNotNull(response['data']['errorMessage'])) {
-                angular.element(vitisApp.appMainDrtv).scope()["modalWindow"]("dialog", "Erreur serveur", {
-                    "className": "modal-danger",
-                    "message": response['data']['errorMessage']
-                });
+            if (!goog.isDefAndNotNull(response['data'])) {
+                $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END_1'] + this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END_2_IMPORT'] + sRessource, "error");
+                console.error(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END_1'] + this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END_2_IMPORT'] + sRessource);
                 deferred.resolve({
                     status: false
                 });
                 return null;
             }
-        }
+            if (goog.isDefAndNotNull(response['data'])) {
+                if (goog.isDefAndNotNull(response['data']['errorMessage'])) {
+                    angular.element(vitisApp.appMainDrtv).scope()["modalWindow"]("dialog", "Erreur serveur", {
+                        "className": "modal-danger",
+                        "message": response['data']['errorMessage']
+                    });
+                    deferred.resolve({
+                        status: false
+                    });
+                    return null;
+                }
+            }
 
-        if (response['data']['status'] === 1) {
-            if (goog.isDefAndNotNull(sObjectId)) {
-                this_.aImportedObjects_.push({
-                    'sId': response['data'][sObjectId],
-                    'sRessource': sRessource
+            if (response['data']['status'] === 1) {
+                if (goog.isDefAndNotNull(sObjectId)) {
+                    this_.aImportedObjects_.push({
+                        'sId': response['data'][sObjectId],
+                        'sRessource': sRessource
+                    });
+                }
+                deferred.resolve({
+                    'status': true,
+                    'objectId': goog.isDefAndNotNull(sObjectId) ? response['data'][sObjectId] : null
+                });
+            } else {
+                deferred.resolve({
+                    status: false
                 });
             }
-            deferred.resolve({
-                'status': true,
-                'objectId': goog.isDefAndNotNull(sObjectId) ? response['data'][sObjectId] : null
-            });
-        } else {
+
+        },
+        'error': function (response) {
+            $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END_1'] + this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END_2_IMPORT'] + sRessource, "error");
+            console.error(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END_1'] + this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END_2_IMPORT'] + sRessource);
             deferred.resolve({
                 status: false
             });
         }
-
-
-    }, function errorCallback(response) {
-        $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END_1'] + this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END_2_IMPORT'] + sRessource, "error");
-        console.error(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END_1'] + this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END_2_IMPORT'] + sRessource);
-        deferred.resolve({
-            status: false
-        });
     });
 
     return deferred.promise;
-};
+}
+;
 
 /**
  * Put a business object form
@@ -2085,28 +2171,33 @@ nsVmap.importBoCtrl.prototype.putForm_ = function (oForms, sRessource, sFormName
         oFormData.append(key, oForms[key]);
     }
 
-    this.$http_({
-        method: 'PUT',
-        url: this['oProperties']['web_server_name'] + '/' + this['oProperties']['services_alias'] + '/' + sRessource + '/' + sFormName,
-        data: oFormData,
-        params: {
-            'token': this['sToken'],
+    ajaxRequest({
+        'method': 'PUT',
+        'url': this['oProperties']['web_server_name'] + '/' + this['oProperties']['services_alias'] + '/' + sRessource + '/' + sFormName,
+        'headers': {
+            'Accept': 'application/x-vm-json'
+        },
+        'params': {
             'cmd': 'Save'
-        }
-    }).then(function successCallback(response) {
+        },
+        'data': oFormData,
+        'scope': this.$scope_,
+        'success': function (response) {
 
-        if (!goog.isDefAndNotNull(response['data'])) {
+            if (!goog.isDefAndNotNull(response['data'])) {
+                $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END_1'] + this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END_2_IMPORT'] + sRessource, "error");
+                console.error(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END_1'] + this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END_2_IMPORT'] + sRessource);
+                deferred.resolve(false);
+                return null;
+            }
+
+            deferred.resolve(true);
+
+        },
+        'error': function (response) {
             $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END_1'] + this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END_2_IMPORT'] + sRessource, "error");
             console.error(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END_1'] + this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END_2_IMPORT'] + sRessource);
-            deferred.resolve(false);
-            return null;
         }
-
-        deferred.resolve(true);
-
-    }, function errorCallback(response) {
-        $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END_1'] + this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END_2_IMPORT'] + sRessource, "error");
-        console.error(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END_1'] + this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END_2_IMPORT'] + sRessource);
     });
 
     return deferred.promise;
@@ -2124,29 +2215,34 @@ nsVmap.importBoCtrl.prototype.deleteObject_ = function (sRessource, sObjectId) {
     var deferred = this.$q_.defer();
 
     var this_ = this;
-    this.$http_({
-        method: 'DELETE',
-        url: this['oProperties']['web_server_name'] + '/' + this['oProperties']['services_alias'] + '/' + sRessource + '/' + sObjectId,
-        params: {
-            'token': this['sToken']
-        }
-    }).then(function successCallback(response) {
 
-        if (!goog.isDefAndNotNull(response['data'])) {
+    ajaxRequest({
+        'method': 'DELETE',
+        'url': this['oProperties']['web_server_name'] + '/' + this['oProperties']['services_alias'] + '/' + sRessource + '/' + sObjectId,
+        'headers': {
+            'Accept': 'application/x-vm-json'
+        },
+        'scope': this.$scope_,
+        'abord': deferred.promise,
+        'success': function (response) {
+
+            if (!goog.isDefAndNotNull(response['data'])) {
+                $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REMOVE_ERROR'] + sRessource, "error");
+                console.error(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REMOVE_ERROR'] + sRessource);
+                return null;
+            }
+
+            if (response['data']['status'] === 1) {
+                this_.$log_.info("deleteObject_ (" + sRessource + ") ok");
+            }
+
+            deferred.resolve();
+
+        },
+        'error': function (response) {
             $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REMOVE_ERROR'] + sRessource, "error");
             console.error(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REMOVE_ERROR'] + sRessource);
-            return null;
         }
-
-        if (response['data']['status'] === 1) {
-            this_.$log_.info("deleteObject_ (" + sRessource + ") ok");
-        }
-
-        deferred.resolve();
-
-    }, function errorCallback(response) {
-        $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REMOVE_ERROR'] + sRessource, "error");
-        console.error(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REMOVE_ERROR'] + sRessource);
     });
 
     // Resolve au cas où la requête échoue
@@ -2168,62 +2264,66 @@ nsVmap.importBoCtrl.prototype.importBo_ = function () {
     var deferred = this.$q_.defer();
 
     setTimeout(function () {
+        // Cas ou il faille sauter l'étape
+        if (this_.$scope_['selectedSteps']['import_bo'] === false) {
+            deferred.resolve(true);
+        } else {
+            // Définition
+            this_.importObject_(this_.$scope_['oBoDef'], 'vmap/businessobjects', 'business_object_id', ['$$hashKey']).then(function (oResult) {
+                if (oResult['status'] === true) {
 
-        // Définition
-        this_.importObject_(this_.$scope_['oBoDef'], 'vmap/businessobjects', 'business_object_id', ['$$hashKey']).then(function (oResult) {
-            if (oResult['status'] === true) {
+                    // Formulaires
+                    var aForms = ['default', 'custom', 'published'];
+                    var oForms;
+                    var iFormsUpdated = 0;
+                    var iFormsUpdatedOk = 0;
+                    for (var i = 0; i < aForms.length; i++) {
+                        if (goog.isDefAndNotNull(this_.$scope_['oImportedBo']['forms'][aForms[i]])) {
 
-                // Formulaires
-                var aForms = ['default', 'custom', 'published'];
-                var oForms;
-                var iFormsUpdated = 0;
-                var iFormsUpdatedOk = 0;
-                for (var i = 0; i < aForms.length; i++) {
-                    if (goog.isDefAndNotNull(this_.$scope_['oImportedBo']['forms'][aForms[i]])) {
+                            iFormsUpdated++;
+                            oForms = {
+                                'Json': JSON.stringify(this_.$scope_['oImportedBo']['forms'][aForms[i]])
+                            };
 
-                        iFormsUpdated++;
-                        oForms = {
-                            'Json': JSON.stringify(this_.$scope_['oImportedBo']['forms'][aForms[i]])
-                        };
-
-                        // Fichiers JS
-                        if (goog.isDefAndNotNull(this_.$scope_['oImportedBo']['forms']['ressources'])) {
-                            if (goog.isDefAndNotNull(this_.$scope_['oImportedBo']['forms']['ressources']['js'])) {
-                                if (goog.isDefAndNotNull(this_.$scope_['oImportedBo']['forms']['ressources']['js'][aForms[i]])) {
-                                    oForms['Js'] = this_.$scope_['oImportedBo']['forms']['ressources']['js'][aForms[i]];
+                            // Fichiers JS
+                            if (goog.isDefAndNotNull(this_.$scope_['oImportedBo']['forms']['ressources'])) {
+                                if (goog.isDefAndNotNull(this_.$scope_['oImportedBo']['forms']['ressources']['js'])) {
+                                    if (goog.isDefAndNotNull(this_.$scope_['oImportedBo']['forms']['ressources']['js'][aForms[i]])) {
+                                        oForms['Js'] = this_.$scope_['oImportedBo']['forms']['ressources']['js'][aForms[i]];
+                                    }
                                 }
                             }
+
+                            // Fichiers Css
+                            if (goog.isDefAndNotNull(this_.$scope_['oImportedBo']['forms']['ressources'])) {
+                                if (goog.isDefAndNotNull(this_.$scope_['oImportedBo']['forms']['ressources']['css'])) {
+                                    if (goog.isDefAndNotNull(this_.$scope_['oImportedBo']['forms']['ressources']['css'][aForms[i]])) {
+                                        oForms['Css'] = this_.$scope_['oImportedBo']['forms']['ressources']['css'][aForms[i]];
+                                    }
+                                }
+                            }
+
+                            this_.putForm_(angular.copy(oForms), 'vmap/businessobjects/' + oResult['objectId'] + '/forms', aForms[i]).then(function (oResult) {
+                                if (oResult === true) {
+                                    iFormsUpdatedOk++;
+                                    if (iFormsUpdatedOk === iFormsUpdated) {
+                                        deferred.resolve(true);
+                                    }
+                                }
+                            });
                         }
-
-                        // Fichiers Css
-                        if (goog.isDefAndNotNull(this_.$scope_['oImportedBo']['forms']['ressources'])) {
-                            if (goog.isDefAndNotNull(this_.$scope_['oImportedBo']['forms']['ressources']['css'])) {
-                                if (goog.isDefAndNotNull(this_.$scope_['oImportedBo']['forms']['ressources']['css'][aForms[i]])) {
-                                    oForms['Css'] = this_.$scope_['oImportedBo']['forms']['ressources']['css'][aForms[i]];
-                                }
-                            }
-                        }
-
-                        this_.putForm_(angular.copy(oForms), 'vmap/businessobjects/' + oResult['objectId'] + '/forms', aForms[i]).then(function (oResult) {
-                            if (oResult === true) {
-                                iFormsUpdatedOk++;
-                                if (iFormsUpdatedOk === iFormsUpdated) {
-                                    deferred.resolve(true);
-                                }
-                            }
-                        });
                     }
-                }
 
-                // Si il n'y a aucun formulaire à uploader
-                if (iFormsUpdated === 0) {
-                    deferred.resolve(true);
-                }
+                    // Si il n'y a aucun formulaire à uploader
+                    if (iFormsUpdated === 0) {
+                        deferred.resolve(true);
+                    }
 
-            } else {
-                deferred.resolve(false);
-            }
-        });
+                } else {
+                    deferred.resolve(false);
+                }
+            });
+        }
     });
 
     return deferred.promise;
@@ -2243,21 +2343,26 @@ nsVmap.importBoCtrl.prototype.importReports_ = function () {
     var iObjectsImported = 0;
 
     setTimeout(function () {
-        if (goog.isDefAndNotNull(this_.$scope_['aReportsDef'])) {
-            for (var i = 0; i < aReports.length; i++) {
-                this_.importObject_(aReports[i], 'vmap/printreports', 'printreport_id', ['printreport_id', '$$hashKey']).then(function (oResult) {
-                    if (oResult['status'] === true) {
-                        iObjectsImported++;
-                        if (iObjectsImported === aReports.length) {
+        // Cas ou il faille sauter l'étape
+        if (this_.$scope_['selectedSteps']['import_bo'] === false) {
+            deferred.resolve(true);
+        } else {
+            if (goog.isDefAndNotNull(this_.$scope_['aReportsDef'])) {
+                for (var i = 0; i < aReports.length; i++) {
+                    this_.importObject_(aReports[i], 'vmap/printreports', 'printreport_id', ['printreport_id', '$$hashKey']).then(function (oResult) {
+                        if (oResult['status'] === true) {
+                            iObjectsImported++;
+                            if (iObjectsImported === aReports.length) {
+                                deferred.resolve(true);
+                            }
+                        } else {
                             deferred.resolve(true);
                         }
-                    } else {
-                        deferred.resolve(true);
-                    }
-                });
+                    });
+                }
+            } else {
+                deferred.resolve(true);
             }
-        } else {
-            deferred.resolve(true);
         }
     });
 
@@ -2275,12 +2380,17 @@ nsVmap.importBoCtrl.prototype.importEvent_ = function () {
     var deferred = this.$q_.defer();
 
     setTimeout(function () {
-        if (goog.isDefAndNotNull(this_.$scope_['oEventDef'])) {
-            this_.importObject_(this_.$scope_['oEventDef'], 'vmap/businessobjectevents', 'event_id', ['$$hashKey']).then(function (oResult) {
-                deferred.resolve(oResult['status']);
-            });
-        } else {
+        // Cas ou il faille sauter l'étape
+        if (this_.$scope_['selectedSteps']['import_bo'] === false) {
             deferred.resolve(true);
+        } else {
+            if (goog.isDefAndNotNull(this_.$scope_['oEventDef'])) {
+                this_.importObject_(this_.$scope_['oEventDef'], 'vmap/businessobjectevents', 'event_id', ['$$hashKey']).then(function (oResult) {
+                    deferred.resolve(oResult['status']);
+                });
+            } else {
+                deferred.resolve(true);
+            }
         }
     });
 
@@ -2301,60 +2411,65 @@ nsVmap.importBoCtrl.prototype.importLayers_ = function () {
     var iObjectsImported = 0;
 
     setTimeout(function () {
-        for (var i = 0; i < aLayers.length; i++) {
-            // Permet la sauvegarde de i
-            (function (i) {
-                // Import de la couche
-                this_.importObject_(aLayers[i], 'vm4ms/layers', 'ms_layer_id', ['$$hashKey', 'ms_layer_id']).then(function (oResult) {
-                    if (oResult['status'] === true) {
+        // Cas ou il faille sauter l'étape
+        if (this_.$scope_['selectedSteps']['import_layers'] === false) {
+            deferred.resolve(true);
+        } else {
+            for (var i = 0; i < aLayers.length; i++) {
+                // Permet la sauvegarde de i
+                (function (i) {
+                    // Import de la couche
+                    this_.importObject_(aLayers[i], 'vm4ms/layers', 'ms_layer_id', ['$$hashKey', 'ms_layer_id']).then(function (oResult) {
+                        if (oResult['status'] === true) {
 
-                        // Id du service
-                        for (var ii = 0; ii < this_.$scope_['aVmapServices'].length; ii++) {
-                            if (this_.$scope_['aVmapServices'][ii]['name'] === 'vm4ms_' + aLayers[i]['wmsservice_id']) {
-                                var sVmapServiceId = this_.$scope_['aVmapServices'][ii]['service_id'];
+                            // Id du service
+                            for (var ii = 0; ii < this_.$scope_['aVmapServices'].length; ii++) {
+                                if (this_.$scope_['aVmapServices'][ii]['name'] === 'vm4ms_' + aLayers[i]['wmsservice_id']) {
+                                    var sVmapServiceId = this_.$scope_['aVmapServices'][ii]['service_id'];
+                                }
                             }
-                        }
 
-                        // Id de la couche
-                        aLayers[i]['ms_layer_id'] = oResult['objectId'];
+                            // Id de la couche
+                            aLayers[i]['ms_layer_id'] = oResult['objectId'];
 
-                        // Associe la couche au service wms
-                        this_.associateLayer_(aLayers[i]).then(function (oResult) {
-                            if (oResult['status'] === true) {
+                            // Associe la couche au service wms
+                            this_.associateLayer_(aLayers[i]).then(function (oResult) {
+                                if (oResult['status'] === true) {
 
-                                // Import du calque (si le service existe)
-                                if (goog.isDefAndNotNull(sVmapServiceId)) {
-                                    var oVmapLayer = {
-                                        'service_id': sVmapServiceId,
-                                        'name': aLayers[i]['name'],
-                                        'layer_list': aLayers[i]['name'],
-                                        'bo_id': '[BUSINESS_OBJECT]',
-                                        'is_dynamic': true,
-                                        'is_filtered': false
-                                    };
-                                    this_.importObject_(oVmapLayer, 'vmap/layers', 'layer_id', ['$$hashKey', 'layer_id']).then(function (oResult) {
-                                        if (oResult['status'] === true) {
-                                            iObjectsImported++;
-                                            if (iObjectsImported === aLayers.length) {
-                                                deferred.resolve(true);
+                                    // Import du calque (si le service existe)
+                                    if (goog.isDefAndNotNull(sVmapServiceId)) {
+                                        var oVmapLayer = {
+                                            'service_id': sVmapServiceId,
+                                            'name': aLayers[i]['name'],
+                                            'layer_list': aLayers[i]['name'],
+                                            'bo_id_list': '[BUSINESS_OBJECT]',
+                                            'is_dynamic': true,
+                                            'is_filtered': false
+                                        };
+                                        this_.importObject_(oVmapLayer, 'vmap/layers', 'layer_id', ['$$hashKey', 'layer_id']).then(function (oResult) {
+                                            if (oResult['status'] === true) {
+                                                iObjectsImported++;
+                                                if (iObjectsImported === aLayers.length) {
+                                                    deferred.resolve(true);
+                                                }
+                                            } else {
+                                                deferred.resolve(false);
                                             }
-                                        } else {
-                                            deferred.resolve(false);
-                                        }
-                                    });
+                                        });
+                                    } else {
+                                        deferred.resolve(false);
+                                    }
+
                                 } else {
                                     deferred.resolve(false);
                                 }
-
-                            } else {
-                                deferred.resolve(false);
-                            }
-                        });
-                    } else {
-                        deferred.resolve(false);
-                    }
-                });
-            })(i);
+                            });
+                        } else {
+                            deferred.resolve(false);
+                        }
+                    });
+                })(i);
+            }
         }
     });
 
@@ -2373,42 +2488,45 @@ nsVmap.importBoCtrl.prototype.associateLayer_ = function (oLayer) {
     var this_ = this;
     var deferred = this.$q_.defer();
 
-    this.$http_({
-        method: 'PUT',
-        url: this['oProperties']['web_server_name'] + '/' + this['oProperties']['services_alias'] + '/vm4ms/layerwmsservices/' + oLayer['ms_layer_id'],
-        params: {
-            'token': this['sToken']
+    ajaxRequest({
+        'method': 'PUT',
+        'url': this['oProperties']['web_server_name'] + '/' + this['oProperties']['services_alias'] + '/vm4ms/layerwmsservices/' + oLayer['ms_layer_id'],
+        'headers': {
+            'Accept': 'application/x-vm-json'
         },
-        data: {
+        'data': {
             'wmsservices': oLayer['wmsservice_id']
-        }
-    }).then(function successCallback(response) {
+        },
+        'scope': this.$scope_,
+        'success': function (response) {
 
-        if (!goog.isDefAndNotNull(response['data'])) {
+            if (!goog.isDefAndNotNull(response['data'])) {
+                $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END_1'] + this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END_2_ASSOCIATE_LAYER'] + oLayer['name'], "error");
+                console.error(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END_1'] + this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END_2_ASSOCIATE_LAYER'] + oLayer['name']);
+                deferred.resolve({
+                    status: false
+                });
+                return null;
+            }
+
+            if (response['data']['status'] === 1) {
+                deferred.resolve({
+                    'status': true
+                });
+            } else {
+                deferred.resolve({
+                    status: false
+                });
+            }
+
+        },
+        'error': function (response) {
             $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END_1'] + this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END_2_ASSOCIATE_LAYER'] + oLayer['name'], "error");
             console.error(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END_1'] + this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END_2_ASSOCIATE_LAYER'] + oLayer['name']);
             deferred.resolve({
                 status: false
             });
-            return null;
         }
-
-        if (response['data']['status'] === 1) {
-            deferred.resolve({
-                'status': true
-            });
-        } else {
-            deferred.resolve({
-                status: false
-            });
-        }
-
-    }, function errorCallback(response) {
-        $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END_1'] + this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END_2_ASSOCIATE_LAYER'] + oLayer['name'], "error");
-        console.error(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END_1'] + this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END_2_ASSOCIATE_LAYER'] + oLayer['name']);
-        deferred.resolve({
-            status: false
-        });
     });
 
     return deferred.promise;
@@ -2425,12 +2543,65 @@ nsVmap.importBoCtrl.prototype.importSql_ = function () {
     var deferred = this.$q_.defer();
 
     setTimeout(function () {
-        this_.importObject_({'database': this_.$scope_['usedDatabase']}, 'vmap/businessobjects/data_model', null, [], {'data_model': this_.$scope_['sSql']}).then(function (oResult) {
-            deferred.resolve(oResult['status']);
-        });
+        // Cas ou il faille sauter l'étape
+        if (this_.$scope_['selectedSteps']['import_sql'] === false) {
+            deferred.resolve(true);
+        } else {
+            this_.importObject_({'database': this_.$scope_['usedDatabase']}, 'vmap/businessobjects/data_model', null, [], {'data_model': this_.$scope_['sSql']}).then(function (oResult) {
+                deferred.resolve(oResult['status']);
+            });
+        }
     });
 
     return deferred.promise;
+};
+
+/**
+ * Set 
+ * @export
+ */
+nsVmap.importBoCtrl.prototype.setWmsServices = function (connection_id) {
+    this.$log_.info("nsVmap.importBoCtrl.setWmsServices");
+    var this_ = this;
+    // Type de connexion (publique / privée)
+    var bPrivateConnection = false;
+    for (var i in this.$scope_['aConnections']) {
+        if (this.$scope_['aConnections'][i]["connection_id"] == connection_id) {
+            if (this.$scope_['aConnections'][i]["private"] === true)
+                bPrivateConnection = true;
+            break;
+        }
+    }
+    // Affichage des services wms correspondants au type de connexion.
+    var sWmsService = "publicwmsservices";
+    if (bPrivateConnection)
+        sWmsService = "privatewmsservices";
+    ajaxRequest({
+        'method': 'GET',
+        'url': this['oProperties']['web_server_name'] + '/' + this['oProperties']['services_alias'] + '/vm4ms/' + sWmsService,
+        'headers': {
+            'Accept': 'application/x-vm-json'
+        },
+        'params': {
+            'order_by': 'wmsservice_id'
+        },
+        'scope': this.$scope_,
+        'success': function (response) {
+            if (!goog.isDefAndNotNull(response['data'])) {
+                $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], "error");
+                return null;
+            }
+            if (!goog.isDefAndNotNull(response['data']['data'])) {
+                console.error("Aucun résultat: wmsservices", response);
+                return null;
+            }
+            //
+            this_.$scope_['aWmsServices'] = response['data']['data'];
+        },
+        'error': function (response) {
+            $.notify(this_['oTranslations']['CTRL_IMPORT_BO_ERROR_REQUEST_UNABLE_TO_END'], "error");
+        }
+    });
 };
 
 // Definition du controlleur angular

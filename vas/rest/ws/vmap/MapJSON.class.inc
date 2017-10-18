@@ -109,6 +109,9 @@ class MapJSON extends Vmap {
             $i++;
         }
 
+        // Écrit dans les log de vMap
+        $this->writeMapToVMapLog($oMap->aFields['map_id'], $oMap->aFields['name']);
+
         $this->aFields = $oMapJSON;
     }
 
@@ -125,8 +128,13 @@ class MapJSON extends Vmap {
         $oConnection = $this->oConnection;
         $filterList = '';
 
-        $sSql = "SELECT * FROM " . $this->aProperties['schema_vmap'] . ".map_layer WHERE \"map_id\" = '" . $map_id . "'";
-        $oResult = $this->oConnection->oBd->execute($sSql);
+        $aSQLParams = array(
+            'sSchema' => array('value' => $this->aProperties['schema_vmap'], 'type' => 'column_name'),
+            'sMapId' => array('value' => $map_id, 'type' => 'number')
+        );
+        $sSql = "SELECT * FROM [sSchema].map_layer WHERE \"map_id\" = [sMapId]";
+
+        $oResult = $this->oConnection->oBd->executeWithParams($sSql, $aSQLParams);
         if (gettype($oResult) == 'object') {
             $aLayers_infos = Array();
             while ($aLigne = $this->oConnection->oBd->ligneSuivante($oResult)) {
@@ -152,7 +160,7 @@ class MapJSON extends Vmap {
         }
 
         unset($aValues['my_vitis_id']);
-        $aValues['filter'] = 'layer_id in (' . $filterList . ')';
+        $aValues['filter'] = '{"column":"layer_id","compare_operator":"IN","value":[' . $filterList . ']}';
         $aValues['order_by'] = 'name';
 
         $oLayers = new Layers(Array('vmap', 'layer'), $aValues, $this->aProperties);
@@ -179,8 +187,12 @@ class MapJSON extends Vmap {
      */
     function getLayersEvents($layer_id) {
 
-        $sSql = "SELECT * FROM " . $this->aProperties['schema_vmap'] . ".layer_event WHERE \"layer_id\" = '" . $layer_id . "'";
-        $oResult = $this->oConnection->oBd->execute($sSql);
+        $aSQLParams = array(
+            'sSchema' => array('value' => $this->aProperties['schema_vmap'], 'type' => 'column_name'),
+            'sLayerId' => array('value' => $layer_id, 'type' => 'number')
+        );
+        $sSql = "SELECT * FROM [sSchema].layer_event WHERE \"layer_id\" = [sLayerId]";
+        $oResult = $this->oConnection->oBd->executeWithParams($sSql, $aSQLParams);
         if (gettype($oResult) == 'object') {
             $aEvents = Array();
             while ($aLigne = $this->oConnection->oBd->ligneSuivante($oResult)) {
@@ -219,7 +231,7 @@ class MapJSON extends Vmap {
 
             if (!empty($oLayer->aFields['service_url'])) {
                 $tmp['url'] = $oLayer->aFields['service_url'];
-                $tmp['url'] = str_replace('[token]', $this->aValues['token'], $tmp['url']);
+                $tmp['url'] = str_replace('[token]', hash('sha256', $this->aValues['token']), $tmp['url']);
                 if (isset($this->aProperties['ms_cgi_url'])) {
                     $tmp['url'] = str_replace('[ms_cgi_url]', $this->aProperties['ms_cgi_url'], $tmp['url']);
                 }
@@ -291,72 +303,17 @@ class MapJSON extends Vmap {
             }
 
             // Définit si le calque est interrogeable en consultation
-            if (!empty($oLayer->aFields['bo_id'])) {
+            if (!empty($oLayer->aFields['business_objects'])) {
+                // selection_buffer par défaut
+                for ($i = 0; $i < count($oLayer->aFields['business_objects']); $i++) {
+                    if (!isset($oLayer->aFields['business_objects'][$i]['selection_buffer'])) {
+                        $oLayer->aFields['business_objects'][$i]['selection_buffer'] = 5;
+                    }
+                }
                 $tmp['bo_queryable'] = true;
+                $tmp['business_objects'] = $oLayer->aFields['business_objects'];
             } else {
                 $tmp['bo_queryable'] = false;
-            }
-
-            if (!empty($oLayer->aFields['bo_id'])) {
-
-                $aBusinessObjectValues = $this->aValues;
-                $aBusinessObjectValues['my_vitis_id'] = $oLayer->aFields['bo_id'];
-                $aBusinessObjectValues['module'] = 'vitis';
-
-                // Objet BusinessObject correspondant
-                $oBusinessObject = new BusinessObject(array("vitis", "businessobjects", $oLayer->aFields['bo_id']), $aBusinessObjectValues, $this->aProperties, $this->oConnection);
-                $oBusinessObject->GET();
-
-                if (!empty($oBusinessObject->aFields['schema']))
-                    $schema = $oBusinessObject->aFields['schema'];
-                else
-                    $schema = '';
-                if (!empty($oBusinessObject->aFields['table']))
-                    $table = $oBusinessObject->aFields['table'];
-                else
-                    $table = '';
-                if (!empty($oBusinessObject->aFields['database'])) {
-                    $database = $oBusinessObject->aFields['database'];
-
-                    $sLogin = $this->oConnection->oBd->login;
-                    $sPassword = $this->oConnection->oBd->mdp;
-
-                    $oBD = new Vm($sLogin, $sPassword, $database, $this->aProperties['server'], $this->aProperties['port'], $this->aProperties['sgbd'], $this->aProperties['page_encoding']);
-                    $this->oConnection->oBd = $oBD;
-
-                    $tmp['bo_user_rights'] = $this->oConnection->getTableRights($schema, $table);
-
-                    $oBD = new Vm($sLogin, $sPassword, $this->aProperties['database'], $this->aProperties['server'], $this->aProperties['port'], $this->aProperties['sgbd'], $this->aProperties['page_encoding']);
-                    $this->oConnection->oBd = $oBD;
-                } else {
-                    $tmp['bo_user_rights'] = $this->oConnection->getTableRights($schema, $table);
-                }
-
-                $tmp['bo_id'] = $oLayer->aFields['bo_id'];
-                $tmp['bo_title'] = $oLayer->aFields['bo_title'];
-                $tmp['bo_search_field'] = $oLayer->aFields['bo_search_field'];
-                $tmp['bo_result_field'] = $oLayer->aFields['bo_result_field'];
-                $tmp['bo_search_use_strict'] = $oLayer->aFields['bo_search_use_strict'];
-                $tmp['bo_id_field'] = '';
-                if (!empty($oBusinessObject->aFields['id_field']))
-                    $tmp['bo_id_field'] = $oBusinessObject->aFields['id_field'];
-                $tmp['bo_geom_column'] = '';
-                if (!empty($oBusinessObject->aFields['geom_column']))
-                    $tmp['bo_geom_column'] = $oBusinessObject->aFields['geom_column'];
-                $tmp['bo_geom_type'] = '';
-                if (!empty($oBusinessObject->aFields['geom_type']))
-                    $tmp['bo_geom_type'] = $oBusinessObject->aFields['geom_type'];
-                $tmp['bo_index'] = '';
-                if (!empty($oBusinessObject->aFields['index']))
-                    $tmp['bo_index'] = $oBusinessObject->aFields['index'];
-
-                if (is_array($oLayer->aFields['events'])) {
-                    array_push($oLayer->aFields['events'], $oBusinessObject->aFields['event_id']);
-                    $tmp['events'] = $oLayer->aFields['events'];
-                } else if (!empty($oBusinessObject->aFields['event_id'])) {
-                    $oLayer->aFields['events'] = $oBusinessObject->aFields['event_id'];
-                    $tmp['events'] = $oLayer->aFields['events'];
-                }
             }
 
             $tmp['layer_id'] = $oLayer->aFields['layer_id'];

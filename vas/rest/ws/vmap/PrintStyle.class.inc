@@ -69,44 +69,48 @@ class PrintStyle extends Vmap {
         $this->aFields = $this->getFields($this->aProperties['schema_vmap'], 'printstyle', 'printstyle_id');
         $this->getUsers();
     }
-    
+
     /**
      *  get users of user
      */
     function getUsers() {
         require $this->sRessourcesFile;
-        if (in_array("users", $this->aSelectedFields)){
-            $sSql = str_replace('[sSchemaVmap]', $this->aProperties['schema_vmap'], $aSql['getPrintStyleUsers']);
-            $sSql = str_replace('[sSchemaFramework]', $this->aProperties['schema_framework'], $sSql);
-            $sSql = str_replace('[printstyle_id]', $this->aValues['my_vitis_id'], $sSql);
-            $oPDOresult =$this->oConnection->oBd->execute ($sSql);
+        if (in_array("users", $this->aSelectedFields)) {
+            $aParams['sSchemaFramework'] = array('value' => $this->aProperties['schema_framework'], 'type' => 'schema_name');
+            $aParams['sSchemaVmap'] = array('value' => $this->aProperties['schema_vmap'], 'type' => 'schema_name');
+            $aParams['printstyle_id'] = array('value' => $this->aValues['my_vitis_id'], 'type' => 'number');
+            $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['getPrintStyleUsers'], $aParams);
             $sListUserId = "";
             $aListUserLogin = array();
-            while($aLigne=$this->oConnection->oBd->ligneSuivante ($oPDOresult)) {
-                    if ($sListUserId == ""){
-                            $sListUserId = $aLigne["user_id"];
-                    }else{
-                            $sListUserId .= "|".$aLigne["user_id"];
-                    }
-                    $aListUserLogin[] = $aLigne["login"];
+            while ($aLigne = $this->oConnection->oBd->ligneSuivante($oPDOresult)) {
+                if ($sListUserId == "") {
+                    $sListUserId = $aLigne["user_id"];
+                } else {
+                    $sListUserId .= "|" . $aLigne["user_id"];
+                }
+                $aListUserLogin[] = $aLigne["login"];
             }
-            $oPDOresult=$this->oConnection->oBd->fermeResultat();
+            $oPDOresult = $this->oConnection->oBd->fermeResultat();
             $this->aFields['users'] = $sListUserId;
             $this->aFields['users_label'] = implode(',', $aListUserLogin);
         }
     }
-    
+
     /**
      * delete a printstyle
      */
-    function DELETE(){
+    function DELETE() {
+        // Supprime les utilisateurs rattachés au style.
+        $this->oConnection->oBd->delete($this->aProperties['schema_vmap'], 'user_printstyle', 'printstyle_id', $this->aValues["my_vitis_id"]);
+        // Supprime le style
         $this->oConnection->oBd->delete($this->aProperties['schema_vmap'], 'printstyle', 'printstyle_id', $this->aValues['my_vitis_id'], 'integer');
         if ($this->oConnection->oBd->enErreur()) {
-                $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
+            $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
         } else {
-                $this->aFields[printstyle_id] = $this->aValues['my_vitis_id'];
+            $this->aFields[printstyle_id] = $this->aValues['my_vitis_id'];
         }
     }
+
 }
 
 ?>

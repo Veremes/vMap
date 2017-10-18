@@ -1,3 +1,5 @@
+'use strict';
+
 // Google closure
 goog.provide("vitis.controllers.login");
 goog.require("vitis.modules.main");
@@ -7,28 +9,31 @@ goog.require("vitis.modules.main");
  * Définition et gestion du formulaire de connexion.
  * @param {angular.$scope} $scope Angular scope.
  * @param {$translateProvider.$translate} $translate TranslateProvider translate service.
+ * @param {angular.$http} $http Angular ajax provider
  * @param {angular.$rootScope} $rootScope Angular rootScope.
  * @param {service} $q Angular q service.
- * @param {service} Restangular Service Restangular.
  * @param {service} sessionSrvc Service de gestion des sessions.
- * @param {service} externFunctionSrvc Fonctions externes à Angular.
  * @param {service} envSrvc Paramètres d'environnement.
  * @param {service} propertiesSrvc Paramètres des properties.
  * @param {service} userSrvc Paramètres de l'utilisateur.
+ * @param {angular.$templateRequest} $templateRequest 
+ * @param {angular.$compile} $compile
+ * @param {service} formSrvc Service de gestion des formulaires.
  * @ngInject
  **/
-vitisApp.loginCtrl = function ($scope, $translate, $rootScope, $q, Restangular, sessionSrvc, externFunctionSrvc, envSrvc, propertiesSrvc, userSrvc) {
-    /**
-     * showErrorAlert function.
-     * Affiche un message d'erreur.
-     * @param {string} sMessage Message d'erreur.
-     **/
+vitisApp.loginCtrl = function ($scope, $translate, $rootScope, $q, sessionSrvc, externFunctionSrvc, envSrvc, propertiesSrvc, userSrvc, $templateRequest, $compile, formSrvc) {
+/**
+ * showErrorAlert function.
+ * Affiche un message d'erreur.
+ * @param {string} sMessage Message d'erreur.
+ **/
     $scope["showErrorAlert"] = function (sMessage) {
         $translate([sMessage]).then(function (translations) {
             $scope["sLoginErrorMessage"] = translations[sMessage];
             document.getElementById("login_error_alert").style.display = "block";
         });
-    }
+
+    };
 
     /**
      * hideErrorAlert function.
@@ -36,7 +41,7 @@ vitisApp.loginCtrl = function ($scope, $translate, $rootScope, $q, Restangular, 
      **/
     $scope["hideErrorAlert"] = function () {
         document.getElementById("login_error_alert").style.display = "none";
-    }
+    };
 
     //
     $rootScope["oFormDefinition"] = {};
@@ -49,56 +54,276 @@ vitisApp.loginCtrl = function ($scope, $translate, $rootScope, $q, Restangular, 
 
     less.refresh();
 
-    // document.getElementById("login_form_user_login").disabled = true
-    // Sauve les properties du client.
-    propertiesSrvc = _["extendOwn"](propertiesSrvc, oClientProperties);
     // Si l'application n'est pas stable : message d'erreur.
     if (propertiesSrvc["status"] == "unstable")
         $scope["showErrorAlert"]("FORM_APP_STATUS_ERROR");
-    // Paramètrage de l'url de base pour Restangular.
-    vitisApp["RestangularProvider"]["setBaseUrl"](propertiesSrvc["web_server_name"]);
-    // Chargement des properties côté serveur.
-    propertiesSrvc["getFromServer"]().then(function () {
-        // Paramètrage de la langue
-        if (propertiesSrvc["VM_STATUS"] == "UNSTABLE")
-            $scope["showErrorAlert"]("FORM_VAS_STATUS_ERROR");
-        $translate["use"](propertiesSrvc["language"]);
-        bootbox["setLocale"](propertiesSrvc["language"]);
-        // Surcharge la propriété "app_name" par le nom de l'application passé dans l'url.
-        propertiesSrvc["app_name"] = sessionStorage["application"].toLowerCase().charAt(0).toUpperCase() + sessionStorage["application"].slice(1);
-        // Nom de l'application
-        $scope["translationData"] = {
-            "app_name": propertiesSrvc["app_name"]
-        };
-        // Titre de la page
-        document.title = propertiesSrvc["app_name"].toUpperCase();
-
-        $scope.$evalAsync(function () {
-            // theme de la page
-            // less.modifyVars({'@application-color-theme': '@veremes-' + angular.lowercase(propertiesSrvc["app_name"]) + '-color'});
-        });
-
-        // Options du <select> "Domaine".
-        if (goog.isDefAndNotNull(propertiesSrvc["domain"])) {
-            if (typeof (envSrvc["oFormValues"]["login_form"]["domain"]) == "undefined")
-                envSrvc["oFormValues"]["login_form"]["domain"] = {};
-            var i = 0;
-            var aOptions = [{"label": "", "value": ""}];
-            var aKeys = Object.keys(propertiesSrvc["domain"]);
-            while (i < aKeys.length) {
-                // Ajoute les options non vides.
-                if (aKeys[i] != "" && propertiesSrvc["domain"][aKeys[i]])
-                    aOptions.push({"label": aKeys[i], "value": propertiesSrvc["domain"][aKeys[i]]});
-                i++;
-            }
-            envSrvc["oFormValues"]["login_form"]["domain"]["options"] = aOptions;
-            envSrvc["oFormValues"]["login_form"]["domain"]["selectedOption"] = aOptions[0];
-        }
-    });
-
+    if (propertiesSrvc["VM_STATUS"] == "UNSTABLE")
+        $scope["showErrorAlert"]("FORM_VAS_STATUS_ERROR");
+    
     // Paramètres pour la requête ajax du subform.
     $scope["oFormRequestParams"] = {
         "sUrl": "forms/login.json"
+    };
+    
+    // Options du <select> 'Domaine'.
+    var clearListener = $rootScope.$on('formDefinitionLoaded', function(event, sFormDefinitionName) {
+        // Supprime le "listener".
+        clearListener();
+        if (typeof(propertiesSrvc['domain']) != 'undefined') {
+            if (Object.keys(propertiesSrvc['domain']).length > 1 || Object.keys(propertiesSrvc['domain'])[0] != '') {
+                var i = 0;
+                var aOptions = [{'label': '', 'value': ''}];
+                var aKeys = Object.keys(propertiesSrvc['domain']);
+                while (i < aKeys.length) {
+                    // Ajoute les options non vides.
+                    if (aKeys[i] != '' && propertiesSrvc['domain'][aKeys[i]])
+                        aOptions.push({'label': aKeys[i], 'value': propertiesSrvc['domain'][aKeys[i]]});
+                    i++;
+                }
+                var oDomain = formSrvc["getFormElementDefinition"]('domain', 'login_form');            
+                var aListOptions = [];
+                for (var i = 0; i < aOptions.length; i++) {
+                    aListOptions.push(aOptions[i]['label'] + '|' + aOptions[i]['value']);
+                }
+                oDomain['visible'] = true;
+                oDomain['options'] = aListOptions;
+                // Rafraichissement du formulaire.
+                $scope.$broadcast('$$rebind::refresh');
+                $scope.$apply();
+            }
+        }
+    });
+    
+    /*
+     $scope["fpwd_enabled"] = true;
+     if (goog.isDefAndNotNull(propertiesSrvc["password_forgotten"])) {
+     if (propertiesSrvc["password_forgotten"] !== "enabled") {
+     $scope["fpwd_enabled"] = false;
+     }
+     }
+     
+     $scope["sign_up_enabled"] = false;
+     if (goog.isDefAndNotNull(propertiesSrvc["sign_up"])) {
+     if (propertiesSrvc["sign_up"] === "enabled") {
+     $scope["sign_up_enabled"] = true;
+     }
+     }
+     */
+    $('#modal_forgotten_password').on('hidden.bs.modal', function () {
+        $scope["sFormDefinitionName"] = "login_form";
+        var sUrl = "forms/login.json";
+        // Paramètres pour la requête ajax du subform.
+        $scope["oFormRequestParams"] = {
+            "sUrl": sUrl
+        };
+        $scope.$digest();
+    });
+
+    $('#modal_sign_up').on('hidden.bs.modal', function () {
+        $scope["sFormDefinitionName"] = "login_form";
+        var sUrl = "forms/login.json";
+        // Paramètres pour la requête ajax du subform.
+        $scope["oFormRequestParams"] = {
+            "sUrl": sUrl
+        };
+        $scope.$digest();
+    });
+
+    $scope["showModalForgottenPassword"] = function () {
+        $("#modal_forgotten_password").modal('show');
+        // Nom + url du formulaire.
+        $scope["sFormDefinitionName"] = envSrvc["oSelectedObject"]["name"] + "_forgotten_password_form";
+
+        // Paramètres pour la requête ajax du subform.
+        $scope["oFormRequestParams"] = {
+            "sUrl": "forms/forgotten_password.json"
+        };
+        // Suppression de la définition et des données du formulaire (sinon problème de cache...).
+
+        $scope.$root["clearFormData"]($scope["sFormDefinitionName"], $scope);
+        // Pas de données de form. à charger.
+        $scope["bLoadFormValues"] = false;
+        envSrvc["oFormValues"][$scope["sFormDefinitionName"]] = {};
+
+        // Compile le template de formulaire.
+        var sTemplateUrl = 'templates/formTpl.html';
+        $templateRequest(sTemplateUrl).then(function (sTemplate) {
+            $compile($("#modal_forgotten_password_form_container").html(sTemplate).contents())($scope);
+        });
+    };
+
+    $scope["showModalSignUp"] = function () {
+        $("#modal_sign_up").modal('show');
+        // Nom + url du formulaire.
+        $scope["sFormDefinitionName"] = envSrvc["oSelectedObject"]["name"] + "_sign_up_form";
+
+        // Paramètres pour la requête ajax du subform.
+        $scope["oFormRequestParams"] = {
+            "sUrl": "forms/sign_up.json"
+        };
+        // Suppression de la définition et des données du formulaire (sinon problème de cache...).
+
+        $scope.$root["clearFormData"]($scope["sFormDefinitionName"], $scope);
+        // Pas de données de form. à charger.
+        $scope["bLoadFormValues"] = false;
+        envSrvc["oFormValues"][$scope["sFormDefinitionName"]] = {};
+
+        // Compile le template de formulaire.
+        var sTemplateUrl = 'templates/formTpl.html';
+        $templateRequest(sTemplateUrl).then(function (sTemplate) {
+            $compile($("#modal_sign_up_form_container").html(sTemplate).contents())($scope);
+        });
+
+        /*var test = grecaptcha.render("captcha", {
+         'sitekey': "6LdWLR8UAAAAAExA8zTXKFIsIwhacAJw1tdpuFw1"
+         });
+         
+         console.log(test);*/
+    };
+
+    /**
+     * sendInscriptionRequest function.
+     * Action à effectuer dès l'envoi du formulaire d'inscription.
+     **/
+    $scope["sendInscriptionRequest"] = function () {
+        var sFormName = $scope["sFormDefinitionName"];
+        //check value
+        if (!goog.isDefAndNotNull($scope["oFormValues"][sFormName]["captcha"])) {
+            var sTitle = "NOCAPTCHA";
+            $translate(sTitle).then(function (sTranslation) {
+                $.notify(sTranslation, "error");
+            });
+            return;
+        }
+        if (!goog.isDefAndNotNull($scope["oFormValues"][sFormName]["signupcgi"])) {
+            var sTitle = "CHECKCGI";
+            $translate(sTitle).then(function (sTranslation) {
+                $.notify(sTranslation, "error");
+            });
+            return;
+        } else if ($scope["oFormValues"][sFormName]["signupcgi"] === false) {
+            var sTitle = "CHECKCGI";
+            $translate(sTitle).then(function (sTranslation) {
+                $.notify(sTranslation, "error");
+            });
+            return;
+        }
+        if (!goog.isDefAndNotNull($scope["oFormValues"][sFormName]["signuppasswordconfirmation"])) {
+            var sTitle = "CONFIRMPASSWORD";
+            $translate(sTitle).then(function (sTranslation) {
+                $.notify(sTranslation, "error");
+            });
+            return;
+        } else if ($scope["oFormValues"][sFormName]["signuppasswordconfirmation"] !== $scope["oFormValues"][sFormName]["signuppassword"]) {
+            var sTitle = "CONFIRMPASSWORD";
+            $translate(sTitle).then(function (sTranslation) {
+                $.notify(sTranslation, "error");
+            });
+            return;
+        }
+        showAjaxLoader();
+        ajaxRequest({
+            'method': 'POST',
+            'url': propertiesSrvc["web_server_name"] + '/' + propertiesSrvc["services_alias"] + "/vitis/accounts/sign_up",
+            'params': {
+                "username": $scope["oFormValues"][sFormName]["signupusername"],
+                "fullname": $scope["oFormValues"][sFormName]["signupfullname"],
+                "password": $scope["oFormValues"][sFormName]["signuppassword"],
+                "mail": $scope["oFormValues"][sFormName]["signupmail"],
+                "company": $scope["oFormValues"][sFormName]["signuporganization"],
+                "captcha": $scope["oFormValues"][sFormName]["captcha"]
+            },
+            'success': function (response) {
+                hideAjaxLoader();
+                if (response["status"] === 403) {
+                    var sTitle = "ACCOUNTSERVICENOTAVAILABLE";
+                    $translate(sTitle).then(function (sTranslation) {
+                        $.notify(sTranslation, "error");
+                    });
+                } else {
+                    if (goog.isDefAndNotNull(response["data"]["status"])) {
+                        if (response["data"]["status"] === 5) {
+                            var sTitle = "LOGINNOTAVAILABLE";
+                            $translate(sTitle).then(function (sTranslation) {
+                                $.notify(sTranslation, "error");
+                            });
+                            grecaptcha.reset();
+                            $scope["oFormValues"][sFormName]["captcha"] = null;
+                        } else {
+                            $("#modal_sign_up").modal('hide');
+                            var sTitle = "CHECKMAIL";
+                            $translate(sTitle).then(function (sTranslation) {
+                                $.notify(sTranslation, "success");
+                            });
+                        }
+                    } else if (response["data"] === "") {
+                        var sTitle = "LOGINNOTAVAILABLE";
+                        $translate(sTitle).then(function (sTranslation) {
+                            $.notify(sTranslation, "error");
+                        });
+                        grecaptcha.reset();
+                        $scope["oFormValues"][sFormName]["captcha"] = null;
+                    } else {
+                        $("#modal_sign_up").modal('hide');
+                        var sTitle = "CHECKMAIL";
+                        $translate(sTitle).then(function (sTranslation) {
+                            $.notify(sTranslation, "success");
+                        });
+                    }
+
+                }
+            },
+            'error': function (response) {
+                hideAjaxLoader();
+                console.error("ERROR");
+            }
+        });
+    };
+
+    /**
+     * sendInscriptionRequest function.
+     * Action à effectuer dès l'envoi du formulaire d'inscription.
+     **/
+    $scope["sendFpwdRequest"] = function () {
+        var sFormName = $scope["sFormDefinitionName"];
+        showAjaxLoader();
+        ajaxRequest({
+            'method': 'POST',
+            'url': propertiesSrvc["web_server_name"] + '/' + propertiesSrvc["services_alias"] + "/vitis/accounts/fpwd",
+            'params': {
+                "username": $scope["oFormValues"][sFormName]["fpwd_login"],
+                "mail": $scope["oFormValues"][sFormName]["fpwdmail"],
+                "company": $scope["oFormValues"][sFormName]["fpwdporganization"]
+            },
+            'success': function (response) {
+                hideAjaxLoader();
+                if (response["status"] === 403) {
+                    var sTitle = "ACCOUNTSERVICENOTAVAILABLE";
+                    $translate(sTitle).then(function (sTranslation) {
+                        $.notify(sTranslation, "error");
+                    });
+                } else {
+                    if (goog.isDefAndNotNull(response["data"]["status"])) {
+                        if (response["data"]["status"] === 7) {
+                            var sTitle = "LOGINNOTKNOWN";
+                            $translate(sTitle).then(function (sTranslation) {
+                                $.notify(sTranslation, "error");
+                            });
+                        } else {
+                            $("#modal_forgotten_password").modal('hide');
+                            var sTitle = "CHECKMAIL";
+                            $translate(sTitle).then(function (sTranslation) {
+                                $.notify(sTranslation, "success");
+                            });
+                        }
+                    }
+                }
+            },
+            'error': function (response) {
+                hideAjaxLoader();
+                console.error("ERROR");
+            }
+        });
     };
 
     /**
@@ -125,56 +350,58 @@ vitisApp.loginCtrl = function ($scope, $translate, $rootScope, $q, Restangular, 
              */
             var sUser = $scope["oFormValues"][sFormName]["user_login"];
             // Concatène le domaine au login ?
-            if ($scope["oFormValues"][sFormName]["domain"]["selectedOption"]["value"] != "" && $scope["oFormValues"][sFormName]["domain"]["selectedOption"]["value"] != undefined && sUser.indexOf("@") == -1)
-                sUser += "@" + $scope["oFormValues"][sFormName]["domain"]["selectedOption"]["value"];
-            // Paramètres du webservice.
-            var oWebServiceBase = Restangular["one"](propertiesSrvc["services_alias"] + "/" + sessionSrvc["web_service"], sessionSrvc["web_service_controller"]);
-            var oElem = {"user": sUser, "password": $scope["oFormValues"][sFormName]["user_password"]};
-            var sPath = "";
-            var oParams = {"token": sessionSrvc["token"]};
+            var oDomainValue = $scope["oFormValues"][sFormName]["domain"];
+            if (typeof(oDomainValue) != "undefined" && typeof(oDomainValue["selectedOption"]) != "undefined" && oDomainValue["selectedOption"]["value"] != "" && typeof(oDomainValue["selectedOption"]["value"]) != "undefined" && sUser.indexOf("@") == -1)
+                sUser += "@" + oDomainValue["selectedOption"]["value"];
             // Demande de token pour l'utilisateur.
-            oWebServiceBase["customPOST"](JSON.stringify(oElem), sPath, oParams)
-                    .then(function (data) {
-                        if (data["status"] == 1) {
-                            // Cache le message d'erreur.
-                            $scope["hideErrorAlert"]();
-                            // Sauve les données du token.
-                            sessionSrvc["token"] = data["token"];
-                            sessionSrvc["validity_date"] = data["validity_date"];
-                            sessionStorage["session_token"] = sessionSrvc["token"];
-                            // Sauve les données de l'utilisateur.
-                            userSrvc["login"] = sUser;
-                            userSrvc["id"] = parseInt(data["user_id"]);
-                            userSrvc["privileges"] = data["privileges"];
-                            sessionStorage["user_login"] = sUser;
-                            sessionStorage["user_id"] = userSrvc["id"];
-                            sessionStorage["privileges"] = userSrvc["privileges"];
-                            // Chargement des properties stockées côté serveur.
-                            propertiesSrvc["getFromServer"]().then(function () {
-                                // Surcharge la propriété "app_name" par le nom de l'application passé dans l'url.
-                                propertiesSrvc["app_name"] = sessionStorage["application"].toLowerCase().charAt(0).toUpperCase() + sessionStorage["application"].slice(1);
-                                // Paramètre "environment".
-                                if (typeof (sessionStorage['environment']) != "undefined")
-                                    propertiesSrvc["environment"] = sessionStorage['environment'];
-                                // Connexion à l'application.
-                                sessionSrvc["connect"]();
-                                deferred.resolve();
-                            });
-                            // Sauve le token dans le localStorage (cookie).
-                            if ($scope["oFormValues"][sFormName]["remember_me"] === true) {
-                                sessionSrvc["saveSessionToLocalStorage"]();
-                            }
-                        } else {
-                            $scope["showErrorAlert"]("FORM_LOGIN_CONNECTION_ERROR");
-                            deferred.reject();
+            ajaxRequest({
+                "method": "POST",
+                "url": propertiesSrvc["web_server_name"] + "/" + propertiesSrvc["services_alias"] + "/" + sessionSrvc["web_service"] + "/" + sessionSrvc["web_service_controller"],
+                "scope": $scope,
+                "data": {
+                    "user": sUser,
+                    "password": $scope["oFormValues"][sFormName]["user_password"]
+                },
+                "success": function (response) {
+                    if (response["data"]["status"] == 1) {
+                        // Cache le message d'erreur.
+                        $scope["hideErrorAlert"]();
+                        // Sauve les données du token.
+                        sessionSrvc["token"] = response["data"]["token"];
+                        sessionSrvc["validity_date"] = response["data"]["validity_date"];
+                        sessionStorage["session_token"] = sessionSrvc["token"];
+                        // Sauve les données de l'utilisateur.
+                        userSrvc["login"] = sUser;
+                        userSrvc["id"] = parseInt(response["data"]["user_id"]);
+                        userSrvc["privileges"] = response["data"]["privileges"];
+                        sessionStorage["user_login"] = sUser;
+                        sessionStorage["user_id"] = userSrvc["id"];
+                        sessionStorage["privileges"] = userSrvc["privileges"];
+                        // Chargement des properties stockées côté serveur.
+                        propertiesSrvc["getFromServer"]().then(function () {
+                            // Surcharge la propriété "app_name" par le nom de l'application passé dans l'url.
+                            propertiesSrvc["app_name"] = sessionStorage["application"].toLowerCase().charAt(0).toUpperCase() + sessionStorage["application"].slice(1);
+                            // Paramètre "environment".
+                            if (typeof (sessionStorage['environment']) != "undefined")
+                                propertiesSrvc["environment"] = sessionStorage['environment'];
+                            // Connexion à l'application.
+                            sessionSrvc["connect"]();
+                            deferred.resolve();
+                        });
+                        // Sauve le token dans le localStorage (cookie).
+                        if ($scope["oFormValues"][sFormName]["remember_me"] === true) {
+                            sessionSrvc["saveSessionToLocalStorage"]();
                         }
-                    });
+                    } else {
+                        $scope["showErrorAlert"]("FORM_LOGIN_CONNECTION_ERROR");
+                        deferred.reject();
+                    }
+                }
+            });
         }
 
         // Retourne la promesse.
         return promise;
     }
-
-
 };
 vitisApp.module.controller("loginCtrl", vitisApp.loginCtrl);

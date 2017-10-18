@@ -1,3 +1,5 @@
+'use strict';
+
 // Google closure
 goog.provide("vitis.controllers.versionConfiguration");
 goog.require("vitis.modules.main");
@@ -7,11 +9,10 @@ goog.require("vitis.modules.main");
  * Chargement des données de la version.
  * @param {angular.$log} $log Angular log service.
  * @param {angular.$scope} $scope Angular scope.
- * @param {service} Restangular Service Restangular.
  * @param {service} propertiesSrvc Paramètres des properties.
  * @ngInject
  **/
-vitisApp.versionConfigurationCtrl = function ($log, $scope, Restangular, propertiesSrvc) {
+vitisApp.versionConfigurationCtrl = function ($log, $scope, propertiesSrvc) {
     // Initialisation
     $log.info("initVersionConfiguration");
     /**
@@ -25,20 +26,17 @@ vitisApp.versionConfigurationCtrl = function ($log, $scope, Restangular, propert
         else
             return 'install-state-error';
     };
-
-    // Nom du service web (vitis, gtf...)
-    var oWebServiceBase = Restangular["one"](propertiesSrvc["services_alias"] + "/vitis");
-    // Charge le template de l'onglet (sections).
-    var oParams = {
-        "token": sessionStorage["session_token"],
-        "app": sessionStorage["application"]
-    }
-    oWebServiceBase["customGET"]("Versions", oParams)
-        .then(function (data) {
-            if (data["status"] == 1) {
-                data["VM_VERSION"] = propertiesSrvc["version"],
-                data["VM_BUILD"] = propertiesSrvc["build"],
-                $scope["oVersion"] = data;
+    // Chargement des données de version.
+    ajaxRequest({
+        "method": "GET",
+        "url": propertiesSrvc["web_server_name"] + "/" + propertiesSrvc["services_alias"] + "/vitis/Versions",
+        "params": {"app": sessionStorage["application"]},
+        "scope": $scope,
+        "success": function(response) {
+            if (response["data"]["status"] == 1) {
+                response["data"]["VM_VERSION"] = propertiesSrvc["version"],
+                response["data"]["VM_BUILD"] = propertiesSrvc["build"],
+                $scope["oVersion"] = response["data"];
                 $scope["oVersion"]["neededUpdate"] = true;
                 if (propertiesSrvc["version"] === "trunk") {
                     delete $scope["oVersion"]["appVersion"];
@@ -47,8 +45,8 @@ vitisApp.versionConfigurationCtrl = function ($log, $scope, Restangular, propert
                         // Impossible de vérifier les mises à jour, vous pouvez 
                         $scope["oVersion"]["update"] = "ERROR_RETRIEVE_UPDATE_CONFIGURATION";
                     }else{
-                        version = angular.copy(propertiesSrvc["version"]).replace(".", "");
-                        versionUpdate = angular.copy($scope["oVersion"]["appVersion"]).replace(".", "");
+                        var version = angular.copy(propertiesSrvc["version"]).replace(".", "");
+                        var versionUpdate = angular.copy($scope["oVersion"]["appVersion"]).replace(".", "");
                         if (versionUpdate > version) {
                             // Votre version n'est pas à jour, vous pouvez télécharger les mises à jour ici
                             $scope["oVersion"]["update"] = "NEEDED_UPDATE_CONFIGURATION";
@@ -60,6 +58,7 @@ vitisApp.versionConfigurationCtrl = function ($log, $scope, Restangular, propert
                     }
                 }
             }
-        });
+        }
+    });
 };
 vitisApp.module.controller("versionConfigurationCtrl", vitisApp.versionConfigurationCtrl);

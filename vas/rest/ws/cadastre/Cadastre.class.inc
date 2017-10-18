@@ -14,13 +14,18 @@ class Cadastre extends Vmap {
      * @return boolean
      */
     function haveCommuneRights($id_com) {
-        // Vérifie si on a les droits sur la commune
-        $aCommunes = $this->vmapGet('public', 'v_commune', array('id_com'), "id_com='" . $id_com . "'", 'limit 1');        
+        // Vérifie si on a les droits sur la commune        
+        $aFilter = array(
+            'column' => 'id_com',
+            'compare_operator' => '=',
+            'value' => $id_com
+        );
+        $aCommunes = $this->vmapGet('public', $this->aProperties['cadastre']['views']['commune'], array('id_com'), $aFilter, array('limit' => 1));
         if (sizeOf($aCommunes) > 0)
             return true;
         else
             return false;
-    }    
+    }
 
 }
 

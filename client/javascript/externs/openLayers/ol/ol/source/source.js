@@ -1,23 +1,10 @@
 goog.provide('ol.source.Source');
-goog.provide('ol.source.State');
 
 goog.require('ol');
 goog.require('ol.Attribution');
 goog.require('ol.Object');
 goog.require('ol.proj');
-
-
-/**
- * State of the source, one of 'undefined', 'loading', 'ready' or 'error'.
- * @enum {string}
- * @api
- */
-ol.source.State = {
-  UNDEFINED: 'undefined',
-  LOADING: 'loading',
-  READY: 'ready',
-  ERROR: 'error'
-};
+goog.require('ol.source.State');
 
 
 /**
@@ -29,13 +16,14 @@ ol.source.State = {
  * A generic `change` event is triggered when the state of the source changes.
  *
  * @constructor
+ * @abstract
  * @extends {ol.Object}
  * @param {ol.SourceSourceOptions} options Source options.
- * @api stable
+ * @api
  */
 ol.source.Source = function(options) {
 
-  goog.base(this);
+  ol.Object.call(this);
 
   /**
    * @private
@@ -69,7 +57,7 @@ ol.source.Source = function(options) {
   this.wrapX_ = options.wrapX !== undefined ? options.wrapX : false;
 
 };
-goog.inherits(ol.source.Source, ol.Object);
+ol.inherits(ol.source.Source, ol.Object);
 
 /**
  * Turns various ways of defining an attribution to an array of `ol.Attributions`.
@@ -100,13 +88,14 @@ ol.source.Source.toAttributionsArray_ = function(attributionLike) {
   } else {
     return null;
   }
-}
+};
 
 
 /**
  * @param {ol.Coordinate} coordinate Coordinate.
  * @param {number} resolution Resolution.
  * @param {number} rotation Rotation.
+ * @param {number} hitTolerance Hit tolerance in pixels.
  * @param {Object.<string, boolean>} skippedFeatureUids Skipped feature uids.
  * @param {function((ol.Feature|ol.render.Feature)): T} callback Feature
  *     callback.
@@ -119,7 +108,7 @@ ol.source.Source.prototype.forEachFeatureAtCoordinate = ol.nullFunction;
 /**
  * Get the attributions of the source.
  * @return {Array.<ol.Attribution>} Attributions.
- * @api stable
+ * @api
  */
 ol.source.Source.prototype.getAttributions = function() {
   return this.attributions_;
@@ -129,7 +118,7 @@ ol.source.Source.prototype.getAttributions = function() {
 /**
  * Get the logo of the source.
  * @return {string|olx.LogoOptions|undefined} Logo.
- * @api stable
+ * @api
  */
 ol.source.Source.prototype.getLogo = function() {
   return this.logo_;
@@ -147,9 +136,10 @@ ol.source.Source.prototype.getProjection = function() {
 
 
 /**
+ * @abstract
  * @return {Array.<number>|undefined} Resolutions.
  */
-ol.source.Source.prototype.getResolutions = goog.abstractMethod;
+ol.source.Source.prototype.getResolutions = function() {};
 
 
 /**

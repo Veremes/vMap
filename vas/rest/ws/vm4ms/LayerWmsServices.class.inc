@@ -102,10 +102,10 @@ class LayerWmsServices extends Vmap4MapServer {
         if (!empty($this->aValues['wmsservices'])) {
             $aWmsServices = explode('|', $this->aValues['wmsservices']);
             foreach ($aWmsServices as $sWmsService) {
-                $sSql = str_replace('[wmsservice_id]', $sWmsService, $aSql['insertLayerWmsServices']);
-                $sSql = str_replace('[ms_layer_id]', $this->aValues["my_vitis_id"], $sSql);
-                $sSql = str_replace('[sSchemaVm4ms]', $this->aProperties['schema_vm4ms'], $sSql);
-                $resultat = $this->oConnection->oBd->execute($sSql);
+                $aParams['sSchemaVm4ms'] = array('value' => $this->aProperties['schema_vm4ms'], 'type' => 'schema_name');
+                $aParams['ms_layer_id'] = array('value' => $this->aValues['my_vitis_id'], 'type' => 'number');
+                $aParams['wmsservice_id'] = array('value' => $sWmsService, 'type' => 'string');
+                $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['insertLayerWmsServices'], $aParams);
                 if ($this->oConnection->oBd->enErreur()) {
                     $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                     $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
@@ -116,7 +116,7 @@ class LayerWmsServices extends Vmap4MapServer {
                     $aXmlRacineAttribute['status'] = 1;
                     $sMessage = $this->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
                     // Création du fichier .map du flux WMS.
-                    $aValues = array('token' => session_id(), 'wmsservice_id' => $sWmsService, 'my_vitis_id' => $sWmsService, 'type' => 'prod', 'creation' => true);
+                    $aValues = array('token' => session_id(), 'wmsservice_id' => $sWmsService, 'my_vitis_id' => $sWmsService, 'type' => 'prod', 'creation' => true, 'sEncoding' => $this->aValues['sEncoding'], 'sSourceEncoding' => $this->aValues['sSourceEncoding'], 'output' => $this->aValues['output']);
                     $aPath = array('vm4ms', 'wmsservices', $this->aValues["my_vitis_id"]);
                     $oWmsServices = new WmsServices($this->aPath, $aValues, $this->aProperties, $this->oConnection);
                     $oWmsServices->GET();

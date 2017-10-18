@@ -3,7 +3,7 @@
 <installer>
 	<schema>
 		<name>s_vitis</name>
-		<version>2017.01.02</version>
+		<version>2017.02.01</version>
 		<dependenciesCollection>
 			<dependency>
 				<name>postgres</name>
@@ -19,14 +19,13 @@
 			<nature>extern-pre</nature>
 		</dependency>
 		<dependency>
-			<name>vcredist</name>
-			<nature>extern-post</nature>
-			<location>vcredist-11</location>
+			<name>pre-install</name>
+			<nature>extern-pre</nature>
 		</dependency>
 		<dependency>
 			<name>php</name>
 			<nature>extern-post</nature>
-			<location>php-5.6.30</location>
+			<location>php-7.1.9</location>
 		</dependency>
 		<dependency>
 			<name>post-install</name>
@@ -35,6 +34,7 @@
 		<dependency>
 			<name>websocket</name>
 			<nature>extern-post</nature>
+			<location>websocket</location>
 		</dependency>
 	</dependenciesCollection>
 </installer>

@@ -1,23 +1,23 @@
 <?php
+
 /**
-* \file LieuDits.class.inc
-* \class LieuDits
-*
-* \author Armand Bahi <armand.bahi@veremes.com>.
-*
-* \brief This file contains the LieuDits php class
-*
-* This class defines Rest Api to Vmap LieuDits
-* 
-*/
+ * \file LieuDits.class.inc
+ * \class LieuDits
+ *
+ * \author Armand Bahi <armand.bahi@veremes.com>.
+ *
+ * \brief This file contains the LieuDits php class
+ *
+ * This class defines Rest Api to Vmap LieuDits
+ * 
+ */
 require_once 'Cadastre.class.inc';
 require_once 'LieuDit.class.inc';
 require_once __DIR__ . '/../../class/vitis_lib/Connection.class.inc';
 require_once __DIR__ . '/../../class/vmlib/BdDataAccess.inc';
 
 class LieuDits extends Cadastre {
-    
-     /**
+    /**
      * @SWG\Definition(
      *   definition="/lieudits",
      *   allOf={
@@ -29,6 +29,7 @@ class LieuDits extends Cadastre {
      *   description="Operations about LieuDits"
      * )
      */
+
     /**
      * construct
      * @param type $aPath url of the request
@@ -40,9 +41,9 @@ class LieuDits extends Cadastre {
         $this->aPath = $aPath;
         $this->aProperties = $properties;
         $this->oConnection = new Connection($this->aValues, $this->aProperties);
-		$this->aSelectedFields = Array("id" ,"id_com", "substring (id_com, 3, 3) as code_com", "section", "pre", "texte as tex", "geom", "oid");
+        $this->aSelectedFields = Array("id", "id_com", "substring (id_com, 3, 3) as code_com", "section", "pre", "texte as tex", "geom", "oid");
     }
-    
+
     /**
      * @SWG\Get(path="/lieudits",
      *   tags={"LieuDit"},
@@ -77,7 +78,7 @@ class LieuDits extends Cadastre {
      *     description="number of element",
      *     required=false,
      *     type="integer",
-	 *     default="4",
+     *     default="4",
      *     format="int32"
      *   ),
      * @SWG\Parameter(
@@ -116,14 +117,16 @@ class LieuDits extends Cadastre {
      *     )
      *  )
      */
+
     /**
      * get LieuDits
      * @return  LieuDits
      */
     function GET() {
-        $aReturn = $this->genericGet($this->aProperties['schema_cadastre'], 'v_vmap_lieu_dit', 'id');
+        $aReturn = $this->genericGet($this->aProperties['schema_cadastre'], $this->aProperties['cadastre']['views']['lieu_dit'], 'id');
         return $aReturn['sMessage'];
     }
-    
+
 }
+
 ?>

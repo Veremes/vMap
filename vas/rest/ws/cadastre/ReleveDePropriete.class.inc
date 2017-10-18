@@ -113,17 +113,23 @@ class ReleveDePropriete extends Cadastre {
 
         // Vérifie les droits sur la commune
         if ($communeRights == false) {
-            $aReturn['error']['errorMessage'] .="L'utilisateur n'a pas les droits sur la commune";
+            http_response_code(403);
+            writeToErrorLog("L'utilisateur n'a pas les droits sur la commune");
+            $aReturn['error']['errorMessage'] = "Erreur lors de la génération du fichier PDF de relevé de propriété.";
             return json_encode($aReturn);
         }
 
         // Vérifie la validité des informations passées en properties
         if (!is_dir($properties["fop_root_dir"])) {
-            $aReturn['error']['errorMessage'] .="Dossier fop introuvable: " . $properties["fop_root_dir"];
+            http_response_code(500);
+            writeToErrorLog("Dossier fop introuvable: " . $properties["fop_root_dir"]);
+            $aReturn['error']['errorMessage'] = "Erreur lors de la génération du fichier PDF de relevé de propriété.";
             return json_encode($aReturn);
         }
         if (!is_dir(__DIR__ . '/../../class/majic_lib')) {
-            $aReturn['error']['errorMessage'] .="Dossier majic_lib introuvable";
+            http_response_code(500);
+            writeToErrorLog("Dossier majic_lib introuvable");
+            $aReturn['error']['errorMessage'] = "Erreur lors de la génération du fichier PDF de relevé de propriété.";
             return json_encode($aReturn);
         }
 
@@ -131,10 +137,12 @@ class ReleveDePropriete extends Cadastre {
         $this->oConnection->oBd = $oBD;
 
         // Récupère l'année
-        $sYear = $this->vmapGet('majic', '"ANNEE_REFERENCE"', array('ANNEE'), '', 'LIMIT 1')[0]['ANNEE'];
+        $sYear = $this->vmapGet('majic', '"ANNEE_REFERENCE"', array('ANNEE'), '', array('limit' => 1))[0]['ANNEE'];
 
         if (strlen($sYear) < 1) {
-            $aReturn['error']['errorMessage'] .="Impossible de récupérer l'année de référence dans le schema Majic";
+            http_response_code(500);
+            writeToErrorLog("Impossible de récupérer l'année de référence dans le schema Majic");
+            $aReturn['error']['errorMessage'] = "Erreur lors de la génération du fichier PDF de relevé de propriété.";
             return json_encode($aReturn);
         }
 
@@ -169,7 +177,9 @@ class ReleveDePropriete extends Cadastre {
                     @mkdir($properties["cadastre"]["rp"]["rp_dir"] . "/" . $sYear . "/tiers");
                     @mkdir($properties["cadastre"]["rp"]["rp_dir"] . "/" . $sYear . "/parcelle");
                 } else {
-                    $aReturn['error']['errorMessage'] .="Erreur lors de la création des répertoires de l'année courante pour les relevés de propriété.";
+                    http_response_code(500);
+                    writeToErrorLog("Erreur lors de la création des répertoires de l'année courante pour les relevés de propriété.");
+                    $aReturn['error']['errorMessage'] = "Erreur lors de la génération du fichier PDF de relevé de propriété.";
                     return json_encode($aReturn);
                 }
             }
@@ -181,7 +191,9 @@ class ReleveDePropriete extends Cadastre {
                     require_once __DIR__ . '/../../class/majic_lib/Mj_Compte_Communal.class.inc';
                     $oRP = new Mj_Compte_Communal($IDDNUPRO, $oBD);
                     if ($oRP->isError()) {
-                        $aReturn['error']['errorMessage'] .="Erreur lors de l'extraction des données Majic.";
+                        http_response_code(500);
+                        writeToErrorLog("Erreur lors de l'extraction des données Majic.");
+                        $aReturn['error']['errorMessage'] = "Erreur lors de la génération du fichier PDF de relevé de propriété.";
                         return json_encode($aReturn);
                     } else {
 						if ($sType === "tiers"){
@@ -197,7 +209,9 @@ class ReleveDePropriete extends Cadastre {
                     require_once __DIR__ . '/../../class/majic_lib/Mj_Compte_Communal_Parcelle.class.inc';
                     $oRP = new Mj_Compte_Communal_Parcelle("", $ID_PAR, $oBD);
                     if ($oRP->isError()) {
-                        $aReturn['error']['errorMessage'] .="Erreur lors de l'extraction des données Majic.";
+                        http_response_code(500);
+                        writeToErrorLog("Erreur lors de l'extraction des données Majic.");
+                        $aReturn['error']['errorMessage'] = "Erreur lors de la génération du fichier PDF de relevé de propriété.";
                         return json_encode($aReturn);
                     } else {
                         $sDir = $sYear . "/parcelle/";
@@ -231,7 +245,9 @@ class ReleveDePropriete extends Cadastre {
                     foreach ($aCommand as $sValeur) {
                         writeToErrorLog($sValeur);
                     }
-                    $aReturn['error']['errorMessage'] .="Erreur lors de la génération du fichier PDF de relevé de propriété.";
+                    http_response_code(500);
+                    writeToErrorLog("Erreur lors de la génération du fichier PDF de relevé de propriété.");
+                    $aReturn['error']['errorMessage'] = "Erreur lors de la génération du fichier PDF de relevé de propriété.";
                     return json_encode($aReturn);
                 }
             }

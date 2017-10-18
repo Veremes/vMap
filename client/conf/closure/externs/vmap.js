@@ -61,10 +61,15 @@ ol.layer.Base.prototype.getVisible = function () {}
  */
 ol.layer.Base.prototype.setVisible = function (visible) {}
 
-
 /**
  * The tile related to the event.
  * @type {ol.Tile}
  * @api
  */
 ol.source.TileEvent.tile
+
+/**
+ * @type {string}
+ * @see http://www.w3.org/TR/pointerevents/#the-touch-action-css-property
+ */
+CSSProperties.prototype.touchAction;

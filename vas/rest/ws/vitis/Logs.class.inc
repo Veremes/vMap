@@ -316,9 +316,9 @@ class Logs extends Vitis {
         require $this->sRessourcesFile;
         $aReturn = array('status' => 1, 'message' => '');
         // Liste des modules de l'application.
-        $sSql = str_replace('[sSchemaFramework]', $this->aProperties['schema_framework'], $aSql['getApplicationModules']);
-        $sSql = str_replace('[application_name]', $this->aValues['application_name'], $sSql);
-        $oPDOresult = $this->oConnection->oBd->execute($sSql);
+        $aParams['sSchemaFramework'] = array('value' => $this->aProperties['schema_framework'], 'type' => 'schema_name');
+        $aParams['application_name'] = array('value' => $this->aValues['application_name'], 'type' => 'string');
+        $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['getApplicationModules'], $aParams);
         if ($this->oConnection->oBd->enErreur()) {
             $aReturn = array('status' => 1, 'message' => $this->oConnection->oBd->getBDMessage(), 'error_code' => 1);
             /*
@@ -519,7 +519,8 @@ class Logs extends Vitis {
             // Répertoire des logs sans backslashes et plusieurs slashes.
             $aLogDirectories = $properties['log_directories'];
             foreach ($aLogDirectories as &$sLogDirectorie) {
-                $sLogDirectorie = realpath($sLogDirectorie);
+                if (is_string($sLogDirectorie))
+                    $sLogDirectorie = realpath($sLogDirectorie);
             }
             // Fichier de log sans backslashes et plusieurs slashes.
             $sFilePath = realpath($sFilePath);

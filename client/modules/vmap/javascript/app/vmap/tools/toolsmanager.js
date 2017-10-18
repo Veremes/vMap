@@ -59,11 +59,11 @@ nsVmap.nsToolsManager.ToolsManager = function () {
  */
 nsVmap.nsToolsManager.ToolsManager.prototype.instanciateAvaliableModules = function () {
     oVmap.log('nsVmap.nsToolsManager.ToolsManager.instanciateAvaliableModules');
-    
+
     var avaliableModules = Object.keys(nsVmap.nsToolsManager.nsModules);
-    
+
     oVmap.log("avaliableModules: ", avaliableModules);
-    
+
     for (var i = 0; i < avaliableModules.length; i++) {
         this.instanciateModule(avaliableModules[i]);
     }
@@ -122,7 +122,7 @@ nsVmap.nsToolsManager.ToolsManager.prototype.vmapToolsDirective = function () {
  */
 nsVmap.nsToolsManager.ToolsManager.prototype.vmapToolsContainerDirective = function ($compile) {
     return function (scope, element, attrs) {
-        
+
         scope['oToolsTree'] = oVmap.getToolsManager().getToolsTree();
 
         for (var family in scope['oToolsTree']) {
@@ -165,14 +165,18 @@ nsVmap.nsToolsManager.ToolsManager.prototype.vmapToolsController = function () {
 nsVmap.nsToolsManager.ToolsManager.prototype.loadSyncToolsTree = function () {
 
     var oToolsTree = {};
-    $.ajax({
-        url: oVmap['properties']['api_url'] + '/vmap/usermodules?token=' + oVmap['properties']['token'],
-        async: false
-    }).done(function (data) {
-        oToolsTree = data['usermodules'];
-    }).fail(function () {
-//        console.error("toolsTree load failed");
+
+    ajaxRequest({
+        'method': 'GET',
+        'url': oVmap['properties']['api_url'] + '/vmap/usermodules',
+        'async': false,
+        'responseType': '',
+        'success': function (response) {
+            var data = JSON.parse(response['data']);
+            oToolsTree = data['usermodules'];
+        }
     });
+    
     return oToolsTree;
 };
 

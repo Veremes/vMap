@@ -9,10 +9,10 @@
   </IfModule>
 </IfModule>
 RewriteEngine On
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
+#RewriteCond %{REQUEST_FILENAME} !-f
+#RewriteCond %{REQUEST_FILENAME} !-d
 #Enlève le répertoire de l'application ???
-RewriteRule (.*) %1 [L]
+#RewriteRule (.*) %1 [L]
 #Mode debug ?
 #RewriteCond %{QUERY_STRING} debug
 #RewriteRule ^$ index-debug.html [L]

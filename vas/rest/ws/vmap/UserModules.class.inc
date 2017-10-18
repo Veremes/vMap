@@ -37,7 +37,7 @@ class UserModules extends Vmap {
         $this->aPath = $aPath;
         $this->aProperties = $properties;
         $this->oConnection = new Connection($this->aValues, $this->aProperties);
-        $this->aSelectedFields = Array("module_id", "label", "description", "rolname");
+        $this->aSelectedFields = Array("module_id", "label", "description", "rolname", "rolname_list");
     }
 
     /**
@@ -116,36 +116,43 @@ class UserModules extends Vmap {
 
             $oUserModules = new stdClass();
             $oUserModules->usermodules = array();
-            
+
             if (empty($this->aValues['my_vitis_id'])) {
                 // Nombre d'enregistrements total
                 $oUserModules->total_row_number = $this->aFields['total_row_number'];
             }
-            
+
             $iListCount = 0;
             $oUserModules->status = $aReturn['sStatus'];
             foreach ($this->aObjects as $oModule) {
-                if (in_array($oModule->aFields['rolname'], $this->oConnection->aPrivileges)) {
-                    $iListCount++;
-                    $oUserModule = new stdClass();
-                    $oUserModule->infos = new stdClass();
-                    $sModuleId = $oModule->aFields['module_id'];
-                    $oUserModule->infos->icon = 'icon-' . $sModuleId;
-                    $oUserModule->infos->image = '';
-                    $oUserModule->infos->tooltip = $oModule->aFields['label'];
-                    $oUserModules->usermodules[] = $oUserModule;
-                    $oUserModule->$sModuleId = new stdClass();
+                if (!empty($oModule->aFields['rolname_list'])) {
+                    $aRoleNames = explode('|', $oModule->aFields['rolname_list']);
+                } else {
+                    // Rétrocompatibilité
+                    $aRoleNames = array($oModule->aFields['rolname']);
+                }
+                for ($i = 0; $i < count($aRoleNames); $i++) {
+                    if (in_array($aRoleNames[$i], $this->oConnection->aPrivileges)) {
+                        $iListCount++;
+                        $oUserModule = new stdClass();
+                        $oUserModule->infos = new stdClass();
+                        $sModuleId = $oModule->aFields['module_id'];
+                        $oUserModule->infos->icon = 'icon-' . $sModuleId;
+                        $oUserModule->infos->image = '';
+                        $oUserModule->infos->tooltip = $oModule->aFields['label'];
+                        $oUserModules->usermodules[] = $oUserModule;
+                        $oUserModule->$sModuleId = new stdClass();
+                    }
                 }
             }
             // Nombre d'enregistrements affichés
             $oUserModules->list_count = $iListCount;
-           
+
             $this->aFields = $oUserModules;
 
             $aXmlRacineAttribute['status'] = 1;
             $sMessage = $this->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
-        }
-        else
+        } else
             $sMessage = $aReturn['sMessage'];
         return $sMessage;
     }

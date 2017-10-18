@@ -42,7 +42,7 @@ class Properties extends Vitis {
         $this->aProperties = $properties;
         $this->oConnection = new Connection($this->aValues, $this->aProperties);
 
-        $this->aSelectedFields = Array("services_alias", 'language', 'domain.*', 'vas_home', 'database');
+        $this->aSelectedFields = Array("services_alias", 'language', 'domain.*', 'vas_home', 'database', 'sign_up', 'password_forgotten');
 
         // Properties accessibles
         if (in_array('vitis_admin', $this->oConnection->aPrivileges)) {
@@ -225,6 +225,20 @@ class Properties extends Vitis {
      * Update properties
      */
     function PUT() {
+        // Verify connection.
+        if (!empty($this->oConnection->oError)) {
+            $oError = $this->oConnection->oError;
+            $aXmlRacineAttribute['status'] = 0;
+            $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+            return $sMessage;
+        }
+        // Privilège "vitis_admin" requis.
+        if (!in_array('vitis_admin', $this->oConnection->aPrivileges)) {
+            $oError = new VitisError(1, "Rights problem : you don't have right to delete log files");
+            $aXmlRacineAttribute['status'] = 0;
+            $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+            return $sMessage;
+        }
         if (!empty($this->aValues["properties"])) {
             // Paramètres pour le fichier de 'properties'
             define('PROPERTIES_HEADER', 'require "constants.inc";' . PHP_EOL . 'require "properties_server.inc";' . PHP_EOL . 'require "properties_domain.inc";' . PHP_EOL . 'require "selected_properties.inc";');
@@ -279,6 +293,7 @@ class Properties extends Vitis {
         $aReturn = array('status' => 1, 'message' => '');
         // Vérifie que le formulaire de properties n'est pas vide
         if (!empty($aPropertiesForm)) {
+            
             // Message de retour
             $aMessage = array('status' => REQUEST_SUCCESS);
 
@@ -393,12 +408,12 @@ class Properties extends Vitis {
             }
             // Transforme les valeur numériques	en chaine de caractères ?
             if (NUMERIC_ENCLOSE) {
-                $MyValue = STR_CH_ENCLOSE . $MyValue . STR_CH_ENCLOSE;
+                $MyValue = STR_CH_ENCLOSE . addslashes($MyValue) . STR_CH_ENCLOSE;
             }
         }
         // Une chaine de caractère ?
         else if (is_string($MyValue))
-            $MyValue = STR_CH_ENCLOSE . $MyValue . STR_CH_ENCLOSE;
+            $MyValue = STR_CH_ENCLOSE . addslashes($MyValue) . STR_CH_ENCLOSE;
         else
             $MyValue = var_export($MyValue, true);
 

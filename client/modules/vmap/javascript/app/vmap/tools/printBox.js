@@ -144,7 +144,7 @@ nsVmap.nsToolsManager.PrintBox.prototype.getScale = function () {
 
 
     // Positionne la vue sur l'étendue de la printBox
-    this.map_.getView().fit(this.getExtent(), this.map_.getSize(), {
+    this.map_.getView().fit(this.getExtent(), {
         constrainResolution: false,
         nearest: true
     });
@@ -248,7 +248,7 @@ nsVmap.nsToolsManager.PrintBox.prototype.listenMapMovements = function () {
  */
 nsVmap.nsToolsManager.PrintBox.prototype.unlistenMapMovements = function () {
 
-    this.map_.unByKey(this.printBoxEvent_);
+    ol.Observable.unByKey(this.printBoxEvent_);
 };
 
 /**

@@ -49,7 +49,7 @@ ol.pointer.TouchSource = function(dispatcher, mouseSource) {
     'touchend': this.touchend,
     'touchcancel': this.touchcancel
   };
-  goog.base(this, dispatcher, mapping);
+  ol.pointer.EventSource.call(this, dispatcher, mapping);
 
   /**
    * @const
@@ -81,7 +81,7 @@ ol.pointer.TouchSource = function(dispatcher, mouseSource) {
    */
   this.resetId_ = undefined;
 };
-goog.inherits(ol.pointer.TouchSource, ol.pointer.EventSource);
+ol.inherits(ol.pointer.TouchSource, ol.pointer.EventSource);
 
 
 /**
@@ -148,7 +148,7 @@ ol.pointer.TouchSource.prototype.removePrimaryPointer_ = function(inPointer) {
  * @private
  */
 ol.pointer.TouchSource.prototype.resetClickCount_ = function() {
-  this.resetId_ = ol.global.setTimeout(
+  this.resetId_ = setTimeout(
       this.resetClickCountHandler_.bind(this),
       ol.pointer.TouchSource.CLICK_COUNT_TIMEOUT);
 };
@@ -168,7 +168,7 @@ ol.pointer.TouchSource.prototype.resetClickCountHandler_ = function() {
  */
 ol.pointer.TouchSource.prototype.cancelResetClickCount_ = function() {
   if (this.resetId_ !== undefined) {
-    ol.global.clearTimeout(this.resetId_);
+    clearTimeout(this.resetId_);
   }
 };
 
@@ -440,7 +440,7 @@ ol.pointer.TouchSource.prototype.dedupSynthMouse_ = function(inEvent) {
     var lt = [t.clientX, t.clientY];
     lts.push(lt);
 
-    ol.global.setTimeout(function() {
+    setTimeout(function() {
       // remove touch after timeout
       ol.array.remove(lts, lt);
     }, ol.pointer.TouchSource.DEDUP_TIMEOUT);

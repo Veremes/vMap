@@ -140,10 +140,10 @@ class PublicLayers extends Vmap4MapServer {
                 require $this->sRessourcesFile;
                 $aWmsServices = explode('|', $this->aValues['wmsservices']);
                 foreach ($aWmsServices as $iWmsServiceId) {
-                    $sSql = str_replace('[wmsservice_id]', $iWmsServiceId, $aSql['insertPublicLayerWmsServices']);
-                    $sSql = str_replace('[ms_layer_id]', $this->aValues["my_vitis_id"], $sSql);
-                    $sSql = str_replace('[sSchemaVm4ms]', $this->aProperties['schema_vm4ms'], $sSql);
-                    $resultat = $this->oConnection->oBd->execute($sSql);
+                    $aParams['sSchemaVm4ms'] = array('value' => $this->aProperties['schema_vm4ms'], 'type' => 'schema_name');
+                    $aParams['ms_layer_id'] = array('value' => $this->aValues['my_vitis_id'], 'type' => 'number');
+                    $aParams['wmsservice_id'] = array('value' => $iWmsServiceId, 'type' => 'string');
+                    $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['insertPublicLayerWmsServices'], $aParams);
                 }
             }        
         }else{
@@ -167,10 +167,10 @@ class PublicLayers extends Vmap4MapServer {
             require $this->sRessourcesFile;
             $aWmsServices = explode('|', $this->aValues['wmsservices']);
             foreach ($aWmsServices as $iWmsServiceId) {
-                $sSql = str_replace('[wmsservice_id]', $iWmsServiceId, $aSql['insertPublicLayerWmsServices']);
-                $sSql = str_replace('[ms_layer_id]', $this->aValues["my_vitis_id"], $sSql);
-                $sSql = str_replace('[sSchemaVm4ms]', $this->aProperties['schema_vm4ms'], $sSql);
-                $resultat = $this->oConnection->oBd->execute($sSql);
+                $aParams['sSchemaVm4ms'] = array('value' => $this->aProperties['schema_vm4ms'], 'type' => 'schema_name');
+                $aParams['ms_layer_id'] = array('value' => $this->aValues['my_vitis_id'], 'type' => 'number');
+                $aParams['wmsservice_id'] = array('value' => $iWmsServiceId, 'type' => 'string');
+                $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['insertPublicLayerWmsServices'], $aParams);
             }
         }        
         return $aReturn['sMessage'];

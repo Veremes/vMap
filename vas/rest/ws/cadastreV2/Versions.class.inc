@@ -1,19 +1,19 @@
 <?php
 
 require_once 'Cadastre.class.inc';
+
 /**
-* \file versions.class.inc
-* \class Versions
-*
-* \author Yoann Perollet <yoann.perollet@veremes.com>.
-*
-*	\brief This file contains the Versions php class
-*
-* This class defines the rest api for versions
-* 
-*/
-class Versions extends Vmap{
-    
+ * \file versions.class.inc
+ * \class Versions
+ *
+ * \author Yoann Perollet <yoann.perollet@veremes.com>.
+ *
+ * 	\brief This file contains the Versions php class
+ *
+ * This class defines the rest api for versions
+ * 
+ */
+class Versions extends Vmap {
     /**
      * @SWG\Definition(
      *   definition="/Versions",
@@ -26,18 +26,19 @@ class Versions extends Vmap{
      *   description="Operations about Versions"
      * )
      */
+
     /**
      * construct
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $versions ptroperties
      */
-    function __construct($aPath, $aValues, $properties){
+    function __construct($aPath, $aValues, $properties) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
     }
-    
+
     /**
      * @SWG\Get(path="/Versions",
      *   tags={"Versions"},
@@ -59,19 +60,20 @@ class Versions extends Vmap{
      *     )
      *  )
      */
+
     /**
      * 
      * @return versions
      */
-    function GET(){
-		$this->getVersion("cadastreV2");
+    function GET() {
+        $this->getVersion("cadastreV2");
         //$this->aFields = $this->aVersions;
-       
         //
-        $aXmlRacineAttribute['status']=1;
-        $sMessage = $this->asDocument('','vitis',$this->aValues['sEncoding'],True,$aXmlRacineAttribute,$this->aValues['sSourceEncoding'],$this->aValues['output']);
+        $aXmlRacineAttribute['status'] = 1;
+        $sMessage = $this->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
         return $sMessage;
     }
+
 }
- 
+
 ?>

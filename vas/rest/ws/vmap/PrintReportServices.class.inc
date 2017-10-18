@@ -330,13 +330,20 @@ class PrintReportServices extends PrintServices {
         $aPath = $this->aPath;
         $properties = $this->aProperties;
 
-        $sFilter = '';
+        $aFilter = array(
+            'relation' => 'OR',
+            'operators' => array()
+        );
         for ($i = 0; $i < count($aIds); $i++) {
-            if ($i > 0) {
-                $sFilter .= ' OR ';
-            }
-            $sFilter .= '("' . $this->sIdField . '"= \'' . $aIds[$i] . '\')';
+            array_push($aFilter['operators'], array('column' => $this->sIdField, 'compare_operator' => '=', 'value' => $aIds[$i]));
         }
+        $sFilter = json_encode($aFilter);
+//        for ($i = 0; $i < count($aIds); $i++) {
+//            if ($i > 0) {
+//                $sFilter .= ' OR ';
+//            }
+//            $sFilter .= '("' . $this->sIdField . '"= \'' . $aIds[$i] . '\')';
+//        }
 
         $aPath[2] = $this->sBusinessObjectId;
 
@@ -536,9 +543,8 @@ class PrintReportServices extends PrintServices {
                     }
                 }
 
-                $aQueryResult = $this->queryRessource($aPath, $aParams, $sId);
+                $aQueryResult = $this->queryRessource($aPath, $aParams, $sId);                
                 $aJsonScope[$aJsonObjects[$i]['target']] = $aQueryResult;
-                
             }
             // Type Objet
             if ($aJsonObjects[$i]['type'] === 'object') {
@@ -599,9 +605,9 @@ class PrintReportServices extends PrintServices {
         $aJsonScope = json_decode($this->sJsonScope, true);
 
         $sReplaceChain = '';
-        if (is_numeric(strpos($sString, '{'))) {
-            if (is_numeric(strpos($sString, '}', strpos($sString, '{')))) {
-                $sReplaceChain = substr($sString, strpos($sString, '{') + 1, strpos($sString, '}') - strpos($sString, '{') - 1);
+        if (is_numeric(strpos($sString, '{{'))) {
+            if (is_numeric(strpos($sString, '}}', strpos($sString, '{{')))) {
+                $sReplaceChain = substr($sString, strpos($sString, '{{') + 2, strpos($sString, '}}') - strpos($sString, '{{') - 2);
             } else {
                 return $sString;
             }
@@ -627,7 +633,7 @@ class PrintReportServices extends PrintServices {
         // Récupère la valeur de l'identifiant dans $aJsonObjects
         if ($sReplaceChain !== '') {
             $aReplaceChain = explode('.', $sReplaceChain);
-            
+
             if (isset($aJsonScope[$aReplaceChain[0]])) {
                 if (!empty($aJsonScope[$aReplaceChain[0]][$aReplaceChain[1]])) {
                     $sReplaceValue = $aJsonScope[$aReplaceChain[0]][$aReplaceChain[1]];
@@ -635,11 +641,11 @@ class PrintReportServices extends PrintServices {
             }
         }
 
-        $sString = str_replace('{' . $sReplaceChain . '}', $sReplaceValue, $sString);
+        $sString = str_replace('{{' . $sReplaceChain . '}}', $sReplaceValue, $sString);
 
         // Récursive si il en reste encore
-        if (strpos($sString, '{') > 0) {
-            if (strpos($sString, '}', strpos($sString, '{')) > 1) {
+        if (strpos($sString, '{{') > 0) {
+            if (strpos($sString, '}}', strpos($sString, '{{')) > 1) {
                 return $this->replaceStringValueByScope($sString);
             }
         }
@@ -794,7 +800,7 @@ class PrintReportServices extends PrintServices {
                 $aValues[$key] = $value;
             }
         }
-        
+
         $oRessource = new $sClassName($aPath, $aValues, $this->aProperties, $this->oConnection);
         $oRessource->GET();
 
@@ -810,7 +816,7 @@ class PrintReportServices extends PrintServices {
                 array_push($aQuery, $oRessource->aObjects[$i]->aFields);
             }
         }
-        
+
         return $aQuery;
     }
 
@@ -841,14 +847,14 @@ class PrintReportServices extends PrintServices {
 
                 if ($ext == 'zip') {
 
-                    $this->unZip($this->sFileDirectory . '/' . $sFile . '.zip', $this->sFileDirectory . '/' . $sFile);
+                    unZip($this->sFileDirectory . '/' . $sFile . '.zip', $this->sFileDirectory . '/' . $sFile);
 
                     // Supprime le fichier zippé
                     unlink($this->sFileDirectory . '/' . $sFile . '.zip');
                 }
             }
 
-            $test = $this->createZip($this->sFileDirectory, $this->sFileDirectory . '.zip');
+            $test = createZip($this->sFileDirectory, $this->sFileDirectory . '.zip');
             $this->sFileUrl = $this->aProperties['web_server_name'] . '/' . $this->aProperties['public_alias'] . '/vmap/prints/' . $this->sFileName . '.zip';
             $this->sFilePath = $this->sFileDirectory . '.zip';
 
@@ -866,7 +872,6 @@ class PrintReportServices extends PrintServices {
             array_push($this->aFilesToDelete, $this->sFileDirectory);
         }
     }
-
 
     /**
      * Function that calls this->POST for each id in aValues['ids']

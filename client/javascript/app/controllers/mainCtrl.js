@@ -10,7 +10,6 @@ goog.require("vitis.services.main");
  * Main Controller.
  * Contrôleur principal de l'application (après connexion).
  * @param {angular.$scope} $scope Angular scope.
- * @param {angular.$http} $http Angular http service.
  * @param {angular.$timeout} $timeout Angular timeout service.
  * @param {service} $translate Translate service.
  * @param {service} $translatePartialLoader TranslateStaticFilesLoader service.
@@ -24,7 +23,7 @@ goog.require("vitis.services.main");
  * @param {service} propertiesSrvc Paramètres des properties.
  * @ngInject
  **/
-vitisApp.mainCtrl = function ($scope, $http, $timeout, $translate, $translatePartialLoader, $rootScope, $templateRequest, $compile, $log, envSrvc, modesSrvc, userSrvc, propertiesSrvc) {
+vitisApp.mainCtrl = function ($scope, $timeout, $translate, $translatePartialLoader, $rootScope, $templateRequest, $compile, $log, envSrvc, modesSrvc, userSrvc, propertiesSrvc,externFunctionSrvc) {
     // Vide le cache des templates.
     /*
      $templateCache.remove("templates/mainTpl.html");
@@ -40,6 +39,11 @@ vitisApp.mainCtrl = function ($scope, $http, $timeout, $translate, $translatePar
     $rootScope["gridApi"] = {};
 
     $scope["oProperties"] = propertiesSrvc;
+
+    $scope["aDropdownMenu"] = [{
+            "event": "selectMode('user')",
+            "label": "USER_INFOS"
+        }]
 
     less.refresh();
 
@@ -65,6 +69,7 @@ vitisApp.mainCtrl = function ($scope, $http, $timeout, $translate, $translatePar
 
         // Affichage du menu des objets (onglet)
         $rootScope["sSelectedObjectName"] = envSrvc["oSelectedObject"]["name"];
+        envSrvc["sSelectedSectionName"] = "";
         $scope["objects"] = modesSrvc["modes"][0]["objects"];
 
         // Sélection du mode à afficher.
@@ -107,6 +112,16 @@ vitisApp.mainCtrl = function ($scope, $http, $timeout, $translate, $translatePar
         var sAction = 'editSectionForm';
         this['actionOnObjectElement'](sElementMode, sElementObject, sElementId, sAction);
     };
+    
+    /**
+     * Display the edit form of an element
+     * @param {string} oEvent
+     * @param {string} sFunctionName
+     * @param {string} sElementId
+     */
+    $scope["executeEvent"] = function (oEvent, sFunctionName) {
+        $scope.$eval(sFunctionName);
+    };
 
     /**
      * Display the display form of an element
@@ -148,14 +163,14 @@ vitisApp.mainCtrl = function ($scope, $http, $timeout, $translate, $translatePar
     $scope["selectMode"] = function (sSelectedMode, oEvent) {
         modesSrvc["selectMode"]($scope, sSelectedMode, oEvent).then(function () {
             $timeout(function () {
+                externFunctionSrvc["resizeWin"]();
                 $scope["setFullScreen"](envSrvc["oSelectedMode"]["fullScreen"]);
                 sessionStorage["ajaxLoader"] = envSrvc["oSelectedMode"]["ajaxLoader"];
+                var gridApi = $scope.$root["gridApi"][$scope["sSelectedGridOptionsName"]];
+                if (gridApi != null)
+                    gridApi["core"]["handleWindowResize"]();
             }, 100);
             // Redimensionnement d'une liste ui-grid (si déja affiché).
-            var gridApi = $scope.$root["gridApi"][$scope["sSelectedObjectName"]];
-            if (gridApi != null)
-                gridApi["core"]["handleWindowResize"]();
-            //
         });
     };
 
@@ -195,7 +210,7 @@ vitisApp.mainCtrl = function ($scope, $http, $timeout, $translate, $translatePar
                     sessionStorage["ajaxLoader"] = envSrvc["oSelectedMode"]["ajaxLoader"];
                 }, 100);
                 // Redimensionnement d'une liste ui-grid (si déja affiché).
-                var gridApi = $scope.$root["gridApi"][$scope["sSelectedObjectName"]];
+                var gridApi = $scope.$root["gridApi"][$scope["sSelectedGridOptionsName"]];
                 if (gridApi != null)
                     gridApi["core"]["handleWindowResize"]();
                 //
@@ -231,17 +246,21 @@ vitisApp.mainCtrl = function ($scope, $http, $timeout, $translate, $translatePar
         envSrvc["sMode"] = "search";
         // Filtres à passer à la requête de la liste ?
         if (typeof (oFilter) !== "undefined") {
-            var aFilter = [];
-            var aFilterKeys = Object.keys(oFilter);
-            var i = 0;
-            while (i < aFilterKeys.length) {
-                if (oFilter["lang"] === "")
-                    oFilter["lang"] = "'" + propertiesSrvc["language"] + "'";
-                aFilter.push(aFilterKeys + "=" + oFilter[aFilterKeys[i]]);
-                i++;
+            if (oFilter["lang"] === "")
+                oFilter["lang"] = propertiesSrvc["language"];
+            var oGivenFilter = {
+                "relation": "AND",
+                "operators": []
+            };
+            for (var key in oFilter) {
+                oGivenFilter['operators'].push({
+                    "column": key,
+                    "compare_operator": "=",
+                    "value": oFilter[key]
+                });
             }
             // Sauve les données du filtre.
-            envSrvc["oSelectedObject"]["filter"] = aFilter;
+            envSrvc["oSelectedObject"]["filter"] = oGivenFilter;
         }
         // Code à éxécuter ?
         if (sEvent !== null) {
@@ -261,5 +280,6 @@ vitisApp.mainCtrl = function ($scope, $http, $timeout, $translate, $translatePar
     $rootScope["scrollMode"] = function (ScrollValue) {
         $('#mode_column').animate({'scrollTop': $('#mode_column').scrollTop() + ScrollValue}, 200);
     };
+    
 };
 vitisApp.module.controller("mainCtrl", vitisApp.mainCtrl);

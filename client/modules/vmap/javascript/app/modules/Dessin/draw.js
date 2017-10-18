@@ -168,9 +168,6 @@ nsVmap.nsToolsManager.nsModules.Draw.prototype.drawDirective = function () {
 nsVmap.nsToolsManager.nsModules.Draw.prototype.drawController = function () {
     oVmap.log("nsVmap.nsToolsManager.nsModules.Draw.prototype.drawController");
 
-    // test de la validité du token
-    oVmap.testToken();
-
     var drawController = this;
 
     /**
@@ -1056,14 +1053,12 @@ nsVmap.nsToolsManager.nsModules.Draw.prototype.drawController.prototype.zoomToFe
     } else if (feature.get('Type') === 'Cercle') {
         this.map_.getView().fit(
                 feature.getGeometry(),
-                [400, 400],
                 {padding: [0, 0, 0, 0]}
         );
         this.map_.getView().setCenter(feature.getGeometry().getCenter());
     } else {
         this.map_.getView().fit(
                 feature.getGeometry(),
-                [800, 800],
                 {padding: [0, 0, 0, 0]}
         );
     }

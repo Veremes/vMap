@@ -41,18 +41,25 @@ oVmap.module.config(oVmap.config);
 
 /**
  * Filtre angular permettant de faire du orderBy sur des objets
+ * ex: ng-repeat="node in ctrl.oBusinessObjects | orderObjectBy:'bo_title'"
  * @returns {Function}
  */
-oVmap.object2Array = function () {
-    return function (input) {
-        var out = [];
-        for (var i in input) {
-            out.push(input[i]);
-        }
-        return out;
+oVmap.orderObjectBy = function () {
+    return function (items, field, reverse) {
+        var filtered = [];
+        angular.forEach(items, function (item) {
+            filtered.push(item);
+        });
+        filtered.sort(function (a, b) {
+            return (a[field] > b[field] ? 1 : -1);
+        });
+        if (reverse)
+            filtered.reverse();
+        return filtered;
     };
+
 };
-oVmap.module.filter('object2Array', oVmap.object2Array);
+oVmap.module.filter('orderObjectBy', oVmap.orderObjectBy);
 
 /**
  * Filtre angular permettant de connaitre le type d'un élément
@@ -153,38 +160,35 @@ oVmap.init = function () {
     oVmap['properties'] = window["oClientProperties"];
     oVmap['properties']['api_url'] = oVmap['properties']['web_server_name'] + '/' + oVmap['properties']['services_alias'];
 
-    oVmap.log('sessionStorage[session_token] :');
-    oVmap.log(sessionStorage['session_token']);
-
     // Recherche si il y a le token dans l'url ou dans le session storage
     oVmap['properties']['token'] = goog.isDef(sessionStorage['session_token']) ?
             sessionStorage['session_token'] : oVmap.findInURL('token', window.location.href);
 
-
     if (goog.isDefAndNotNull(oVmap['properties']['token'])) {
 
         // Recupère les properties serveur
-        $.ajax({
-            url: oVmap['properties']['api_url'] + '/vitis/properties?token=' + oVmap['properties']['token'],
-            async: false,
-            dataType: 'json',
-            context: document.body
-        }).done(function (data) {
-            goog.object.extend(oVmap['properties'], data);
-            oVmap.log("properties: ", oVmap['properties']);
+        ajaxRequest({
+            'method': 'GET',
+            'url': oVmap['properties']['api_url'] + '/vitis/properties',
+            'async': false,
+            'responseType': '',
+            'success': function (response) {
+                var data = JSON.parse(response['data']);
+                goog.object.extend(oVmap['properties'], data);
+                oVmap.log("properties: ", oVmap['properties']);
+            }
         });
 
         // Recupère les projections dispo
-        $.ajax({
-            url: oVmap['properties']['api_url'] + '/vmap/crss?token=' + oVmap['properties']['token'],
-            async: true,
-            dataType: 'json',
-            context: document.body
-        }).done(function (data) {
-            var aCrs = data['crss'];
-            oVmap['oProjections'] = {};
-            for (var i = 0; i < aCrs.length; i++) {
-                oVmap['oProjections'][aCrs[i]['crs_id']] = aCrs[i]['name'];
+        ajaxRequest({
+            'method': 'GET',
+            'url': oVmap['properties']['api_url'] + '/vmap/crss',
+            'success': function (response) {
+                var aCrs = response['data']['crss'];
+                oVmap['oProjections'] = {};
+                for (var i = 0; i < aCrs.length; i++) {
+                    oVmap['oProjections'][aCrs[i]['crs_id']] = aCrs[i]['name'];
+                }
             }
         });
 
@@ -240,12 +244,10 @@ oVmap.vmapDirective = function () {
  * @ngInject
  * @export
  */
-oVmap.vmapController = function ($http) {
+oVmap.vmapController = function () {
     oVmap.log("oVmap.vmapController");
 
     var this_ = this;
-
-    this.$http_ = $http;
 
     /**
      * Variable lang
@@ -418,6 +420,13 @@ oVmap.findInURL = function (element, url) {
 oVmap.layerAdded = function () {
     // donne la valeur de la projection à l'outil current-projection
     $("#current-projection").html(oVmap['oProjections'][oVmap.getMap().getOLMap().getView().getProjection().getCode()]);
+    var vMapCatalog = oVmap.getMapManager().getMapCatalog();
+    for (var i = 0; i < vMapCatalog['maps'].length; i++) {
+        if (vMapCatalog['maps'][i]['used'] === true) {
+            var currentMapName = vMapCatalog['maps'][i]['name'];
+        }
+    }
+    $("#map-name").html(currentMapName);
 };
 
 /**
@@ -519,39 +528,6 @@ oVmap.simuleClickOnClass = function (targets) {
     for (var i = 0; i < aElements.length; i++) {
         aElements[i].dispatchEvent(evt);
     }
-};
-
-/**
- * Test the current token
- */
-oVmap.testToken = function () {
-
-    if (this.noTokenMessage_ > 0)
-        return 0;
-
-    this.noTokenMessage_++;
-
-    oVmap.log(oVmap.properties);
-
-    // Vérifie si le token est présent
-    if (!goog.isDef(oVmap['properties']['token'])) {
-        bootbox.confirm('<h4>Attention: token non renseigné</h4>', function (result) {
-        });
-        return 0;
-    }
-
-    // Vérifie si le token est valide
-    var url = oVmap['properties']['api_url'] + '/vitis/privatetoken?token=' + oVmap['properties']['token'];
-
-    $.get(url, function (data) {
-        oVmap.log(data);
-
-        if (goog.isDef(data['errorMessage'])) {
-            bootbox.confirm('<h4>Attention: ' + data['errorMessage'] + '</h4>', function (result) {
-            });
-        }
-
-    });
 };
 
 /**
@@ -1038,19 +1014,22 @@ oVmap.getGeomFromEWKT = function (EWKTGeom, proj) {
 oVmap.getStyles = function () {
     var aStyles = [];
     $('link[rel="stylesheet"]').each(function (i, ele) {
-        $.ajax({
-            url: $(this).attr('href'),
-            async: false
-        }).done(function (data) {
-            var css = data;
-            var style = document.createElement('style');
-            style.type = 'text/css';
-            if (style.styleSheet) {
-                style.styleSheet.cssText = css;
-            } else {
-                style.appendChild(document.createTextNode(css));
+        ajaxRequest({
+            'method': 'GET',
+            'url': $(this).attr('href'),
+            'async': false,
+            'responseType': '',
+            'success': function (response) {
+                var css = response['data'];
+                var style = document.createElement('style');
+                style.type = 'text/css';
+                if (style.styleSheet) {
+                    style.styleSheet.cssText = css;
+                } else {
+                    style.appendChild(document.createTextNode(css));
+                }
+                aStyles.push(style);
             }
-            aStyles.push(style);
         });
     });
     $('style').each(function (i, ele) {
@@ -1086,10 +1065,8 @@ oVmap.generatePrintReport = function (opt_options) {
         return 0;
     }
 
-    var $http = oVmap['scope']['vmapCtrl'].$http_;
     var printReportId = opt_options['printReportId'];
     var aIds = opt_options['ids'];
-
     var sIds = '';
 
     for (var i = 0; i < aIds.length; i++) {
@@ -1108,50 +1085,267 @@ oVmap.generatePrintReport = function (opt_options) {
     }
     printWindow.document.write('<div style="width: 100%; text-align: center; margin-top: 80px"><img src="images/ajax-big-loader.GIF" alt="Load img" style="width: 200px;height: 170px;"><br><br><i style="color: gray">Construction de la fiche en cours..</i></div>');
 
-    $http({
-        method: "POST",
-        url: oVmap['properties']['api_url'] + '/vmap/printreportservices',
-        params: {
-            'token': oVmap['properties']['token'],
+    ajaxRequest({
+        'method': 'POST',
+        'url': oVmap['properties']['api_url'] + '/vmap/printreportservices',
+        'headers': {
+            'Accept': 'application/x-vm-json'
+        },
+        'data': {
             'printreport_id': printReportId,
             'ids': sIds
-        }
-    }).then(function (response) {
+        },
+        'timeout': 120000,
+        'success': function (response) {
 
-        var bError = false;
-        if (!goog.isDefAndNotNull(response['data'])) {
-            bError = true;
-        } else if (!goog.isDefAndNotNull(response['data']['printreportservices'])) {
-            bError = true;
-        } else if (!goog.isDefAndNotNull(response['data']['printreportservices']['fileurl'])) {
-            bError = true;
-        } else if (response['data']['status'] !== 1) {
-            bError = true;
-        }
-        if (bError) {
+            var bError = false;
+            if (!goog.isDefAndNotNull(response['data'])) {
+                bError = true;
+            } else if (!goog.isDefAndNotNull(response['data']['printreportservices'])) {
+                bError = true;
+            } else if (!goog.isDefAndNotNull(response['data']['printreportservices']['fileurl'])) {
+                bError = true;
+            } else if (response['data']['status'] !== 1) {
+                bError = true;
+            }
+            if (bError) {
+                $.notify('Une erreur est survenue lors de l\'impression', 'error');
+                printWindow.document.write('<div style="width: 100%; text-align: center; margin-top: 80px">Une erreur est survenue lors de l\'impression</div>');
+                console.error("response: ", response);
+                return 0;
+            }
+
+            $.notify('Impression réussie', 'success');
+
+            // Ajoute les styles d'impression
+            var aStyles = oVmap.getStyles();
+            for (var i = 0; i < aStyles.length; i++) {
+                try {
+                    printWindow.document.head.appendChild(aStyles[i]);
+                } catch (e) {
+
+                }
+            }
+
+            // Ajoute le bouton d'impression
+            printWindow.document.body.style.textAlign = 'center';
+            printWindow.document.body.innerHTML = '<a href="' + response['data']['printreportservices']['fileurl'] + '" style="margin-top: calc(50vh - 46px);" class="btn btn-lg btn-primary btn-bs btn-outline" download>Télécharger le rapport</a>';
+
+        },
+        'error': function (response) {
             $.notify('Une erreur est survenue lors de l\'impression', 'error');
             printWindow.document.write('<div style="width: 100%; text-align: center; margin-top: 80px">Une erreur est survenue lors de l\'impression</div>');
-            console.error("response: ", response);
-            return 0;
         }
-
-        $.notify('Impression réussie', 'success');
-
-        // Ajoute les styles d'impression
-        var aStyles = oVmap.getStyles();
-        for (var i = 0; i < aStyles.length; i++) {
-            printWindow.document.head.appendChild(aStyles[i]);
-        }
-
-        // Ajoute le bouton d'impression
-        printWindow.document.body.style.textAlign = 'center';
-        printWindow.document.body.innerHTML = '<a href="' + response['data']['printreportservices']['fileurl'] + '" style="margin-top: calc(50vh - 46px);" class="btn btn-lg btn-primary btn-bs btn-outline" download>Télécharger le rapport</a>';
-
-    }, function (response) {
-        console.error(response);
-        $.notify('Une erreur est survenue lors de l\'impression', 'error');
-        printWindow.document.write('<div style="width: 100%; text-align: center; margin-top: 80px">Une erreur est survenue lors de l\'impression</div>');
     });
+};
+
+/**
+ * Get if the item is a link to parse ex: [link href="https://www.google.fr" target="_blank"]Lien[/link]
+ * @param {String} item
+ * @param {String} tagIdentifier the indentifier inside the brackets ex: [link] or [bo_link]
+ * @returns {Boolean}
+ * @export
+ */
+oVmap.isLink = function (item, tagIdentifier) {
+    if (!goog.isString(item)) {
+        return false;
+    }
+    tagIdentifier = goog.isDefAndNotNull(tagIdentifier) ? tagIdentifier : 'link';
+    if (item.indexOf('[' + tagIdentifier) !== -1 && item.indexOf('[/' + tagIdentifier + ']') !== -1) {
+        return true;
+    }
+    return false;
+};
+
+/**
+ * Parse a tagged link ex: [link href="https://www.google.fr" target="_blank"]Lien[/link]
+ * @param {String} sString
+ * @param {String} tagIdentifier the indentifier inside the brackets ex: [link] or [bo_link]
+ * @returns {String}
+ * @export
+ */
+oVmap.parseLink = function (sString, tagIdentifier) {
+    tagIdentifier = goog.isDefAndNotNull(tagIdentifier) ? tagIdentifier : 'link';
+    var sLink = sString.substr(sString.indexOf('[' + tagIdentifier), sString.indexOf('[/' + tagIdentifier + ']') - sString.indexOf('[' + tagIdentifier) + 10);
+    var sLinkFirstTag = oVmap.getFirstLinkTag_(sLink);
+    var sLinkLastTag = '[/' + tagIdentifier + ']';
+    var sLinkContent = oVmap.getLinkContent_(sLink, sLinkFirstTag, sLinkLastTag);
+    var oLinkArgs = oVmap.getLinkTagArguments_(sLinkFirstTag);
+
+    var sHref = goog.isDefAndNotNull(oLinkArgs['href']) ? oLinkArgs['href'] : null;
+    var sTarget = goog.isDefAndNotNull(oLinkArgs['target']) ? oLinkArgs['target'] : '_blank';
+    var sContent = sLinkContent.length > 0 ? sLinkContent : sHref;
+
+    if (goog.isDefAndNotNull(sHref)) {
+        var sLink = '<a href="' + sHref + '" target="' + sTarget + '">' + sContent + '</a>';
+        return sLink;
+    } else {
+        console.error('cannot parse href');
+        return sString;
+    }
+};
+
+/**
+ * Get the first tag
+ * @param {String} sLink
+ * @returns {String}
+ */
+oVmap.getFirstLinkTag_ = function (sLink) {
+
+    var quoteIndex1 = null;
+    var quoteIndex2 = null;
+    var bInArgument = false;
+    var sLinkFirstTag = '';
+
+    for (var i = 0; i < sLink.length; i++) {
+        sLinkFirstTag += sLink[i];
+        if (sLink[i] === '"') {
+            if (quoteIndex1 === null) {
+                if (sLink[i - 1] !== '\\') {
+                    quoteIndex1 = i;
+                    continue;
+                }
+            }
+        }
+        if (sLink[i] === '"') {
+            if (quoteIndex2 === null && quoteIndex1 !== null) {
+                if (sLink[i - 1] !== '\\') {
+                    quoteIndex2 = i;
+                    continue;
+                }
+            }
+        }
+
+        if (quoteIndex1 !== null && quoteIndex2 === null) {
+            bInArgument = true;
+        } else {
+            bInArgument = false;
+            if (quoteIndex1 !== null && quoteIndex2 !== null) {
+                quoteIndex1 = null;
+                quoteIndex2 = null;
+            }
+        }
+
+        if (!bInArgument && sLink[i] === ']') {
+            break;
+        }
+    }
+    return sLinkFirstTag;
+};
+
+/**
+ * Get the content
+ * @param {String} sLink
+ * @param {String} sLinkFirstTag
+ * @param {String} sLinkLastTag
+ * @returns {unresolved}
+ */
+oVmap.getLinkContent_ = function (sLink, sLinkFirstTag, sLinkLastTag) {
+
+    // sLink sans le premier tag
+    var content1 = sLink.substr(sLink.indexOf(sLinkFirstTag) + sLinkFirstTag.length);
+    // Contenu
+    var content = content1.substr(0, content1.indexOf(sLinkLastTag));
+    return content;
+};
+
+/**
+ * Get the arguments
+ * @param {String} sLinkTag
+ * @returns {Object}
+ */
+oVmap.getLinkTagArguments_ = function (sLinkTag) {
+
+    var quoteIndex1 = null;
+    var quoteIndex2 = null;
+    var spaceIndex = null;
+    var equalIndex = null;
+    var content = null;
+    var argument = null;
+    var bInArgument = false;
+    var oArguments = {};
+
+    for (var i = 0; i < sLinkTag.length; i++) {
+
+        if (sLinkTag[i] === '"') {
+            if (quoteIndex1 === null) {
+                if (sLinkTag[i - 1] !== '\\') {
+                    quoteIndex1 = i;
+                    continue;
+                }
+            }
+        }
+        if (sLinkTag[i] === '"') {
+            if (quoteIndex2 === null && quoteIndex1 !== null) {
+                if (sLinkTag[i - 1] !== '\\') {
+                    quoteIndex2 = i;
+                    continue;
+                }
+            }
+        }
+
+        if (quoteIndex1 !== null && quoteIndex2 === null) {
+            bInArgument = true;
+        } else {
+            bInArgument = false;
+            if (quoteIndex1 !== null && quoteIndex2 !== null) {
+                content = sLinkTag.substr(quoteIndex1 + 1, quoteIndex2 - quoteIndex1 - 1);
+                quoteIndex1 = null;
+                quoteIndex2 = null;
+            }
+        }
+
+        if (!bInArgument) {
+            if (sLinkTag[i] === ' ') {
+                if (spaceIndex === null) {
+                    spaceIndex = i;
+                }
+            }
+            if (sLinkTag[i] === '=') {
+                if (equalIndex === null) {
+                    equalIndex = i;
+                }
+            }
+
+            if (spaceIndex !== null && equalIndex !== null) {
+                argument = sLinkTag.substr(spaceIndex + 1, equalIndex - spaceIndex - 1);
+                spaceIndex = null;
+                equalIndex = null;
+            }
+        }
+
+        if (content !== null && argument !== null) {
+            oArguments[argument] = content;
+            content = null;
+            argument = null;
+        }
+    }
+    return oArguments;
+};
+
+/**
+ * Download a blob in a file
+ * @param {object} oBlob
+ * @param {string} sFileName
+ * @export
+ */
+oVmap.downloadBlob = function (oBlob, sFileName) {
+
+    // IE
+    if (window.navigator['msSaveOrOpenBlob']) {
+        window.navigator['msSaveOrOpenBlob'](oBlob, sFileName);
+    }
+    // Others
+    else {
+        var a = document.createElement("a");
+        var url = window.URL.createObjectURL(oBlob);
+        document.body.appendChild(a);
+        a.style = "display: none";
+        a.href = url;
+        a.download = sFileName;
+        a.click();
+        window.URL.revokeObjectURL(url);
+    }
 };
 
 /**

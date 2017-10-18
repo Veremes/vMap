@@ -10,6 +10,7 @@ $aAdminFields = Array(
     'ms_debug_mode',
     'log_directories.MapServer',
     'mapserver_alias',
+    'datadir',
     'ms_log_dir', 
     'test_wms_service_default_content'
 );
@@ -21,7 +22,8 @@ $aUserFields = Array(
     'private_wms_service',
     'ms_debug_mode',
     'mapserver_alias',
-    'ms_log_dir'
+    'ms_log_dir',
+     'datadir',
 );
 
 $properties['aAdminFields'] = array_merge($properties['aAdminFields'], $aAdminFields);

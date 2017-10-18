@@ -2,18 +2,19 @@
 
 define('USER_LABEL', 'Utilisateur : ');
 define('ERROR_LABEL', '<br>Erreur : ');
-define('ERROR_REQUEST_IMPOSSIBLE', 'Impossible d\'exécuter la requête : ');
 
 //logUtil
 define('ERROR_IMPOSSIBLE_WRITE', 'Impossible d\'écrire dans le fichier ');
 define('ERROR_RIGHTS_ON_FILE', ' : l\'application ne dispose pas de droits en écriture sur le fichier');
 define('ERROR_WRITING_FILE', ' : échec de l\'écriture');
+define('ERROR_REQUEST_ERROR', 'Une erreur SQl est survenue, plus d\'information dans les fichiers de log de l\'application, veuillez contacter votre administrateur');
 
 //BD.class
 define('ERROR_INCORRECT_SGBD', 'Le sgbd spécifié n\'est pas correct.\n Connexion à la base impossible.');
 define('ERROR_ACCESS_SERVER', 'Accès au serveur impossible pour :');
 define('ERROR_CONNECT_SERVER', 'Connexion au serveur impossible\n');
 define('ERROR_SGBD_UNDEFINED', 'Vous n\'avez pas spécifié votre sgbd.\n Connexion à la base impossible.');
+define('ERROR_REQUEST_IMPOSSIBLE', 'Impossible d\'exécuter la requête : ');
 define('RETURN_BD_LABEL', 'Le serveur renvoit : ');
 define('ATTRIBUT_POSITION_BD_LABEL', '"Il n\'y a pas d\'attribut en position $position');
 define('UNKNOWN_BD_LABEL', 'Inconnu');

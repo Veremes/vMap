@@ -237,7 +237,7 @@ PrintMap.prototype.removeMapControls = function () {
  * @param {type} extent
  */
 PrintMap.prototype.setMapExtent = function (extent) {
-    this.map.getView().fit(extent, this.map.getSize(), {
+    this.map.getView().fit(extent, {
         constrainResolution: false,
         nearest: true
     });

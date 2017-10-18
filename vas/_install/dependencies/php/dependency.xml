@@ -5,7 +5,7 @@
 		<dependency>
 			<name>vcredist</name>
 			<nature>extern-pre</nature>
-			<location>vcredist-11</location>
+			<location>vcredist-14-64</location>
 		</dependency>
 	</dependenciesCollection>
 </installer>

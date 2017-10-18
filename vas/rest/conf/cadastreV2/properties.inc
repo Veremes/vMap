@@ -9,26 +9,52 @@ $properties["cadastre"]["rp"]["rp_url"] = $properties['public_alias'] . '/cadast
 $properties["cadastre"]["rp"]["login"] = "u_vitis";
 $properties["cadastre"]["rp"]["pass"] = "";
 
+$properties["cadastre"]["selection_buffer"] = 5;
 $properties["cadastre"]["database_projection"] = "EPSG:2154";
 
 $properties['schema_cadastre'] = 's_cadastre';
 $properties['schema_majic'] = 's_majic';
 
+// Vues à utiliser dans les ressources (CadastreV2)
+$properties["cadastre"]["views"]["adresse"] = "v_vmap_nb_10_parcelle_light";
+$properties["cadastre"]["views"]["commune"] = "v_vmap_commune";
+$properties["cadastre"]["views"]["description_parcelle"] = "v_vmap_nb_10_parcelle";
+$properties["cadastre"]["views"]["invariant"] = "v_vmap_bati_0010_local";
+$properties["cadastre"]["views"]["lieu_dit"] = "v_vmap_lieu_dit";
+$properties["cadastre"]["views"]["parcelle"] = "v_vmap_parcelle_all_geom";
+$properties["cadastre"]["views"]["proprietaire"] = "v_vmap_maj_pc";
+$properties["cadastre"]["views"]["section"] = "v_vmap_section_cadastrale";
+$properties["cadastre"]["views"]["voie"] = "v_vmap_maj_fv";
+
+// Vues à utiliser dans les ressources (CadastreV1)
+//$properties["cadastre"]["views"]["adresse"] = "v_non_bati_a10_descr_parcelle";
+//$properties["cadastre"]["views"]["commune"] = "v_commune";
+//$properties["cadastre"]["views"]["description_parcelle"] = "v_non_bati_a10_descr_parcelle";
+//$properties["cadastre"]["views"]["invariant"] = "v_bati_a00_ident_local";
+//$properties["cadastre"]["views"]["lieu_dit"] = "v_lieu_dit";
+//$properties["cadastre"]["views"]["parcelle"] = "v_parcelle";
+//$properties["cadastre"]["views"]["proprietaire"] = "v_maj_pc";
+//$properties["cadastre"]["views"]["section"] = "v_section";
+//$properties["cadastre"]["views"]["voie"] = "v_maj_fv";
+
 //// Paramètres pour l'affichage de données supplémentaires sur la fiche descriptive d'une parcelle
-//$properties["cadastre"]["descr_parcel"]["intersect"]["views"]["v_pos"]["title"] = "POS";
-//$properties["cadastre"]["descr_parcel"]["intersect"]["views"]["v_pos"]["type"] = "POLYGON";
-//$properties["cadastre"]["descr_parcel"]["intersect"]["views"]["v_pos"]["intersect"] = "Surface intersecté";
-//$properties["cadastre"]["descr_parcel"]["intersect"]["views"]["v_pos"]["type_pos"] = "Type";
-//$properties["cadastre"]["descr_parcel"]["intersect"]["views"]["v_pos"]["id_com"] = "Code commune";
-//$properties["cadastre"]["descr_parcel"]["intersect"]["views"]["v_pos"]["surface"] = "Surface du POS";
-//$properties["cadastre"]["descr_parcel"]["intersect"]["views"]["v_pos"]["reglement"] = "Lien vers réglement";
+//$properties["cadastre"]["descr_parcel"]["intersect"]["views"]["public.v_pos"]["title"] = "POS";
+//$properties["cadastre"]["descr_parcel"]["intersect"]["views"]["public.v_pos"]["type"] = "POLYGON";
+//$properties["cadastre"]["descr_parcel"]["intersect"]["views"]["public.v_pos"]["intersect"] = "Surface intersecté";
+//$properties["cadastre"]["descr_parcel"]["intersect"]["views"]["public.v_pos"]["type_pos"] = "Type";
+//$properties["cadastre"]["descr_parcel"]["intersect"]["views"]["public.v_pos"]["id_com"] = "Code commune";
+//$properties["cadastre"]["descr_parcel"]["intersect"]["views"]["public.v_pos"]["surface"] = "Surface du POS";
+//$properties["cadastre"]["descr_parcel"]["intersect"]["views"]["public.v_pos"]["reglement"] = "Lien vers réglement";
 //
-//$properties["cadastre"]["descr_parcel"]["intersect"]["views"]["v_commune"]["title"] = "Commune";
-//$properties["cadastre"]["descr_parcel"]["intersect"]["views"]["v_commune"]["type"] = "POLYGON";
-//$properties["cadastre"]["descr_parcel"]["intersect"]["views"]["v_commune"]["intersect"] = "Surface intersecté";
-//$properties["cadastre"]["descr_parcel"]["intersect"]["views"]["v_commune"]["id_com"] = "Id de la commune";
-//$properties["cadastre"]["descr_parcel"]["intersect"]["views"]["v_commune"]["code_com"] = "Code commune";
-//$properties["cadastre"]["descr_parcel"]["intersect"]["views"]["v_commune"]["nom"] = "Nom de la commune";
+//$properties["cadastre"]["descr_parcel"]["intersect"]["views"]["s_cadastre.v_vmap_commune"]["title"] = "Commune";
+//$properties["cadastre"]["descr_parcel"]["intersect"]["views"]["s_cadastre.v_vmap_commune"]["type"] = "POLYGON";
+//$properties["cadastre"]["descr_parcel"]["intersect"]["views"]["s_cadastre.v_vmap_commune"]["intersect"] = "Surface intersecté";
+//$properties["cadastre"]["descr_parcel"]["intersect"]["views"]["s_cadastre.v_vmap_commune"]["id_com"] = "Id de la commune";
+//$properties["cadastre"]["descr_parcel"]["intersect"]["views"]["s_cadastre.v_vmap_commune"]["code_com"] = "Code commune";
+//$properties["cadastre"]["descr_parcel"]["intersect"]["views"]["s_cadastre.v_vmap_commune"]["nom"] = "Nom de la commune";
+
+// Tolérence d'intersection (en %)
+$properties["cadastre"]["descr_parcel"]["intersect"]["tolerance"] = 1;
 
 
 // On peut donner soit un logo soit un nom de company
@@ -41,28 +67,31 @@ $properties["cadastre"]["fiche_urb"]["features_zoom"] = "800";
 //*** Vue des batiments pour le rapport cadastre parcelle
 $properties["cadastre"]["view"]["bati"] = "s_cadastre.v_vmap_batiment";
 
-//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["v_pos"]["title"] = "";
-//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["v_pos"]["type"] = "POLYGON";
-//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["v_pos"]["intersect"] = "POS intersecté";
-//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["v_pos"]["type_pos"] = "Type";
-//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["v_pos"]["id_com"] = "Commune";
-//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["v_pos"]["surface"] = "Suf.pos";
+//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["public.v_pos"]["title"] = "";
+//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["public.v_pos"]["type"] = "POLYGON";
+//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["public.v_pos"]["intersect"] = "POS intersecté";
+//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["public.v_pos"]["type_pos"] = "Type";
+//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["public.v_pos"]["id_com"] = "Commune";
+//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["public.v_pos"]["surface"] = "Suf.pos";
 //
-//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["v_commune"]["title"] = "Commune";
-//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["v_commune"]["type"] = "POLYGON";
-//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["v_commune"]["intersect"] = "Surface intersecté";
-//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["v_commune"]["id_com"] = "Id de la commune";
-//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["v_commune"]["code_com"] = "Code commune";
-//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["v_commune"]["nom"] = "Nom de la commune";
+//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["s_cadastre.v_vmap_commune"]["title"] = "Commune";
+//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["s_cadastre.v_vmap_commune"]["type"] = "POLYGON";
+//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["s_cadastre.v_vmap_commune"]["intersect"] = "Surface intersecté";
+//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["s_cadastre.v_vmap_commune"]["id_com"] = "Id de la commune";
+//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["s_cadastre.v_vmap_commune"]["code_com"] = "Code commune";
+//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["s_cadastre.v_vmap_commune"]["nom"] = "Nom de la commune";
 //
-//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["v_section"]["title"] = "Section";
-//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["v_section"]["type"] = "POLYGON";
-//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["v_section"]["intersect"] = "Surface intersecté";
-//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["v_section"]["id_sec"] = "Id de la section";
-//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["v_section"]["id_com"] = "Id de la commune";
-//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["v_section"]["code_com"] = "Code commune";
-//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["v_section"]["section"] = "Code section";
-//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["v_section"]["pre"] = "pre";
-//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["v_section"]["idu"] = "idu";
-//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["v_section"]["texte"] = "texte";
+//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["s_cadastre.v_vmap_section_cadastrale"]["title"] = "Section";
+//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["s_cadastre.v_vmap_section_cadastrale"]["type"] = "POLYGON";
+//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["s_cadastre.v_vmap_section_cadastrale"]["intersect"] = "Surface intersecté";
+//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["s_cadastre.v_vmap_section_cadastrale"]["id_sec"] = "Id de la section";
+//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["s_cadastre.v_vmap_section_cadastrale"]["id_com"] = "Id de la commune";
+//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["s_cadastre.v_vmap_section_cadastrale"]["code_com"] = "Code commune";
+//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["s_cadastre.v_vmap_section_cadastrale"]["section"] = "Code section";
+//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["s_cadastre.v_vmap_section_cadastrale"]["pre"] = "pre";
+//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["s_cadastre.v_vmap_section_cadastrale"]["idu"] = "idu";
+//$properties["cadastre"]["fiche_urb"]["intersect"]["views"]["s_cadastre.v_vmap_section_cadastrale"]["texte"] = "texte";
+
+// Tolérence d'intersection (en %)
+$properties["cadastre"]["fiche_urb"]["intersect"]["tolerance"] = 1;
 ?>

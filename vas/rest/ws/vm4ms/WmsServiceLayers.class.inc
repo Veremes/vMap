@@ -174,10 +174,10 @@ class WmsServiceLayers extends Vmap4MapServer {
         if (!empty($this->aValues['wmsservice_ms_layers'])) {
             $aLayers = explode('|', $this->aValues['wmsservice_ms_layers']);
             foreach ($aLayers as $iLayerId) {
-                $sSql = str_replace('[wmsservice_id]', $this->aValues["my_vitis_id"], $aSql['insertWmsServiceLayers']);
-                $sSql = str_replace('[ms_layer_id]', $iLayerId, $sSql);
-                $sSql = str_replace('[sSchemaVm4ms]', $this->aProperties['schema_vm4ms'], $sSql);
-                $resultat = $this->oConnection->oBd->execute($sSql);
+                $aParams['sSchemaVm4ms'] = array('value' => $this->aProperties['schema_vm4ms'], 'type' => 'schema_name');
+                $aParams['ms_layer_id'] = array('value' => $iLayerId, 'type' => 'number');
+                $aParams['wmsservice_id'] = array('value' => $this->aValues["my_vitis_id"], 'type' => 'string');
+                $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['insertWmsServiceLayers'], $aParams);
                 if ($this->oConnection->oBd->enErreur()) {
                     $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                     $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
@@ -189,7 +189,7 @@ class WmsServiceLayers extends Vmap4MapServer {
                 }
             }
             // Création du fichier .map du flux WMS.
-            $aValues = array('token' => session_id(), 'wmsservice_id' => $this->aValues["my_vitis_id"], 'my_vitis_id' => $this->aValues["my_vitis_id"], 'type' => 'prod', 'creation' => true);
+            $aValues = array('token' => session_id(), 'wmsservice_id' => $this->aValues["my_vitis_id"], 'my_vitis_id' => $this->aValues["my_vitis_id"], 'type' => 'prod', 'creation' => true, 'sEncoding' => $this->aValues['sEncoding'], 'sSourceEncoding' => $this->aValues['sSourceEncoding'], 'output' => $this->aValues['output']);
             $aPath = array('vm4ms', 'wmsservices', $this->aValues["my_vitis_id"]);
             $oWmsServices = new WmsServices($this->aPath, $aValues, $this->aProperties, $this->oConnection);
             $oWmsServices->GET();
@@ -250,10 +250,16 @@ class WmsServiceLayers extends Vmap4MapServer {
         require $this->sRessourcesFile;
         // Couches à supprimer ?
         if (!empty($this->aValues['idList'])) {
-            $sSql = str_replace('[wmsservice_id]', $this->aValues["my_vitis_id"], $aSql['deleteWmsServiceLayers']);
-            $sSql = str_replace('[idList]', str_replace('|', ',', $this->aValues['idList']), $sSql);
-            $sSql = str_replace('[sSchemaVm4ms]', $this->aProperties['schema_vm4ms'], $sSql);
-            $resultat = $this->oConnection->oBd->execute($sSql);
+            $aParams['sSchemaVm4ms'] = array('value' => $this->aProperties['schema_vm4ms'], 'type' => 'schema_name');
+            $aParams['wmsservice_id'] = array('value' => $this->aValues["my_vitis_id"], 'type' => 'string');
+            $aParamsName = array();
+            foreach(explode('|', $this->aValues['idList']) as $iIndex => $iId) {
+                $sParamName = 'id_layer_' . $iIndex;
+                $aParamsName[] = ':' . $sParamName;
+                $aParams[$sParamName] = array('value' => $iId, 'type' => 'number');
+            }
+            $aSql['deleteWmsServiceLayers'] = str_replace('[idList]', implode(',', $aParamsName), $aSql['deleteWmsServiceLayers']);
+            $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['deleteWmsServiceLayers'], $aParams);
             if ($this->oConnection->oBd->enErreur()) {
                 $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                 $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());

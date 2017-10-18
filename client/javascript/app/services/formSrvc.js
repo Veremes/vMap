@@ -1,4 +1,5 @@
 /* global goog, vitisApp */
+'use strict';
 
 // Google closure
 goog.provide("vitis.services.form");
@@ -7,17 +8,13 @@ goog.require('vitis');
 /**
  * formSrvc service.
  * Service de gestion des formulaires.
- * @param {service} $translate Translate service.
- * @param {angular.$rootScope} $rootScope Angular rootScope.
- * @param {service} Restangular Service Restangular.
  * @param {service} envSrvc Paramètres d'environnement.
  * @param {service} propertiesSrvc Paramètres des properties.
  * @param {service} sessionSrvc Service de gestion des sessions.
- * @param {service} externFunctionSrvc Fonctions externes à Angular.
  * @ngInject
  * @constructor
  **/
-vitisApp.formSrvc = function ($translate, $rootScope, Restangular, envSrvc, propertiesSrvc, sessionSrvc, externFunctionSrvc, formReaderService) {
+vitisApp.formSrvc = function (envSrvc, propertiesSrvc, sessionSrvc, formReaderService) {
     return {
         /**
          * getFormData function.
@@ -60,6 +57,10 @@ vitisApp.formSrvc = function ($translate, $rootScope, Restangular, envSrvc, prop
                                     if (goog.isDefAndNotNull(oFiles)) {
                                         if (oFiles.length > 0) {
                                             oFormKeysValues[aFormRowElementsList[ifieldIndex]["name"]] = oFiles[0];
+                                            if (goog.isDefAndNotNull(aFormRowElementsList[ifieldIndex]["width"]) && goog.isDefAndNotNull(aFormRowElementsList[ifieldIndex]["height"])) {
+                                                oFormKeysValues[aFormRowElementsList[ifieldIndex]["name"] + "_width"] = aFormRowElementsList[ifieldIndex]["width"];
+                                                oFormKeysValues[aFormRowElementsList[ifieldIndex]["name"] + "_height"] = aFormRowElementsList[ifieldIndex]["height"];
+                                            }
                                         } else {
                                             bContainFiles = false;
                                         }
@@ -73,6 +74,10 @@ vitisApp.formSrvc = function ($translate, $rootScope, Restangular, envSrvc, prop
                                             if (goog.isDefAndNotNull(oElemValue['aFiles'])) {
                                                 if (goog.isDefAndNotNull(oElemValue['aFiles'][0])) {
                                                     oFormKeysValues[aFormRowElementsList[ifieldIndex]["name"]] = oElemValue['aFiles'][0];
+                                                    if (goog.isDefAndNotNull(aFormRowElementsList[ifieldIndex]["width"]) && goog.isDefAndNotNull(aFormRowElementsList[ifieldIndex]["height"])) {
+                                                        oFormKeysValues[aFormRowElementsList[ifieldIndex]["name"] + "_width"] = aFormRowElementsList[ifieldIndex]["width"];
+                                                        oFormKeysValues[aFormRowElementsList[ifieldIndex]["name"] + "_height"] = aFormRowElementsList[ifieldIndex]["height"];
+                                                    }
                                                 }
                                             }
                                         }
@@ -96,9 +101,11 @@ vitisApp.formSrvc = function ($translate, $rootScope, Restangular, envSrvc, prop
                             case "select":
                             case "editable_select":
                                 if (goog.isDefAndNotNull(aFormValues[aFormRowElementsList[ifieldIndex]["name"]])) {
-                                    var selectedOptionValue = aFormValues[aFormRowElementsList[ifieldIndex]["name"]]["selectedOption"]["value"]
-                                    if (typeof (selectedOptionValue) != "undefined" && selectedOptionValue != "?")
-                                        oFormKeysValues[aFormRowElementsList[ifieldIndex]["name"]] = selectedOptionValue;
+                                    if (typeof(aFormValues[aFormRowElementsList[ifieldIndex]["name"]]["selectedOption"]) != "undefined") {
+                                        var selectedOptionValue = aFormValues[aFormRowElementsList[ifieldIndex]["name"]]["selectedOption"]["value"]
+                                        if (typeof (selectedOptionValue) != "undefined" && selectedOptionValue != "?")
+                                            oFormKeysValues[aFormRowElementsList[ifieldIndex]["name"]] = selectedOptionValue;
+                                    }
                                 }
                                 break;
                                 // Si liste : suppression du champ si aucune option est sélectionnée.
@@ -256,6 +263,15 @@ vitisApp.formSrvc = function ($translate, $rootScope, Restangular, envSrvc, prop
          **/
         "checkFormModifications": function (sFormDefinitionName) {
             return formReaderService['checkFormModifications'](sFormDefinitionName);
+        },
+        /**
+         * checkStudioFormModifications function.
+         * Vérifie si un formulaire a été modifié et si oui affiche un warning.
+         * @param {string} sSelectedObjectName Nom de l'Object en cour.
+         * @return {promise}
+         **/
+        "checkStudioFormModifications" : function (sSelectedObjectName) {
+            return formReaderService['checkStudioFormModifications'](sSelectedObjectName);
         }
     };
 };

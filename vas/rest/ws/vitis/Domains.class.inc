@@ -245,12 +245,7 @@ class Domains extends Vitis {
      */
     function POST() {
         $aReturn = $this->genericPost($this->aProperties['schema_framework'], 'domain', $this->aProperties['schema_framework'].'.seq_common', 'domain_id');
-		$sSql = "select nspname from pg_catalog.pg_namespace where nspname = 's_framework';";
-		$resultat = $this->oConnection->oBd->execute($sSql);
-		if ($resultat->rowCount() > 0) {
-			$this->genericPost("s_framework", 'domain', "s_framework".'.seq_common', 'domain_id', "framework_admin");
-		}
-        if ($aReturn['sStatus'] == 1){
+		if ($aReturn['sStatus'] == 1){
             $oDomain = new Domain($this->aPath, $this->aValues, $this->aProperties, $this->oConnection);
             $oDomain->GET();
             $error = $this->writeDomainInProperties($oDomain->aFields, "insert");
@@ -277,24 +272,24 @@ class Domains extends Vitis {
     Function writeDomainInProperties($aValues, $sAction) {
         require $this->sRessourcesFile;
         $sSql2 = $aSql['listDomain'];
-        $sSql2 = str_replace('[sSchemaFramework]', $this->aProperties["schema_framework"], $sSql2);
-        $resultat = $this->oConnection->oBd->execute($sSql2);
+        $aParams['sSchemaFramework'] = array('value' => $this->aProperties['schema_framework'], 'type' => 'schema_name');
+        $oPDOresult = $this->oConnection->oBd->executeWithParams($sSql2, $aParams);
         $fPropertiesDomain = fopen('conf/properties_domain.inc', 'w');
         fputs($fPropertiesDomain, "<?php" . PHP_EOL);
         fputs($fPropertiesDomain, '$properties[\'domain\'] [""] = "";' . PHP_EOL);
-        while ($oDomain = $this->oConnection->oBd->objetSuivant($resultat)) {
+        while ($oDomain = $this->oConnection->oBd->objetSuivant($oPDOresult)) {
             fputs($fPropertiesDomain, '$properties[\'domain\'] ["' . $oDomain->alias . '"] = "' . $oDomain->domain . '";' . PHP_EOL);
         }
         fputs($fPropertiesDomain, "?>" . PHP_EOL);
         fclose($fPropertiesDomain);
         if ($sAction == "insert") {
-            $sSql = $aSql['getInfoRolname'];
-            $sSql = str_replace('[sDomain]', $aValues["domain"], $sSql);
-            $resultat = $this->oConnection->oBd->execute($sSql);
-            if ($this->oConnection->oBd->nombreLigne($resultat) == 0) {
-                $sSql = $aSql['createRolname'];
-                $sSql = str_replace('[sDomain]', $aValues["domain"], $sSql);
-                $oPDOResult = $this->oConnection->oBd->execute($sSql);
+            $aParams = array();
+            $aParams['sDomain'] = array('value' => 'vitis_' . $aValues["domain"], 'type' => 'string');
+            $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['getInfoRolname'], $aParams);
+            if ($this->oConnection->oBd->nombreLigne($oPDOresult) == 0) {
+                $aParams = array();
+                $aParams['sDomain'] = array('value' => $aValues["domain"], 'type' => 'string');
+                $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['createRolname'], $aParams);
                 if ($this->oConnection->oBd->enErreur()) {
                     $aReturn = array(sStatus => 0, sMessage => $this->oBd->getBDMessage());
                     return array(aReturn => $aReturn);
@@ -440,18 +435,6 @@ class Domains extends Vitis {
             $error = $this->writeDomainInProperties($oDomain->aFields, "update");
             if ($error['sStatus'] == 1){
                 $sMessage = $aReturn['sMessage'];
-				$sSql = "select nspname from pg_catalog.pg_namespace where nspname = 's_framework';";
-				$resultat = $this->oConnection->oBd->execute($sSql);
-				if ($resultat->rowCount() > 0) {
-					$sSql = "select domain_id from s_framework.domain where domain = '".$oDomain->aFields['domain']."';";
-					$resultat = $this->oConnection->oBd->execute($sSql);
-					if ($resultat->rowCount() > 0) {
-						while($aLigne=$this->oConnection->oBd->ligneSuivante ($resultat)) {
-							$this->aValues['my_vitis_id'] = $aLigne['domain_id'];
-							$this->genericPut("s_framework", 'domain', 'domain_id');
-						}
-					}
-				}
             }else{
 				
                 $oError = new VitisError(1, $error['sMessage']);
@@ -527,29 +510,6 @@ class Domains extends Vitis {
      * @return id of domain deleted or error object if a domain is not deleted
      */
     function DELETE() {
-		$sSql = "select nspname from pg_catalog.pg_namespace where nspname = 's_framework';";
-		$resultat = $this->oConnection->oBd->execute($sSql);
-		if ($resultat->rowCount() > 0) {
-			$sSql = "select domain from ".$this->aProperties['schema_framework'].".domain where domain_id IN";
-			if (isset($this->aValues['my_vitis_id'])) {
-				$sSql .= "(".$this->aValues['my_vitis_id'].")";
-			}else{
-				$sSql .= "(".str_replace("|", ",", $this->aValues['idList']).")";
-			}
-			$resultat = $this->oConnection->oBd->execute($sSql);
-			if ($resultat->rowCount() > 0) {
-				$sDomaineNames = "";
-				while($aLigne=$this->oConnection->oBd->ligneSuivante ($resultat)) {
-					if ($sDomaineNames == ""){
-						$sDomaineNames = "'".$aLigne['domain']."'";
-					}else{
-						$sDomaineNames .= ",'".$aLigne['domain']."'";
-					}
-				}
-				$sSql = "delete from s_framework.domain where domain in (".$sDomaineNames.")";
-				$resultat = $this->oConnection->oBd->execute($sSql);
-			}
-		}
         $aReturn = $this->genericDelete($this->aProperties['schema_framework'], 'domain', 'domain_id');
         if ($aReturn['sStatus'] == 1){
             $oDomain = new Domain($this->aPath, $this->aValues, $this->aProperties, $this->oConnection);

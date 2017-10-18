@@ -1,4 +1,5 @@
 /* global goog, vitisApp */
+'use strict';
 
 // Google closure
 goog.provide('vitis.services.main');
@@ -27,7 +28,7 @@ vitisApp.sessionSrvc = function ($http, $window, envSrvc) {
          **/
         "connect": function () {
             // Passe le token dans toutes les requêtes de l'application.
-            $http.defaults.headers["common"]['Session-token'] = this["token"];
+            $http.defaults.headers["common"]['token'] = this["token"];
             // Charge le template principal (menus + 1er onglet).
             envSrvc["sMainTemplateUrl"] = "templates/mainTpl.html";
         },
@@ -38,7 +39,7 @@ vitisApp.sessionSrvc = function ($http, $window, envSrvc) {
         "disconnect": function () {
             // Supprime le cookie (session php).
             document.cookie.split(";").forEach(function (sCookie) {
-                aCookie = sCookie.split("=");
+                var aCookie = sCookie.split("=");
                 if (aCookie[1] == sessionStorage.getItem("session_token"))
                     document.cookie = aCookie[0] + "=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
             });
@@ -134,12 +135,15 @@ vitisApp.sessionSrvc = function ($http, $window, envSrvc) {
  * Paramètres d'environnement.
  * @param {angular.$rootScope} $rootScope Angular rootScope.
  * @param {service} $injector Angular injector service.
- * @param {service} Restangular Service Restangular.
+ * @param {angular.$templateRequest} $templateRequest Angular templateRequest service.
+ * @param {angular.$compile} $compile Angular compile.
+ * @param {service} $translate Translate service.
  * @param {service} propertiesSrvc Paramètres des properties.
+ * @param {service} externFunctionSrvc Fonctions externes à Angular.
  * @constructor
  * @ngInject
  **/
-vitisApp.envSrvc = function ($rootScope, $injector, Restangular, propertiesSrvc) {
+vitisApp.envSrvc = function ($rootScope, $injector, $templateRequest, $compile, $translate, propertiesSrvc, externFunctionSrvc) {
     return {
         "sMode": "search",
         "oSelectedMode": "",
@@ -161,6 +165,7 @@ vitisApp.envSrvc = function ($rootScope, $injector, Restangular, propertiesSrvc)
         "sTemplateFolder": "templates/",
         "oWorkspaceList": {},
         "oWorkspaceListRefreshTimer": {},
+        "sSelectedSectionName": "",
         /**
          * setMode function.
          * Change le mode d'action (update, display, search).
@@ -225,41 +230,60 @@ vitisApp.envSrvc = function ($rootScope, $injector, Restangular, propertiesSrvc)
                     }
                     // Si 1er affichage de l'onglet : chargement de ses sections.
                     if (typeof (envSrvc["oSelectedObject"]["sections"]) == "undefined") {
-                        // Nom du service web (vitis, gtf...)
-                        var oWebServiceBase = Restangular["one"](propertiesSrvc["services_alias"] + "/vitis");
                         // Charge les sections de l'onglet.
-                        var sFilterModules = sessionStorage["application_modules"].split(",").map(function (sModule) {
-                            return "'" + sModule + "'";
-                        }).join(",");
+                        var aFilterModules = sessionStorage["application_modules"].split(",");
                         var oParams = {
-                            "token": sessionStorage["session_token"],
                             "order_by": "index",
-                            "filter": "tab_id=" + this["oSelectedObject"]["tab_id"] + " AND lang='" + propertiesSrvc["language"] + "'" + " AND module_name IN(" + sFilterModules + ")"
+                            "filter": {
+                                "relation": "AND",
+                                "operators": [{
+                                        "column": "tab_id",
+                                        "compare_operator": "=",
+                                        "value": this["oSelectedObject"]["tab_id"]
+                                    }, {
+                                        "column": "lang",
+                                        "compare_operator": "=",
+                                        "value": propertiesSrvc["language"]
+                                    }, {
+                                        "column": "module_name",
+                                        "compare_operator": "IN",
+                                        "value": aFilterModules
+                                    }]
+                            }
                         }
-                        oWebServiceBase["customGET"]("VitisSections", oParams)
-                                .then(function (data) {
-                                    if (data["status"] == 1) {
-                                        // Sauve les sections et le nom du template.
-                                        envSrvc["oSelectedObject"]["sections"] = data["vitissections"];
-                                        envSrvc["sSelectedTemplate"] = data["vitissections"][0]["template"];
-                                        var sTemplateUrl;
-                                        // 1 ou plusieurs sections pour l'onglet ?
-                                        if (envSrvc["sMode"] != "search" && data["vitissections"].length > 1)
-                                            sTemplateUrl = envSrvc["sTemplateFolder"] + "sectionFormTpl.html";
-                                        else {
-                                            // Le template de l'objet est dans un répertoire du module ou dans le noyau ?
-                                            if (envSrvc["sSelectedTemplate"].indexOf("/") != -1)
-                                                sTemplateUrl = envSrvc["sSelectedTemplate"];
-                                            else
-                                                sTemplateUrl = envSrvc["sTemplateFolder"] + envSrvc["sSelectedTemplate"];
-                                        }
-                                        envSrvc["setFormDefinitionName"]();
-                                        // Compile le template de l'onglet (vm_tab.template).
-                                        $rootScope["compileObjectTemplate"](sTemplateUrl);
-
-                                        $rootScope.$broadcast($rootScope["sSelectedObjectName"] + '_form', {});
+                        /*
+                         oWebServiceBase["customGET"]("VitisSections", oParams)
+                         .then(function (data) {
+                         */
+                        ajaxRequest({
+                            "method": "GET",
+                            "url": propertiesSrvc["web_server_name"] + "/" + propertiesSrvc["services_alias"] + "/vitis/VitisSections",
+                            "params": oParams,
+                            "scope": $rootScope,
+                            "success": function (response) {
+                                if (response["data"]["status"] == 1) {
+                                    // Sauve les sections et le nom du template.
+                                    envSrvc["oSelectedObject"]["sections"] = response["data"]["vitissections"];
+                                    envSrvc["sSelectedTemplate"] = response["data"]["vitissections"][0]["template"];
+                                    var sTemplateUrl;
+                                    // 1 ou plusieurs sections pour l'onglet ?
+                                    if (envSrvc["sMode"] != "search" && response["data"]["vitissections"].length > 1)
+                                        sTemplateUrl = envSrvc["sTemplateFolder"] + "sectionFormTpl.html";
+                                    else {
+                                        // Le template de l'objet est dans un répertoire du module ou dans le noyau ?
+                                        if (envSrvc["sSelectedTemplate"].indexOf("/") != -1)
+                                            sTemplateUrl = envSrvc["sSelectedTemplate"];
+                                        else
+                                            sTemplateUrl = envSrvc["sTemplateFolder"] + envSrvc["sSelectedTemplate"];
                                     }
-                                });
+                                    envSrvc["setFormDefinitionName"]();
+                                    // Compile le template de l'onglet (vm_tab.template).
+                                    $rootScope["compileObjectTemplate"](sTemplateUrl);
+
+                                    $rootScope.$broadcast($rootScope["sSelectedObjectName"] + '_form', {});
+                                }
+                            }
+                        });
                     } else {
                         // Onglet deja affiché une fois : sections sauvé dans la définition de l'onglet.
                         envSrvc["sSelectedTemplate"] = this["oSelectedObject"]["sections"][0]["template"];
@@ -415,6 +439,100 @@ vitisApp.envSrvc = function ($rootScope, $injector, Restangular, propertiesSrvc)
                     });
                 }
             }
+        },
+        /**
+         * setModalSectionForm function.
+         * Insertion, édition ou visualisation d'un enregistrement d'une liste dans une fenêtre modale.
+         * @param {string} sMode Mode d'action (insert, update, display).
+         * @param {string} sId Id de l'enregistrement.
+         **/
+        "setModalSectionForm": function (sMode, sId , oSaveTabParametersParam) {
+            var envSrvc = this;
+            var modesSrvc = $injector.get(["modesSrvc"]);
+            var sModalContainerId = "form_modal_" + envSrvc["oSelectedObject"]["name"];
+            // Nouveau scope.
+            var modalScope = $rootScope.$new();
+            modesSrvc["addScopeToObject"](envSrvc["oSelectedObject"]["name"], envSrvc["oSelectedMode"]["mode_id"], modalScope);
+            
+            var oSaveTabParameters = {};
+            if (goog.isDefAndNotNull(oSaveTabParametersParam)) {
+                oSaveTabParameters = oSaveTabParametersParam
+
+            } else {
+                oSaveTabParameters = {
+                    "sSelectedTemplate": envSrvc["sSelectedTemplate"],
+                    "sId": envSrvc["sId"],
+                    "sMode": envSrvc["sMode"]
+                };
+            }
+            modalScope["sParentMode"] = envSrvc["sMode"];
+            // Affichage de la fenêtre modale du formulaire.
+            var oOptions = {
+                "className": "dialog-modal-window dialog-modal-window-section-form",
+                "message": '<div id="' + sModalContainerId + '"></div>'
+            };
+            externFunctionSrvc["modalWindow"]("dialog", "&nbsp;", oOptions).then(function (oDialog) {
+                // Attends la fin de l'affichage de la fenêtre modale.
+                $(oDialog).on('shown.bs.modal', function (e) {
+                    // Paramètres pour le formulaire dans la modale.
+                    envSrvc["sSelectedTemplate"] = "simpleFormTpl.html";
+                    if (sMode == "insert")
+                        envSrvc["sId"] = "";
+                    else
+                        envSrvc["sId"] = sId;
+                    envSrvc["sMode"] = sMode;
+                    // Calcul de la hauteur et largeur de la fenêtre.
+                    var iModalWidth = document.querySelector("body").clientWidth - 50;
+                    var iModalHeight = document.querySelector("body").clientHeight - 50;
+                    oDialog[0].querySelector(".modal-dialog").style.width = iModalWidth + "px";
+                    oDialog[0].querySelector(".modal-dialog").style.height = iModalHeight + "px";
+                    // Hauteur du header du widget.
+                    oDialog[0].querySelector(".modal-header").style.height = "56px";
+                    // Hauteur du body du widget.
+                    oDialog[0].querySelector(".modal-body").style.height = (iModalHeight - 56 - 4) + "px";
+                    // Compilation du template.
+                    $templateRequest(envSrvc["sTemplateFolder"] + envSrvc["sSelectedTemplate"]).then(function (sTemplate) {
+                        $compile($("#" + sModalContainerId).html(sTemplate).contents())(modalScope);
+                        // Titre du form. dans le header de la fenêtre.
+                        var clearListener = $rootScope.$on('formDefinitionLoaded', function (event, sFormDefinitionName) {
+                            // Supprime le "listener".
+                            clearListener();
+                            // Traduction du titre du form.
+                            var sFormTitle = envSrvc["oFormDefinition"][sFormDefinitionName]["title"];
+                            $translate(sFormTitle, {"sId": envSrvc["sId"]}).then(function (sTranslation) {
+                                oDialog[0].querySelector(".modal-title").textContent = sTranslation;
+                            });
+                        });
+                        // Cache le titre du form.
+                        var clearListener2 = $rootScope.$on('endFormNgRepeat', function (event, sFormDefinitionName) {
+                            clearListener2();
+                            oDialog[0].querySelector(".simple-form-title").style.display = "none";
+                        });
+                    });
+                });
+
+                // Attends la fermeture de la fenêtre modale.
+                $(oDialog).on('hide.bs.modal', function (e) {
+                    var $scope = angular.element(vitisApp.appMainDrtv).scope();
+                    // Restaure les paramètres de l'onglet.
+                    envSrvc["sSelectedTemplate"] = oSaveTabParameters["sSelectedTemplate"];
+                    envSrvc["sId"] = oSaveTabParameters["sId"];
+                    envSrvc["sMode"] = oSaveTabParameters["sMode"];
+                    if (goog.isDefAndNotNull(oSaveTabParameters["sFormDefinitionName"])){
+                        
+                        $scope["sFormDefinitionName"] = oSaveTabParameters["sFormDefinitionName"];
+                        envSrvc["sFormDefinitionName"] = oSaveTabParameters["sFormDefinitionName"];
+                    }
+                    if (goog.isDefAndNotNull(oSaveTabParameters["ressource_id"])){
+                        envSrvc["oSelectedObject"]["ressource_id"] = oSaveTabParameters["ressource_id"];
+                    }
+                    if (goog.isDefAndNotNull(oSaveTabParameters["resetTemplateUrl"])){
+                        if(oSaveTabParameters["resetTemplateUrl"] == true){
+                            $scope["oFormRequestParams"] = null;
+                        }
+                    }
+                });
+            });
         }
     };
 };
@@ -438,15 +556,13 @@ vitisApp.userSrvc = function () {
  * @param {service} $q Angular q service.
  * @param {angular.$rootScope} $rootScope Angular rootScope.
  * @param {service} $timeout Angular timeout.
- * @param {service} Restangular Service Restangular.
  * @param {service} envSrvc Paramètres d'environnement.
- * @param {service} sessionSrvc Service de gestion des sessions.
  * @param {service} propertiesSrvc Paramètres des properties.
  * @param {service} formSrvc Service de gestion des formulaires.
  * @constructor
  * @ngInject
  **/
-vitisApp.modesSrvc = function ($translate, $translatePartialLoader, $q, $rootScope, $timeout, Restangular, envSrvc, sessionSrvc, propertiesSrvc, formSrvc) {
+vitisApp.modesSrvc = function ($translate, $translatePartialLoader, $q, $rootScope, $timeout, envSrvc, propertiesSrvc, formSrvc) {
     return {
         "modes": "", // Liste des modes de l'utilisateur.
         "scope": "",
@@ -481,6 +597,7 @@ vitisApp.modesSrvc = function ($translate, $translatePartialLoader, $q, $rootSco
             }
             return {};
         },
+
         /**
          * selectMode function.
          * Changement de mode.
@@ -493,7 +610,12 @@ vitisApp.modesSrvc = function ($translate, $translatePartialLoader, $q, $rootSco
             var modesSrvc = this;
             // Vérifie sur un formulaire a été modifié mais pas enregistré.
             var deferred = $q.defer();
-            var promise = formSrvc["checkFormModifications"](envSrvc["sFormDefinitionName"]);
+
+            if (typeof(oVFB) != "undefined" && oVFB.Update == true) {
+                var promise = formSrvc["checkStudioFormModifications"](envSrvc["sSelectedObjectName"]);
+            } else {
+                var promise = formSrvc["checkFormModifications"](envSrvc["sFormDefinitionName"]);
+            }
             promise.then(function () {
                 var bFirstModeObject;
                 // Paramètre "reload" du précédent mode.
@@ -533,10 +655,13 @@ vitisApp.modesSrvc = function ($translate, $translatePartialLoader, $q, $rootSco
                      if (typeof(modesSrvc["modes_event"][oSelectedMode["mode_id"]]) != "undefined")
                      eval(modesSrvc["modes_event"][oSelectedMode["mode_id"]]);
                      */
+
+
                     bFirstModeObject = true;
                 }
                 // Affiche les onglets
                 $rootScope["sSelectedObjectName"] = envSrvc["oSelectedObject"]["name"];
+                envSrvc["sSelectedSectionName"] = "";
 
                 if (oSelectedMode["objects"].length > 1 || oSelectedMode["objects"][iObjectId]['label'] !== null)
                     $scope["objects"] = oSelectedMode["objects"];
@@ -559,8 +684,10 @@ vitisApp.modesSrvc = function ($translate, $translatePartialLoader, $q, $rootSco
                 }, 300);
                 deferred.resolve();
             });
-            var promise2 = deferred.promise;
-            return promise2;
+            var promise = deferred.promise;
+            if (typeof(oVFB) != "undefined")
+                oVFB.Update = false;
+            return promise;
         },
         /**
          * selectObject function.
@@ -572,8 +699,12 @@ vitisApp.modesSrvc = function ($translate, $translatePartialLoader, $q, $rootSco
          **/
         "selectObject": function ($scope, sSelectedObjectName, sObjectMode, oEvent) {
             var modesSrvc = this;
-            // Vérifie sur un formulaire a été modifié mais pas enregistré.
-            var promise = formSrvc["checkFormModifications"](envSrvc["sFormDefinitionName"]);
+
+            if (typeof(oVFB) != "undefined" && oVFB.Update == true) {
+                var promise = formSrvc["checkStudioFormModifications"](envSrvc["sSelectedObjectName"]);
+            } else {
+                var promise = formSrvc["checkFormModifications"](envSrvc["sFormDefinitionName"]);
+            }
             promise.then(function () {
                 if (typeof (sObjectMode) == "undefined")
                     sObjectMode = "search";
@@ -592,6 +723,7 @@ vitisApp.modesSrvc = function ($translate, $translatePartialLoader, $q, $rootSco
                 envSrvc["oSelectedObject"] = modesSrvc["getObject"](sSelectedObjectName, envSrvc["oSelectedMode"]);
                 // Nom de l'objet sélectionné (affiché).
                 $rootScope["sSelectedObjectName"] = envSrvc["oSelectedObject"]["name"];
+                envSrvc["sSelectedSectionName"] = "";
                 // Lance le chargement des enregistrements de l'objet.
                 envSrvc["loadObjectTemplate"]({"bForceTemplateCompilation": true});
 
@@ -600,96 +732,107 @@ vitisApp.modesSrvc = function ($translate, $translatePartialLoader, $q, $rootSco
                     $rootScope.$broadcast($rootScope["sSelectedObjectName"], {});
                 }, 1);
             });
+            if (typeof(oVFB) != "undefined")
+                oVFB.Update = false;
         },
         /**
          * loadModes function.
          * Charge la liste des modes de l'application.
          **/
         "loadModes": function () {
-            // Nom du service web (vitis, gtf...)
-            var oWebServiceBase = Restangular["one"](propertiesSrvc["services_alias"] + "/vitis");
             // Chargement des modes.
             var oParams = {
-                "token": sessionSrvc["token"],
-                "filter": "application_name='" + sessionStorage["application"] + "'",
+                "filter": {
+                    "column": "application_name",
+                    "compare_operator": "=",
+                    "value": sessionStorage["application"]
+                },
                 "order_by": "index",
                 "distinct": "true"
             };
             var modesSrvc = this;
             var deferred = $q.defer();
-            oWebServiceBase["customGET"]("modes", oParams, {"Accept": "application/x-vm-json"})
-                    .then(function (data) {
-                        if (data["status"] == 1) {
-                            // Extraction des modes.
-                            var aModes = data["data"], aObjects, aRessourceId;
-                            var i = 0, j, k;
-                            while (i < aModes.length) {
-                                // Sauve les onglets du mode.
-                                aObjects = aModes[i]["data"][0]["data"];
-                                if (!goog.isDef(aObjects)) {
-                                    console.error('Objets du mode ' + aModes[i]["mode_id"] + ' non définis');
-                                    console.error(aModes[i]);
-                                }
-                                k = 0;
-                                while (k < aObjects.length) {
-                                    // Paramètre "name" -> id de l'onglet.
-                                    aObjects[k]["name"] = aObjects[k]["mode_id"] + "_" + aObjects[k]["name"];
-                                    // Supprime "javascript:" (sinon erreur).
-                                    aObjects[k]["event"] = aObjects[k]["event"].replace("javascript:", "");
-                                    // Scopes attachés à l'onglet.
-                                    aObjects[k]["aScope"] = [];
-                                    // Onglet accessible depuis le menu.
-                                    aObjects[k]["display_menu"] = true;
-                                    k++;
-                                }
-                                aModes[i]["objects"] = aObjects;
-                                aModes[i]["data"] = undefined;
-                                aModes[i]["fullScreen"] = false;
-                                aModes[i]["ajaxLoader"] = true;
-                                i++;
+            ajaxRequest({
+                "method": "GET",
+                "url": propertiesSrvc["web_server_name"] + "/" + propertiesSrvc["services_alias"] + "/vitis/modes",
+                "params": oParams,
+                "scope": $rootScope,
+                "headers": {
+                    "Accept": "application/x-vm-json"
+                },
+                "success": function (response) {
+                    if (response["data"]["status"] == 1) {
+                        // Extraction des modes.
+                        var aModes = response["data"]["data"], aObjects, aRessourceId;
+                        var i = 0, j, k;
+                        while (i < aModes.length) {
+                            // Sauve les onglets du mode.
+                            aObjects = aModes[i]["data"][0]["data"];
+                            if (!goog.isDef(aObjects)) {
+                                console.error('Objets du mode ' + aModes[i]["mode_id"] + ' non définis');
+                                console.error(aModes[i]);
                             }
-                            // Sauve les modes de l'utilisateur.
-                            modesSrvc["modes"] = aModes;
-                            deferred.resolve("modes saved");
-
-                            // Liste des modules de l'application.
-                            var aModules = [];
-                            var i = 0;
-                            while (i < aModes.length) {
-                                if (aModules.indexOf(aModes[i]["module_name"]) == -1)
-                                    aModules.push(aModes[i]["module_name"]);
-                                i++;
+                            k = 0;
+                            while (k < aObjects.length) {
+                                // Paramètre "name" -> id de l'onglet.
+                                aObjects[k]["name"] = aObjects[k]["mode_id"] + "_" + aObjects[k]["name"];
+                                // Supprime "javascript:" (sinon erreur).
+                                aObjects[k]["event"] = aObjects[k]["event"].replace("javascript:", "");
+                                // Scopes attachés à l'onglet.
+                                aObjects[k]["aScope"] = [];
+                                // Onglet accessible depuis le menu.
+                                aObjects[k]["display_menu"] = true;
+                                k++;
                             }
-                            // Sauve la liste des modules.
-                            sessionStorage["application_modules"] = aModules;
-
-                            // Chargement des fichiers de traductions des modules.
-                            var i = 0;
-                            while (i < aModules.length) {
-                                $translatePartialLoader["addPart"]("modules/" + aModules[i] + "/lang");
-                                i++;
-                            }
-
-                            // Traduction des titres et textes des modes.
-                            $translate["refresh"]()
-                                    .then(function () {
-                                        var i = 0, j = 0;
-                                        var sModeTitleKey, sModeTextKey;
-                                        while (i < aModes.length) {
-                                            sModeTitleKey = "TITLE_MODE_" + aModes[i]["mode_id"].toUpperCase();
-                                            sModeTextKey = "TEXT_MODE_" + aModes[i]["mode_id"].toUpperCase();
-                                            $translate([sModeTitleKey, sModeTextKey], {"app_name": propertiesSrvc["app_name"]})
-                                                    .then(function (translations) {
-                                                        var aTranslationsKeys = Object.keys(translations);
-                                                        aModes[j]["title"] = translations[aTranslationsKeys[0]];
-                                                        aModes[j]["text"] = translations[aTranslationsKeys[1]];
-                                                        j++;
-                                                    });
-                                            i++;
-                                        }
-                                    });
+                            aModes[i]["objects"] = aObjects;
+                            aModes[i]["data"] = undefined;
+                            aModes[i]["fullScreen"] = false;
+                            aModes[i]["ajaxLoader"] = true;
+                            i++;
                         }
-                    });
+                        // Sauve les modes de l'utilisateur.
+                        modesSrvc["modes"] = aModes;
+                        deferred.resolve("modes saved");
+
+                        // Liste des modules de l'application.
+                        var aModules = [];
+                        var i = 0;
+                        while (i < aModes.length) {
+                            if (aModules.indexOf(aModes[i]["module_name"]) == -1)
+                                aModules.push(aModes[i]["module_name"]);
+                            i++;
+                        }
+                        // Sauve la liste des modules.
+                        sessionStorage["application_modules"] = aModules;
+
+                        // Chargement des fichiers de traductions des modules.
+                        var i = 0;
+                        while (i < aModules.length) {
+                            $translatePartialLoader["addPart"]("modules/" + aModules[i] + "/lang");
+                            i++;
+                        }
+
+                        // Traduction des titres et textes des modes.
+                        $translate["refresh"]()
+                                .then(function () {
+                                    var i = 0, j = 0;
+                                    var sModeTitleKey, sModeTextKey;
+                                    while (i < aModes.length) {
+                                        sModeTitleKey = "TITLE_MODE_" + aModes[i]["mode_id"].toUpperCase();
+                                        sModeTextKey = "TEXT_MODE_" + aModes[i]["mode_id"].toUpperCase();
+                                        $translate([sModeTitleKey, sModeTextKey], {"app_name": propertiesSrvc["app_name"]})
+                                                .then(function (translations) {
+                                                    var aTranslationsKeys = Object.keys(translations);
+                                                    aModes[j]["title"] = translations[aTranslationsKeys[0]];
+                                                    aModes[j]["text"] = translations[aTranslationsKeys[1]];
+                                                    j++;
+                                                });
+                                        i++;
+                                    }
+                                });
+                    }
+                }
+            });
 
             var promise = deferred.promise;
             return promise;
@@ -732,7 +875,7 @@ vitisApp.modesSrvc = function ($translate, $translatePartialLoader, $q, $rootSco
          * @param {angular.scope} scope Scoped'angular
          **/
         "addScopeToObject": function (sObjectId, sModeId, scope) {
-            oObject = this["getObject"](sObjectId, this["getMode"](sModeId));
+            var oObject = this["getObject"](sObjectId, this["getMode"](sModeId));
             if (typeof (oObject["aScope"]) == "undefined")
                 oObject["aScope"] = [];
             oObject["aScope"].push(scope);
@@ -750,44 +893,54 @@ vitisApp.modesSrvc = function ($translate, $translatePartialLoader, $q, $rootSco
  * @ngInject
  * @export
  **/
-vitisApp.externFunctionSrvc = function ($rootScope, $translate, $q, $log) {
+vitisApp.externFunctionSrvc = function ($rootScope, $translate, $q, $log, $timeout) {
     return {
-        /**
+        /** 
          * resizeWin function.
          * Redimensionne les éléments html principaux de l'application.
          **/
         "resizeWin": function () {
+
             // Hauteur de l'élément "footer_line" (menu mode + contenu html des objets).
             var iWorksLineHeight = document.getElementById("container").offsetHeight;
-            if (document.getElementById("header_line") != null &&
-                    (document.getElementById("header_line").style['margin-top'] === "" || document.getElementById("header_line").style['margin-top'] === '0px'))
+
+            if (document.getElementById("header_line") !== null && (document.getElementById("header_line").style['margin-top'] === "" || document.getElementById("header_line").style['margin-top'] === '0px')) {
                 iWorksLineHeight -= document.getElementById("header_line").offsetHeight;
-            if (document.getElementById("footer_line") != null &&
-                    (document.getElementById("footer_line").style['margin-top'] === "" || document.getElementById("footer_line").style['margin-top'] === '0px'))
+            }
+            if (document.getElementById("footer_line") !== null && (document.getElementById("footer_line").style['margin-top'] === "" || document.getElementById("footer_line").style['margin-top'] === '0px')) {
                 iWorksLineHeight -= document.getElementById("footer_line").offsetHeight;
+            }
             document.getElementById("works_line").style.height = iWorksLineHeight + "px";
 
             // Largeur de l'élément "data_column" (contenu html des objets).
-//                        var iDataColumnWidth = document.getElementById("container").offsetWidth;
-//                        if (document.getElementById("mode_column") != null)
-//                                iDataColumnWidth -= document.getElementById("mode_column").offsetWidth;
-//                        document.getElementById("data_column").style.width = iDataColumnWidth + "px";
+            // var iDataColumnWidth = document.getElementById("container").offsetWidth;
+            // if (document.getElementById("mode_column") != null)
+            // iDataColumnWidth -= document.getElementById("mode_column").offsetWidth;
+            // document.getElementById("data_column").style.width = iDataColumnWidth + "px";
 
             // Hauteur des listes ui-grid (liste - header - footer).
             //var oWorkspaceGrid = $("#data_column .workspacelist-grid");
             var oWorkspaceGrid = $(".workspacelist-grid");
             var i = 0;
-            while (i < oWorkspaceGrid.length) {
-                var iMainGridHeight = oWorkspaceGrid[i].offsetHeight;
-                var iMainGridWidth = oWorkspaceGrid[i].offsetWidth;
-                if (document.getElementById(oWorkspaceGrid[i].id + "_header") != null)
-                    iMainGridHeight -= document.getElementById(oWorkspaceGrid[i].id + "_header").offsetHeight;
-                if (document.getElementById(oWorkspaceGrid[i].id + "_footer") != null)
-                    iMainGridHeight -= document.getElementById(oWorkspaceGrid[i].id + "_footer").offsetHeight;
-                document.getElementById(oWorkspaceGrid[i].id + "_data").style.height = (iMainGridHeight - 2) + "px";
-                document.getElementById(oWorkspaceGrid[i].id + "_data").style.width = (iMainGridWidth - 2) + "px";
-                i++;
-            }
+            setTimeout(function () {
+                while (i < oWorkspaceGrid.length) {
+
+                    var iMainGridHeight = oWorkspaceGrid[i].offsetHeight;
+                    var iMainGridWidth = oWorkspaceGrid[i].offsetWidth;
+
+                    if (document.getElementById(oWorkspaceGrid[i].id + "_header") != null)
+                        iMainGridHeight -= document.getElementById(oWorkspaceGrid[i].id + "_header").offsetHeight;
+
+                    if (document.getElementById(oWorkspaceGrid[i].id + "_footer") != null)
+                        iMainGridHeight -= document.getElementById(oWorkspaceGrid[i].id + "_footer").offsetHeight;
+
+                    document.getElementById(oWorkspaceGrid[i].id + "_data").style.height = (iMainGridHeight - 2) + "px";
+                    document.getElementById(oWorkspaceGrid[i].id + "_data").style.width = (iMainGridWidth - 2) + "px";
+
+                    oWorkspaceGrid.find('.ui-grid-render-container-left .ui-grid-viewport').height(oWorkspaceGrid.find(".ui-grid-render-container-body .ui-grid-viewport").height() - 17);
+                    i++;
+                }
+            }, 300);
         },
         /**
          * clearLessCache function.
@@ -883,7 +1036,7 @@ vitisApp.externFunctionSrvc = function ($rootScope, $translate, $q, $log) {
                     };
                 }
                 // Affichage de la fenêtre.
-                oDialog = bootbox[sType](oOptions);
+                var oDialog = bootbox[sType](oOptions);
                 //
                 deferred.resolve(oDialog);
                 // Suppression du message après x millisecondes ?
@@ -904,62 +1057,43 @@ vitisApp.externFunctionSrvc = function ($rootScope, $translate, $q, $log) {
 /**
  * propertiesSrvc service.
  * Gestion des properties.
- * @param {angular.$http} $http Angular http service.
- * @param {service} Restangular Service Restangular.
+ * @param {service} $q Angular q service.
+ * @param {angular.$rootScope} $rootScope Angular rootScope.
  * @constructor
  * @ngInject
  **/
-vitisApp.propertiesSrvc = function (Restangular, $http) {
+vitisApp.propertiesSrvc = function ($q, $rootScope) {
     return {
         /**
          * getFromServer function.
          * Charge les properties stockées côté serveur.
          **/
         "getFromServer": function () {
-            // Nom du service web (vitis, gtf...)
-            var oWebServiceBase = Restangular["one"](this["services_alias"] + "/vitis");
             //
             var propertiesSrvc = this;
-            var oParams = {};
-            // Passe le token si l'utilisateur est connecté.
-            if (typeof (sessionStorage["session_token"]) != "undefined")
-                oParams = {"token": sessionStorage["session_token"]};
-            return oWebServiceBase["customGET"]("properties", oParams)
-                    .then(function (data) {
-                        delete data["status"];
-                        // Sauve toutes les properties.
-                        var i = 0;
-                        var aKeys = Object.keys(data);
-                        while (i < aKeys.length) {
-                            propertiesSrvc[aKeys[i]] = data[aKeys[i]];
-                            i++;
-                        }
-                        // Sauve le token.
-                        propertiesSrvc['session_token'] = sessionStorage['session_token'];
-                        // Dit à l'application que les properties on étés chargées
-                        vitisApp.broadcast('properties_loaded');
+            var deferred = $q.defer();
+            ajaxRequest({
+                "method": "GET",
+                "url": propertiesSrvc["web_server_name"] + "/" + propertiesSrvc["services_alias"] + "/vitis/properties",
+                "scope": $rootScope,
+                "success": function (response) {
+                    delete response["data"]["status"];
+                    // Sauve toutes les properties.
+                    var i = 0;
+                    var aKeys = Object.keys(response["data"]);
+                    while (i < aKeys.length) {
+                        propertiesSrvc[aKeys[i]] = response["data"][aKeys[i]];
+                        i++;
                     }
-                    );
-        },
-        /**
-         * getFromClient function.
-         * Charge les properties stockées côté client.
-         **/
-        "getFromClient": function () {
-            var propertiesSrvc = this;
-            return $http.get("conf/properties.json")
-                    .success(function (data) {
-                        // Sauve toutes les properties.
-                        var i = 0;
-                        var aKeys = Object.keys(data);
-                        while (i < aKeys.length) {
-                            propertiesSrvc[aKeys[i]] = data[aKeys[i]];
-                            i++;
-                        }
-                        // Sauve le token.
-                        propertiesSrvc['session_token'] = sessionStorage['session_token'];
-                    }
-                    );
+                    // Sauve le token.
+                    propertiesSrvc['session_token'] = sessionStorage['session_token'];
+                    // Dit à l'application que les properties on étés chargées
+                    vitisApp.broadcast('properties_loaded');
+                    deferred.resolve();
+                }
+            });
+            var promise = deferred.promise;
+            return promise;
         }
     }
 };

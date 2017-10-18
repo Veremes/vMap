@@ -121,7 +121,7 @@ class Voies extends Cadastre {
      * @return  Voies
      */
     function GET() {
-        $aReturn = $this->genericGet('public', 'v_maj_fv', 'ID_RIVOLI');
+        $aReturn = $this->genericGet('public', $this->aProperties['cadastre']['views']['voie'], 'ID_RIVOLI');
         return $aReturn['sMessage'];
     }
     

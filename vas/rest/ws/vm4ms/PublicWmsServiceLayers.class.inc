@@ -136,10 +136,10 @@ class PublicWmsServiceLayers extends Vmap4MapServer {
         if (!empty($this->aValues['wmsservice_ms_layers'])) {
             $aLayers = explode('|', $this->aValues['wmsservice_ms_layers']);
             foreach ($aLayers as $iLayerId) {
-                $sSql = str_replace('[wmsservice_id]', $this->aValues["my_vitis_id"], $aSql['insertPublicWmsServiceLayers']);
-                $sSql = str_replace('[ms_layer_id]', $iLayerId, $sSql);
-                $sSql = str_replace('[sSchemaVm4ms]', $this->aProperties['schema_vm4ms'], $sSql);
-                $resultat = $this->oConnection->oBd->execute($sSql);
+		$aParams['sSchemaVm4ms'] = array('value' => $this->aProperties['schema_vm4ms'], 'type' => 'schema_name');
+                $aParams['ms_layer_id'] = array('value' => $iLayerId, 'type' => 'number');
+                $aParams['wmsservice_id'] = array('value' => $this->aValues["my_vitis_id"], 'type' => 'string');
+                $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['insertPublicWmsServiceLayers'], $aParams);
                 if ($this->oConnection->oBd->enErreur()) {
                     $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                     $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
@@ -165,10 +165,10 @@ class PublicWmsServiceLayers extends Vmap4MapServer {
         require $this->sRessourcesFile;
         // Couches à supprimer ?
         if (!empty($this->aValues['idList'])) {
-            $sSql = str_replace('[wmsservice_id]', $this->aValues["my_vitis_id"], $aSql['deletePublicWmsServiceLayers']);
-            $sSql = str_replace('[idList]', str_replace('|', ',', $this->aValues['idList']), $sSql);
-            $sSql = str_replace('[sSchemaVm4ms]', $this->aProperties['schema_vm4ms'], $sSql);
-            $resultat = $this->oConnection->oBd->execute($sSql);
+            $aParams['sSchemaVm4ms'] = array('value' => $this->aProperties['schema_vm4ms'], 'type' => 'schema_name');
+            $aParams['idList'] = array('value' => str_replace('|', ',', $this->aValues['idList']), 'type' => 'string');
+            $aParams['wmsservice_id'] = array('value' => $this->aValues["my_vitis_id"], 'type' => 'string');
+            $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['deletePublicWmsServiceLayers'], $aParams);
             if ($this->oConnection->oBd->enErreur()) {
                 $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                 $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());

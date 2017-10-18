@@ -1,5 +1,7 @@
 RewriteEngine On
 RewriteBase /rest[ENV]
+RewriteCond %{REQUEST_URI} (.*).inc$ [NC]
+RewriteRule ^.* - [F,L]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ index.phtml/$1 [L]

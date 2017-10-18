@@ -30,6 +30,7 @@
 
 goog.provide('ol.pointer.MouseSource');
 
+goog.require('ol');
 goog.require('ol.pointer.EventSource');
 
 
@@ -46,7 +47,7 @@ ol.pointer.MouseSource = function(dispatcher) {
     'mouseover': this.mouseover,
     'mouseout': this.mouseout
   };
-  goog.base(this, dispatcher, mapping);
+  ol.pointer.EventSource.call(this, dispatcher, mapping);
 
   /**
    * @const
@@ -60,7 +61,7 @@ ol.pointer.MouseSource = function(dispatcher) {
    */
   this.lastTouches = [];
 };
-goog.inherits(ol.pointer.MouseSource, ol.pointer.EventSource);
+ol.inherits(ol.pointer.MouseSource, ol.pointer.EventSource);
 
 
 /**

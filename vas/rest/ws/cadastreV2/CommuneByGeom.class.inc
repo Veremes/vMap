@@ -43,7 +43,7 @@ class CommuneByGeom extends Cadastre {
         $this->aProperties = $properties;
         $this->oConnection = new Connection($this->aValues, $this->aProperties);
         $this->sSchema = $this->aProperties['schema_cadastre'];
-        $this->sTable = 'v_vmap_commune';
+        $this->sTable = $this->aProperties['cadastre']['views']['commune'];
         $this->aAttributs = Array("id_com", "texte", "geom");
     }
 

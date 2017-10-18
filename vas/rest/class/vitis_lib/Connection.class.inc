@@ -5,6 +5,7 @@ require_once(__DIR__ . "/../vmlib/dbUtil.inc");
 require_once(__DIR__ . "/../vmlib/logUtil.inc");
 require_once(__DIR__ . "/../vmlib/error.inc");
 require_once(__DIR__ . "/../vmlib/cryptUtil.inc");
+require_once(__DIR__ . "/../vitis_lib/VitisError.class.inc");
 
 /**
  * \file Connection.class.inc
@@ -79,6 +80,8 @@ class Connection {
         }
         if ($bIsconnected) {
             $this->connect();
+            if (empty($this->oError))
+                $this->updateLastConnection();
         }
     }
 
@@ -153,11 +156,12 @@ class Connection {
                     $this->sesGroup = getUserGroups($_SESSION["ses_Login"], $this->oBd, $_SESSION["ses_Password"], $this->aProperties["mixed_rights_management"], $this->aProperties["schema_framework"]);
                 }
 
-                //get the privileges of the user
+                // Get the privileges of the user
                 $this->getUserPrivileges();
+                // Update the user last connection
+                $this->updateLastConnection();
             }
         } else {
-
             $this->oError = new VitisError(15, "Token validity outpassed");
         }
     }
@@ -217,16 +221,20 @@ class Connection {
 //            }
 //        }
         // Version 2 (Armand 02/09/2016)
+        $aSqlParams = array(
+            'sSchema' => array('value' => $sSchema, 'type' => 'column_name'),
+            'sTable' => array('value' => $sTable, 'type' => 'column_name')
+        );
         $sSql = "SELECT 
-	has_table_privilege('" . $sSchema . "." . $sTable . "','insert') AS \"INSERT\", 
-	has_table_privilege('" . $sSchema . "." . $sTable . "','select') AS \"SELECT\", 
-	has_table_privilege('" . $sSchema . "." . $sTable . "','update') AS \"UPDATE\",
-	has_table_privilege('" . $sSchema . "." . $sTable . "','delete') AS \"DELETE\",
-	has_table_privilege('" . $sSchema . "." . $sTable . "','truncate') AS \"TRUNCATE\",
-	has_table_privilege('" . $sSchema . "." . $sTable . "','references') AS \"REFERENCES\",
-	has_table_privilege('" . $sSchema . "." . $sTable . "','trigger') AS \"TRIGGER\"";
+	has_table_privilege('\"[sSchema]\".\"[sTable]\"','insert') AS \"INSERT\", 
+	has_table_privilege('\"[sSchema]\".\"[sTable]\"','select') AS \"SELECT\", 
+	has_table_privilege('\"[sSchema]\".\"[sTable]\"','update') AS \"UPDATE\",
+	has_table_privilege('\"[sSchema]\".\"[sTable]\"','delete') AS \"DELETE\",
+	has_table_privilege('\"[sSchema]\".\"[sTable]\"','truncate') AS \"TRUNCATE\",
+	has_table_privilege('\"[sSchema]\".\"[sTable]\"','references') AS \"REFERENCES\",
+	has_table_privilege('\"[sSchema]\".\"[sTable]\"','trigger') AS \"TRIGGER\"";
 
-        $oResult = $this->oBd->execute($sSql);
+        $oResult = $this->oBd->executeWithParams($sSql, $aSqlParams);
 
         $aRights = array();
 
@@ -234,7 +242,7 @@ class Connection {
             if ($this->oBd->nombreLigne($oResult) > 0) {
                 while ($aLigne = $this->oBd->ligneSuivante($oResult)) {
                     foreach ($aLigne as $key => $value) {
-                        if ($value === true){
+                        if ($value === true) {
                             array_push($aRights, $key);
                         }
                     }
@@ -242,6 +250,18 @@ class Connection {
             }
         }
         return $aRights;
+    }
+
+    /**
+     * Update the last connexion column
+     */
+    function updateLastConnection() {
+        $sSql = "update [sSchemaFramework].v_user set last_connection = [date] where login = [login]";
+        $aParams = array();
+        $aParams['sSchemaFramework'] = array('value' => $this->aProperties['schema_framework'], 'type' => 'schema_name');
+        $aParams['login'] = array('value' => $_SESSION["ses_Login"], 'type' => 'string');
+        $aParams['date'] = array('value' => date('Y-m-d H:i:s', time()), 'type' => 'string');
+        $oPDOresult = $this->oBd->executeWithParams($sSql, $aParams, false);
     }
 
 }

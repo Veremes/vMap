@@ -42,9 +42,9 @@ class PublicLayer extends Vmap4MapServer {
         /*
         // Flux wms rattachés à la couche.
         if (in_array("wmsservices", $this->aSelectedFields)){
-            $sSql = str_replace('[sSchemaVm4ms]', $this->aProperties['schema_vm4ms'], $aSql['getPublicLayerWmsServices']);
-            $sSql = str_replace('[ms_layer_id]', $this->aValues['my_vitis_id'], $sSql);
-		$oPDOresult =$this->oConnection->oBd->execute ($sSql);
+		$aParams['sSchemaVm4ms'] = array('value' => $this->aProperties['schema_vm4ms'], 'type' => 'schema_name');
+                $aParams['ms_layer_id'] = array('value' => $this->aValues['my_vitis_id'], 'type' => 'number');
+                $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['getPublicLayerWmsServices'], $aParams);
 		$sListWmsServiceId = "";
 		$aListWmsServiceName = array();
 		while($aLigne=$this->oConnection->oBd->ligneSuivante ($oPDOresult)) {

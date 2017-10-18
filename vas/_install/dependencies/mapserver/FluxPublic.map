@@ -1,0 +1,178 @@
+MAP
+	NAME Flux_public
+	MAXSIZE 4096
+	SYMBOLSET "../symbols/symbols.sym"
+	FONTSET "../fonts/fonts.list"
+	
+	CONFIG "MS_ERRORFILE" "[VAS_DIRECTORY]/log/mapserver/prod/FluxPublic.log"
+	DEBUG 0
+
+	PROJECTION
+		"+init=epsg:2154"
+	END
+
+	WEB
+		METADATA
+			"wms_title" "FluxPublic"
+			"wms_onlineresource" "https://[SERVER_URL]/wms[ENV]/"
+			"wms_srs" "EPSG:2154"
+			"wms_enable_request" "*"
+		END
+	  # Les attributs TEMPLATE, IMAGEPATH et IMAGEURL sont ajoutés dynamiquement lors des tests. Ils sont inutiles en production
+	END
+	LAYER
+		NAME "Fleuves__Polygone_"
+		TYPE POLYGON
+		STATUS ON
+		
+		CONNECTIONTYPE postgis
+		CONNECTION "user=u_vmap_public_data password=u_vmap_public_data dbname=[DB_NAME] host=[DB_HOST] port=[DB_PORT]"
+		
+		DATA "geom from sig.v_f_fleuves_l93_poly USING SRID=2154 USING UNIQUE fleuve_id"
+		OPACITY 100
+		
+		PROJECTION
+			"+init=epsg:2154"
+		END
+		
+		METADATA
+			"wms_title" 			"Fleuves__Polygone_"
+			"wms_srs" 				"EPSG:2154 EPSG:3857"
+			"wms_name" 				"Fleuves__Polygone_"
+			"wms_server_version" 	"1.3.0"
+			"wms_format" 			"image/png"
+		END
+		
+		CLASS
+			NAME "Cours d'eau"
+			STYLE
+				OUTLINECOLOR "#3359FA"
+				COLOR "#3359FA"
+				SIZE 1
+			END
+		END
+	END	LAYER
+		NAME "Commune_point"
+		TYPE POINT
+		STATUS ON
+		
+		CONNECTIONTYPE postgis
+		CONNECTION "user=u_vmap_public_data password=u_vmap_public_data dbname=[DB_NAME] host=[DB_HOST] port=[DB_PORT]"
+		
+		DATA "geom from sig.f_villes_l93 USING SRID=2154 USING UNIQUE code"
+		OPACITY 100
+		
+		PROJECTION
+			"+init=epsg:2154"
+		END
+
+		LABELITEM "nom"
+		
+		METADATA
+			"wms_title" 			"Commune_point"
+			"wms_srs" 				"EPSG:2154 EPSG:3857"
+			"wms_name" 				"Commune_point"
+			"wms_server_version" 	"1.3.0"
+			"wms_format" 			"image/png"
+		END
+		
+
+		FILTER ([pop90] > '%pop90_sup%' and [pop90] < '%pop90_inf%')
+		VALIDATION
+			'pop90_sup' '^[0-9]*$'
+			'default_pop90_sup' '0'
+			'pop90_inf' '^[0-9]*$'
+			'default_pop90_inf' '100000000'
+		END
+		
+		
+		CLASS
+			NAME "Commune"
+			STYLE
+				SYMBOL "circle"
+				OUTLINECOLOR "#FF0000"
+				COLOR "#FFFFFF"
+				SIZE 5
+			END
+			LABEL
+				MAXSCALEDENOM 200000
+				TYPE TRUETYPE
+				FONT "Arial"
+				ANGLE AUTO
+				SIZE 10
+				POSITION UC
+				COLOR "#000000"
+			END
+		END
+	END	LAYER
+		NAME "Limite_france"
+		TYPE POLYGON
+		STATUS ON
+		
+		CONNECTIONTYPE postgis
+		CONNECTION "user=u_vmap_public_data password=u_vmap_public_data dbname=[DB_NAME] host=[DB_HOST] port=[DB_PORT]"
+		
+		DATA "geom from sig.limite_france_continent USING SRID=2154 USING UNIQUE id"
+
+		COMPOSITE
+			OPACITY 100
+		END
+		
+		PROJECTION
+			"+init=epsg:2154"
+		END
+
+		METADATA
+			"wms_title" 			"Limite_france"
+			"wms_srs" 				"EPSG:2154 EPSG:3857"
+			"wms_name" 				"Limite_france"
+			"wms_server_version" 	"1.3.0"
+			"wms_format" 			"image/png"
+		END
+		MINSCALEDENOM 200000
+		CLASS
+			NAME "Limite France"
+			STYLE
+				OUTLINECOLOR "#000000"
+				WIDTH 2
+			END
+			STYLE
+				OPACITY 20
+				COLOR "#C1E8EF"
+			END
+		END	
+
+	END	LAYER
+		NAME "Fleuves__Ligne_"
+		TYPE LINE
+		STATUS ON
+		
+		CONNECTIONTYPE postgis
+		CONNECTION "user=u_vmap_public_data password=u_vmap_public_data dbname=[DB_NAME] host=[DB_HOST] port=[DB_PORT]"
+		
+		DATA "geom from sig.v_f_fleuves_l93_line USING SRID=2154 USING UNIQUE fleuve_id"
+		OPACITY 100
+		
+		PROJECTION
+			"+init=epsg:2154"
+		END
+		
+		METADATA
+			"wms_title" 			"Fleuves__Ligne_"
+			"wms_srs" 				"EPSG:2154 EPSG:3857"
+			"wms_name" 				"Fleuves__Ligne_"
+			"wms_server_version" 	"1.3.0"
+			"wms_format" 			"image/png"
+		END
+		
+		CLASS
+			NAME "Cours d'eau"
+			STYLE
+				OUTLINECOLOR "#3359FA"
+				COLOR "#3359FA"
+				SIZE 1
+			END
+		END
+	END
+
+END

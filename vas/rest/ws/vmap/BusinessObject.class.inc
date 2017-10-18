@@ -1,6 +1,7 @@
 <?php
 
 require_once 'Vmap.class.inc';
+require_once 'Layers.class.inc';
 require_once 'BusinessObjectEvent.class.inc';
 require_once 'PrintReports.class.inc';
 require_once __DIR__ . '/../../class/vitis_lib/Connection.class.inc';
@@ -32,7 +33,7 @@ class BusinessObject extends Vmap {
         $this->aPath = $aPath;
         $this->aProperties = $properties;
         $this->oConnection = $oConnection;
-        $this->aSelectedFields = Array("business_object_id", "title", "id_field", "database", "schema", "table", "sql_summary", "sql_list", "sorted_by", "geom_column", "search_field", "result_field", "search_use_strict", "event_id", "index", "add_form_size", "edit_form_size", "display_form_size");
+        $this->aSelectedFields = Array("business_object_id", "title", "id_field", "database", "schema", "table", "sql_summary", "sql_list", "sorted_by", "geom_column", "search_field", "result_field", "search_use_strict", "event_id", "index", "add_form_size", "edit_form_size", "display_form_size", "selection_buffer", "user_rights");
     }
 
     /**
@@ -100,8 +101,9 @@ class BusinessObject extends Vmap {
             $sPassword = $this->oConnection->oBd->mdp;
             $this->oConnection->oBd = new Vm($sLogin, $sPassword, $this->aFields['database'], $this->oConnection->oBd->serveur, $this->oConnection->oBd->port, $this->oConnection->oBd->sgbd, $this->oConnection->oBd->sPageEncoding);
         }
-        if (!empty($this->aFields['geom_column'])) {
-            if (!$this->oConnection->oBd->enErreur()) {
+
+        if (!$this->oConnection->oBd->enErreur()) {
+            if (!empty($this->aFields['geom_column'])) {
                 $aGeomColumnsInfos = $this->getTableGeomColumnsInfos($this->aFields['schema'], $this->aFields['table']);
                 for ($i = 0; $i < count($aGeomColumnsInfos); $i++) {
                     if ($aGeomColumnsInfos[$i]['f_geometry_column'] === $this->aFields['geom_column']) {
@@ -109,13 +111,11 @@ class BusinessObject extends Vmap {
                     }
                 }
             }
-        }
-
-        if (!$this->oConnection->oBd->enErreur()) {
+            $this->aFields['user_rights'] = $this->oConnection->getTableRights($this->aFields['schema'], $this->aFields['table']);
             $this->aFields['list_fields'] = $this->getListFields();
         }
 
-        if (!empty($sLogin)) {
+        if (!empty($sLogin) && isset($sPassword)) {
             $this->oConnection->oBd = new Vm($sLogin, $sPassword, $this->aProperties['database'], $this->aProperties['server'], $this->aProperties['port'], $this->aProperties['sgbd'], $this->aProperties['page_encoding']);
         }
     }
@@ -128,7 +128,7 @@ class BusinessObject extends Vmap {
         $aFields = array();
         if (!empty($this->aFields['sql_list'])) {
             $sSql = $this->aFields['sql_list'] . ' limit 1';
-            $oResult = $this->oConnection->oBd->execute($sSql);
+            $oResult = $this->oConnection->oBd->executeWithParams($sSql, array());
             if (!$this->oConnection->oBd->enErreur()) {
                 while ($aLigne = $this->oConnection->oBd->ligneSuivante($oResult)) {
                     foreach ($aLigne as $key => $value) {
@@ -148,12 +148,14 @@ class BusinessObject extends Vmap {
         $this->GET();
         $bEventExists = false;
         $bReportExists = false;
+        $bLayerExists = false;
 
         // Test existance rapports
         $aPath = Array('vmap', 'printreports');
         $aValues = $this->aValues;
         unset($aValues['my_vitis_id']);
-        $aValues['filter'] = "business_object_id='" . $this->aFields['business_object_id'] . "'";
+        // $aValues['filter'] = "business_object_id='" . $this->aFields['business_object_id'] . "'";
+        $aValues['filter'] = '{"column":"business_object_id","compare_operator":"=","value":"' . $this->aFields['business_object_id'] . '"}';
         $oPrintReports = new PrintReports($aPath, $aValues, $this->aProperties, $this->oConnection);
         $oPrintReports->GET();
         if (count($oPrintReports->aObjects) > 0) {
@@ -176,8 +178,16 @@ class BusinessObject extends Vmap {
             }
         }
 
+        // Des-associe les objets métiers de la couche
+        require $this->sRessourcesFile;
+        $aSQLParams = array(
+            'sSchemaVmap' => array('value' => $this->aProperties['schema_vmap'], 'type' => 'column_name'),
+            'business_object_id' => array('value' => $this->aValues['my_vitis_id'], 'type' => 'number')
+        );
+        $oResult = $this->oConnection->oBd->executeWithParams($aSql['deleteAssociatedLayers'], $aSQLParams);
+
         // Suppression objet
-        if (!$bEventExists && !$bReportExists) {
+        if (!$bEventExists && !$bReportExists && !$bLayerExists) {
             $this->aFields = array();
             $this->oConnection->oBd->delete($this->aProperties['schema_vmap'], 'business_object', 'business_object_id', $this->aValues['my_vitis_id'], 'text');
             if ($this->oConnection->oBd->enErreur()) {

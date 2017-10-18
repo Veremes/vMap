@@ -18,12 +18,12 @@ $_PUTDATA = null;
 $paramJson2 = null;
 $params = file_get_contents('php://input');
 $oJson = $params;
-if (is_object(json_decode($oJson))){
+if (is_object(json_decode($oJson))) {
     $paramJson2 = get_object_vars(json_decode($oJson));
 }
 $boundary = substr($params, 0, strpos($params, "\r\n"));
 // Fetch each part
-if (!empty($boundary)){
+if (!empty($boundary)) {
     $parts = array_slice(explode($boundary, $params), 1);
     foreach ($parts as $part) {
         // If this is the last part, break
@@ -86,6 +86,16 @@ if ($aParamsJson != null) {
 
 if ($paramJson2 != null) {
     $aValues = array_merge($aValues, $paramJson2);
+}
+// Token depuis l'entête de la requête.
+$aRequestHeaders = apache_request_headers();
+if (!empty($aRequestHeaders['Token']))
+    $aValues['token'] = $aRequestHeaders['Token'];
+
+if (!empty($aValues['filter'])) {
+    if (is_object($aValues['filter']) || is_array($aValues['filter'])) {
+        $aValues['filter'] = json_encode($aValues['filter']);
+    }
 }
 
 //Récupération des ressources

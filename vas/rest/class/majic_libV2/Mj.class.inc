@@ -4,7 +4,7 @@
  * \file Mj.class.inc
  * \brief Mj.class.inc \n \n Ce fichier contient la classe php Mj.
  * 
- * Cette classe est une classe virtuelle qui peut �tre appel� par les autres classes de la librairie majic_lib par h�ritage.
+ * Cette classe est une classe virtuelle qui peut être appelé par les autres classes de la librairie majic_lib par héritage.
  *
  * \author Damien Bedel <damien.bedel@veremes.com>
  * \author Olivier Gayte <olivier.gayte@veremes.com>
@@ -13,7 +13,7 @@
  * \class Mj
  * \brief Mj Class \n \n Mj est une classe PHP.
  * 
- * Cette classe permet de retourner un objet de s�lection dans une table sous la forme d'un tableau HTML.
+ * Cette classe permet de retourner un objet de sélection dans une table sous la forme d'un tableau HTML.
  *
  * \author Damien Bedel
  * \author Olivier Gayte <olivier.gayte@veremes.com>
@@ -25,12 +25,12 @@ require_once __DIR__ . "/../vitis_lib/XmlAbstract.class.inc";
 class Mj extends XmlAbstract {
 
     /**
-     * Requ�te SQL de s�lection dans la table.
+     * Requête SQL de sélection dans la table.
      */
     var $sSql;
 
     /**
-     * Statut de l'objet cr�e lors de la requ�te. 1 si erreur; 0 si l'objet a pu �tre instanci�.
+     * Statut de l'objet crée lors de la requête. 1 si erreur; 0 si l'objet a pu être instancié.
      */
     var $sStatus = 0;
 
@@ -55,7 +55,7 @@ class Mj extends XmlAbstract {
     var $bAllSuf = false;
                     
     /**
-     * Cette m�thode permet de retourner un code d'erreur en fonction du statut de l'objet r�sultant de la s�lection.
+     * Cette méthode permet de retourner un code d'erreur en fonction du statut de l'objet résultant de la sélection.
      * \return Retourne 1 s'il y a une erreur, 0 si ok.
      */
     function isError() {
@@ -67,8 +67,8 @@ class Mj extends XmlAbstract {
     }
 
     /**
-     * Cette m�thode permet de renvoyer un message d'erreur.
-     * \return Retourne une cha�ne de caract�res.
+     * Cette méthode permet de renvoyer un message d'erreur.
+     * \return Retourne une chaîne de caractères.
      */
     function getMessage() {
         return $this->sMessage;

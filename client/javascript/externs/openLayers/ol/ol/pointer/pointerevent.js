@@ -31,7 +31,7 @@
 goog.provide('ol.pointer.PointerEvent');
 
 
-goog.require('ol.events');
+goog.require('ol');
 goog.require('ol.events.Event');
 
 
@@ -49,7 +49,7 @@ goog.require('ol.events.Event');
  *    initial event properties.
  */
 ol.pointer.PointerEvent = function(type, originalEvent, opt_eventDict) {
-  goog.base(this, type);
+  ol.events.Event.call(this, type);
 
   /**
    * @const
@@ -192,7 +192,7 @@ ol.pointer.PointerEvent = function(type, originalEvent, opt_eventDict) {
     };
   }
 };
-goog.inherits(ol.pointer.PointerEvent, ol.events.Event);
+ol.inherits(ol.pointer.PointerEvent, ol.events.Event);
 
 
 /**

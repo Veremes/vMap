@@ -1,23 +1,23 @@
 <?php
+
 /**
-* \file Sections.class.inc
-* \class Sections
-*
-* \author Armand Bahi <armand.bahi@veremes.com>.
-*
-* \brief This file contains the Sections php class
-*
-* This class defines Rest Api to Vmap Sections
-* 
-*/
+ * \file Sections.class.inc
+ * \class Sections
+ *
+ * \author Armand Bahi <armand.bahi@veremes.com>.
+ *
+ * \brief This file contains the Sections php class
+ *
+ * This class defines Rest Api to Vmap Sections
+ * 
+ */
 require_once 'Cadastre.class.inc';
 require_once 'Section.class.inc';
 require_once __DIR__ . '/../../class/vitis_lib/Connection.class.inc';
 require_once __DIR__ . '/../../class/vmlib/BdDataAccess.inc';
 
 class Sections extends Cadastre {
-    
-     /**
+    /**
      * @SWG\Definition(
      *   definition="/sections",
      *   allOf={
@@ -29,6 +29,7 @@ class Sections extends Cadastre {
      *   description="Operations about Sections"
      * )
      */
+
     /**
      * construct
      * @param type $aPath url of the request
@@ -40,8 +41,9 @@ class Sections extends Cadastre {
         $this->aPath = $aPath;
         $this->aProperties = $properties;
         $this->oConnection = new Connection($this->aValues, $this->aProperties);
-		$this->aSelectedFields = Array("id_com", "id_sec", "substring (id_com, 3, 3) as code_com", "commune", "replace(pre, '000', '')||replace(section, '0', '') as section", "pre", "substring (id_sec, 3, 8) as idu", "replace(section, '0', '0') as tex", "section as texte", "geom");
+        $this->aSelectedFields = Array("id_com", "id_sec", "substring (id_com, 3, 3) as code_com", "commune", "replace(pre, '000', '')||replace(section, '0', '') as section", "pre", "substring (id_sec, 3, 8) as idu", "replace(section, '0', '0') as tex", "section as texte", "geom");
     }
+
     //(pre, '000', '')||replace(section, '0', '') as section
     /**
      * @SWG\Get(path="/sections",
@@ -77,7 +79,7 @@ class Sections extends Cadastre {
      *     description="number of element",
      *     required=false,
      *     type="integer",
-	 *     default="4",
+     *     default="4",
      *     format="int32"
      *   ),
      * @SWG\Parameter(
@@ -116,14 +118,16 @@ class Sections extends Cadastre {
      *     )
      *  )
      */
+
     /**
      * get Sections
      * @return  Sections
      */
     function GET() {
-        $aReturn = $this->genericGet($this->aProperties['schema_cadastre'], 'v_vmap_section_cadastrale', 'id_sec');
+        $aReturn = $this->genericGet($this->aProperties['schema_cadastre'], $this->aProperties['cadastre']['views']['section'], 'id_sec');
         return $aReturn['sMessage'];
     }
-    
+
 }
+
 ?>

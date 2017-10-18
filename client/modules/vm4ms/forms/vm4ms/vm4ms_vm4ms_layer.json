@@ -136,6 +136,24 @@
             {
                 "fields": [
                     {
+                        "type": "select",
+                        "name": "metadata_id",
+                        "label": "FORM_METADATA_ID_VM4MS_VM4MS_LAYER",
+                        "nb_cols": 3,
+                        "web_service": {
+                            "ressource_id": "vm4ms/metadatas",
+                            "id_key": "metadata_id",
+                            "label_key": "name",
+                            "parameters": {
+                                "order_by": "name"
+                            }
+                        }
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
                         "type": "button",
                         "class": "btn-ungroup btn-group-xs",
                         "nb_cols": 12,
@@ -342,6 +360,20 @@
                         "default_value": 100,
                         "required": true,
                         "nb_cols": 1
+                    },
+                    {
+                        "type": "select",
+                        "name": "metadata_id",
+                        "label": "FORM_METADATA_ID_VM4MS_VM4MS_LAYER",
+                        "nb_cols": 4,
+                        "web_service": {
+                            "ressource_id": "vm4ms/metadatas",
+                            "id_key": "metadata_id",
+                            "label_key": "name",
+                            "parameters": {
+                                "order_by": "name"
+                            }
+                        }
                     },
                     {
                         "type": "hidden",
@@ -640,6 +672,20 @@
                         "required": true,
                         "default_value": 100,
                         "nb_cols": 1
+                    },
+                    {
+                        "type": "select",
+                        "name": "metadata_id",
+                        "label": "FORM_METADATA_ID_VM4MS_VM4MS_LAYER",
+                        "nb_cols": 4,
+                        "web_service": {
+                            "ressource_id": "vm4ms/metadatas",
+                            "id_key": "metadata_id",
+                            "label_key": "name",
+                            "parameters": {
+                                "order_by": "name"
+                            }
+                        }
                     },
                     {
                         "type": "hidden",

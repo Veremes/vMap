@@ -121,12 +121,12 @@ class Services extends Vmap {
      */
     function GET() {
         $this->genericGet($this->aProperties['schema_vmap'], 'service', 'service_id', false, 'vmap_admin_map_vmap_services');
-        
+
         // Remplace les balises
         for ($i = 0; $i < count($this->aObjects); $i++) {
             $this->aObjects[$i]->aFields['url'] = str_replace('[ms_cgi_url]', $this->aProperties['ms_cgi_url'], $this->aObjects[$i]->aFields['url']);
         }
-        
+
         // Reformatte la réponse 
         if (isset($this->aValues['sEncoding'])) {
             $sEncoding = $this->aValues['sEncoding'];
@@ -235,6 +235,14 @@ class Services extends Vmap {
             $this->aValues["thumbnail"] = $_FILES['thumbnail']["name"];
         }
 
+        // Redimmensionnement de l'image.
+        if (!empty($this->aValues['thumbnail_width']) && !empty($this->aValues['thumbnail_height'])) {
+            // Renomme l'image en jpg
+            $aPointsArray = explode('.', $this->aValues["thumbnail"]);
+            $aPointsArray[count($aPointsArray) - 1] = 'jpg';
+            $this->aValues["thumbnail"] = join('.', $aPointsArray);
+        }
+
         $aReturn = $this->genericPost($this->aProperties['schema_vmap'], 'service', $this->aProperties['schema_vmap'] . '.seq_common', 'service_id');
 
         // Vignette à uploader ?
@@ -250,8 +258,14 @@ class Services extends Vmap {
 
             $sErrorMessage = uploadFile("thumbnail", "", $sImageDir, $_FILES['thumbnail']['size'] + 1);
 
-            if ($sErrorMessage != "")
+            if ($sErrorMessage != "") {
                 writeToErrorLog($sErrorMessage);
+            } else {
+                // Redimmensionnement de l'image.
+                if (!empty($this->aValues['thumbnail_width']) && !empty($this->aValues['thumbnail_height'])) {
+                    $this->pictureResampler($sImageDir, $this->aValues['thumbnail_width'], $this->aValues['thumbnail_height']);
+                }
+            }
         }
 
         return $aReturn['sMessage'];
@@ -358,6 +372,15 @@ class Services extends Vmap {
             $fp = fopen($sImageDir, "w");
             fwrite($fp, $this->aValues["thumbnail_file"]);
             fclose($fp);
+
+            // Redimmensionnement de l'image.
+            if (!empty($this->aValues['thumbnail_width']) && !empty($this->aValues['thumbnail_height'])) {
+                $this->pictureResampler($sImageDir, $this->aValues['thumbnail_width'], $this->aValues['thumbnail_height']);
+                // Renomme l'image en jpg
+                $aPointsArray = explode('.', $this->aValues["thumbnail"]);
+                $aPointsArray[count($aPointsArray) - 1] = 'jpg';
+                $this->aValues["thumbnail"] = join('.', $aPointsArray);
+            }
         }
 
         $aReturn = $this->genericPut($this->aProperties['schema_vmap'], 'service', 'service_id');
@@ -435,9 +458,12 @@ class Services extends Vmap {
             $this->aValues['idList'] = $this->aPath['2'];
         }
         require $this->sRessourcesFile;
-        $sSql = str_replace('[idList]', str_replace('|', ',', $this->aValues['idList']), $aSql['getTotalServiceLayers']);
-        $sSql = str_replace('[sSchemaVmap]', $this->aProperties['schema_vmap'], $sSql);
-        $resultat = $this->oConnection->oBd->execute($sSql);
+        $sSql = $aSql['getTotalServiceLayers'];
+        $aSQLParams = array(
+            'sSchemaVmap' => array('value' => $this->aProperties['schema_vmap'], 'type' => 'column_name'),
+            'idList' => array('value' => $iGroupId, 'type' => 'group')
+        );
+        $resultat = $this->oConnection->oBd->executeWithParams($sSql, $aSQLParams);
         if ($this->oConnection->oBd->enErreur()) {
             $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
             $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());

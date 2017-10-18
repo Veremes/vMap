@@ -202,6 +202,14 @@ class Maps extends Vmap {
             $this->aValues["thumbnail"] = $_FILES['thumbnail']["name"];
         }
 
+        // Redimmensionnement de l'image.
+        if (!empty($this->aValues['thumbnail_width']) && !empty($this->aValues['thumbnail_height'])) {
+            // Renomme l'image en jpg
+            $aPointsArray = explode('.', $this->aValues["thumbnail"]);
+            $aPointsArray[count($aPointsArray) - 1] = 'jpg';
+            $this->aValues["thumbnail"] = join('.', $aPointsArray);
+        }
+
         // Création de la carte.
         $aReturn = $this->genericPost($this->aProperties['schema_vmap'], 'map', $this->aProperties['schema_vmap'] . '.seq_common', 'map_id');
 
@@ -218,8 +226,14 @@ class Maps extends Vmap {
 
             $sErrorMessage = uploadFile("thumbnail", "", $sImageDir, $_FILES['thumbnail']['size'] + 1);
 
-            if ($sErrorMessage != "")
+            if ($sErrorMessage != "") {
                 writeToErrorLog($sErrorMessage);
+            } else {
+                // Redimmensionnement de l'image.
+                if (!empty($this->aValues['thumbnail_width']) && !empty($this->aValues['thumbnail_height'])) {
+                    $this->pictureResampler($sImageDir, $this->aValues['thumbnail_width'], $this->aValues['thumbnail_height']);
+                }
+            }
         }
 
         // Si création OK -> maj des groupes rattachés à la carte.
@@ -232,10 +246,13 @@ class Maps extends Vmap {
             if (!empty($this->aValues['groups'])) {
                 $aGroups = explode('|', $this->aValues['groups']);
                 foreach ($aGroups as $iGroupId) {
-                    $sSql = str_replace('[map_id]', $this->aValues["my_vitis_id"], $aSql['insertMapGroups']);
-                    $sSql = str_replace('[group_id]', $iGroupId, $sSql);
-                    $sSql = str_replace('[sSchemaVmap]', $this->aProperties['schema_vmap'], $sSql);
-                    $resultat = $this->oConnection->oBd->execute($sSql);
+                    $sSql = $aSql['insertMapGroups'];
+                    $aSQLParams = array(
+                        'sSchemaVmap' => array('value' => $this->aProperties['schema_vmap'], 'type' => 'column_name'),
+                        'map_id' => array('value' => $this->aValues["my_vitis_id"], 'type' => 'number'),
+                        'group_id' => array('value' => $iGroupId, 'type' => 'number')
+                    );
+                    $resultat = $this->oConnection->oBd->executeWithParams($sSql, $aSQLParams);
                     if ($this->oConnection->oBd->enErreur()) {
                         $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                         $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
@@ -353,6 +370,15 @@ class Maps extends Vmap {
             $fp = fopen($sImageDir, "w");
             fwrite($fp, $this->aValues["thumbnail_file"]);
             fclose($fp);
+
+            // Redimmensionnement de l'image.
+            if (!empty($this->aValues['thumbnail_width']) && !empty($this->aValues['thumbnail_height'])) {
+                $this->pictureResampler($sImageDir, $this->aValues['thumbnail_width'], $this->aValues['thumbnail_height']);
+                // Renomme l'image en jpg
+                $aPointsArray = explode('.', $this->aValues["thumbnail"]);
+                $aPointsArray[count($aPointsArray) - 1] = 'jpg';
+                $this->aValues["thumbnail"] = join('.', $aPointsArray);
+            }
         }
         // Mise à jour.
         $aReturn = $this->genericPut($this->aProperties['schema_vmap'], 'map', 'map_id');
@@ -366,10 +392,13 @@ class Maps extends Vmap {
             if (!empty($this->aValues['groups'])) {
                 $aGroups = explode('|', $this->aValues['groups']);
                 foreach ($aGroups as $iGroupId) {
-                    $sSql = str_replace('[map_id]', $this->aValues["my_vitis_id"], $aSql['insertMapGroups']);
-                    $sSql = str_replace('[group_id]', $iGroupId, $sSql);
-                    $sSql = str_replace('[sSchemaVmap]', $this->aProperties['schema_vmap'], $sSql);
-                    $resultat = $this->oConnection->oBd->execute($sSql);
+                    $sSql = $aSql['insertMapGroups'];
+                    $aSQLParams = array(
+                        'sSchemaVmap' => array('value' => $this->aProperties['schema_vmap'], 'type' => 'column_name'),
+                        'map_id' => array('value' => $this->aValues["my_vitis_id"], 'type' => 'number'),
+                        'group_id' => array('value' => $iGroupId, 'type' => 'number')
+                    );
+                    $resultat = $this->oConnection->oBd->executeWithParams($sSql, $aSQLParams);
                     if ($this->oConnection->oBd->enErreur()) {
                         $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                         $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
@@ -461,6 +490,7 @@ class Maps extends Vmap {
 
         return $aReturn['sMessage'];
     }
+
 }
 
 ?>

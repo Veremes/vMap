@@ -96,13 +96,12 @@ nsVmap.nsMapManager.MapLegend.prototype.maplegendImageDirective = function () {
 
 /**
  * map legend controller
- * @param {object} $http
  * @param {object} $scope
  * @ngInject
  * @constructor
  * @export
  */
-nsVmap.nsMapManager.MapLegend.prototype.maplegendController = function ($http, $scope) {
+nsVmap.nsMapManager.MapLegend.prototype.maplegendController = function ($scope) {
     oVmap.log("nsVmap.nsMapManager.MapLegend.prototype.maplegendController");
 
     var this_ = this;

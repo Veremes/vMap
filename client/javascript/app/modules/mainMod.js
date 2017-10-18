@@ -9,7 +9,7 @@ goog.require('vitis.loadApp');
 goog.require('vitis.application.config');
 
 // Module.
-var aModuleDependencies = ["ui.grid", "ui.grid.selection", "ui.grid.pagination", "ui.grid.moveColumns", "ui.grid.resizeColumns", "pascalprecht.translate", "restangular", "angular.bind.notifier", "formReader"];
+var aModuleDependencies = ["ui.grid", "ui.grid.selection", "ui.grid.pagination", "ui.grid.moveColumns", "ui.grid.resizeColumns" ,"ui.grid.exporter", "pascalprecht.translate", "angular.bind.notifier", "formReader"];
 aModuleDependencies = aModuleDependencies.concat(oApplicationFiles["vitisModuleDependencies"]);
 
 vitisApp.module = angular.module("vitisApp", aModuleDependencies);
@@ -34,10 +34,9 @@ vitisApp.module.service("formSrvc", vitisApp.formSrvc);
  * @param {angular.$controllerProvider} $controllerProvider Angular controllerProvider service.
  * @param {angular.$provide} $provide Angular provide service.
  * @param {angular.$injector} $injector Angular injector service.
- * @param {service} RestangularProvider RestangularProvider service.
  * @ngInject
  **/
-vitisApp.config = function ($httpProvider, $translateProvider, $translatePartialLoaderProvider, $logProvider, $compileProvider, $controllerProvider, $provide, $injector, RestangularProvider) {
+vitisApp.config = function ($httpProvider, $translateProvider, $translatePartialLoaderProvider, $logProvider, $compileProvider, $controllerProvider, $provide, $injector) {
 
     // Futur équivalent à properties['debug_mode']
     var debugMode = false;
@@ -81,12 +80,6 @@ vitisApp.config = function ($httpProvider, $translateProvider, $translatePartial
     // Echappement des tags html.
     //$translateProvider["useSanitizeValueStrategy"]('escape');
     // 
-    //RestangularProvider.setBaseUrl('/rest'); // -> récupérer la propertie "services_alias".
-    //RestangularProvider.setDefaultRequestParams({"apikey": "secret key"});
-    RestangularProvider["setDefaultHeaders"]({"Accept": "application/json"});
-    // Sauve le service "RestangularProvider" pour l'utiliser plus tard.
-    vitisApp["RestangularProvider"] = RestangularProvider;
-    //
     /*
      $httpProvider.interceptors.push(function () {
      return {

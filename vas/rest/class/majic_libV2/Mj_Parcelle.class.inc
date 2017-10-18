@@ -3,7 +3,7 @@
 * \file Mj_Parcelle.class.inc
 * \brief Mj_Parcelle.class.inc \n \n Ce fichier contient la classe php Mj_Parcelle
 * 
-* Cette classe permet de s�lectionner les attributs n�cessaires afin de traiter la partie parcelle. 
+* Cette classe permet de sélectionner les attributs nécessaires afin de traiter la partie parcelle. 
 *
 * \author Fabien Marty <fabien.marty@veremes.com>
 * \author Damien Bedel
@@ -11,9 +11,9 @@
 */
 /**
 * \class Mj_Parcelle
-* \brief Mj_Parcelle Class \n \n Mj_Parcelle est une classe PHP qui h�rite de la classe Mj.
+* \brief Mj_Parcelle Class \n \n Mj_Parcelle est une classe PHP qui hérite de la classe Mj.
 *
-* Cette classe permet de s�lectionner les attributs n�cessaires afin de traiter la partie parcelle. 
+* Cette classe permet de sélectionner les attributs nécessaires afin de traiter la partie parcelle. 
 *
 * \author Fabien Marty <fabien.marty@veremes.com>
 * \author Damien Bedel
@@ -44,7 +44,7 @@ class Mj_Parcelle extends Mj {
 	* Constructeur
 	* \param $oBD Objet de connexion PDO_BD
 	* \param $sIdPar Identifiant de la parcelle
-	* \param $sIdDnupro Identifiant du propri�taire
+	* \param $sIdDnupro Identifiant du propriétaire
 	*/
 	function __construct($oBD,$sIdPar,$sIdDnupro,$sEncryptedKey='', $bAllSuf=false){
 		include $this->sRessourcesFile;
@@ -56,7 +56,7 @@ class Mj_Parcelle extends Mj {
 			$this->sMessage=$oBD->getBDMessage();
 		}else{
 			if (!$this->aFields=$oBD->ligneSuivante ($oPDOresult)){
-				$this->sMessage='La parcelle "'.$sIdPar.'" n\'existe pas dans les donn�es Majic.';
+				$this->sMessage='La parcelle "'.$sIdPar.'" n\'existe pas dans les données Majic.';
 				$this->sStatus=1;
 			}else{
 				$this->sStatus=0;
@@ -73,7 +73,7 @@ class Mj_Parcelle extends Mj {
 	}
 
 	/**
-	* Cette m�thode permet de r�cup�rer la liste des objets PosPlu d'une parcelle
+	* Cette méthode permet de récupérer la liste des objets PosPlu d'une parcelle
 	* \param $oBD Objet de connexion PDO_BD
 	* \param $sIdPar Identifiant de la parcelle
 	* \return Retourne un tableau d'objets PosPlu
@@ -113,10 +113,10 @@ class Mj_Parcelle extends Mj {
 		return $aIdPosPlu;
 	}
 	/**
-	* Cette m�thode permet de r�cup�rer le CodCom en fonction d'un Id_Par donn�
+	* Cette méthode permet de récupérer le CodCom en fonction d'un Id_Par donné
 	* \param $oBD Objet de connexion PDO_BD
 	* \param $sIdPar Identifiant de la parcelle
-	* \return Retourne une cha�ne de caract�res
+	* \return Retourne une chaîne de caractères
 	*/
 	function get_sCodCom($oBD,$sIdPar){
 		include $this->sRessourcesFile;
@@ -138,10 +138,10 @@ class Mj_Parcelle extends Mj {
 	}
 
 	/**
-	* Cette m�thode permet de r�cup�rer la liste des objets Suf d'une parcelle
+	* Cette méthode permet de récupérer la liste des objets Suf d'une parcelle
 	* \param $oBD Objet de connexion PDO_BD
 	* \param $sIdPar Identifiant de la parcelle
-	* \param $sIdDnupro Identifiant du propri�taire
+	* \param $sIdDnupro Identifiant du propriétaire
 	* \return Retourne un tableau d'objets Suf
 	*/
 	function get_aSuf($oBD,$sIdPar,$sIdDnupro,$sEncryptedKey='',$bAllSuf){
@@ -156,11 +156,11 @@ class Mj_Parcelle extends Mj {
 		return $aSuf;
 	}
 	/**
-	* Cette m�thode permet de r�cup�rer les Id_Suf en fonction d'un Id_Par donn�
+	* Cette méthode permet de récupérer les Id_Suf en fonction d'un Id_Par donné
 	* \param $oBD Objet de connexion PDO_BD
 	* \param $sIdPar Identifiant de la parcelle
-	* \param $sIdDnupro Identifiant du propri�taire
-	* \return Retourne un tableau de cha�nes de caract�res
+	* \param $sIdDnupro Identifiant du propriétaire
+	* \return Retourne un tableau de chaînes de caractères
 	*/
 	function get_aId_Suf($oBD,$sIdPar,$sIdDnupro){
 		include $this->sRessourcesFile;
@@ -182,8 +182,8 @@ class Mj_Parcelle extends Mj {
 		return $aIdSuf;
 	}
 	/**
-	* Cette m�thode permet de construire un tableau correspondant au relev� de propri�t�.
-	* \return Retourne un tableau associatif correspondant au relev� de propri�t�.
+	* Cette méthode permet de construire un tableau correspondant au relevé de propriété.
+	* \return Retourne un tableau associatif correspondant au relevé de propriété.
 	*/
 	function getExportFields(){
 		$aExportFields=array();
@@ -270,8 +270,8 @@ class Mj_Parcelle extends Mj {
 		return $aExportFields;
 	}
 	/**
-	* Cette m�thode permet d'avoir l'attribut dnupla sur 4 caract�res.
-	* \return Retourne une cha�ne de caract�res.
+	* Cette méthode permet d'avoir l'attribut dnupla sur 4 caractères.
+	* \return Retourne une chaîne de caractères.
 	*/
 	function getNumeroParcelle(){
 		if(strlen($this->aFields['dnupla']) == 1){
@@ -289,8 +289,8 @@ class Mj_Parcelle extends Mj {
 		
 	}
 	/**
-	* Cette m�thode permet de r�cup�rer les deux derniers caract�res de l'attribut Jdatat et d'y ajouter 1.
-	* \return Retourne une cha�ne de caract�res.
+	* Cette méthode permet de récupérer les deux derniers caractères de l'attribut Jdatat et d'y ajouter 1.
+	* \return Retourne une chaîne de caractères.
 	*/
 	function getJdatat(){
 		$sNewJdatat=$this->aFields['jdatat'];
@@ -310,24 +310,24 @@ class Mj_Parcelle extends Mj {
 		return $sNewJdatat;
 	}
 	/**
-	* Cette m�thode permet de concat�ner les attributs dnvoiri et indic.
-	* \return Retourne une cha�ne de caract�res.
+	* Cette méthode permet de concaténer les attributs dnvoiri et indic.
+	* \return Retourne une chaîne de caractères.
 	*/
 	function getNumeroVoirie(){
 		$sNumeroVoirie = ltrim($this->aFields['dnvoiri'],'0').$this->aFields['dindic'];
 		return $sNumeroVoirie;
 	}
 	/**
-	* Cette m�thode permet de concat�ner les attributs cconvo et dvoilib.
-	* \return Retourne une cha�ne de caract�res.
+	* Cette méthode permet de concaténer les attributs cconvo et dvoilib.
+	* \return Retourne une chaîne de caractères.
 	*/
 	function getAdresseParcelle(){
 		$sAdresseParcelle = rtrim($this->aFields['cconvo'])." ".rtrim($this->aFields['dvoilib']);
 		return $sAdresseParcelle;
 	}
 	/**
-	* Cette m�thode permet de r�cup�rer la valeur de l'attribut 's_tar' dans le tableau aSuf.
-	* \return Retourne une cha�ne de caract�res.
+	* Cette méthode permet de récupérer la valeur de l'attribut 's_tar' dans le tableau aSuf.
+	* \return Retourne une chaîne de caractères.
 	*/
 	function getSTar(){
 		if(count($this->aSuf)==1) {
@@ -337,8 +337,8 @@ class Mj_Parcelle extends Mj {
 		}
 	}
 	/**
-	* Cette m�thode permet de r�cup�rer la valeur de l'attribut 'suf' dans le tableau aSuf.
-	* \return Retourne une cha�ne de caract�res.
+	* Cette méthode permet de récupérer la valeur de l'attribut 'suf' dans le tableau aSuf.
+	* \return Retourne une chaîne de caractères.
 	*/
 	function getSuf(){
 		if(count($this->aSuf)==1) {
@@ -348,8 +348,8 @@ class Mj_Parcelle extends Mj {
 		}
 	}
 	/**
-	* Cette m�thode permet de r�cup�rer la valeur de l'attribut 'grss_gr' dans le tableau aSuf.
-	* \return Retourne une cha�ne de caract�res.
+	* Cette méthode permet de récupérer la valeur de l'attribut 'grss_gr' dans le tableau aSuf.
+	* \return Retourne une chaîne de caractères.
 	*/
 	function getGrssGr(){
 		if(count($this->aSuf)==1) {
@@ -359,8 +359,8 @@ class Mj_Parcelle extends Mj {
 		}
 	}
 	/**
-	* Cette m�thode permet de r�cup�rer la valeur de l'attribut 'clas' dans le tableau aSuf.
-	* \return Retourne une cha�ne de caract�res.
+	* Cette méthode permet de récupérer la valeur de l'attribut 'clas' dans le tableau aSuf.
+	* \return Retourne une chaîne de caractères.
 	*/
 	function getClas(){
 		if(count($this->aSuf)==1) {
@@ -370,8 +370,8 @@ class Mj_Parcelle extends Mj {
 		}
 	}
 	/**
-	* Cette m�thode permet de r�cup�rer la valeur de l'attribut 'nat_cult' dans le tableau aSuf.
-	* \return Retourne une cha�ne de caract�res.
+	* Cette méthode permet de récupérer la valeur de l'attribut 'nat_cult' dans le tableau aSuf.
+	* \return Retourne une chaîne de caractères.
 	*/
 	function getNatCult(){
 		if(count($this->aSuf)==1) {
@@ -381,8 +381,8 @@ class Mj_Parcelle extends Mj {
 		}
 	}
 	/**
-	* Cette m�thode permet de r�cup�rer la valeur de l'attribut 'revenu cadastral' dans le tableau aSuf.
-	* \return Retourne un nombre r�el (float).
+	* Cette méthode permet de récupérer la valeur de l'attribut 'revenu cadastral' dans le tableau aSuf.
+	* \return Retourne un nombre réel (float).
 	*/
 	function getRevenuCadastral(){
 		$fRevenuCadastral = 0;
@@ -392,8 +392,8 @@ class Mj_Parcelle extends Mj {
 		return $fRevenuCadastral;
 	}
 	/**
-	* Cette m�thode permet de r�cup�rer la valeur de l'attribut 'revenu reference' dans le tableau aSuf.
-	* \return Retourne un nombre r�el (float).
+	* Cette méthode permet de récupérer la valeur de l'attribut 'revenu reference' dans le tableau aSuf.
+	* \return Retourne un nombre réel (float).
 	*/
 	function getRevenuReference(){
 		$fRevenuReference = 0;
@@ -403,8 +403,8 @@ class Mj_Parcelle extends Mj {
 		return $fRevenuReference;
 	}
 	/**
-	* Cette m�thode permet de r�cup�rer la valeur de l'attribut 'revenu cadastral' pour des parcelles avec exon�ration dans le tableau aSuf.
-	* \return Retourne un nombre r�el (float).
+	* Cette méthode permet de récupérer la valeur de l'attribut 'revenu cadastral' pour des parcelles avec exonération dans le tableau aSuf.
+	* \return Retourne un nombre réel (float).
 	*/
 	function getRevenuCadastralAvecExo(){
 		$fRevenuCadastralAvecExo = 0;
@@ -417,9 +417,9 @@ class Mj_Parcelle extends Mj {
 	}
 
 	/**
-	* Cette m�thode permet de r�cup�rer la valeur de l'attribut 'revenu cadastral' pour des parcelles avec exon�ration dans le tableau aSuf.
-	* lorsque l'exoneration est procur� par une commune, un groupement de commune ou toutes collectivit�
-	* \return Retourne un nombre r�el (float).
+	* Cette méthode permet de récupérer la valeur de l'attribut 'revenu cadastral' pour des parcelles avec exonération dans le tableau aSuf.
+	* lorsque l'exoneration est procuré par une commune, un groupement de commune ou toutes collectivité
+	* \return Retourne un nombre réel (float).
 	*/
 	function getRevenuCadastralComAvecExo(){
 		$fRevenuCadastralComAvecExo = 0;
@@ -463,9 +463,9 @@ class Mj_Parcelle extends Mj {
 		return $fRevenuCadastralTaxeADAvecExo;
 	}
 	/**
-	* Cette m�thode permet de r�cup�rer la valeur de l'attribut 'revenu cadastral' pour des parcelles avec exon�ration dans le tableau aSuf.
-	* lorsque l'exoneration est procur� par le d�partement ou toutes collectivit�
-	* \return Retourne un nombre r�el (float).
+	* Cette méthode permet de récupérer la valeur de l'attribut 'revenu cadastral' pour des parcelles avec exonération dans le tableau aSuf.
+	* lorsque l'exoneration est procuré par le département ou toutes collectivité
+	* \return Retourne un nombre réel (float).
 	*/
 	function getRevenuCadastralDepAvecExo(){
 		$fRevenuCadastralDepAvecExo = 0;
@@ -487,9 +487,9 @@ class Mj_Parcelle extends Mj {
 		return $fRevenuCadastralDepAvecExo;
 	}
 	/**
-	* Cette m�thode permet de r�cup�rer la valeur de l'attribut 'revenu cadastral' pour des parcelles avec exon�ration dans le tableau aSuf.
-	* lorsque l'exoneration est procur� par la r�gion ou toutes collectivit�
-	* \return Retourne un nombre r�el (float).
+	* Cette méthode permet de récupérer la valeur de l'attribut 'revenu cadastral' pour des parcelles avec exonération dans le tableau aSuf.
+	* lorsque l'exoneration est procuré par la région ou toutes collectivité
+	* \return Retourne un nombre réel (float).
 	*/
 	function getRevenuCadastralRegAvecExo(){
 		$fRevenuCadastralRegAvecExo = 0;
@@ -511,7 +511,7 @@ class Mj_Parcelle extends Mj {
 		return $fRevenuCadastralRegAvecExo;
 	}
 	/**
-	* Cette m�thode permet de r�cup�rer la valeur de l'attribut 'contenance' pour des parcelles avec exon�ration dans le tableau aSuf.
+	* Cette méthode permet de récupérer la valeur de l'attribut 'contenance' pour des parcelles avec exonération dans le tableau aSuf.
 	* \return Retourne un entier.
 	*/
 	function getContenance (){
@@ -523,11 +523,11 @@ class Mj_Parcelle extends Mj {
 	}
 	
 	/**
-	* Cette m�thode permet de r�up�rer l'ensemble des emprises de la parcelles � partir des properties de la fiche d'urbanisme
+	* Cette méthode permet de récupérer l'ensemble des emprises de la parcelles à partir des properties de la fiche d'urbanisme
 	* \return 
 	*/
 	function getEmprises($aProperties,$oBD,$sLayerTypeParcelle) {
-		// boucler sur toutes les couches � intersecter
+		// boucler sur toutes les couches à intersecter
 		if(isset($aProperties["cadastre"]["fiche_urb"]["intersect"]["views"])) {
 			foreach($aProperties["cadastre"]["fiche_urb"]["intersect"]["views"] as $sView => $aViewValue) {
 				$oEmprises = new Mj_Emprises($oBD,$this->aFields['id_par'],$sView, $aProperties["cadastre"]["fiche_urb"]["intersect"]["tolerance"], $aViewValue, $sLayerTypeParcelle);				
@@ -546,8 +546,8 @@ class Mj_Parcelle extends Mj {
 	}
 
 	/**
-	* Cette m�thode permet de r�cup�rer la valeur de l'attribut 'nat_exo' dans le tableau aSuf.
-	* \return Retourne une cha�ne de caract�res.
+	* Cette méthode permet de récupérer la valeur de l'attribut 'nat_exo' dans le tableau aSuf.
+	* \return Retourne une chaîne de caractères.
 	*
 	*/
 	/*function getNatExo(){
@@ -558,7 +558,7 @@ class Mj_Parcelle extends Mj {
 		}
 	}*/
 	/**
-	* Cette m�thode permet de formater un d�cimal pour l'affichage.
+	* Cette méthode permet de formater un décimal pour l'affichage.
 	* \return Retourne une chaine
 	*/
 	function setFloatToText($fFloat){

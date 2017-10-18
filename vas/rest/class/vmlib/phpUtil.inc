@@ -76,92 +76,92 @@ function uploadFile($sNomObjet, $sFileType, $sServerPath, $sMaxSize) {
     $aTemp = explode("\\", $sServerPath);
     if (is_uploaded_file($sTmpFile)) {
         if (!in_array(extension($aTemp[count($aTemp) - 1]), $aForbiddenExtension)) {
-        //Teste si le fichier correspont au format voulu.
-        $bAllowUpload = false;
-        $sFormat = "";
-        switch ($sFileType) {
-            case "image" :
-                if (in_array(extension($aTemp[count($aTemp) - 1]), $aExtensionPicture)) {
-                    $bAllowUpload = true;
-                } else {
-                    foreach ($aExtensionPicture as $sValue) {
-                        $sFormat .= " " . $sValue;
-                    }
-                    writeToErrorLog(ERROR_FILE . $_FILES[$sNomObjet]['name'] . ERROR_NOT_FILE . $sFileType);
-                    $sErrorMsg = FILE_LABEL_PHPUTIL . $_FILES[$sNomObjet]['name'] . ERROR_NOT_FILE . $sFileType . ERROR_VALID_FILE . $sFormat . '.';
-                }
-                break;
-            case "image-pdf" :
-                if (in_array(extension($aTemp[count($aTemp) - 1]), $aExtensionPictureAndPdf)) {
-                    $bAllowUpload = true;
-                } else {
-                    foreach ($aExtensionPictureAndPdf as $sValue) {
-                        $sFormat .= " " . $sValue;
-                    }
-                    writeToErrorLog(ERROR_FILE . $_FILES[$sNomObjet]['name'] . ERROR_NOT_FILE . $sFileType);
-                    $sErrorMsg = FILE_LABEL_PHPUTIL . $_FILES[$sNomObjet]['name'] . ERROR_NOT_FILE . $sFileType . ERROR_VALID_FILE . $sFormat . '.';
-                }
-                break;
-            case "document" :
-                if (in_array(extension($aTemp[count($aTemp) - 1]), $aExtensionFile)) {
-                    $bAllowUpload = true;
-                } else {
-                    foreach ($aExtensionFile as $sValue) {
-                        $sFormat .= " " . $sValue;
-                    }
-                    writeToErrorLog(ERROR_FILE . $_FILES[$sNomObjet]['name'] . ERROR_NOT_FILE . $sFileType);
-                    $sErrorMsg = FILE_LABEL_PHPUTIL . $_FILES[$sNomObjet]['name'] . ERROR_NOT_FILE . $sFileType . ERROR_VALID_FILE . $sFormat . '.';
-                }
-                break;
-            case "zip" :
-                if (in_array(extension($aTemp[count($aTemp) - 1]), $aExtensionZip)) {
-                    $bAllowUpload = true;
-                } else {
-                    foreach ($aExtensionZip as $sValue) {
-                        $sFormat .= " " . $sValue;
-                    }
-                    writeToErrorLog(ERROR_FILE . $_FILES[$sNomObjet]['name'] . ERROR_NOT_FILE . $sFileType);
-                    $sErrorMsg = FILE_LABEL_PHPUTIL . $_FILES[$sNomObjet]['name'] . ERROR_NOT_FILE . $sFileType . ERROR_VALID_FILE . $sFormat . '.';
-                }
-                break;
-            case "fmw" :
-                if (in_array(extension($aTemp[count($aTemp) - 1]), $aExtensionFmw)) {
-                    $bAllowUpload = true;
-                } else {
-                    foreach ($aExtensionFmw as $sValue) {
-                        $sFormat .= " " . $sValue;
-                    }
-                    writeToErrorLog(ERROR_FILE . $_FILES[$sNomObjet]['name'] . ERROR_NOT_FILE . $sFileType);
-                    $sErrorMsg = FILE_LABEL_PHPUTIL . $_FILES[$sNomObjet]['name'] . ERROR_NOT_FILE . $sFileType . ERROR_VALID_FILE . $sFormat . '.';
-                }
-                break;
-            default :
-                
-                     $bAllowUpload = true;
-                
-                break;
-        }
-
-        //Teste si le fichier n'est pas de trop grande taille.
-        if ($_FILES[$sNomObjet]['size'] > $sMaxSize || $_FILES[$sNomObjet]['error'] == 1) {
+            //Teste si le fichier correspont au format voulu.
             $bAllowUpload = false;
-            if ($_FILES[$sNomObjet]['size'] > $sMaxSize)
-                $sErrorMsg .= FILE_LABEL_PHPUTIL . $_FILES[$sNomObjet]['name'] . OF_LABEL_PHPUTIL . $_FILES[$sNomObjet]['size'] . ERROR_EXCEED_MAX_SIZE . ' (' . $sMaxSize . LABEL_BYTES_PHPUTIL . ').';
-            if ($_FILES[$sNomObjet]['error'] > $sMaxSize)
-                $sErrorMsg .= FILE_LABEL_PHPUTIL . $_FILES[$sNomObjet]['name'] . ERROR_EXCEED_MAX_SIZE_PHP . ' (' . $sMaxSize . LABEL_BYTES_PHPUTIL . ').';
-        }
-        //Lance l'upload.
-        if ($bAllowUpload) {
-            if (!move_uploaded_file($sTmpFile, utf8_decode($sServerPath))) {
-                writeToErrorLog(ERROR_COPYING_FILE . $_FILES[$sNomObjet]['name'] . ON_SERVER_PHPUTIL . ', ' . $sTmpFile . ', ' . $sServerPath);
-                $sErrorMsg = ERROR_COPYING_FILE . $_FILES[$sNomObjet]['name'] . ON_SERVER_PHPUTIL . '.';
+            $sFormat = "";
+            switch ($sFileType) {
+                case "image" :
+                    if (in_array(extension($aTemp[count($aTemp) - 1]), $aExtensionPicture)) {
+                        $bAllowUpload = true;
+                    } else {
+                        foreach ($aExtensionPicture as $sValue) {
+                            $sFormat .= " " . $sValue;
+                        }
+                        writeToErrorLog(ERROR_FILE . $_FILES[$sNomObjet]['name'] . ERROR_NOT_FILE . $sFileType);
+                        $sErrorMsg = FILE_LABEL_PHPUTIL . $_FILES[$sNomObjet]['name'] . ERROR_NOT_FILE . $sFileType . ERROR_VALID_FILE . $sFormat . '.';
+                    }
+                    break;
+                case "image-pdf" :
+                    if (in_array(extension($aTemp[count($aTemp) - 1]), $aExtensionPictureAndPdf)) {
+                        $bAllowUpload = true;
+                    } else {
+                        foreach ($aExtensionPictureAndPdf as $sValue) {
+                            $sFormat .= " " . $sValue;
+                        }
+                        writeToErrorLog(ERROR_FILE . $_FILES[$sNomObjet]['name'] . ERROR_NOT_FILE . $sFileType);
+                        $sErrorMsg = FILE_LABEL_PHPUTIL . $_FILES[$sNomObjet]['name'] . ERROR_NOT_FILE . $sFileType . ERROR_VALID_FILE . $sFormat . '.';
+                    }
+                    break;
+                case "document" :
+                    if (in_array(extension($aTemp[count($aTemp) - 1]), $aExtensionFile)) {
+                        $bAllowUpload = true;
+                    } else {
+                        foreach ($aExtensionFile as $sValue) {
+                            $sFormat .= " " . $sValue;
+                        }
+                        writeToErrorLog(ERROR_FILE . $_FILES[$sNomObjet]['name'] . ERROR_NOT_FILE . $sFileType);
+                        $sErrorMsg = FILE_LABEL_PHPUTIL . $_FILES[$sNomObjet]['name'] . ERROR_NOT_FILE . $sFileType . ERROR_VALID_FILE . $sFormat . '.';
+                    }
+                    break;
+                case "zip" :
+                    if (in_array(extension($aTemp[count($aTemp) - 1]), $aExtensionZip)) {
+                        $bAllowUpload = true;
+                    } else {
+                        foreach ($aExtensionZip as $sValue) {
+                            $sFormat .= " " . $sValue;
+                        }
+                        writeToErrorLog(ERROR_FILE . $_FILES[$sNomObjet]['name'] . ERROR_NOT_FILE . $sFileType);
+                        $sErrorMsg = FILE_LABEL_PHPUTIL . $_FILES[$sNomObjet]['name'] . ERROR_NOT_FILE . $sFileType . ERROR_VALID_FILE . $sFormat . '.';
+                    }
+                    break;
+                case "fmw" :
+                    if (in_array(extension($aTemp[count($aTemp) - 1]), $aExtensionFmw)) {
+                        $bAllowUpload = true;
+                    } else {
+                        foreach ($aExtensionFmw as $sValue) {
+                            $sFormat .= " " . $sValue;
+                        }
+                        writeToErrorLog(ERROR_FILE . $_FILES[$sNomObjet]['name'] . ERROR_NOT_FILE . $sFileType);
+                        $sErrorMsg = FILE_LABEL_PHPUTIL . $_FILES[$sNomObjet]['name'] . ERROR_NOT_FILE . $sFileType . ERROR_VALID_FILE . $sFormat . '.';
+                    }
+                    break;
+                default :
+
+                    $bAllowUpload = true;
+
+                    break;
             }
-            //chmod($sServerPath,755);
+
+            //Teste si le fichier n'est pas de trop grande taille.
+            if ($_FILES[$sNomObjet]['size'] > $sMaxSize || $_FILES[$sNomObjet]['error'] == 1) {
+                $bAllowUpload = false;
+                if ($_FILES[$sNomObjet]['size'] > $sMaxSize)
+                    $sErrorMsg .= FILE_LABEL_PHPUTIL . $_FILES[$sNomObjet]['name'] . OF_LABEL_PHPUTIL . $_FILES[$sNomObjet]['size'] . ERROR_EXCEED_MAX_SIZE . ' (' . $sMaxSize . LABEL_BYTES_PHPUTIL . ').';
+                if ($_FILES[$sNomObjet]['error'] > $sMaxSize)
+                    $sErrorMsg .= FILE_LABEL_PHPUTIL . $_FILES[$sNomObjet]['name'] . ERROR_EXCEED_MAX_SIZE_PHP . ' (' . $sMaxSize . LABEL_BYTES_PHPUTIL . ').';
+            }
+            //Lance l'upload.
+            if ($bAllowUpload) {
+                if (!move_uploaded_file($sTmpFile, $sServerPath)) {
+                    writeToErrorLog(ERROR_COPYING_FILE . $_FILES[$sNomObjet]['name'] . ON_SERVER_PHPUTIL . ', ' . $sTmpFile . ', ' . $sServerPath);
+                    $sErrorMsg = ERROR_COPYING_FILE . $_FILES[$sNomObjet]['name'] . ON_SERVER_PHPUTIL . '.';
+                }
+                //chmod($sServerPath,755);
+            }
+        } else {
+            writeToErrorLog(ERROR_FILE . $_FILES[$sNomObjet]['name'] . ERROR_NOT_FILE . $sFileType);
+            $sErrorMsg = FILE_LABEL_PHPUTIL . $_FILES[$sNomObjet]['name'] . ERROR_NOT_FILE . $sFileType . ERROR_VALID_FILE . $sFormat . '.';
         }
-        }else{
-                    writeToErrorLog(ERROR_FILE . $_FILES[$sNomObjet]['name'] . ERROR_NOT_FILE . $sFileType);
-                    $sErrorMsg = FILE_LABEL_PHPUTIL . $_FILES[$sNomObjet]['name'] . ERROR_NOT_FILE . $sFileType . ERROR_VALID_FILE . $sFormat . '.';
-                 }
     } else {
         writeToErrorLog(ERROR_FILE . $_FILES[$sNomObjet]['name'] . ERROR_DOWNLOAD_SERVER);
         $sErrorMsg = FILE_LABEL_PHPUTIL . $_FILES[$sNomObjet]['name'] . ERROR_DOWNLOAD_SERVER . ' (' . ERROR_CODE_PHPUTIL . $_FILES[$sNomObjet]['error'] . ').';
@@ -201,38 +201,41 @@ function getFileName($sFullFileName) {
  * @return boolean
  */
 function createZip($sFolder, $sDestination, $sExtensionToExclude = '') {
-	if (!empty($sExtensionToExclude)){
-		$aExtensionToExclude = explode('|', $sExtensionToExclude);
-	} else {
-		$aExtensionToExclude = array();
-	}
-	$sFolder = rtrim($sFolder, "/");
+    if (!empty($sExtensionToExclude)) {
+        $aExtensionToExclude = explode('|', $sExtensionToExclude);
+    } else {
+        $aExtensionToExclude = array();
+    }
+    $sFolder = rtrim($sFolder, "/");
 
-	$zip = new ZipArchive();
-	$zip->open($sDestination, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+    $zip = new ZipArchive();
 
-	$files = new RecursiveIteratorIterator(
-			new RecursiveDirectoryIterator($sFolder), RecursiveIteratorIterator::LEAVES_ONLY
-	);
-	foreach ($files as $name => $file) {
-		if (!$file->isDir()) {
-			$filePath = $file->getRealPath();
-			
-			// Récupération de l'extension
-			$oFileInfo = new SplFileInfo($filePath);
-			$sExtension = $oFileInfo->getExtension();
-			
-			$relativePath = substr($filePath, strlen($sFolder) + 1);
-			if (in_array($sExtension, $aExtensionToExclude)) {
-				continue;
-			}
-			$zip->addFile($filePath, $relativePath);
-		}
-	}
+    if ($zip->open($sDestination, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== TRUE) {
+        die("An error occurred creating your ZIP file.");
+    }
 
-	$zip->close();
+    $files = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($sFolder), RecursiveIteratorIterator::LEAVES_ONLY
+    );
+    foreach ($files as $name => $file) {
+        if (!$file->isDir()) {
+            $filePath = $file->getRealPath();
 
-	return file_exists($sDestination);
+            // Récupération de l'extension
+            $oFileInfo = new SplFileInfo($filePath);
+            $sExtension = $oFileInfo->getExtension();
+
+            $relativePath = substr($filePath, strlen($sFolder) + 1);
+            if (in_array($sExtension, $aExtensionToExclude)) {
+                continue;
+            }
+            $zip->addFile($filePath, $relativePath);
+        }
+    }
+
+    $zip->close();
+
+    return file_exists($sDestination);
 }
 
 /**
@@ -241,16 +244,16 @@ function createZip($sFolder, $sDestination, $sExtensionToExclude = '') {
  * @param string $sDestination
  */
 function unZip($sZipFile, $sDestination) {
-	$zip = new ZipArchive;
-	$res = $zip->open($sZipFile);
-	if ($res === TRUE) {
-		// extract it to the path we determined above
-		$zip->extractTo($sDestination);
-		$zip->close();
-		return file_exists($sDestination);
-	} else {
-		return false;
-	}
+    $zip = new ZipArchive;
+    $res = $zip->open($sZipFile);
+    if ($res === TRUE) {
+        // extract it to the path we determined above
+        $zip->extractTo($sDestination);
+        $zip->close();
+        return file_exists($sDestination);
+    } else {
+        return false;
+    }
 }
 
 /**
@@ -622,6 +625,13 @@ class array2xml extends DomDocument {
         return $this->xpath->evaluate($query);
     }
 
+}
+
+/**
+ * Generate an unique id
+ */
+function vitisUniqId() {
+    return uniqid(rand(10000, 99999));
 }
 
 // end of class

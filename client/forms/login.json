@@ -3,6 +3,7 @@
         "name": "login_form",
         "input_size": "xs",
         "event": "sendLoginForm()",
+        "javascript": true,
         "rows": [
             {
                 "fields": [
@@ -10,7 +11,9 @@
                         "type": "select",
                         "name": "domain",
                         "label": "FORM_LOGIN_DOMAIN",
-                        "nb_cols": 12
+                        "nb_cols": 12,
+                        "visible": false,
+                        "required": false
                     }
                 ]
             },
@@ -66,9 +69,50 @@
                         ]
                     }
                 ]
+            }, {
+                "class": "forgotten-password-align",
+                "fields": [
+                    {
+                        "type": "button",
+                        "class": "btn-group btn-group-sm center",
+                        "nb_cols": 12,
+                        "name": "forgotten_password",
+                        "visible" : true,
+                        "buttons": [
+                            {
+                                "type": "button",
+                                "name": "fpwd",
+                                "label": "FORGOTTEN_PASSWORD",
+                                "class": "btn-outline btn-ouline-login hidden",
+                                "event": "showModalForgottenPassword()"
+                            }
+                        ],
+                        "id": "forgotten_password"
+                    }
+                ]
+            }, {
+                "class": "forgotten-password-align",
+                "fields": [
+                    {
+                        "type": "button",
+                        "class": "btn-group btn-group-sm center",
+                        "nb_cols": 12,
+                        "name": "sign_up",
+                        "visible" : true,
+                        "buttons": [
+                            {
+                                "type": "button",
+                                "name": "sign_up",
+                                "label": "SIGN_UP",
+                                "class": "btn-outline btn-ouline-login hidden",
+                                "event": "showModalSignUp()"
+                            }
+                        ],
+                        "id": "sign_up"
+                    }
+                ]
             }
         ]
-
     },
     "update": {},
     "insert": {},

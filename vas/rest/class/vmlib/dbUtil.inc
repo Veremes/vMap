@@ -231,13 +231,13 @@ function getUserGroupsEngines($sSessLogin, $oBd, $bRights, $sSessPassword = "") 
  */
 function getUserGroups($sSessLogin, $oBd, $sSessPassword = "", $bRights, $sSchema) {
 
-    $sSql = "SELECT domain_id, user_id FROM " . $sSchema . ".user WHERE lower(login) = '" . utf8_encode(strToLower(utf8_decode($sSessLogin))) . "'";
+    $sSql = "SELECT domain_id, user_id FROM " . $sSchema . ".v_user WHERE lower(login) = '" . utf8_encode(strToLower(utf8_decode($sSessLogin))) . "'";
     $oPDOresult = @$oBd->execute($sSql);
 
     $aFields = $oBd->ligneSuivante($oPDOresult);
     $oPDOresult = $oBd->fermeResultat();
     if ($aFields['domain_id'] == "" || $bRights) {
-        $sSql = "SELECT group_id FROM " . $sSchema . ".user_group WHERE user_id = " . $aFields['user_id'];
+        $sSql = "SELECT group_id FROM " . $sSchema . ".v_user_group WHERE user_id = " . $aFields['user_id'];
         $oPDOresult = @$oBd->execute($sSql);
         $sListGroupId = "";
         while ($aLigne = $oBd->ligneSuivante($oPDOresult)) {
@@ -316,7 +316,7 @@ function getUserGroups2($sSessLogin, $oBd, $bRights, $sSchema) {
     $sListGroupIdBd = "";
     $sListGroupIdAd = "";
 
-    $sSql = "SELECT domain_id, user_id FROM " . $sSchema . ".user WHERE lower(login) = '" . utf8_encode(strToLower(utf8_decode($sSessLogin))) . "'";
+    $sSql = "SELECT domain_id, user_id FROM " . $sSchema . ".v_user WHERE lower(login) = '" . utf8_encode(strToLower(utf8_decode($sSessLogin))) . "'";
     $oPDOresult = $oBd->execute($sSql);
     if ($oBd->erreurRencontree) {
         writeToErrorLog($oBd->getBDMessage());
@@ -325,7 +325,7 @@ function getUserGroups2($sSessLogin, $oBd, $bRights, $sSchema) {
 
         $oPDOresult = $oBd->fermeResultat();
         if ($aFields['domain_id'] == "" || $bRights) {
-            $sSql = "SELECT group_id FROM " . $sSchema . ".user_group WHERE user_id = " . $aFields['user_id'];
+            $sSql = "SELECT group_id FROM " . $sSchema . ".v_user_group WHERE user_id = " . $aFields['user_id'];
             $oPDOresult = @$oBd->execute($sSql);
             while ($aLigne = $oBd->ligneSuivante($oPDOresult)) {
                 if ($sListGroupIdBd == "") {

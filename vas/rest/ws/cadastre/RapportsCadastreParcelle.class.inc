@@ -94,7 +94,7 @@ class RapportsCadastreParcelle extends Cadastre {
          * Tableau contenant les id_par des parcelles à utiliser
          * @type array
          */
-        $aParcelles = explode("|", $_REQUEST["parcelles"]);
+        $aParcelles = explode("|", $this->aValues["parcelles"]);
 
         /**
          * Type de rapport
@@ -131,18 +131,20 @@ class RapportsCadastreParcelle extends Cadastre {
         $this->oConnection->oBd = $oBD;
 
         // Récupère l'année
-        $sYear = $this->vmapGet('majic', '"ANNEE_REFERENCE"', array('ANNEE'), '', 'LIMIT 1')[0]['ANNEE'];
+        $sYear = $this->vmapGet('majic', '"ANNEE_REFERENCE"', array('ANNEE'), '', array('limit' => 1))[0]['ANNEE'];
 
+        // Patch pour décoder les properties UTF-8 parce que les rapports sont générés en ISO
+        if (is_array($properties["cadastre"]["fiche_urb"]["intersect"]["views"])) {
+            $properties["cadastre"]["fiche_urb"]["intersect"]["views"] = $this->decodeUtf8Array($properties["cadastre"]["fiche_urb"]["intersect"]["views"]);
+        }
+        
         // Charge les données
         if ($rapportType != 'Locaux' && $rapportType != 'ProprietaireLocaux') {
-            require_once("majic_lib/Mj_Compte_Communal_Parcelles.class.inc");
-            // Patch pour décoder les properties UTF-8 parce que les rapports sont générés en ISO
-            $properties["cadastre"]["fiche_urb"]["intersect"]["views"] = array_map($this->decodeUtf8Array, $properties["cadastre"]["fiche_urb"]["intersect"]["views"]);
-
-            $oRapport = new Mj_Compte_Communal_Parcelles($aParcelles, $oBD, $properties, "polygon");
+            require_once(__DIR__ . "/../../class/majic_libV2/Mj_Compte_Communal_Parcelles.class.inc");
+            $oRapport = new Mj_Compte_Communal_Parcelles($aParcelles, $oBd, $properties, "polygon");
         } else {
-            require_once("majic_lib/Mj_Bati_Parcelles.class.inc");
-            $oRapport = new Mj_Bati_Parcelles($aParcelles, $oBD);
+            require_once(__DIR__ . "/../../class/majic_libV2/Mj_Bati_Parcelles.class.inc");
+            $oRapport = new Mj_Bati_Parcelles($aParcelles, $oBd, $properties);
         }
 
         if (!file_exists($properties["cadastre"]["rp"]["rp_dir"])) {
@@ -157,9 +159,10 @@ class RapportsCadastreParcelle extends Cadastre {
 
         // Crée les XML
         if ($oRapport->isError()) {
-            $sMessage = 'Erreur lors de l\'extraction des données avec la librairie majic : ' . $oRapport->sMessage;
-            echo $sMessage;
-            writeToErrorLog($sMessage);
+            http_response_code(500);
+            writeToErrorLog('Erreur lors de l\'extraction des données avec la librairie majic : ' . $oRapport->sMessage);
+            $aReturn['error']['errorMessage'] = "Erreur lors de la génération du rapport.";
+            return json_encode($aReturn);
         } else {
             // Création du fichier XML.
             $sFile = "";
@@ -200,6 +203,7 @@ class RapportsCadastreParcelle extends Cadastre {
                 exec($sCommandLine, $aCommand, $iResult);
 
                 if ($iResult) {
+                    http_response_code(500);
                     $aReturn['error']['errorMessage'] .= "Erreur lors de la génération du rapport.";
                     writeToErrorLog("Erreur lors de la génération d'un rapport au format PDF.");
                     writeToErrorLog("Ligne de commande : " . $sCommandLine);
@@ -224,6 +228,7 @@ class RapportsCadastreParcelle extends Cadastre {
                     $doc->load($sXmlFileName);
                     $oHandle = fopen($sFileName, 'w');
                     if ($oHandle == false) {
+                        http_response_code(500);
                         $aReturn['error']['errorMessage'] .= "Impossible de créer le fichier " . $sFileName . ". Impossible de générer le rapport.";
                     } else {
                         fwrite($oHandle, $xsl->transformToXML($doc));
@@ -231,6 +236,7 @@ class RapportsCadastreParcelle extends Cadastre {
                         $sRapportCree = $properties["cadastre"]["rp"]["rp_dir"] . "/" . $sYear . "/Rapport_Parcelle_" . $rapportType . "/" . $sFile . ".xls";
                         // copie du fichier pour créer le fichier excel
                         if (!copy($sFileName, $sRapportCree)) {
+                            http_response_code(500);
                             $aReturn['error']['errorMessage'] .= "La copie du fichier '" . $sFileName . "' vers '" . $sRapportCree . "' n'a pas réussi. Impossible de générer le rapport.";
                         }
                     }
@@ -265,7 +271,7 @@ class RapportsCadastreParcelle extends Cadastre {
             $result = array();
             foreach ($s as $id => $value) {
                 if (is_array($value))
-                    $result[$id] = array_map($this->decodeUtf8Array, $value);
+                    $result[$id] = $this->decodeUtf8Array($value);
                 else
                     $result[$id] = utf8_decode($value);
             }

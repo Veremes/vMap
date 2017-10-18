@@ -72,6 +72,17 @@
             {
                 "fields": [
                     {
+                        "type": "text",
+                        "name": "datadir",
+                        "label": "FORM_DATADIR_CONFIGURATION_CONFIGURATION_VM4MS_CONFIG",
+                        "required": true,
+                        "nb_cols": 5
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
                         "type": "button",
                         "class": "btn-ungroup btn-group-sm",
                         "nb_cols": 7,

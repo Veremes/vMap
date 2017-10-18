@@ -16,7 +16,7 @@
         <span class="text-info icon-eye" style="font-size: 18px;line-height: 0" title="Définit si la couche est visible"></span>
     </div>
     <ul class="tree">
-        <div ng-repeat="node in tree.children" ng-if="node.view === undefined">
+        <div ng-repeat="node in tree.children | orderBy : 'name'" ng-if="node.view === undefined">
 
             <!-- Service -->
             <div class="layerstree-phather">
@@ -43,37 +43,67 @@
 
             <!-- Couche -->
             <ul id="tree_element_{{$id}}" class="collapse layers-tree-ul tree-element" ng-class="{'in': ctrl.layers_collapsed !== true}">
-                <li ng-repeat="layer in node.children">
-                    <ul class="list-group-item layertree-item auto-height">
+                <div ng-repeat="layer in node.children">
+                    <li>
+                        <ul class="list-group-item layertree-item auto-height">
 
-                        <!-- Nom de la couche -->
-                        <div class="layer-name layer-name-tree" title="{{layer.name}}">{{layer.name}}</div>
+                            <!-- Nom de la couche -->
+                            <div class="layer-name layer-name-tree" title="{{layer.name}}">{{layer.name}}</div>
 
-                        <div class="layer-checkboxes">
-                            <button type="button" 
-                                    class="btn btn-xs margin-sides-10 hidden"
-                                    ng-click="layer.olLayer.getSource().refreshWithTimestamp()">
-                                <span class="glyphicon glyphicon-refresh"></span>
-                            </button>
-                            <div type="button" class="btn btn-xs" style="margin-right: 7px; margin-top: -2px;"
-                                 ng-if="layer.olLayer.get('is_filtered')"
-                                 ng-click="ctrl.displayFilterLayerModal(layer.olLayer)">
-                                <span class="icon-filter"></span>
+                            <div class="layer-checkboxes">
+                                <button type="button" 
+                                        class="btn btn-xs margin-sides-10 hidden"
+                                        ng-click="layer.olLayer.getSource().refreshWithTimestamp()">
+                                    <span class="glyphicon glyphicon-refresh"></span>
+                                </button>
+                                <div type="button" class="btn btn-xs layer-menu-button" ng-click="ctrl.toggleLayerMenu(layer)">
+                                    <!--<span class="icon-format_list_bulleted"></span>-->
+                                    <span ng-class="{'icon-filter': layer.olLayer.get('is_filtered'), 'icon-format_list_bulleted': !layer.olLayer.get('is_filtered')}"></span>
+                                </div>
+                                <!-- Checkbox visible -->
+                                <div class="checkbox checkbox-info inline-checkbox">
+                                    <input id="{{layer.olLayer.$$hashKey}}_visible_order_checkbox" 
+                                           type="checkbox" 
+                                           style="cursor:pointer; position: absolute" 
+                                           title="Definit si la couche est visible"
+                                           ng-checked="layer.olLayer.values.visible === true" 
+                                           ng-click="ctrl.setVisible(layer.olLayer, !layer.olLayer.values.visible);node.visible = ctrl.isGroupVisible(node)">
+                                    <label for="{{layer.olLayer.$$hashKey}}_visible_order_checkbox" style="cursor:pointer" title="Definit si la couche est visible"></label>
+                                </div>                            
                             </div>
-
-                            <!-- Checkbox visible -->
-                            <div class="checkbox checkbox-info inline-checkbox">
-                                <input id="{{layer.olLayer.$$hashKey}}_visible_order_checkbox" 
-                                       type="checkbox" 
-                                       style="cursor:pointer; position: absolute" 
-                                       title="Definit si la couche est visible"
-                                       ng-checked="layer.olLayer.values.visible === true" 
-                                       ng-click="ctrl.setVisible(layer.olLayer, !layer.olLayer.values.visible);node.visible = ctrl.isGroupVisible(node)">
-                                <label for="{{layer.olLayer.$$hashKey}}_visible_order_checkbox" style="cursor:pointer" title="Definit si la couche est visible"></label>
-                            </div>                            
+                        </ul>
+                    </li>
+                    <div class="dropdown-menu layer-menu" ng-class="{'block': layer.displayedMenu === true}">
+<!--                        <div style="height: 16px">
+                            <button type="button" id="close-modal-button" class="close" ng-click="ctrl.closeLayersMenus()">×</button>
+                        </div>-->
+                        <div>
+                            <div class="layer-menu-list">
+                                <li ng-if="layer.olLayer.get('is_filtered')" ng-click="ctrl.displayFilterLayerModal(layer.olLayer)">
+                                    <a href="#">
+                                        <span class="icon-filter"></span> 
+                                        Filtre
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#">
+                                        <div class="row">
+                                            <div class="col-xs-6">
+                                                <span class="icon-star-half"></span> 
+                                                Transparence
+                                            </div>
+                                            <div class="col-xs-6">
+                                                <div class="layer-menu-list-slider">
+                                                <input data-app-layer-opacity-slider="" id="slider_layer_form_{{layer.$$hashKey}}" type="text">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </li>
+                            </div>
                         </div>
-                    </ul>
-                </li>
+                    </div>
+                </div>
             </ul>
         </div>
     </ul>

@@ -3,7 +3,7 @@
 * \file Mj_Bati_Parcelle.class.inc
 * \brief Mj_Bati_Parcelle.class.inc \n \n Ce fichier contient la classe php Mj_Bati_Parcelle
 *
-* Cette classe permet de s�lectionner les attributs n�cessaires afin de traiter les batis associ�s � une parcelle.
+* Cette classe permet de sélectionner les attributs nécessaires afin de traiter les batis associés à une parcelle.
 *
 * \author Damien Bedel
 * \author Olivier Gayte <olivier.gayte@veremes.com>
@@ -20,7 +20,7 @@ class Mj_Bati_Parcelle extends Mj {
 	*/
 	var $aBat=array();
 	/**
-	* Chaine qui stocke l'anne� de r�f�rence des donn�es  casdatrales.
+	* Chaine qui stocke l'année de référence des données  casdatrales.
 	*/
 	var $sAnneeReference;
 
@@ -54,7 +54,7 @@ class Mj_Bati_Parcelle extends Mj {
   		$this->aObjects=$this->aBat;
 	}
 	/**
-	* Cette m�thode permet de r�cup�rer les ID_BAT en fonction d'un ID_PAR donn�
+	* Cette méthode permet de récupérer les ID_BAT en fonction d'un ID_PAR donné
 	* \param $oBD Objet de connexion
 	* \param $sIdPar Chaine identifiant de la parcelle
 	* \return Retourne un tableau de ID_BAT
@@ -81,7 +81,7 @@ class Mj_Bati_Parcelle extends Mj {
 		return $aIdBat;
 	}
 	/**
-	* Cette m�thode permet de r�cup�rer la liste des objets BATI
+	* Cette méthode permet de récupérer la liste des objets BATI
 	* \param $oBD Objet de connexion
 	* \param $sIdPar Chaine identifiant de la parcelle
 	* \return Retourne un tableau d'objets BATI
@@ -99,8 +99,8 @@ class Mj_Bati_Parcelle extends Mj {
 		return $aBat;
 	}
 	/**
-	* Cette m�thode permet de construire un tableau correspondant au relev� de propri�t�.
-	* \return Retourne un tableau associatif correspondant au relev� de propri�t�.
+	* Cette méthode permet de construire un tableau correspondant au relevé de propriété.
+	* \return Retourne un tableau associatif correspondant au relevé de propriété.
 	*/
 	function getExportFields(){
 		$aExportFields=array();
@@ -124,31 +124,31 @@ class Mj_Bati_Parcelle extends Mj {
 		return $aExportFields;
 	}
 	/**
-	* Cette m�thode permet de concat�ner les attributs ccodep et ccodir.
-	* /return Retourne une cha�ne de caract�res correspondant au DEP DIR du RP.
+	* Cette méthode permet de concaténer les attributs ccodep et ccodir.
+	* /return Retourne une chaîne de caractères correspondant au DEP DIR du RP.
 	*/
 	function getDepdir(){
 		$sDepdir=$this->aFields['ccodep']." ".$this->aFields['ccodir'];
 		return $sDepdir;
 	}
 	/**
-	* Cette m�thode permet de concat�ner les attributs ccocom et libcom.
-	* /return Retourne une cha�ne de carcat�res correspondant au COM du RP.
+	* Cette méthode permet de concaténer les attributs ccocom et libcom.
+	* /return Retourne une chaîne de carcatères correspondant au COM du RP.
 	*/
 	function getCom(){
 		$sCom=$this->aFields['ccocom']." ".$this->aFields['libcom'];
 		return $sCom;
 	}
 	/**
-	* Cette m�thode permet de concat�ner les attributs cconvo et dvoilib.
-	* \return Retourne une cha�ne de caract�res.
+	* Cette méthode permet de concaténer les attributs cconvo et dvoilib.
+	* \return Retourne une chaîne de caractères.
 	*/
 	function getAdresseParcelle(){
 		$sAdresseParcelle=ltrim(rtrim($this->aFields['dnvoiri']),'0').rtrim($this->aFields['dindic'])." ".rtrim($this->aFields['cconvo'])." ".rtrim($this->aFields['dvoilib']);
 		return $sAdresseParcelle;
 	}
 	/**
-	* Cette m�thode permet de r�cup�rer la valeur locative totale du b�ti.
+	* Cette méthode permet de récupérer la valeur locative totale du bâti.
 	* \return Retourne un double
 	*/
 	function getValeurLocativeBati(){

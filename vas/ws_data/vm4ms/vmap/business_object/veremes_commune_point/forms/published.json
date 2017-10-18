@@ -186,7 +186,7 @@
       {
         "fields": [
           {
-            "type": "text",
+            "type": "label",
             "name": "code",
             "label": "Code INSEE",
             "disabled": false,

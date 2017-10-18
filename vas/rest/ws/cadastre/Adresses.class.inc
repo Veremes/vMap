@@ -123,7 +123,7 @@ class Adresses extends Cadastre {
      * @return  Adresses
      */
     function GET() {
-        $aReturn = $this->genericGet('public', 'v_non_bati_a10_descr_parcelle', 'ID_PAR');
+        $aReturn = $this->genericGet('public', $this->aProperties['cadastre']['views']['adresse'], 'ID_PAR');
         return $aReturn['sMessage'];
     }
 

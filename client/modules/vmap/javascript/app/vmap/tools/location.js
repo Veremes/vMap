@@ -49,7 +49,7 @@ nsVmap.nsToolsManager.Location.prototype.locationDirective = function () {
  * @export
  * @constructor
  */
-nsVmap.nsToolsManager.Location.prototype.locationController = function ($scope, $http, $q, $timeout) {
+nsVmap.nsToolsManager.Location.prototype.locationController = function ($scope, $q, $timeout) {
     oVmap.log("nsVmap.nsToolsManager.Location.prototype.locationController");
 
     var this_ = this;
@@ -67,15 +67,10 @@ nsVmap.nsToolsManager.Location.prototype.locationController = function ($scope, 
     /**
      * @private
      */
-    this.$http_ = $http;
-
-    /**
-     * @private
-     */
     this.$q_ = $q;
 
     /**
-     * Dummy canceler (use canceler.resolve() for cancel the $http request)
+     * Dummy canceler (use canceler.resolve() for cancel the ajax request)
      * @private
      */
     this.canceler_ = $q.defer();
@@ -125,12 +120,12 @@ nsVmap.nsToolsManager.Location.prototype.locationController = function ($scope, 
     /**
      * @type {string}
      */
-    this['locationService'] = 'osm';
+    this['sSelectedLocationService'] = null;
 
     /**
      * @type {array}
      */
-    this['customLocationServicesProperties'] = [];
+    this['oBusinessObjects'] = [];
 
     /**
      * @tyle {number}
@@ -138,7 +133,7 @@ nsVmap.nsToolsManager.Location.prototype.locationController = function ($scope, 
     this['scale'] = Math.round(oVmap.getMap().getScale());
 
     // Récupère les properties de locatisation de l'API
-    this.setAPILocationProperties();
+    this.setBusinessObjectsList();
 
     // Effectue une recherche lors du changement de ctrl.locationSearch
     $scope.$watch('ctrl.locationSearch', function () {
@@ -158,11 +153,17 @@ nsVmap.nsToolsManager.Location.prototype.locationController = function ($scope, 
     oVmap['scope'].$on('layersChanged', function () {
         this_.$scope_.$applyAsync(function () {
             // Vide la recherche en cours
-            this_.locationSearch = "";
-            // Met OSM en mode de recherche
-            this_.locationService = "osm";
+            this_['locationSearch'] = "";
             // Récupère les properties de locatisation de l'API
-            this_.setAPILocationProperties();
+            this_.setBusinessObjectsList();
+            // Définit le service de recherche par défaut
+            setTimeout(function () {
+                this_.$scope_.$applyAsync(function () {
+                    this_['sSelectedLocationService'] = this_.getDefaultlocationService_();
+
+                    console.log("this_['sSelectedLocationService']: ", this_['sSelectedLocationService']);
+                });
+            });
         });
     });
 
@@ -172,6 +173,54 @@ nsVmap.nsToolsManager.Location.prototype.locationController = function ($scope, 
             this_.locationPopup.remove();
         }
     });
+
+    $scope['locationServiceType'] = 'geocoder';
+
+    this['locationServices'] = JSON.parse(oVmap['properties']['vmap_geocoders']);
+
+    setTimeout(function () {
+        $scope.$applyAsync(function () {
+            $scope['ctrl']['sSelectedLocationService'] = this_.getDefaultlocationService_();
+        });
+    });
+};
+
+/**
+ * Get the default location service
+ * @returns {String}
+ */
+nsVmap.nsToolsManager.Location.prototype.locationController.prototype.getDefaultlocationService_ = function () {
+    oVmap.log('nsVmap.nsToolsManager.Location.prototype.locationController.prototype.getDefaultlocationService_');
+
+    var aBusinessObjects = [];
+    for (var key in this['oBusinessObjects']) {
+        aBusinessObjects.push(this['oBusinessObjects'][key]);
+    }
+
+    if (oVmap['properties']['vmap_default_geocoders'] === 'business_object' && aBusinessObjects.length > 0) {
+        var firstBoIndex = 0;
+        if (!goog.isDefAndNotNull(aBusinessObjects[firstBoIndex]['bo_index'])) {
+            aBusinessObjects[firstBoIndex]['bo_index'] = 1000000;
+        }
+        if (aBusinessObjects.length > 1) {
+            for (var i = 1; i < aBusinessObjects.length; i++) {
+                if (goog.isDefAndNotNull(aBusinessObjects[i]['bo_index']) && goog.isDefAndNotNull(aBusinessObjects[i]['bo_search_field']) && goog.isDefAndNotNull(aBusinessObjects[i]['bo_result_field'])) {
+                    if (aBusinessObjects[i]['bo_index'] < aBusinessObjects[firstBoIndex]['bo_index']) {
+                        firstBoIndex = angular.copy(i);
+                    }
+                }
+            }
+        }
+        if (!(goog.isDefAndNotNull(aBusinessObjects[firstBoIndex]['bo_search_field']) && goog.isDefAndNotNull(aBusinessObjects[firstBoIndex]['bo_result_field']))) {
+            return 'osm';
+        } else {
+            return aBusinessObjects[firstBoIndex]['bo_id'];
+        }
+    } else if (goog.isDefAndNotNull(this['locationServices'][oVmap['properties']['vmap_default_geocoders']])) {
+        return oVmap['properties']['vmap_default_geocoders'];
+    } else {
+        return 'osm';
+    }
 };
 
 /**
@@ -180,7 +229,22 @@ nsVmap.nsToolsManager.Location.prototype.locationController = function ($scope, 
  */
 nsVmap.nsToolsManager.Location.prototype.locationController.prototype.refreshMap = function () {
     oVmap.log('nsVmap.nsToolsManager.Location.prototype.locationController.prototype.refreshMap');
-    this['map'].refreshWithTimestamp();
+    var _this = this;
+    // Création du fichier ".map" du flux wms privée.
+    var oFormData = new FormData();
+    oFormData.append("wmsservice_id", oVmap['properties']['private_wms_service']);
+    oFormData.append("type", "prod");
+    ajaxRequest({
+        "method": "POST",
+        "url": oVmap['properties']["web_server_name"] + "/" + oVmap['properties']["services_alias"] + "/vm4ms/WmsServices/MapFile",
+        "data": oFormData,
+        "success": function (response) {
+            _this['map'].refreshWithTimestamp();
+        },
+        "error": function (response) {
+            _this['map'].refreshWithTimestamp();
+        }
+    });
 };
 
 /**
@@ -210,13 +274,13 @@ nsVmap.nsToolsManager.Location.prototype.locationController.prototype.addScale =
 };
 
 /**
- * Set the customLocationServicesProperties value
+ * Set the oBusinessObjects value
  * @returns {String} error
  */
-nsVmap.nsToolsManager.Location.prototype.locationController.prototype.setAPILocationProperties = function () {
-    oVmap.log('nsVmap.nsToolsManager.Location.prototype.locationController.prototype.setAPILocationProperties');
+nsVmap.nsToolsManager.Location.prototype.locationController.prototype.setBusinessObjectsList = function () {
+    oVmap.log('nsVmap.nsToolsManager.Location.prototype.locationController.prototype.setBusinessObjectsList');
 
-    this['customLocationServicesProperties'] = oVmap.getMapManager().getQueryableBusinessObjects();
+    this['oBusinessObjects'] = oVmap.getMapManager().getQueryableBusinessObjects();
 };
 
 /**
@@ -226,11 +290,9 @@ nsVmap.nsToolsManager.Location.prototype.locationController.prototype.setAPILoca
 nsVmap.nsToolsManager.Location.prototype.locationController.prototype.maxExtent = function () {
     oVmap.log("nsVmap.nsToolsManager.Location.prototype.locationController.maxExtent");
 
-    var map = this['map'];
     var view = this['map'].getView();
     var extent = view.getProjection().getExtent();
-    var size = map.getSize();
-    view.fit(extent, size);
+    view.fit(extent);
 };
 
 /**
@@ -271,13 +333,8 @@ nsVmap.nsToolsManager.Location.prototype.locationController.prototype.goTo = fun
         return 0;
     }
 
-    if (projection !== 'EPSG:4326') {
-        var message = 'X: ' + coordinates[0];
-        message += '<br>Y: ' + coordinates[1];
-    } else {
-        var message = 'Lat: ' + coordinates[0];
-        message += '<br>Long: ' + coordinates[1];
-    }
+    var message = 'X: ' + coordinates[0];
+    message += '<br>Y: ' + coordinates[1];
     message += '<br><i>' + oVmap['oProjections'][projection] + '</i>';
 
     this.locateFeature(point, message);
@@ -298,10 +355,8 @@ nsVmap.nsToolsManager.Location.prototype.locationController.prototype.geolocateM
         projection: 'EPSG:4326'
     });
 
-
     // enable or disable tracking
     geolocation.setTracking(true);
-
     geolocation.on('change:position', function () {
         var projeciton = oVmap.getMap().getOLMap().getView().getProjection();
         var coordinates = ol.proj.transform(geolocation.getPosition(), 'EPSG:4326', projeciton);
@@ -319,7 +374,6 @@ nsVmap.nsToolsManager.Location.prototype.locationController.prototype.geolocateM
     geolocation.on('error', function () {
         console.error('error');
     });
-
 };
 
 /**
@@ -333,6 +387,29 @@ nsVmap.nsToolsManager.Location.prototype.locationController.prototype.searchLoca
 
     location = goog.isDef(location) ? location : this['locationSearch'];
     limit = goog.isDef(limit) ? limit : 4;
+
+    var getFieldValue = function (sField, oObject) {
+        var recursiveGetObjectValue = function (aFields, oObject) {
+            if (aFields.length === 1) {
+                if (goog.isDefAndNotNull(oObject[aFields[0]])) {
+                    return oObject[aFields[0]];
+                } else {
+                    return null;
+                }
+            } else if (aFields.length > 1) {
+                if (goog.isDefAndNotNull(oObject[aFields[0]])) {
+                    oObject = oObject[aFields[0]];
+                    aFields.splice(0, 1);
+                    return recursiveGetObjectValue(aFields, oObject);
+                } else {
+                    return null;
+                }
+            } else {
+                return null;
+            }
+        };
+        return recursiveGetObjectValue(sField.split('.'), oObject);
+    };
 
     if (location.length === 0)
         return 0;
@@ -351,76 +428,160 @@ nsVmap.nsToolsManager.Location.prototype.locationController.prototype.searchLoca
     this['searching'] = true;
     this['noResults'] = '';
 
-    var url = '';
-    if (this['locationService'] === 'osm')
-        url = 'https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=' + limit + '&extratags=1&namedetails=1&polygon_geojson=1&countrycodes=fr&q=' + location;
-    else {
-        var service = this['locationService'];
-        var bo_id = this['customLocationServicesProperties'][service]['bo_id'];
-        var bo_search_field = this['customLocationServicesProperties'][service]['bo_search_field'];
-        var bo_search_use_strict = this['customLocationServicesProperties'][service]['bo_search_use_strict'];
+    var url = null;
+    var oParams = {};
 
-        if (bo_search_use_strict === 'true' || bo_search_use_strict === true)
-            var filter = '"' + bo_search_field + '"=\'' + location + '\'';
-        else if (bo_search_use_strict === 'left')
-            var filter = 'LOWER("' + bo_search_field + '") LIKE LOWER(\'' + location + '%\')';
-        else if (bo_search_use_strict === 'right')
-            var filter = 'LOWER("' + bo_search_field + '") LIKE LOWER(\'%' + location + '\')';
-        else
-            var filter = 'LOWER("' + bo_search_field + '") LIKE LOWER(\'%' + location + '%\')';
+    // Géocodeur paramétré
+    if (goog.isDefAndNotNull(this['locationServices'][this['sSelectedLocationService']])) {
+
+        this.$scope_['locationServiceType'] = 'geocoder';
+        var oLocationService = this['locationServices'][this['sSelectedLocationService']];
+
+        if (goog.isDefAndNotNull(oLocationService['url'])) {
+            url = oLocationService['url'].replace('[limit]', limit).replace('[search]', location);
+        }
+    }
+    // Objet métier
+    else if (goog.isDefAndNotNull(this['oBusinessObjects'][this['sSelectedLocationService']])) {
+
+        this.$scope_['locationServiceType'] = 'business_object';
+        var service = this['sSelectedLocationService'];
+        var bo_id = this['oBusinessObjects'][service]['bo_id'];
+        var bo_search_field = this['oBusinessObjects'][service]['bo_search_field'];
+        var bo_search_use_strict = this['oBusinessObjects'][service]['bo_search_use_strict'];
+        var filter = '';
+
+        if (bo_search_use_strict === 'true' || bo_search_use_strict === true) {
+            filter = {
+                "column": bo_search_field,
+                "compare_operator": "=",
+                "value": bo_search_use_strict
+            };
+        } else if (bo_search_use_strict === 'left') {
+            filter = {
+                "column": bo_search_field,
+                "compare_operator": "LIKE",
+                "compare_operator_options": {
+                    "case_insensitive": true
+                },
+                "value": location + '%'
+            };
+        } else if (bo_search_use_strict === 'right') {
+            filter = {
+                "column": bo_search_field,
+                "compare_operator": "LIKE",
+                "compare_operator_options": {
+                    "case_insensitive": true
+                },
+                "value": '%' + location
+            };
+        } else {
+            filter = {
+                "column": bo_search_field,
+                "compare_operator": "LIKE",
+                "compare_operator_options": {
+                    "case_insensitive": true
+                },
+                "value": '%' + location + '%'
+            };
+        }
 
         url = oVmap['properties']['api_url'] + '/vmap/querys/' + bo_id + '/summary';
-    }
-
-    var this_ = this;
-    this.$http_({
-        method: 'GET',
-        url: url,
-        params: {
-            'token': oVmap['properties']['token'],
+        oParams = {
             'filter': filter,
             'limit': limit
-        },
-        timeout: this.canceler_.promise
-    }).then(function successCallback(response) {
+        };
+    }
 
-        // Cache le gif de chargement
-        this_['searching'] = false;
-        this_['locationResults'] = [];
-        this_['noResults'] = '';
+    if (goog.isDefAndNotNull(url)) {
+        var this_ = this;
+        ajaxRequest({
+            'method': 'GET',
+            'url': url,
+            'headers': {
+                'Accept': 'application/x-vm-json'
+            },
+            'params': oParams,
+            'scope': this.$scope_,
+            'timeout': 5000,
+            'abord': this.canceler_.promise,
+            'success': function (response) {
+                // Cache le gif de chargement
+                this_['searching'] = false;
+                this_['locationResults'] = [];
+                this_['noResults'] = '';
 
-        // Vérifie si il y a des données à afficher
-        if (!goog.isDef(response['data']) || goog.isNull(response['data'])) {
-            this_['noResults'] = 'Aucun résultat';
-            console.error('Pas de données à afficher');
-            return 0;
-        }
+                // Vérifie si il y a des données à afficher
+                if (!goog.isDef(response['data']) || goog.isNull(response['data'])) {
+                    this_['noResults'] = 'Aucun résultat';
+                    console.error('Pas de données à afficher');
+                    return 0;
+                }
 
-        // Vérifie si il y a une erreur
-        if (goog.isDef(response['data']['error'])) {
-            if (goog.isDef(response['data']['error']['errorMessage'])) {
-                console.error(response['data']['error']['errorMessage']);
-                this_['noResults'] = response['data'].error.errorMessage;
-                return response['data']['error'];
+                // Vérifie si il y a une erreur
+                if (goog.isDef(response['data']['error'])) {
+                    if (goog.isDef(response['data']['error']['errorMessage'])) {
+                        console.error(response['data']['error']['errorMessage']);
+                        this_['noResults'] = response['data'].error.errorMessage;
+                        return response['data']['error'];
+                    }
+                }
+
+                // Objet métier
+                if (goog.isDefAndNotNull(this_['oBusinessObjects'][this_['sSelectedLocationService']])) {
+                    if (goog.isDefAndNotNull(response['data'])) {
+                        if (goog.isDefAndNotNull(response['data']['data'])) {
+                            this_['locationResults'] = response['data']['data'];
+                        }
+                    }
+                }
+
+                // Géocodeur
+                if (goog.isDefAndNotNull(this_['locationServices'][this_['sSelectedLocationService']])) {
+
+                    var oLocationService = this_['locationServices'][this_['sSelectedLocationService']];
+                    var aResponse = getFieldValue(oLocationService['data_field'], response);
+
+                    for (var i = 0; i < aResponse.length; i++) {
+                        var oResult = {};
+                        oResult['title'] = getFieldValue(oLocationService['title_field'], aResponse[i]);
+                        if (goog.isDefAndNotNull(oLocationService['description_field'])) {
+                            oResult['description'] = getFieldValue(oLocationService['description_field'], aResponse[i]);
+                        }
+                        if (goog.isDefAndNotNull(oLocationService['geojson_field'])) {
+                            oResult['geojson'] = getFieldValue(oLocationService['geojson_field'], aResponse[i]);
+                        }
+                        if (goog.isArray(oLocationService['summary_fields'])) {
+                            oResult['summary'] = [];
+                            for (var ii = 0; ii < oLocationService['summary_fields'].length; ii++) {
+                                oResult['summary'].push({
+                                    'label': oLocationService['summary_fields'][ii]['label'],
+                                    'value': getFieldValue(oLocationService['summary_fields'][ii]['key'], aResponse[i])
+                                });
+                            }
+                        }
+                        this_['locationResults'].push(oResult);
+                    }
+                }
+
+                if (!goog.isDef(this_['locationResults']))
+                    return 0;
+
+                // Si aucun résultat n'est disponible
+                if (this_['locationResults'].length === 0) {
+                    this_['noResults'] = 'Aucun résultat';
+                    return 0;
+                }
+            },
+            'error': function () {
+                // Cache le gif de chargement
+                this_['searching'] = false;
+                this_['locationResults'] = [];
+                this_['noResults'] = '';
+                this_['noResults'] = 'Requête en erreur';
             }
-        }
-
-        // Ajoute le résultat
-        if (this_['locationService'] === 'osm') {
-            this_['locationResults'] = response['data'];
-        } else if (goog.isDef(response['data']['data'])) {
-            this_['locationResults'] = response['data']['data'];
-        }
-
-        if (!goog.isDef(this_['locationResults']))
-            return 0;
-
-        // Si aucun résultat n'est disponible
-        if (this_['locationResults'].length === 0) {
-            this_['noResults'] = 'Aucun résultat';
-            return 0;
-        }
-    });
+        });
+    }
 };
 
 /**
@@ -452,7 +613,7 @@ nsVmap.nsToolsManager.Location.prototype.locationController.prototype.locatePlac
     if (!goog.isDef(geojson))
         return 0;
 
-    this.locateGeom(geojson, 'EPSG:4326', place['display_name']);
+    this.locateGeom(geojson, 'EPSG:4326', place['title']);
 };
 
 /**
@@ -470,76 +631,75 @@ nsVmap.nsToolsManager.Location.prototype.locationController.prototype.addToSelec
     oVmap.log('nsVmap.nsToolsManager.Location.prototype.locationController.prototype.addSelection');
 
     var this_ = this;
-
     var url = oVmap['properties']['api_url'] + '/vmap/querys/' + selection['bo_type'] + '/summary';
-
-    var filter = '"' + selection['bo_id_field'].replace(/\./g, '"."') + '"=\'' + selection['bo_id_value'] + '\'';
-
+//    var filter = '"' + selection['bo_id_field'].replace(/\./g, '"."') + '"=\'' + selection['bo_id_value'] + '\'';
     var proj = this['map'].getView().getProjection().getCode().substring(5);
 
-    this.$http_({
-        method: 'GET',
-        url: url,
-        params: {
-            'token': oVmap['properties']['token'],
-            'filter': filter,
+    showAjaxLoader();
+    ajaxRequest({
+        'method': 'GET',
+        'url': url,
+        'headers': {
+            'Accept': 'application/x-vm-json'
+        },
+        'params': {
+            'filter': {
+                "column": selection['bo_id_field'].replace(/\./g, '"."'),
+                "compare_operator": "=",
+                "value": selection['bo_id_value']
+            },
             'get_geom': true,
             'result_proj': proj,
             'get_image': true,
             'limit': 200
-        }
-    }).then(function successCallback(response) {
+        },
+        'scope': this.$scope_,
+        'success': function (response) {
 
-        $('body').css({"cursor": ""});
-
-        // Vérifie si il y a une erreur
-        if (goog.isDef(response['data']['error'])) {
-            if (goog.isDef(response['data']['error']['errorMessage'])) {
-                console.error(response['data']['error']['errorMessage']);
-            }
-        }
-
-        // Vérifie si il y a des données à afficher
-        if (!goog.isDef(response['data']['data'])) {
-            console.error('Pas de données à afficher');
-        } else {
-            var data = response['data']['data'];
-        }
-
-        // Au cas ou le résultat soit vide
-        if (data.length === 0)
-            return 0;
-
-        var selection = data[0];
-
-        // Cas ou il n'y ait pas de géométrie
-        if (!goog.isDefAndNotNull(selection['bo_intersect_geom'])) {
-            $.notify('Géométrie non disponible');
-            return 0;
-        }
-
-        this_.centerGeom(selection['bo_intersect_geom']);
-
-        var selectScope = angular.element($('#vmap-basicselect-tool')).scope();
-        selectScope.$evalAsync(function () {
-            var this_ = selectScope['ctrl'];
-            var newSelection = goog.array.clone(this_['aSelections']);
-            goog.array.extend(this_.aLastSelections, newSelection);
-            this_.removeSelections();
-            this_.addQueryResult({
-                data: [selection],
-                dataType: 'summary',
-                callback: function () {
-                    this_.closeSelectionPopup(this_.aLastSelections, true);
-                    this_.displaySelectionPopup(this_['aSelections']);
+            // Vérifie si il y a une erreur
+            if (goog.isDef(response['data']['error'])) {
+                if (goog.isDef(response['data']['error']['errorMessage'])) {
+                    console.error(response['data']['error']['errorMessage']);
                 }
+            }
+
+            // Vérifie si il y a des données à afficher
+            if (!goog.isDef(response['data']['data'])) {
+                console.error('Pas de données à afficher');
+            } else {
+                var data = response['data']['data'];
+            }
+
+            // Au cas ou le résultat soit vide
+            if (data.length === 0)
+                return 0;
+
+            var selection = data[0];
+
+            // Cas ou il n'y ait pas de géométrie
+            if (!goog.isDefAndNotNull(selection['bo_intersect_geom'])) {
+                $.notify('Géométrie non disponible');
+                return 0;
+            }
+
+            this_.centerGeom(selection['bo_intersect_geom']);
+
+            var selectScope = angular.element($('#vmap-basicselect-tool')).scope();
+            selectScope.$evalAsync(function () {
+                var this_ = selectScope['ctrl'];
+                var newSelection = goog.array.clone(this_['aSelections']);
+                goog.array.extend(this_.aLastSelections, newSelection);
+                this_.removeSelections();
+                this_.addQueryResult({
+                    data: [selection],
+                    dataType: 'summary',
+                    callback: function () {
+                        this_.closeSelectionPopup(this_.aLastSelections, true);
+                        this_.displaySelectionPopup(this_['aSelections']);
+                    }
+                });
             });
-        });
-
-
-    }, function (response) {
-        console.error(response);
-        $('body').css({"cursor": ""});
+        }
     });
 };
 
@@ -558,10 +718,10 @@ nsVmap.nsToolsManager.Location.prototype.locationController.prototype.centerGeom
         this['map'].getView().setCenter(geom.getCoordinates());
         this['map'].getView().setResolution(resolution);
     } else if (geom.getType() === 'MultiPoint') {
-        this['map'].getView().fit(geom.getExtent(), this['map'].getSize());
+        this['map'].getView().fit(geom.getExtent());
         this['map'].getView().setResolution(resolution);
     } else {
-        this['map'].getView().fit(geom.getExtent(), this['map'].getSize());
+        this['map'].getView().fit(geom.getExtent());
     }
 };
 
@@ -616,10 +776,10 @@ nsVmap.nsToolsManager.Location.prototype.locationController.prototype.locateFeat
     if (feature.getGeometry().getType() === 'Point') {
         this['map'].getView().setCenter(feature.getGeometry().getCoordinates());
     } else if (feature.getGeometry().getType() === 'MultiPoint') {
-        this['map'].getView().fit(extent, this['map'].getSize());
+        this['map'].getView().fit(extent);
         this['map'].getView().setZoom(resolution);
     } else {
-        this['map'].getView().fit(extent, this['map'].getSize());
+        this['map'].getView().fit(extent);
     }
 
     if (goog.isDef(this.locationPopup)) {

@@ -68,7 +68,7 @@ class Parcelle extends Cadastre {
      */
     function GET() {
         require __DIR__ . "/../vitis/" . $this->sRessourcesFile;
-        $this->aFields = $this->getFields('public', 'v_parcelle', 'id_par');
+        $this->aFields = $this->getFields('public', $this->aProperties['cadastre']['views']['parcelle'], 'id_par');
     }
 
 }

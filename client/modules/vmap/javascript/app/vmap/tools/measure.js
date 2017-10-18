@@ -699,14 +699,12 @@ nsVmap.nsToolsManager.Measure.prototype.measureController.prototype.zoomToFeatur
     } else if (feature.get('Type') === 'Cercle') {
         this.map_.getView().fit(
                 feature.getGeometry(),
-                [400, 400],
                 {padding: [0, 0, 0, 0]}
         );
         this.map_.getView().setCenter(feature.getGeometry().getCenter());
     } else {
         this.map_.getView().fit(
                 feature.getGeometry(),
-                [800, 800],
                 {padding: [0, 0, 0, 0]}
         );
     }
