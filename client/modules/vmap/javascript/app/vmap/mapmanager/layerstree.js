@@ -40,9 +40,7 @@ nsVmap.nsMapManager.LayersTree = function () {
 };
 
 /**
- * An application-specific directive wrapping the ngeo tree layer directive.
- * The directive includes a controller defining the tree tree.
- *
+ * Layer tree directive.
  * @return {angular.Directive} The Directive Definition Object.
  * @constructor
  */
@@ -61,6 +59,37 @@ nsVmap.nsMapManager.LayersTree.prototype.layertreeDirective = function () {
         templateUrl: oVmap['properties']['vmap_folder'] + '/' + 'template/layers/layertree.html'
     };
 };
+oVmap.module.directive('appLayertree', nsVmap.nsMapManager.LayersTree.prototype.layertreeDirective);
+
+/**
+ * Directive for the layer opacity sliders
+ * @return {angular.Directive} The Directive Definition Object.
+ * @constructor
+ */
+nsVmap.nsMapManager.LayersTree.prototype.layerOpacitySliderDirective = function () {
+    oVmap.log("nsVmap.nsMapManager.LayersTree.prototype.layerOpacitySliderDirective");
+    return {
+        restrict: 'A',
+        link: function (scope, element, attrs) {            
+            setTimeout(function () {
+                var oOpacitySlider = new Slider(element[0], {
+                    'value': scope['layer']['olLayer'].getOpacity() * 100,
+                    'step': 1,
+                    'min': 0,
+                    'max': 100,
+                    formatter: function (value) {
+                        return value + ' %';
+                    }
+                });
+                oOpacitySlider.on('change', function () {
+                    var value = oOpacitySlider['getValue']();                    
+                    scope['layer']['olLayer'].setOpacity(value / 100);
+                });
+            });
+        }
+    };
+};
+oVmap.module.directive('appLayerOpacitySlider', nsVmap.nsMapManager.LayersTree.prototype.layerOpacitySliderDirective);
 
 /**
  * 
@@ -70,7 +99,7 @@ nsVmap.nsMapManager.LayersTree.prototype.layertreeDirective = function () {
  * @export
  * @returns {undefined}
  */
-nsVmap.nsMapManager.LayersTree.prototype.LayertreeController = function ($scope, $http) {
+nsVmap.nsMapManager.LayersTree.prototype.LayertreeController = function ($scope) {
     oVmap.log("nsVmap.nsMapManager.LayersTree.prototype.LayertreeController");
 
     var this_ = this;
@@ -79,8 +108,6 @@ nsVmap.nsMapManager.LayersTree.prototype.LayertreeController = function ($scope,
      * @private
      */
     this.scope_ = $scope;
-
-    this.http_ = $http;
 
     /**
      * The MapManager.layersTree
@@ -135,7 +162,23 @@ nsVmap.nsMapManager.LayersTree.prototype.LayertreeController = function ($scope,
             }
         });
     }
+
+    // Ferme les menus dropdowns des couches quand on clique ailleurs que sur eux ou sur leur bouton
+    $('body').click(function (evt) {
+        if ($(evt.target).hasClass('.layer-menu'))
+            return;
+        if ($(evt.target).closest('.layer-menu').length)
+            return;
+        if ($(evt.target).hasClass('.layer-menu-button'))
+            return;
+        if ($(evt.target).closest('.layer-menu-button').length)
+            return;
+        $scope.$applyAsync(function () {
+            this_.closeLayersMenus();
+        });
+    });
 };
+oVmap.module.controller('AppLayertreeController', nsVmap.nsMapManager.LayersTree.prototype.LayertreeController);
 
 /**
  * Set a layer visible or not
@@ -251,17 +294,17 @@ nsVmap.nsMapManager.LayersTree.prototype.LayertreeController.prototype.memoriseG
     if (node !== undefined) {
         var aGroup = node['children'];
 
-        if (node.visibleLayers === undefined)
-            node.visibleLayers = [];
+        if (node['visibleLayers'] === undefined)
+            node['visibleLayers'] = [];
 
         // Mémorise les couches affichées
-        node.visibleLayers.length = 0;
+        node['visibleLayers'].length = 0;
         for (var i = 0; i < aGroup.length; i++) {
             if (aGroup[i]['olLayer'].getVisible() === true)
-                node.visibleLayers.push(aGroup[i]['olLayer']);
+                node['visibleLayers'].push(aGroup[i]['olLayer']);
         }
 
-        if (node.visibleLayers.length === 0)
+        if (node['visibleLayers'].length === 0)
             node['visible'] = false;
         else
             node['visible'] = true;
@@ -391,7 +434,7 @@ nsVmap.nsMapManager.LayersTree.prototype.LayertreeController.prototype.addView =
     if (goog.isDef(oldProjection) && goog.isDef(newProjection) && goog.isDef(oldExtent) && goog.isDef(oldPosition)) {
         // Reprojette l'étendue
         var newExtent = ol.proj.transformExtent(oldExtent, oldProjection, newProjection);
-        this['map'].getView().fit(newExtent, this['map'].getSize(), {
+        this['map'].getView().fit(newExtent, {
             nearest: true
         });
 
@@ -410,8 +453,16 @@ nsVmap.nsMapManager.LayersTree.prototype.LayertreeController.prototype.addView =
         }));
     }
 
-    // Met à jour l'outil CurrentProjection
+    // Met à jour l'outil CurrentProjection & MapName
     $("#current-projection").html(oVmap['oProjections'][this['map'].getView().getProjection().getCode()]);
+    var currentMap = "";
+    var vMapCatalog = oVmap.getMapManager().getMapCatalog();
+    for (var i = 0; i < vMapCatalog['maps'].length; i++) {
+        if (vMapCatalog['maps'][i]['used'] === true) {
+            var currentMapName = vMapCatalog['maps'][i]['name'];
+        }
+    }
+    $("map-name").html(currentMapName);
 };
 
 /**
@@ -503,6 +554,36 @@ nsVmap.nsMapManager.LayersTree.prototype.LayertreeController.prototype.displayFi
     });
 };
 
-// Définit la directive et le controller
-oVmap.module.directive('appLayertree', nsVmap.nsMapManager.LayersTree.prototype.layertreeDirective);
-oVmap.module.controller('AppLayertreeController', nsVmap.nsMapManager.LayersTree.prototype.LayertreeController);
+/**
+ * Display/hide the layer menu
+ * @param {ol.Layer} oLayer
+ * @export
+ */
+nsVmap.nsMapManager.LayersTree.prototype.LayertreeController.prototype.toggleLayerMenu = function (oLayer) {
+    oVmap.log('nsVmap.nsMapManager.LayersTree.LayertreeController.toggleLayerMenu');
+
+    if (oLayer['displayedMenu'] === true) {
+        this.closeLayersMenus();
+    } else {
+        this.closeLayersMenus();
+        oLayer['displayedMenu'] = true;
+    }
+};
+
+/**
+ * Close all the layers manus
+ * @export
+ */
+nsVmap.nsMapManager.LayersTree.prototype.LayertreeController.prototype.closeLayersMenus = function () {
+    oVmap.log('nsVmap.nsMapManager.LayersTree.LayertreeController.closeLayersMenus');
+
+    for (var i = 0; i < this.scope_['tree']['children'].length; i++) {
+        if (goog.isDefAndNotNull(this.scope_['tree']['children'][i]['children'])) {
+            for (var ii = 0; ii < this.scope_['tree']['children'][i]['children'].length; ii++) {
+                if (goog.isDefAndNotNull(this.scope_['tree']['children'][i]['children'][ii]['olLayer'])) {
+                    this.scope_['tree']['children'][i]['children'][ii]['displayedMenu'] = false;
+                }
+            }
+        }
+    }
+};

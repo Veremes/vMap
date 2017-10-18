@@ -9,7 +9,7 @@
        onclick="oVmap.getMap().removeActionsAndTooltips();oVmap.getToolsManager().getBasicTools().toggleOutTools();">
         <select id="location-search-api-select"
                 ng-model="ctrl.sSelectedBo"
-                ng-options="value.bo_id as value.bo_title for (key, value) in ctrl.oQueryableBOs">
+                ng-options="value.bo_id as value.bo_title for value in ctrl.aQueryableBOs | orderBy:'bo_title'">
         </select>
         <span class="icon-info" aria-hidden="true"></span>
     </a>

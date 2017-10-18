@@ -163,6 +163,17 @@ nsVmap.nsToolsManager.Select.prototype.deleteObject = function (selection, callb
 };
 
 /**
+ * Suggest if realy want to delete the objects and call submitDeleteObject
+ * @param {array<object>} aSelection
+ * @param {function} callback
+ * @export
+ */
+nsVmap.nsToolsManager.Select.prototype.deleteMultipleObjects = function (selection, callback) {
+    var scope = angular.element($('#vmap-select-tool')).scope();
+    return scope['ctrl'].deleteMultipleObjects(selection, callback);
+};
+
+/**
  * Add the selected elements from the table to the card
  * @param {array} aSelection
  * @param {boolean} bReplace true to empty the card before adding items
@@ -207,22 +218,16 @@ nsVmap.nsToolsManager.Select.prototype.selectDirective = function () {
 /**
  * @ngInject
  * @constructor
- * @param {object} $http
  * @param {object} $scope
  * @param {object} $timeout
  * @param {object} $q
  * @returns {nsVmap.nsToolsManager.Select.prototype.selectController}
  * @export
  */
-nsVmap.nsToolsManager.Select.prototype.selectController = function ($http, $scope, $timeout, $q) {
+nsVmap.nsToolsManager.Select.prototype.selectController = function ($scope, $timeout, $q) {
     oVmap.log("nsVmap.nsToolsManager.Select.prototype.selectController");
 
     var this_ = this;
-
-    /**
-     * @private
-     */
-    this.$http_ = $http;
 
     /**
      * @private
@@ -240,7 +245,7 @@ nsVmap.nsToolsManager.Select.prototype.selectController = function ($http, $scop
     this.$q_ = $q;
 
     /**
-     * Dummy canceler (use canceler.resolve() for cancel the $http request)
+     * Dummy canceler (use canceler.resolve() for cancel the ajax request)
      * @private
      */
     this.canceler_ = $q.defer();
@@ -271,17 +276,6 @@ nsVmap.nsToolsManager.Select.prototype.selectController = function ($http, $scop
      * @type integer
      */
     this.limitList_ = oVmap['properties']["selection"]["limit_list"];
-
-    /**
-     * Query buffer in mm on screen (look postgis st_buffer for more information)
-     * @type integer
-     */
-    this.buffer_ = oVmap['properties']["selection"]["buffer"];
-
-    /**
-     * The buffer is calculed with the scale, this parameter is the maximum scale to calculate
-     */
-    this.maxBuffer_ = oVmap['properties']["selection"]["max_buffer"];
 
     /**
      * @type {ol.layer.Vector}
@@ -458,12 +452,11 @@ nsVmap.nsToolsManager.Select.prototype.selectController.prototype.queryByEWKTGeo
 
     // Calcul du buffer
     var buffer = 0.01;
-    if (geomType === 'Point' || geomType === 'LineString') {
-        var scale = oVmap.getMap().getScale();
-        buffer = (this.buffer_ * scale) / 1000;
-
-        if (buffer > this.maxBuffer_)
-            buffer = this.maxBuffer_;
+    if (geomType === 'Point') {
+        if (goog.isDefAndNotNull(opt_options.buffer)) {
+            var scale = oVmap.getMap().getScale();
+            buffer = (opt_options.buffer * scale) / 1000;
+        }
     }
 
     // Limite de features
@@ -472,11 +465,14 @@ nsVmap.nsToolsManager.Select.prototype.selectController.prototype.queryByEWKTGeo
     else
         var limit = this.limitPopup_;
 
-    this.$http_({
-        method: "GET",
-        url: oVmap['properties']['api_url'] + '/vmap/querys/' + opt_options.bo_id + '/' + formType,
-        params: {
-            'token': oVmap['properties']['token'],
+    ajaxRequest({
+        'method': 'POST',
+        'url': oVmap['properties']['api_url'] + '/vmap/querys/' + opt_options.bo_id + '/' + formType,
+        'headers': {
+            'X-HTTP-Method-Override': 'GET',
+            'Accept': 'application/x-vm-json'
+        },
+        'data': {
             'intersect_geom': opt_options.EWKTGeometry,
             'intersect_buffer': buffer,
             'get_geom': get_geom,
@@ -485,38 +481,33 @@ nsVmap.nsToolsManager.Select.prototype.selectController.prototype.queryByEWKTGeo
             'limit': limit,
             'd': Date.now()
         },
-        timeout: opt_options.canceler.promise
-    }).then(function (response) {
+        'scope': this.$scope_,
+        'abord': opt_options.canceler.promise,
+        'success': function (response) {
 
-        // Si le opt_options.canceler à été resolved (on a appuillé sur echap ou on à lancé une autre requête)
-        if (opt_options.canceler.promise['$$state'].status === 1)
-            return 0;
+            // Si le opt_options.canceler à été resolved (on a appuillé sur echap ou on à lancé une autre requête)
+            if (opt_options.canceler.promise['$$state'].status === 1)
+                return 0;
 
-        // Résultat vide par défaut, il faut passer par addQueryResult même en cas de résultat vide
-        var data = [];
+            // Résultat vide par défaut, il faut passer par addQueryResult même en cas de résultat vide
+            var data = [];
 
-        // Vérifie si il y a une erreur
-        if (goog.isDefAndNotNull(response['data']['error'])) {
-            if (goog.isDefAndNotNull(response['data']['error']['errorMessage'])) {
-                bootbox.alert(response['data']['error']['errorMessage']);
-            }
-        }
-
-        // Vérifie si il y a des données à afficher et les ajoute
-        if (goog.isDefAndNotNull(response['data'])) {
-            if (goog.isDefAndNotNull(response['data']['data'])) {
-                data = response['data']['data'];
+            // Vérifie si il y a des données à afficher et les ajoute
+            if (goog.isDefAndNotNull(response['data'])) {
+                if (goog.isDefAndNotNull(response['data']['data'])) {
+                    data = response['data']['data'];
+                } else {
+                    oVmap.log('Pas de données à afficher');
+                }
             } else {
                 oVmap.log('Pas de données à afficher');
             }
-        } else {
-            oVmap.log('Pas de données à afficher');
+
+            if (data.length === this_.limitList_)
+                $.notify("Limite d'objets à afficher atteinte", "warn");
+
+            opt_options.callback.call(this, data);
         }
-
-        if (data.length === this_.limitList_)
-            $.notify("Limite d'objets à afficher atteinte", "warn");
-
-        opt_options.callback.call(this, data);
     });
 };
 
@@ -605,12 +596,48 @@ nsVmap.nsToolsManager.Select.prototype.selectController.prototype.displayObjectC
         var displayFormReaderScope = this_.getDisplayFormReaderScope();
         displayFormReaderScope.$evalAsync(function () {
 
-            displayFormReaderScope['ctrl']['setDefinitionName']('display');
-            displayFormReaderScope['ctrl']['setFormValues'](oFormValues);
-            displayFormReaderScope['ctrl']['setFormDefinition'](oFormDefinition);
-            displayFormReaderScope['ctrl']['loadForm']();
+            var loadForm = function () {
+                // Set le formulaire
+                displayFormReaderScope['ctrl']['setDefinitionName']('display');
+                displayFormReaderScope['ctrl']['setFormValues'](oFormValues);
+                displayFormReaderScope['ctrl']['setFormDefinition'](oFormDefinition);
 
-            $('#select-card-modal').modal('show');
+                displayFormReaderScope.$applyAsync(function () {
+                    displayFormReaderScope['ctrl']['loadForm']();
+                    $('#select-card-modal').modal('show');
+                });
+            };
+
+            // Tente de lancer destructor_form
+            try {
+                if (goog.isDef(destructor_form)) {
+                    destructor_form();
+                }
+            } catch (e) {
+                oVmap.log("destructor_form does not exist");
+            }
+
+            // Chargement des js associés au bo
+            if (goog.isDefAndNotNull(selection['bo_json_form_js'])) {
+                var sUrl = selection['bo_json_form_js'];
+                oVmap.log("initHtmlForm : javascript assoc. to : " + sUrl);
+                loadExternalJs([sUrl], {
+                    "callback": function () {
+                        loadForm();
+                        try {
+                            if (goog.isDef(constructor_form)) {
+                                constructor_form(displayFormReaderScope, sUrl);
+                            }
+                        } catch (e) {
+                            oVmap.log("constructor_form does not exist");
+                        }
+                    },
+                    "async": true,
+                    "scriptInBody": true
+                });
+            } else {
+                loadForm();
+            }
         });
     });
 };
@@ -869,12 +896,17 @@ nsVmap.nsToolsManager.Select.prototype.selectController.prototype.complementData
     var this_ = this;
 
     // Construction du filtre
-    var filter = '';
+    var filter = {
+        'relation': 'OR',
+        'operators': []
+    };
     for (var i = 0; i < aSelection.length; i++) {
         if (!goog.isDef(aSelection[i]['bo_' + dataType])) {
-            if (filter.length > 0)
-                filter += ' OR ';
-            filter += '("' + aSelection[i]['bo_id_field'].replace(/\./g, '"."') + '"=\'' + aSelection[i]['bo_id_value'] + '\')';
+            filter['operators'].push({
+                'column': aSelection[i]['bo_id_field'].replace(/\./g, '"."'),
+                'compare_operator': '=',
+                'value': aSelection[i]['bo_id_value']
+            });
         }
     }
 
@@ -890,8 +922,6 @@ nsVmap.nsToolsManager.Select.prototype.selectController.prototype.complementData
     }
 
     var params = {
-        'token': oVmap['properties']['token'],
-        'filter': filter,
         'result_srid': proj,
         'limit': 200
     };
@@ -905,59 +935,69 @@ nsVmap.nsToolsManager.Select.prototype.selectController.prototype.complementData
     // Ajoute si besoin les paramètres compémentaires
     goog.object.extend(params, complementParams);
 
-    if (filter.length > 0) {
-        this.$http_({
-            method: "GET",
-            url: url,
-            params: params
-        }).then(function (response) {
+    if (filter['operators'].length > 0) {
+        params['filter'] = JSON.stringify(filter);
 
-            var data = [];
+        ajaxRequest({
+            'method': 'POST',
+            'url': url,
+            'headers': {
+                'X-HTTP-Method-Override': 'GET',
+                'Accept': 'application/x-vm-json'
+            },
+            'data': params,
+            'scope': this.$scope_,
+            'success': function (response) {
 
-            // Décrémente le compteur de requêtes
-            this_.requestCounter_--;
+                var data = [];
 
-            // Si le compteur de requêtes vaut zéro, alors on remet le curceur normal
-            if (this_.requestCounter_ === 0) {
-                $('body').css({"cursor": ""});
-                hideAjaxLoader();
-            }
+                // Décrémente le compteur de requêtes
+                this_.requestCounter_--;
 
-            // Vérifie si il y a une erreur
-            if (goog.isDef(response['data'])) {
-                if (goog.isDef(response['data']['errorMessage'])) {
-                    bootbox.alert(response['data']['errorMessage']);
+                // Si le compteur de requêtes vaut zéro, alors on remet le curceur normal
+                if (this_.requestCounter_ === 0) {
+                    $('body').css({"cursor": ""});
+                    hideAjaxLoader();
                 }
-            }
 
-            // Vérifie si il y a des données à afficher
-            if (!goog.isDef(response['data']['data'])) {
-                oVmap.log('Pas de données à afficher');
-            } else {
-                var data = response['data']['data'];
-            }
+                // Vérifie si il y a une erreur
+                if (goog.isDef(response['data'])) {
+                    if (goog.isDef(response['data']['errorMessage'])) {
+                        bootbox.alert(response['data']['errorMessage']);
+                    }
+                }
 
-            // Vérifie si la limite de données à afficher n'a pas été dépassée
-            if (data.length > 199) {
-                var sAlert = '<h4>Attention, vous avez atteint la limite d\'objects affichables sur la carte</h4>';
-                bootbox.alert(sAlert);
-            }
+                // Vérifie si il y a des données à afficher
+                if (!goog.isDef(response['data']['data'])) {
+                    oVmap.log('Pas de données à afficher');
+                } else {
+                    var data = response['data']['data'];
+                }
 
-            // Ajoute le résultat de la requête
-            this_.addQueryResult({
-                data: data,
-                selection: aSelection,
-                dataType: dataType,
-                callback: callback
-            });
+                // Vérifie si la limite de données à afficher n'a pas été dépassée
+                if (data.length > 199) {
+                    var sAlert = '<h4>Attention, vous avez atteint la limite d\'objects affichables sur la carte</h4>';
+                    bootbox.alert(sAlert);
+                }
 
-        }, function (response) {
-            console.error(response);
-            this_.requestCounter_--;
-            if (this_.requestCounter_ === 0) {
-                $('body').css({"cursor": ""});
-                hideAjaxLoader();
-                callback.call(this, aSelection);
+                // Ajoute le résultat de la requête
+                this_.addQueryResult({
+                    data: data,
+                    selection: aSelection,
+                    dataType: dataType,
+                    callback: callback
+                });
+            },
+            'error': function (response) {
+                // Décrémente le compteur de requêtes
+                this_.requestCounter_--;
+
+                // Si le compteur de requêtes vaut zéro, alors on remet le curceur normal
+                if (this_.requestCounter_ === 0) {
+                    $('body').css({"cursor": ""});
+                    hideAjaxLoader();
+                    callback.call(this, aSelection);
+                }
             }
         });
     } else {
@@ -1084,48 +1124,47 @@ nsVmap.nsToolsManager.Select.prototype.selectController.prototype.updateBOValues
     var data = this.getFormDataFromValues(boValues);
     var aLayers = this['map'].getLayers().getArray();
 
-    this.$http_({
-        method: "PUT",
-        url: oVmap['properties']['api_url'] + '/vmap/querys/' + bo_type,
-        data: data,
-        params: {
-            'token': oVmap['properties']['token']
-        }
-    }).then(function (response) {
+    showAjaxLoader();
+    ajaxRequest({
+        'method': 'PUT',
+        'url': oVmap['properties']['api_url'] + '/vmap/querys/' + bo_type,
+        'headers': {
+            'Accept': 'application/x-vm-json'
+        },
+        'data': data,
+        'scope': this.$scope_,
+        'success': function (response) {
 
-        $('body').css({"cursor": ""});
-        hideAjaxLoader();
-
-        if (!goog.isDef(response['data'])) {
-            bootbox.alert('Aucune valeur retournée');
-            errorCallback.call();
-            return 0;
-        }
-
-        if (goog.isDef(response['data']['errorMessage'])) {
-            bootbox.alert(response['data']['errorMessage']);
-            errorCallback.call();
-            return 0;
-        }
-
-        // recharge les couches impliquées
-        for (var i = 0; i < aLayers.length; i++) {
-            if (aLayers[i].getProperties()['bo_id'] === bo_type) {
-                aLayers[i].refreshWithTimestamp();
+            if (!goog.isDef(response['data'])) {
+                console.log('Aucune valeur retournée');
+                errorCallback.call();
+                return 0;
             }
+
+            if (goog.isDef(response['data']['errorMessage'])) {
+                console.log(response['data']['errorMessage']);
+                errorCallback.call();
+                return 0;
+            }
+
+            // recharge les couches impliquées
+            for (var i = 0; i < aLayers.length; i++) {
+                var aBusinessObjects = aLayers[i].getProperties()['business_objects'];
+                if (goog.isArray(aBusinessObjects)) {
+                    for (var ii = 0; ii < aBusinessObjects.length; ii++) {
+                        if (aBusinessObjects[ii]['business_object_id'] === bo_type) {
+                            aLayers[i].refreshWithTimestamp();
+                        }
+                    }
+                }
+            }
+
+            // Message ok
+            $.notify("Opération réalisée avec succès, les couches de la carte se mettent à jour", "info");
+
+            successCallback.call();
         }
-
-        // Message ok
-        $.notify("Opération réalisée avec succès, les couches de la carte se mettent à jour", "info");
-
-        successCallback.call();
-    }, function (response) {
-        errorCallback.call();
-        console.error(response);
-        $('body').css({"cursor": ""});
-        hideAjaxLoader();
     });
-
 };
 
 /**
@@ -1217,6 +1256,27 @@ nsVmap.nsToolsManager.Select.prototype.selectController.prototype.deleteObject =
 };
 
 /**
+ * Suggest if realy want to delete the objects and call submitDeleteObject
+ * @param {array<object>} aSelection
+ * @param {function} callback
+ * @export
+ */
+nsVmap.nsToolsManager.Select.prototype.selectController.prototype.deleteMultipleObjects = function (aSelection, callback) {
+    oVmap.log('nsVmap.nsToolsManager.Select.prototype.selectController.deleteMultipleObjects');
+
+    var this_ = this;
+
+    bootbox.confirm("<h4>Supprimer définitivement ces objets de la base de données ?</h4>", function (result) {
+        if (result === true) {
+            for (var i = 0; i < aSelection.length; i++) {
+                this_.submitDeleteObject(aSelection[i], callback);
+            }
+        }
+    });
+
+};
+
+/**
  * Submit a DELETE request to the server for delete the object from the datasource
  * @param {object} selection
  * @param {object} selection.bo_type
@@ -1226,69 +1286,44 @@ nsVmap.nsToolsManager.Select.prototype.selectController.prototype.deleteObject =
 nsVmap.nsToolsManager.Select.prototype.selectController.prototype.submitDeleteObject = function (selection, callback) {
     oVmap.log('nsVmap.nsToolsManager.Select.prototype.selectController.submitDeleteObject');
 
-    var this_ = this;
-    var $http = this.$http_;
-    var $q = this.$q_;
-
     var boId = selection['bo_type'];
     var boIdValue = selection['bo_id_value'];
     var aLayers = this['map'].getLayers().getArray();
 
-    var bRequestOk = false;
-    $http({
-        method: 'DELETE',
-        url: oVmap['properties']['api_url'] + '/vmap/querys/' + boId,
-        params: {
-            'token': oVmap['properties']['token'],
+    ajaxRequest({
+        'method': 'DELETE',
+        'url': oVmap['properties']['api_url'] + '/vmap/querys/' + boId,
+        'headers': {
+            'Accept': 'application/x-vm-json'
+        },
+        'params': {
             'idList': boIdValue
-        }
-    }).then(function successCallback(response) {
+        },
+        'scope': this.$scope_,
+        'success': function (response) {
 
-        bRequestOk = true;
-        hideAjaxLoader();
-
-        if (!goog.isDef(response['data'])) {
-            bootbox.alert("response['data'] undefined");
-            return 0;
-        }
-        if (goog.isDef(response['data']['errorMessage'])) {
-            bootbox.alert(response['data']['errorType'] + ': ' + response['data']['errorMessage']);
-            return 0;
-        }
-
-        // recharge les couches impliquées
-        for (var i = 0; i < aLayers.length; i++) {
-            if (aLayers[i].getProperties()['bo_id'] === boId) {
-                aLayers[i].refreshWithTimestamp();
-            }
-        }
-
-        // Message ok
-        $.notify("Opération réalisée avec succès, les couches de la carte se mettent à jour", "info");
-
-        callback.call();
-
-    }, function errorCallback(response) {
-        hideAjaxLoader();
-        bootbox.alert(response);
-    });
-
-    // Montre le message d'annulation de la requete si celle-ci n'est pas terminée apres un timeout
-    var showCancelRequestMessageAfterTimeout = function () {
-        setTimeout(function () {
-            if (bRequestOk === false) {
-                bootbox.confirm('Annuler la requête ?', function (result) {
-                    if (result === true) {
-                        canceler.resolve();
-                        hideAjaxLoader();
-                    } else {
-                        showCancelRequestMessageAfterTimeout();
+            // recharge les couches impliquées
+            for (var i = 0; i < aLayers.length; i++) {
+                var aBusinessObjects = aLayers[i].getProperties()['business_objects'];
+                if (goog.isArray(aBusinessObjects)) {
+                    for (var ii = 0; ii < aBusinessObjects.length; ii++) {
+                        if (aBusinessObjects[ii]['business_object_id'] === boId) {
+                            aLayers[i].refreshWithTimestamp();
+                        }
                     }
-                });
+                }
             }
-        }, 5000);
-    };
-    showCancelRequestMessageAfterTimeout();
+
+            // Message ok
+            $.notify("Opération réalisée avec succès, les couches de la carte se mettent à jour", "info");
+
+            // Callback
+            callback.call();
+        },
+        'error': function (response) {
+
+        }
+    });
 };
 
 /**

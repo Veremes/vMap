@@ -1,20 +1,24 @@
 <!--location search-->
 <li id="location-search-tool" role="presentation">
-    <form ng-submit="ctrl.searchLocation()" id="location-search-form" class="margin-sides-5 from-control">		
+    <form ng-submit="ctrl.searchLocation()" id="location-search-form" class="margin-sides-5 from-control">
+        <!--Recherche-->
         <input id="location-search-input"
                type="text" 
                placeholder="Localiser.."
                ng-model="ctrl.locationSearch"
                ng-click="ctrl.searchLocation()">
-
+        <!--Sélecteur-->
         <select id="location-search-api-select"
-                ng-if="sizeOf(ctrl.customLocationServicesProperties) > 0"
-                ng-model="ctrl.locationService"
-                ng-change="ctrl.searchLocation()">
-            <option value="osm">OpenStreetMap</option>
-            <option ng-repeat="(key, value) in ctrl.customLocationServicesProperties"
-                    ng-if="value.bo_search_field && value.bo_result_field"
-                    value="{{key}}">{{value.bo_title}}</option>
+                ng-if="sizeOf(ctrl.oBusinessObjects) > 0"
+                ng-model="ctrl.sSelectedLocationService"
+                ng-change="ctrl.searchLocation()">            
+            <!--Géocodeurs-->
+            <option ng-repeat="(key, value) in ctrl.locationServices"
+                    value="{{key}}">{{value.title}}</option>
+            <!--Objets métier-->
+            <option ng-repeat="node in ctrl.oBusinessObjects | orderObjectBy:'bo_title'"
+                    ng-if="node.bo_search_field && node.bo_result_field"
+                    value="{{node.bo_id}}">{{node.bo_title}}</option>
         </select>
     </form>
 
@@ -33,14 +37,14 @@
             <span ng-class="{'hidden': ctrl.noResults === ''}">{{ctrl.noResults}}</span>
         </div>
 
-        <!-- Custom -->
-        <div ng-if="ctrl.locationService !== 'osm'" class="location-search-dropdown-content">
+        <!-- Objet métier -->
+        <div ng-if="locationServiceType === 'business_object'" class="location-search-dropdown-content">
             <div class="location-search-dropdown-result"
                  ng-repeat="node in ctrl.locationResults">
 
                 <div class="pointer opacity-hover"
-                     ng-click="ctrl.addToSelection(node, ctrl.customLocationServicesProperties[ctrl.locationService])">
-                    <span>{{node['bo_summary'][ctrl.customLocationServicesProperties[ctrl.locationService].bo_result_field]}}</span>
+                     ng-click="ctrl.addToSelection(node, ctrl.oBusinessObjects[ctrl.sSelectedLocationService])">
+                    <span>{{node['bo_summary'][ctrl.oBusinessObjects[ctrl.sSelectedLocationService].bo_result_field]}}</span>
                 </div>
 
                 <div class="location-search-dropdown-result-buttons pointer collapsed" data-toggle="collapse" href="#location-custom-search-dropdown-result-infos-{{this['$index']}}">
@@ -60,14 +64,13 @@
             </div>
         </div>
 
-        <!-- OSM -->
-        <div ng-if="ctrl.locationService === 'osm'" class="location-search-dropdown-content">
+        <!-- Géocodeur -->
+        <div ng-if="locationServiceType === 'geocoder'" class="location-search-dropdown-content">
             <div class="location-search-dropdown-result" 
                  ng-repeat="node in ctrl.locationResults">
-
                 <div class="pointer opacity-hover"
                      ng-click="ctrl.locatePlace(node)">
-                    <span>{{node.display_name}}</span>
+                    <span>{{node.title}}</span>
                 </div>					
 
                 <div class="location-search-dropdown-result-buttons pointer collapsed" data-toggle="collapse" href="#location-search-dropdown-result-infos-{{this['$index']}}">
@@ -76,19 +79,9 @@
                 </div>
 
                 <div class="collapse" id="location-search-dropdown-result-infos-{{this['$index']}}">
-                    <div style="padding-bottom: 10px">	
-
+                    <div style="padding-bottom: 10px" ng-if="node.summary">	
                         <ul>
-                            <li ng-if="node.address.country">Pays: {{node.address.country}}</li>
-                            <li ng-if="node.address.state">Région: {{node.address.state}}</li>
-                            <li ng-if="node.address.postcode">Code postal: {{node.address.postcode}}</li>
-                            <li ng-if="node.extratags.population">Population: {{node.extratags.population}}</li>
-                            <li ng-if="node.extratags.website">Site internet: 
-                                <a href="{{node.extratags.website}}" target="_blank">{{node.extratags.website}}</a>
-                            </li>
-                            <li ng-if="node.extratags.wikipedia">Wikipédia: 
-                                <a href="https://fr.wikipedia.org/wiki/{{node.extratags.wikipedia}}" target="_blank">https://fr.wikipedia.org/wiki/{{node.extratags.wikipedia}}</a>
-                            </li>
+                            <li ng-repeat="oSummaryElement in node.summary">{{oSummaryElement.label}}: {{oSummaryElement.value}}</li>
                         </ul>
                     </div>
                 </div>
@@ -107,7 +100,7 @@
 <!--Go home-->
 <li role="presentation">
     <a id="original-position-tool"
-       class="basic-tools-element pointer" title="Centre la carte sur l'empise par défaut"
+       class="basic-tools-element pointer" title="Centrer la carte sur l’emprise par défaut"
        ng-click="ctrl.goHome()">
         <span class="glyphicon glyphicon-home" aria-hidden="true"></span>
     </a>
@@ -124,7 +117,7 @@
 
 <!--Max extent-->
 <li role="presentation">
-    <a class="basic-tools-element pointer" title="Centre la carte à l'étendue maximale"
+    <a class="basic-tools-element pointer" title="Centrer la carte à l’étendue maximale"
        ng-click="ctrl.maxExtent()">
         <span class="icon-language" aria-hidden="true"></span>
     </a>
@@ -132,18 +125,17 @@
 
 <!--Geolocate me-->
 <li role="presentation">
-    <a class="basic-tools-element pointer" title="Centre la carte sur ma position"
+    <a class="basic-tools-element pointer" title="Centrer la carte sur ma position"
        ng-click="ctrl.geolocateMe()">
         <span class="glyphicon glyphicon-map-marker" aria-hidden="true"></span>
     </a>
 </li>
 
-
 <!--Go to-->
 <li role="presentation" style="position: inherit" class="basic-tools-dropdown">
 
     <a class="basic-tools-element pointer"
-       title="Centre la carte sur une position donnée"
+       title="Centrer la carte sur une position donnée"
        onclick="oVmap.getToolsManager().getBasicTools().toggleTool(this)">
         <span class="icon-coordinates" aria-hidden="true" style="font-size: 19px;line-height: 0.7 !important;"></span>
     </a>
@@ -176,44 +168,6 @@
         </div>
     </div>
 </li>
-
-<!--Change scale-->
-<!--<li role="presentation" style="position: inherit" class="basic-tools-dropdown">
-
-        <a class="basic-tools-element pointer"
-           title="Centre la carte sur une position donnée"
-           onclick="oVmap.getToolsManager().getBasicTools().toggleTool(this)">
-                <span class="icon-scale_bar" aria-hidden="true" style="font-size: 19px;line-height: 1.4 !important;"></span>
-        </a>
-
-        <div class="dropdown-menu basic-tools-dropdown-element" style="margin: -18px -1px">
-                <div class='margin-10 margin-sides-10'>
-
-                        <label>Echelle: 1:{{ctrl.scale}}</label>
-
-                        <select id="select-print-scale" class="form-control minus ng-pristine ng-valid ng-touched" ng-model="ctrl.scale" onchange="oVmap.getMap().setScale(this.value)">
-                                <option value="1000000">1:1,000,000</option>
-                                <option value="500000">1:500,000</option>
-                                <option value="200000">1:200,000</option>
-                                <option value="100000">1:100,000</option>
-                                <option value="50000">1:50,000</option>
-                                <option value="25000">1:25,000</option>
-                                <option value="10000">1:10,000</option>
-                                <option value="5000">1:5,000</option>
-                                <option value="2500">1:2,500</option>
-                                <option value="2000">1:2,000</option>
-                                <option value="1000">1:1,000</option>
-                                <option value="500">1:500</option>
-                                <option value="200">1:200</option>
-                                <option value="100">1:100</option>
-                        </select>
-                        <br>
-                        <div class="text-center">
-                                <button class="btn btn-sm btn-primary">saisir manuellement</button>
-                        </div>
-                </div>
-        </div>
-</li>-->
 
 <!-- Modal -->
 <div id="scale-modal" class="modal fade" role="dialog">

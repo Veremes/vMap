@@ -5,59 +5,10 @@
               +                                                                                   +
               +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-b21193|RELEASE	    |core|	Version 2017.01.02
-b23118|BUG			|core|	correction orthographe
-b23054|BUG			|core|	BUG Problème de synchro. aléatoire sur le chargement de formulaires sans données.
-b22945|BUG			|core|	Enlève le filtre par défaut -1000000
-b22910|BUG			|core|	BUG Correction de bugs en mode compilé dans le studio (suggestColumnsToGenerateForm())
-b22816|BUG			|core|	Les noms de fichiers des logs sont tronqués à l'affichage si ils sont trop longs.
-b22815|BUG			|core|	Pas de retour à la ligne dans les noms de fichiers des logs.
-b22787|EVOLUTION	|core|	Paramètre dans la fonction de clonage (tableau de champs de form. à vider).
-b22779|BUG			|core|	Changement d'onglet quand il y a une erreur dans un formulaire
-b22775|BUG			|core|	La palette n'est plus rognée en bas de la fenêtre.
-b22739|BUG			|core|	Problème Compatibilité IE
-b22737|BUG			|core|	title dans couches du chanp ol
-b22725|BUG			|core|	form ui-grid firefox: pb affichage des boites à cocher (à gauche)
-b22721|BUG			|core|	map extent oversized
-b22711|BUG			|core|	Url du template du formReader dans les widgets de GTF.
-b22603|BUG			|core|	Renvoi d'un formulaire quand il y a eut une erreur côté serveur
-b22600|BUG			|core|	BUG chargement des datasources avec formExtracted
-b22598|BUG			|core|	Permission denied Error message
-b22492|BUG			|core|	rétablissement du logo "map" qui avait changé
-b22486|BUG			|core|	Logo mal placé
-b22319|BUG			|core|	BUG Sélection d'une valeur vide dans le menu déroulant d'un filtre de recherche sauvé.
-b22303|BUG			|core|	BUG convervation des filtres après changement d'onglet ou de mode.
-b22300|BUG			|core|	BUG Conservation des paramètres de tri d'une liste après changement d'onglet.
-b22167|EVOLUTION	|core|	websockets pour le rechargement des grilles
-b22096|EVOLUTION	|core|	websocket
-b22095|EVOLUTION	|core|	Redirection en cas de mauvaise URL
-b22026|BUG			|core|	Titre de la fenêtre affichée en cas d'erreur de suppression d'un enregistrement.
-b22014|BUG			|core|	Dans l'arborescence des logs les répertoires et fichiers qui sont au même niveau sont alignés.
-b22013|BUG			|core|	La propriété "appHeaderSearchForm" (liste ui-grid) affiche ou cache le bandeau des filtres.
-b21964|BUG			|core|	Correction d'un bug d'affichage du mode "Utilisateur" en mode compilé.
-b21948|BUG			|core|	Propriété "name" obligatoire pour l'affichage des champs de form. "title" et "subtitle".
-b21892|EVOLUTION	|core|	Possibilité de pouvoir ordonner les modes depuis le mode configuration
-b21880|EVOLUTION	|core|	La fonction "getProperty" a un nouveau paramètre (optionnel) pour concaténer une chaine de caractère avant et/ou après la valeur retournée.
-b21879|BUG			|core|	formReader : un tag crée dans un champ "editable_double_select" peut être déplacé.
-b21869|BUG			|core|	Dans le menu des modes la scrollbar n'apparaît plus lorsqu'il y a beaucoup de modes (Firefox, Edge, IE 11).
-b21862|BUG			|core|	Correction d'un bug sur la réinitialisation d'un filtre sauvé après changement d'onglet ou de mode.
-b21748|EVOLUTION	|core|	FormReader : Mise en forme css des champs "link" et "linkurl".
-b21671|EVOLUTION	|core|	formReader : évènement "OpenLayersMapCreated" lancé après la création d'une carte OpenLayers.
-b21644|BUG			|core|	formReader : bouton avec un glyphicon et un label dans le même bouton.
-b21630|EVOLUTION	|core|	Ajout de l'addon "show-hint" pour Codemirror (affichage d'une liste de suggestions).
-b21619|EVOLUTION	|core|	Vérification de la validité du certificat SSL (Paramètre "proxy_check_ssl" configurable dans les properties).
-b21587|BUG			|core|	formReader : correction d'un bug sur l'affichage des champs "CodeMirror".
-b21474|BUG			|core|	formReader : correction sur la hauteur et le positionnement de la scrollbar horizontale d'une liste ui-grid.
-b21465|BUG			|core|	fonction "concatSelectAttributes" : ne concatène pas les options de "<select>" qui sont vides.
-b21464|BUG			|core|	Correction d'un bug sur les listes ui-grid dont la scrollbar rebondit en fin de scroll.
-b21401|EVOLUTION	|core|	Possibilité d'utilisation d'onglets dans les formulaires
-b21333|EVOLUTION    |core|	classe css "form-row-margin-top" : ajouter une marge au dessus d'une ligne de formulaire.
-b21328|BUG			|core|	Affichage du bouton ok dans les champs suggérés par le studio
-b21324|EVOLUTION	|core|	Message d'erreur lors de la génération d'un formulaire sur une table inexistante ou sur laquelle l'utilisateur n'a pas les droits
-b21306|EVOLUTION	|core|	formReader : la fonction "getFormElementDefinition" retourne la définition d'un bouton.
-b21282|BUG			|core|	Correction d'un bug sur le positionnement du titre et des boutons d'une liste "ui-grid".
-b21229|AMELIORATION |core|	Suppression du champ "ID" dans le filtre de recherche des domaines.
-b21226|BUG          |core|	Correction d'un bug dans les filtres de recherche (valeur numérique recherchée dans un champ texte).
+
+b21229|AMELIORATION|core|	Suppression du champ "ID" dans le filtre de recherche des domaines.
+b21227|AMELIORATION|core|	CHANGE_LOG.txt
+b21226|BUG         |core|	Correction d'un bug dans les filtres de recherche (valeur numérique recherchée dans un champ texte).
 
 b21193|RELEASE	   |core|	Version 2016.05.00
 b21188|BUG         |core|	Correction d'un bug sur la fonction de clonage d'un enregistrement (cloneSectionForm()).

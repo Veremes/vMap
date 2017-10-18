@@ -14,8 +14,8 @@
                         "label":"FORM_DOMAIN_ACTIVE_DIRECTORY_CONNECTION",
                         "web_service":{
                             "ressource_id":"vitis/domains",
-                            "id_key":"domain_id",
-                            "label_key":"domain",
+                            "id_key":"domain",
+                            "label_key":"alias",
                             "callback": "selectFirstOption('domain')",
                             "parameters":{
                                     "order_by":"domain"

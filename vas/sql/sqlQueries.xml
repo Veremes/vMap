@@ -656,5 +656,77 @@
 				]]>
 			</code>
 		</query>
+		<query>
+			<type>update</type>
+			<version>2017.01.03</version>
+			<code>
+				<![CDATA[ 
+				]]>
+			</code>
+		</query>
+		<query>
+			<type>update</type>
+			<version>2017.01.04</version>
+			<code>
+				<![CDATA[ 
+				-- Armand le 20/06/2017 à 18h ajout de la table feature_style
+				CREATE TABLE IF NOT EXISTS s_vitis.feature_style(feature_style_id SERIAL NOT NULL,draw_color VARCHAR(50),draw_outline_color VARCHAR(50),draw_size VARCHAR(50),draw_dash VARCHAR(50),draw_symbol VARCHAR(50),text_font VARCHAR(50),text_color VARCHAR(50),text_outline_color VARCHAR(50),text_size VARCHAR(50),text_outline_size VARCHAR(50),text_offset_x VARCHAR(50),text_offset_y VARCHAR(50),text_rotation VARCHAR(50),text_text VARCHAR(255),feature_type VARCHAR(255),PRIMARY KEY (feature_style_id));
+				ALTER TABLE s_vitis.feature_style owner TO u_vitis;
+				GRANT ALL ON table s_vitis.feature_style TO u_vitis;
+				GRANT SELECT ON TABLE s_vitis.feature_style TO vitis_user;
+				GRANT ALL ON table s_vitis.feature_style TO vitis_admin;
+				-- Armand le 27/07/2017 à 18h restriction des droits de vitis_user pour des raisons de sécurité
+				REVOKE ALL ON TABLE s_vitis."user" FROM vitis_user;
+				REVOKE ALL ON TABLE s_vitis."user_group" FROM vitis_user;
+				CREATE OR REPLACE FUNCTION s_vitis.is_vitis_admin() RETURNS boolean AS $total$ declare total boolean; BEGIN SELECT(SELECT count(*) FROM information_schema.applicable_roles WHERE role_name='vitis_admin') > 0 INTO total; RETURN total; END; $total$ LANGUAGE plpgsql;
+				CREATE OR REPLACE VIEW s_vitis.v_user AS SELECT "user".user_id, "user".login, "user".name, "user".email, "user".company, "user".department, "user".ip_constraint, domain.domain, "user".domain_id, "user".last_connection, "user".restriction, CASE WHEN array_to_string(ARRAY( SELECT pg_group.groname FROM pg_group JOIN pg_roles ON pg_roles.oid = ANY (pg_group.grolist) WHERE "user".login::name = pg_roles.rolname AND (pg_group.groname = 'vitis_admin'::name OR pg_group.groname = 'vitis_user'::name)), '|'::text) = 'vitis_user|vitis_admin'::text OR array_to_string(ARRAY( SELECT pg_group.groname FROM pg_group JOIN pg_roles ON pg_roles.oid = ANY (pg_group.grolist) WHERE "user".login::name = pg_roles.rolname AND (pg_group.groname = 'vitis_admin'::name OR pg_group.groname = 'vitis_user'::name)), '|'::text) = 'vitis_admin|vitis_user'::text THEN 'admin'::text WHEN array_to_string(ARRAY( SELECT pg_group.groname FROM pg_group JOIN pg_roles ON pg_roles.oid = ANY (pg_group.grolist) WHERE "user".login::name = pg_roles.rolname AND (pg_group.groname = 'vitis_admin'::name OR pg_group.groname = 'vitis_user'::name)), '|'::text) = 'vitis_user'::text THEN 'user'::text ELSE ''::text END AS role FROM s_vitis."user" LEFT JOIN s_vitis.domain ON "user".domain_id = domain.domain_id WHERE "user".login = "current_user"() OR s_vitis.is_vitis_admin();
+				CREATE OR REPLACE RULE delete_v_user AS ON DELETE TO s_vitis.v_user DO INSTEAD DELETE FROM s_vitis."user" WHERE "user".user_id = old.user_id;
+				CREATE OR REPLACE RULE insert_v_user AS ON INSERT TO s_vitis.v_user DO INSTEAD INSERT INTO s_vitis."user" (user_id, login, domain_id, name, email, company, department, ip_constraint, restriction) VALUES (new.user_id, new.login, new.domain_id, new.name, new.email, new.company, new.department, new.ip_constraint, new.restriction);
+				DROP RULE update_v_user ON s_vitis.v_user;
+				CREATE OR REPLACE RULE update_v_user_u AS ON UPDATE TO s_vitis.v_user DO INSTEAD UPDATE s_vitis."user" SET name = new.name, email = new.email, company = new.company, department = new.department WHERE (new.name = "current_user"() or s_vitis.is_vitis_admin()) AND "user".user_id = new.user_id;
+				CREATE OR REPLACE RULE update_v_user_a AS ON UPDATE TO s_vitis.v_user WHERE s_vitis.is_vitis_admin() DO INSTEAD UPDATE s_vitis."user" SET name = new.name, email = new.email, company = new.company, department = new.department, ip_constraint = new.ip_constraint, restriction = new.restriction WHERE (new.name = "current_user"() or s_vitis.is_vitis_admin()) AND "user".user_id = new.user_id;
+				CREATE OR REPLACE VIEW s_vitis.v_user_group_by_rights AS SELECT user_group.user_id, user_group.group_id FROM s_vitis.user_group LEFT JOIN s_vitis."user" ON user_group.user_id = "user".user_id LEFT JOIN s_vitis."group" ON "group".group_id = user_group.group_id WHERE "user".login::name::text = "current_user"()::text OR s_vitis.is_vitis_admin();
+				ALTER TABLE s_vitis.v_user_group_by_rights OWNER TO u_vitis;
+				GRANT ALL ON TABLE s_vitis.v_user_group_by_rights TO u_vitis;
+				GRANT ALL ON TABLE s_vitis.v_user_group_by_rights TO vitis_admin;
+				GRANT SELECT ON TABLE s_vitis.v_user_group_by_rights TO vitis_user;
+				CREATE OR REPLACE RULE update_v_user_group_by_rights AS ON DELETE TO s_vitis.v_user_group_by_rights DO INSTEAD DELETE FROM s_vitis.user_group WHERE user_group.group_id = old.group_id;
+				CREATE OR REPLACE RULE insert_v_user_group_by_rights AS ON INSERT TO s_vitis.v_user_group_by_rights DO INSTEAD INSERT INTO s_vitis.user_group (user_id, group_id) VALUES (new.user_id, new.group_id);
+				DROP RULE IF EXISTS update_v_user_a ON s_vitis.v_user;
+				DROP RULE IF EXISTS update_v_user_u ON s_vitis.v_user;
+				CREATE OR REPLACE RULE update_v_user AS ON UPDATE TO s_vitis.v_user DO INSTEAD (UPDATE s_vitis."user" SET name = new.name, email = new.email, company = new.company, department = new.department WHERE NOT s_vitis.is_vitis_admin() AND new.login::name = "current_user"() AND "user".user_id = new.user_id; UPDATE s_vitis."user" SET name = new.name, email = new.email, company = new.company, department = new.department, ip_constraint = new.ip_constraint, restriction = new.restriction WHERE s_vitis.is_vitis_admin() AND "user".user_id = new.user_id);
+				-- Armand 02/08/2017: donne le droit d'édition sur last_connection
+				CREATE OR REPLACE RULE update_v_user AS ON UPDATE TO s_vitis.v_user DO INSTEAD (UPDATE s_vitis."user" SET name = new.name, email = new.email, company = new.company, department = new.department, last_connection = new.last_connection WHERE NOT s_vitis.is_vitis_admin() AND new.login::name = "current_user"() AND "user".user_id = new.user_id; UPDATE s_vitis."user" SET name = new.name, email = new.email, company = new.company, department = new.department, ip_constraint = new.ip_constraint, domain_id = new.domain_id, last_connection = new.last_connection, restriction = new.restriction WHERE s_vitis.is_vitis_admin() AND "user".user_id = new.user_id);
+				-- Armand 02/08/2017: correction bug: un utilisateur simple peut changer le nom, l'email la company, le departement et le last_connection d'un autre utilisateur si il passe un user_id dans les paramètres à changer
+				CREATE OR REPLACE RULE update_v_user AS ON UPDATE TO s_vitis.v_user DO INSTEAD( UPDATE s_vitis."user" SET name = new.name, email = new.email, company = new.company, department = new.department, last_connection = new.last_connection WHERE NOT s_vitis.is_vitis_admin() AND new.login::name = "current_user"() AND "user".user_id = (SELECT user_id FROM s_vitis."user" WHERE login = "current_user"()); UPDATE s_vitis."user" SET name = new.name, email = new.email, company = new.company, department = new.department, ip_constraint = new.ip_constraint, domain_id = new.domain_id, last_connection = new.last_connection, restriction = new.restriction WHERE s_vitis.is_vitis_admin() AND "user".user_id = new.user_id;);
+				]]>
+			</code>
+		</query>
+		<query>
+			<type>update</type>
+			<version>2017.02.00</version>
+			<code>
+				<![CDATA[ 
+				-- Laurent le 01/08/2017 à 12h Creation de fonction générique pour récupérer l'utilisateur qui créé ou met à jour un enregistrement
+				CREATE OR REPLACE FUNCTION s_vitis.insert_author_date() RETURNS trigger AS $BODY$ BEGIN NEW.author = current_user; NEW.create_date = now(); RETURN NEW;	END; $BODY$ LANGUAGE plpgsql VOLATILE COST 100;
+				ALTER FUNCTION s_vitis.insert_author_date() OWNER TO u_vitis;
+				CREATE OR REPLACE FUNCTION s_vitis.update_modifier_date()  RETURNS trigger AS $BODY$ BEGIN     NEW.modifier = current_user;	 NEW.update_date = now();    RETURN NEW;	END;$BODY$  LANGUAGE plpgsql VOLATILE  COST 100;
+				ALTER FUNCTION s_vitis.update_modifier_date()  OWNER TO u_vitis;
+				-- Armand 31/08/2017: correction bug: quand un administrateur met à jour les groupes d'un utilisateur, il pert lui même les groupes qu'il a enlevé à l'utilisateur
+				CREATE OR REPLACE RULE update_v_user_group_by_rights AS ON DELETE TO s_vitis.v_user_group_by_rights DO INSTEAD DELETE FROM s_vitis.user_group WHERE user_group.group_id = old.group_id AND user_group.user_id = old.user_id;
+				--Yoann 12/09/2017: attribution de la séquence s_vitis.seq_common aux champs user_id(table user) et group_id (table group)
+				ALTER TABLE s_vitis."user"    ALTER COLUMN user_id SET DEFAULT nextval('s_vitis.seq_common'::regclass);
+				ALTER TABLE s_vitis."group"    ALTER COLUMN group_id SET DEFAULT nextval('s_vitis.seq_common'::regclass);
+				]]>
+			</code>
+		</query>
+		<query>
+			<type>update</type>
+			<version>2017.02.01</version>
+			<code>
+				<![CDATA[ 
+				]]>
+			</code>
+		</query>
 	</queriesCollection>
 </sqlQueries>

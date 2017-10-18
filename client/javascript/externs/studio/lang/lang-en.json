@@ -47,9 +47,10 @@
         "Form": {
             "Title": "Title",
             "TitlePlaceholder": "Form title",
-            "Event" : "Evénement",
-            "EventPlaceholder" : "Evénement appelé lors du submit",
+            "Event": "Evénement",
+            "EventPlaceholder": "Evénement appelé lors du submit",
             "SuggestedFields": "Suggested fields",
+            "SuggestedFieldsSelectAll": "Everyone",
             "SelectSize": {
                 "Label": "Input height :",
                 "Size": [
@@ -225,6 +226,10 @@
                 "Database": "Database",
                 "Schema": "Schema",
                 "Filter": "Filter",
+                "Relation": "Relation",
+                "KeyValue": "Attribute",
+                "Value": "Value",
+                "CompareOperator": "Compare Operator",
                 "Table": "Table",
                 "Column": "Column",
                 "Server": "Hostname of server",
@@ -236,6 +241,8 @@
                 "Table_List_error": "Any table avaliable",
                 "Schema_List": "Schemas",
                 "Schema_List_error": "Any schema avaliable",
+                "Database_List": "Database",
+                "Database_List_error": "Any database avaliable",
                 "Column_List": "Columns",
                 "Label_PH": "Selected label",
                 "Name_PH": "Selected name",
@@ -243,11 +250,13 @@
                 "Select_Type": "Type",
                 "Select_Business_Object": "Business object",
                 "Select_Text": "Text",
+                "TypeSourceTitle" : "Source Type",
+                "TypeSourceContent" : "Definitions of Available Source Types : Text: values ​​entered directly in the manager or imported from a choice FME parameter. Local table values: values ​​from a database table that is installed on the same server as VMAP. External database: Import of an external database tables to VMAP. Web service Vitis: Operation of a web service to recover the resources. ",
                 "Datasource": "Datasource",
                 "Datasources": "Datasources",
                 "DatasourceManagement": "?",
                 "DatasourceManagementTitle": "Use datasource manager (bottom right button) to add or edit datasource",
-                "Select_Webservice": "Vitis web service",
+                "Select_Webservice": "Web service",
                 "Select_Table_Values": " Local table values",
                 "Select_External_Database": "External database",
                 "Webservice_Class": "API",
@@ -365,15 +374,15 @@
                     "OutRange": "Your values are outside of the map"
                 }
             },
-            "CM":{
-                "Language" : "Language",
-                "Language_PH" : "Language used for coloration",
-                "TabSize" : "Tabs size",
-                "Separator" : "Separator",
-                "Separator_PH" : "Character used like separator",
-                "ReadOnly" : "read only",
-                "LineNumber" : "Show lines",
-                "IndentTabs" : "Use tabs to indent"
+            "CM": {
+                "Language": "Language",
+                "Language_PH": "Language used for coloration",
+                "TabSize": "Tabs size",
+                "Separator": "Separator",
+                "Separator_PH": "Character used like separator",
+                "ReadOnly": "read only",
+                "LineNumber": "Show lines",
+                "IndentTabs": "Use tabs to indent"
             },
             "Number": {
                 "Label_PH": "Input label",
@@ -438,13 +447,18 @@
     "FormTools": {
         "Title": "Form attributs",
         "Title_GTF": "Published parameters",
+        "Tools": "Tools",
         "Row": "Line",
         "InfoBulle": {
             "Up": "Move the selected element to the top",
             "Down": "Move the selected element to the bottom",
             "Add": "Add an empty line",
             "AddElement": "Add a published parameter",
-            "Delete": "Delete an element or an empty line"
+            "Delete": "Delete an element or an empty line",
+            "Copy": "Copy the tree",
+            "Paste": "Paste the copied tree",
+            "Labelize": "Change all the fields in label",
+            "Row": "Enable/Disable the Lines"
         },
         "Buttons": {
             "Show_Lines": "View / modify lines",

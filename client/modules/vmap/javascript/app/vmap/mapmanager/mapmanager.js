@@ -77,26 +77,31 @@ nsVmap.nsMapManager.MapManager = function () {
 
     // Charge le catalogue et les objets de MapManager
     if (goog.isDef(oVmap['properties']['token'])) {
+
         var this_ = this;
-        $.ajax({
-            url: oVmap['properties']['api_url'] + "/vmap/mapcatalog?token=" + oVmap['properties']['token'],
-            async: false,
-            context: document.body
-        }).done(function (oMapCatalog) {
-            if (goog.isDef(oMapCatalog['mapcatalogs']))
-                oMapCatalog = oMapCatalog['mapcatalogs'][0];
-            this_.loadMapTools(oMapCatalog);
-        }).fail(function () {
-            var oMapCatalog = {
-                'maps': [],
-                'services': {
-                    'wms': [],
-                    'bing': [],
-                    'osm': []
-                },
-                'usedMap': null
-            };
-            this_.loadMapTools(oMapCatalog);
+        ajaxRequest({
+            'method': 'GET',
+            'url': oVmap['properties']['api_url'] + "/vmap/mapcatalog",
+            'async': false,
+            'responseType': '',
+            'success': function (response) {
+                var oMapCatalog = JSON.parse(response['data']);
+                if (goog.isDef(oMapCatalog['mapcatalogs']))
+                    oMapCatalog = oMapCatalog['mapcatalogs'][0];
+                this_.loadMapTools(oMapCatalog);
+            },
+            'error': function (response) {
+                var oMapCatalog = {
+                    'maps': [],
+                    'services': {
+                        'wms': [],
+                        'bing': [],
+                        'osm': []
+                    },
+                    'usedMap': null
+                };
+                this_.loadMapTools(oMapCatalog);
+            }
         });
 
     } else {
@@ -137,7 +142,7 @@ nsVmap.nsMapManager.MapManager.prototype.loadMapTools = function (oMapCatalog) {
                 setTimeout(function () {
                     var $envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
                     if ($envSrvc['oSelectedMode']['mode_id'] === 'vmap')
-                        bootbox.alert('<h4>Acune carte n\'est associée à cet utilisateur, veuillez contacter l\'administrateur de l\'application</h4>');
+                        bootbox.alert('<h4>Aucune carte n\'est associée à cet utilisateur, veuillez contacter l\'administrateur de l\'application</h4>');
                 }, 3000);
             }
         }
@@ -188,6 +193,7 @@ nsVmap.nsMapManager.MapManager.prototype.loadMapTools = function (oMapCatalog) {
 
         // Instanciation des objets
         this.oMapModalTool_ = new nsVmap.nsMapManager.nsMapModal.MapModalManager(oMapCatalog);
+
     }
 };
 
@@ -202,23 +208,25 @@ nsVmap.nsMapManager.MapManager.prototype.loadLayersTools = function (sUrl) {
     var MapManager = this;
 
     if (goog.isDefAndNotNull(sUrl)) {
-        $.ajax({
-            url: sUrl,
-            async: false,
-            context: document.body
-        }).done(function (oLayersTree) {
 
-            if (goog.isDef(oLayersTree['mapjsons']))
-                oLayersTree = oLayersTree['mapjsons'][0];
+        ajaxRequest({
+            'method': 'GET',
+            'url': sUrl,
+            'async': false,
+            'responseType': '',
+            'success': function (response) {
 
-            oVmap.log(oLayersTree);
+                var oLayersTree = JSON.parse(response['data']);
+                if (goog.isDef(oLayersTree['mapjsons']))
+                    oLayersTree = oLayersTree['mapjsons'][0];
+                oVmap.log(oLayersTree);
+                MapManager.oLayersTree_ = oLayersTree;
 
-            MapManager.oLayersTree_ = oLayersTree;
-
-            // Instanciation des objets
-            MapManager.oLayersTreeTool_ = new nsVmap.nsMapManager.LayersTree();
-            MapManager.oLayersOrderTool_ = new nsVmap.nsMapManager.LayersOrder();
-            MapManager.oMapLegendTool_ = new nsVmap.nsMapManager.MapLegend();
+                // Instanciation des objets
+                MapManager.oLayersTreeTool_ = new nsVmap.nsMapManager.LayersTree();
+                MapManager.oLayersOrderTool_ = new nsVmap.nsMapManager.LayersOrder();
+                MapManager.oMapLegendTool_ = new nsVmap.nsMapManager.MapLegend();
+            }
         });
     }
 };
@@ -259,9 +267,10 @@ nsVmap.nsMapManager.MapManager.prototype.loadMap = function (element) {
             this.oMapCatalog_['usedMap'] = i;
     }
     this.setUsedMap();
-    
+
     oVmap.log("oVmap.event: mapChanged");
     oVmap['scope'].$broadcast('mapChanged');
+
 };
 
 /**
@@ -278,6 +287,8 @@ nsVmap.nsMapManager.MapManager.prototype.setUsedMap = function () {
 
     // Met la carte utilisée à used = true
     this.oMapCatalog_['maps'][this.oMapCatalog_['usedMap']]['used'] = true;
+
+    oVmap.resizeLayerTools(false);
 };
 
 /**
@@ -359,6 +370,17 @@ nsVmap.nsMapManager.MapManager.prototype.addLayer = function (oLayer) {
             }
         }
 
+        // Login/Password
+        oLayer.service_options = '';
+        if (goog.isString(oLayer.login) && goog.isString(oLayer.password)) {
+            if (oLayer.login.trim().length > 0 && oLayer.password.trim().length > 0) {
+                oLayer.service_options = JSON.stringify({
+                    'login': oLayer.login,
+                    'password': oLayer.password
+                });
+            }
+        }
+
         // Ajout de la couche dans oTree
         if (doesServiceExist === false) {
             newLayer = {
@@ -371,6 +393,7 @@ nsVmap.nsMapManager.MapManager.prototype.addLayer = function (oLayer) {
                         "legend": "true",
                         "select": oLayer.select,
                         "url": oLayer.url,
+                        "service_options": oLayer.service_options,
                         "params": {
                             "LAYERS": oLayer.layerName,
                             "VERSION": oLayer.version,
@@ -388,6 +411,7 @@ nsVmap.nsMapManager.MapManager.prototype.addLayer = function (oLayer) {
                 "legend": "true",
                 "select": oLayer.select,
                 "url": oLayer.url,
+                "service_options": oLayer.service_options,
                 "params": {
                     "LAYERS": oLayer.layerName,
                     "VERSION": oLayer.version,
@@ -673,12 +697,12 @@ nsVmap.nsMapManager.MapManager.prototype.removeLayer = function (olLayer) {
 nsVmap.nsMapManager.MapManager.prototype.addLayerFromVectorContent = function (content, serviceName, layerTitle) {
     oVmap.log('nsVmap.nsMapManager.MapManager.addLayerFromVectorContent');
 
-    var oFeatures;
+    var sFeatures;
 
     try {
-        oFeatures = $.parseJSON(content);
+        sFeatures = $.parseJSON(content);
     } catch (e) {
-        oFeatures = content;
+        sFeatures = content;
     }
 
     // Récupère l'objet features depuis la chaine de caractères
@@ -694,7 +718,9 @@ nsVmap.nsMapManager.MapManager.prototype.addLayerFromVectorContent = function (c
     for (var i = 0; i < formatConstructors.length; i++) {
         var format = new formatConstructors[i]();
         try {
-            var features = format.readFeatures(oFeatures);
+            var features = format.readFeatures(sFeatures, {
+                featureProjection: oVmap.getMap().getOLMap().getView().getProjection()
+            });
             // Si la lecture a réussi, alors oFeaturesReaded prend la valeur de la géométrie
             if (features.length > 0) {
                 var oFeaturesReaded = features;
@@ -818,15 +844,20 @@ nsVmap.nsMapManager.MapManager.prototype.reloadMap = function () {
  */
 nsVmap.nsMapManager.MapManager.prototype.ajaxGetMapCatalog = function (sUrl) {
     var oMapCatalog;
-    $.ajax({
-        url: sUrl,
-        async: false,
-        context: document.body
-    }).done(function (data) {
-        if (goog.isDef(data['mapcatalogs']))
-            data = data['mapcatalogs'][0];
-        oMapCatalog = data;
+
+    ajaxRequest({
+        'method': 'GET',
+        'url': sUrl,
+        'async': false,
+        'responseType': '',
+        'success': function (response) {
+            var data = JSON.parse(response['data']);
+            if (goog.isDef(data['mapcatalogs'])) {
+                oMapCatalog = data['mapcatalogs'][0];
+            }
+        }
     });
+
     return oMapCatalog;
 };
 
@@ -837,14 +868,18 @@ nsVmap.nsMapManager.MapManager.prototype.ajaxGetMapCatalog = function (sUrl) {
  */
 nsVmap.nsMapManager.MapManager.prototype.ajaxGetLayersTree = function (sUrl) {
     var LayersTree;
-    $.ajax({
-        url: sUrl,
-        async: false,
-        context: document.body
-    }).done(function (data) {
-        if (goog.isDef(data['mapjsons']))
-            data = data['mapjsons'][0];
-        LayersTree = data;
+
+    ajaxRequest({
+        'method': 'GET',
+        'url': sUrl,
+        'async': false,
+        'responseType': '',
+        'success': function (response) {
+            var data = JSON.parse(response['data']);
+            if (goog.isDef(data['mapjsons'])) {
+                LayersTree = data['mapjsons'][0];
+            }
+        }
     });
 
     oVmap.log(LayersTree);
@@ -1160,6 +1195,7 @@ nsVmap.nsMapManager.MapManager.prototype.getLayersTree = function () {
         if (goog.isDef(node['olLayer'])) {
             node['visible'] = node['olLayer'].getVisible();
             node['index'] = aLayers.indexOf(node['olLayer']);
+            node['opacity'] = node['olLayer'].getOpacity();
         }
     };
 
@@ -1180,6 +1216,11 @@ nsVmap.nsMapManager.MapManager.prototype.getJSONLayersTree = function () {
     // recupère une copie de l'arbre des couches
     var oLayersTree = jQuery.extend(true, {}, oVmap.getMapManager().getLayersTree());
     var oMap = oVmap.getMap().getOLMap();
+    var aDiscardedAttributes = [
+        'olLayer',
+        '$$hashKey',
+        'visibleLayers'
+    ];
 
     /**
      * Recursive function that cleans the nodes of layers tree
@@ -1191,14 +1232,11 @@ nsVmap.nsMapManager.MapManager.prototype.getJSONLayersTree = function () {
                 cleanNode(node['children'][i]);
             }
         }
-        if (goog.isDef(node['olLayer'])) {
-            delete node['olLayer'];
-        }
-        if (goog.isDef(node['$$hashKey'])) {
-            delete node['$$hashKey'];
-        }
-        if (goog.isDef(node['visibleLayers'])) {
-            delete node['visibleLayers'];
+        // Supprime les objets à structure circulaire (non transformables en JSON)
+        for (var i = 0; i < aDiscardedAttributes.length; i++) {
+            if (goog.isDef(node[aDiscardedAttributes[i]])) {
+                delete node[aDiscardedAttributes[i]];
+            }
         }
         if (goog.isDef(node['view'])) {
             node['view']['extent'] = oMap.getView().calculateExtent(oMap.getSize());
@@ -1212,11 +1250,26 @@ nsVmap.nsMapManager.MapManager.prototype.getJSONLayersTree = function () {
         }
     };
 
+    // Nettoie les paramètres définis par aDiscardedAttributes
     for (var i = 0; i < oLayersTree['children'].length; i++) {
         cleanNode(oLayersTree['children'][i]);
     }
 
-    return JSON.stringify(oLayersTree);
+    // Convertit en JSON tout en ignorant les objets de structure circulaire
+    var cache = [];
+    var sJSONLayersTree = JSON.stringify(oLayersTree, function (key, value) {
+        if (typeof value === 'object' && value !== null) {
+            if (cache.indexOf(value) !== -1) {
+                // Circular reference found
+                return;
+            }
+            cache.push(value);
+        }
+        return value;
+    });
+    cache = null;
+
+    return sJSONLayersTree;
 };
 
 /**
@@ -1233,6 +1286,7 @@ nsVmap.nsMapManager.MapManager.prototype.setLayersTree = function (oTree) {
  * oMapCatalog_ getter
  * @return {array} map catalog
  * @api experimental
+ * @export
  */
 nsVmap.nsMapManager.MapManager.prototype.getMapCatalog = function () {
     return this.oMapCatalog_;
@@ -1267,20 +1321,20 @@ nsVmap.nsMapManager.MapManager.prototype.setMapToLoadUrl = function (sMapToLoadU
 
 /**
  * Get the list of the queryable by layer_id layers
- * @param {boolean} bOnlySelected true if you want to get only the layers who have the value "select" setted to true
+ * @param {boolean} bOnlyVisible true if you want to get only the visible layers
  * @returns {Array} List of the queryable layers
  * @export
  */
-nsVmap.nsMapManager.MapManager.prototype.getQueryableLayers = function (bOnlySelected) {
+nsVmap.nsMapManager.MapManager.prototype.getQueryableLayers = function (bOnlyVisible) {
     oVmap.log('nsVmap.nsMapManager.MapManager.prototype.getQueryableLayers');
 
-    bOnlySelected = goog.isDef(bOnlySelected) ? bOnlySelected : false;
+    bOnlyVisible = goog.isDef(bOnlyVisible) ? bOnlyVisible : false;
     var aLayers = oVmap.getMap().getOLMap().getLayers().getArray();
     var aQueryableLayers = [];
 
     for (var i = 0; i < aLayers.length; i++) {
         if ((aLayers[i].get('bo_queryable') === true) && goog.isDef(aLayers[i].get('layer_id'))) {
-            if (bOnlySelected === false || aLayers[i]['values']['select'] === true) {
+            if (bOnlyVisible !== true || aLayers[i].getVisible() === true) {
                 aQueryableLayers.push(aLayers[i]);
             }
         }
@@ -1297,30 +1351,34 @@ nsVmap.nsMapManager.MapManager.prototype.getBusinessObjectsFromLayers = function
     oVmap.log('nsVmap.nsMapManager.MapManager.prototype.getBusinessObjectsFromLayers');
 
     var oBusinessObjects = {};
+    var aBos, bo_id;
 
     for (var i = 0; i < aLayers.length; i++) {
+        aBos = aLayers[i].get('business_objects');
+        for (var ii = 0; ii < aBos.length; ii++) {
+            bo_id = aBos[ii]['business_object_id'];
 
-        var bo_id = aLayers[i].get('bo_id');
+            // Si le bo est déjà dans la liste
+            if (goog.isDefAndNotNull(oBusinessObjects[bo_id])) {
+                oBusinessObjects[bo_id]['layers'].push(aLayers[i]);
+                continue;
+            }
 
-        // Si le bo est déjà dans la liste
-        if (goog.isDefAndNotNull(oBusinessObjects[bo_id])) {
-            oBusinessObjects[bo_id]['layers'].push(aLayers[i]);
-            continue;
+            oBusinessObjects[bo_id] = {
+                'bo_id': bo_id,
+                'layers': [aLayers[i]],
+                'bo_title': aBos[ii]['title'],
+                'bo_id_field': aBos[ii]['id_field'],
+                'bo_user_rights': aBos[ii]['user_rights'],
+                'bo_search_field': aBos[ii]['search_field'],
+                'bo_result_field': aBos[ii]['result_field'],
+                'bo_search_use_strict': aBos[ii]['search_use_strict'],
+                'bo_selection_buffer': aBos[ii]['selection_buffer'],
+                'bo_geom_column': aBos[ii]['geom_column'],
+                'bo_geom_type': aBos[ii]['geom_type'],
+                'bo_index': goog.isDefAndNotNull(aBos[ii]['index']) ? aBos[ii]['index'] : 1000000
+            };
         }
-
-        oBusinessObjects[bo_id] = {
-            'bo_id': bo_id,
-            'layers': [aLayers[i]],
-            'bo_title': aLayers[i].get('bo_title'),
-            'bo_id_field': aLayers[i].get('bo_id_field'),
-            'bo_user_rights': aLayers[i].get('bo_user_rights'),
-            'bo_search_field': aLayers[i].get('bo_search_field'),
-            'bo_result_field': aLayers[i].get('bo_result_field'),
-            'bo_search_use_strict': aLayers[i].get('bo_search_use_strict'),
-            'bo_geom_column': aLayers[i].get('bo_geom_column'),
-            'bo_geom_type': aLayers[i].get('bo_geom_type'),
-            'bo_index': goog.isDefAndNotNull(aLayers[i].get('bo_index')) ? aLayers[i].get('bo_index') : 1000000
-        };
     }
 
     return oBusinessObjects;
@@ -1328,38 +1386,36 @@ nsVmap.nsMapManager.MapManager.prototype.getBusinessObjectsFromLayers = function
 
 /**
  * Use getQueryableLayers to get the queryable business objects, group by bo_id if the same bo is used by two different layers
- * @param {boolean} bOnlySelected true if you want to get only the layers who have the value "select" setted to true
+ * @param {boolean} bOnlyVisible true if you want to get only the visible layers
  * @returns {object} the queryables business objects
  * @export
  */
-nsVmap.nsMapManager.MapManager.prototype.getQueryableBusinessObjects = function (bOnlySelected) {
+nsVmap.nsMapManager.MapManager.prototype.getQueryableBusinessObjects = function (bOnlyVisible) {
     oVmap.log('nsVmap.nsMapManager.MapManager.prototype.getQueryableBusinessObjects');
 
-    var aQueryableLayers = this.getQueryableLayers(bOnlySelected);
-    var aQueryableBOs = this.getBusinessObjectsFromLayers(aQueryableLayers);
+    var aQueryableLayers = this.getQueryableLayers(bOnlyVisible);
+    var oQueryableBOs = this.getBusinessObjectsFromLayers(aQueryableLayers);
 
-    return aQueryableBOs;
+    return oQueryableBOs;
 };
 
 /**
- * Get the Insertable layers
- * @returns {Array}
+ * Use getQueryableLayers to get the queryable business objects, group by bo_id if the same bo is used by two different layers
+ * @param {boolean} bOnlyVisible true if you want to get only the visible layers
+ * @returns {array} the queryables business objects
  * @export
  */
-nsVmap.nsMapManager.MapManager.prototype.getInsertableLayers = function () {
-    oVmap.log('nsVmap.nsMapManager.MapManager.prototype.getInsertableLayers');
+nsVmap.nsMapManager.MapManager.prototype.getQueryableBusinessObjectsAsArray = function (bOnlyVisible) {
+    oVmap.log('nsVmap.nsMapManager.MapManager.prototype.getQueryableBusinessObjectsAsArray');
 
-    var aLayers = oVmap.getMap().getOLMap().getLayers().getArray();
-    var aInsertableLayers = [];
+    var aQueryableBOs = [];
+    var oQueryableBOs = this.getQueryableBusinessObjects(bOnlyVisible);
 
-    for (var i = 0; i < aLayers.length; i++) {
-        if (aLayers[i].get('bo_queryable') === true && goog.isDefAndNotNull(aLayers[i].get('bo_user_rights')) && goog.isDef(aLayers[i].get('layer_id'))) {
-            if (aLayers[i].get('bo_user_rights').indexOf('INSERT') !== -1) {
-                aInsertableLayers.push(aLayers[i]);
-            }
-        }
+    for (var key in oQueryableBOs) {
+        aQueryableBOs.push(oQueryableBOs[key]);
     }
-    return aInsertableLayers;
+
+    return aQueryableBOs;
 };
 
 /**
@@ -1370,8 +1426,16 @@ nsVmap.nsMapManager.MapManager.prototype.getInsertableLayers = function () {
 nsVmap.nsMapManager.MapManager.prototype.getInsertableBusinessObjects = function () {
     oVmap.log('nsVmap.nsMapManager.MapManager.prototype.getInsertableBusinessObjects');
 
-    var aInsertableLayers = this.getInsertableLayers();
-    var aInsertableBOs = this.getBusinessObjectsFromLayers(aInsertableLayers);
+    var aBusinessObjects = this.getBusinessObjectsFromLayers(this.getQueryableLayers());
+    var aInsertableBOs = [];
+
+    for (var key in aBusinessObjects) {
+        if (goog.isDefAndNotNull(aBusinessObjects[key]['bo_user_rights'])) {
+            if (aBusinessObjects[key]['bo_user_rights'].indexOf('INSERT') !== -1) {
+                aInsertableBOs.push(aBusinessObjects[key]);
+            }
+        }
+    }
 
     return aInsertableBOs;
 };

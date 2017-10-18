@@ -30,11 +30,12 @@
 
 goog.provide('ol.pointer.PointerEventHandler');
 
-goog.require('goog.dom');
+goog.require('ol');
 goog.require('ol.events');
 goog.require('ol.events.EventTarget');
 
 goog.require('ol.has');
+goog.require('ol.pointer.EventType');
 goog.require('ol.pointer.MouseSource');
 goog.require('ol.pointer.MsSource');
 goog.require('ol.pointer.NativeSource');
@@ -48,7 +49,7 @@ goog.require('ol.pointer.TouchSource');
  * @param {Element|HTMLDocument} element Viewport element.
  */
 ol.pointer.PointerEventHandler = function(element) {
-  goog.base(this);
+  ol.events.EventTarget.call(this);
 
   /**
    * @const
@@ -77,7 +78,7 @@ ol.pointer.PointerEventHandler = function(element) {
 
   this.registerSources();
 };
-goog.inherits(ol.pointer.PointerEventHandler, ol.events.EventTarget);
+ol.inherits(ol.pointer.PointerEventHandler, ol.events.EventTarget);
 
 
 /**
@@ -204,9 +205,9 @@ ol.pointer.PointerEventHandler.prototype.removeEvents_ = function(events) {
  */
 ol.pointer.PointerEventHandler.prototype.cloneEvent = function(event, inEvent) {
   var eventCopy = {}, p;
-  for (var i = 0, ii = ol.pointer.CLONE_PROPS.length; i < ii; i++) {
-    p = ol.pointer.CLONE_PROPS[i][0];
-    eventCopy[p] = event[p] || inEvent[p] || ol.pointer.CLONE_PROPS[i][1];
+  for (var i = 0, ii = ol.pointer.PointerEventHandler.CLONE_PROPS.length; i < ii; i++) {
+    p = ol.pointer.PointerEventHandler.CLONE_PROPS[i][0];
+    eventCopy[p] = event[p] || inEvent[p] || ol.pointer.PointerEventHandler.CLONE_PROPS[i][1];
   }
 
   return eventCopy;
@@ -334,10 +335,10 @@ ol.pointer.PointerEventHandler.prototype.enterOver = function(data, event) {
  *   contains the other element.
  */
 ol.pointer.PointerEventHandler.prototype.contains_ = function(container, contained) {
-  if (!contained) {
+  if (!container || !contained) {
     return false;
   }
-  return goog.dom.contains(container, contained);
+  return container.contains(contained);
 };
 
 
@@ -398,23 +399,7 @@ ol.pointer.PointerEventHandler.prototype.wrapMouseEvent = function(eventType, ev
  */
 ol.pointer.PointerEventHandler.prototype.disposeInternal = function() {
   this.unregister_();
-  goog.base(this, 'disposeInternal');
-};
-
-
-/**
- * Constants for event names.
- * @enum {string}
- */
-ol.pointer.EventType = {
-  POINTERMOVE: 'pointermove',
-  POINTERDOWN: 'pointerdown',
-  POINTERUP: 'pointerup',
-  POINTEROVER: 'pointerover',
-  POINTEROUT: 'pointerout',
-  POINTERENTER: 'pointerenter',
-  POINTERLEAVE: 'pointerleave',
-  POINTERCANCEL: 'pointercancel'
+  ol.events.EventTarget.prototype.disposeInternal.call(this);
 };
 
 
@@ -422,7 +407,7 @@ ol.pointer.EventType = {
  * Properties to copy when cloning an event, with default values.
  * @type {Array.<Array>}
  */
-ol.pointer.CLONE_PROPS = [
+ol.pointer.PointerEventHandler.CLONE_PROPS = [
   // MouseEvent
   ['bubbles', false],
   ['cancelable', false],

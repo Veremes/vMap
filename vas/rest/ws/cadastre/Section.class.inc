@@ -68,7 +68,7 @@ class Section extends Cadastre {
 	 */
 	function GET() {
 		require __DIR__ . "/../vitis/" . $this->sRessourcesFile;
-		$this->aFields = $this->getFields('public', 'v_section', 'id_sec');
+		$this->aFields = $this->getFields('public', $this->aProperties['cadastre']['views']['section'], 'id_sec');
 	}
 
 }

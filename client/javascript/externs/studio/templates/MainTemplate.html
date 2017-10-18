@@ -88,11 +88,6 @@
                                             <label class="control-label">{{::ctrl.text.Element.Component.Select.Table}}</label>
                                             <input type="text" class="form-control" ng-model="selectedDatasource.parameters.table" disabled>
                                         </div>
-                                        <!--Filtre-->
-                                        <div class="input-group element-margin input-group-xs width-100">
-                                            <label class="control-label">{{::ctrl.text.Element.Component.Select.Filter}}</label>
-                                            <input type="text" class="form-control" placeholder="ex: name='Public'" ng-model="selectedDatasource.parameters.filter" disabled>
-                                        </div>
                                     </form>
                                 </div>
                                 <!--Service web-->
@@ -272,7 +267,7 @@
                                     <label class="control-label">{{::ctrl.text.Element.Component.Select.Description}}</label>
                                     <input type="text" class="form-control"
                                            ng-model="editedDatasource.description">
-                                </div>-->
+                                       </div>-->
                                 <!--text-->
                                 <div id="textDatasourceAddform" class="col-xs-12" ng-if="editedDatasource.dataType === 'text'">
                                     <!--Contenu-->
@@ -290,26 +285,41 @@
                                 <!--tableValue-->
                                 <div id="tableValueDatasourceAddform" ng-if="editedDatasource.dataType === 'tableValue'">
                                     <!--Base-->
-                                    <div class="element-margin form-group-xxs col-xs-12">
+                                    <div class="element-margin form-group-xxs col-xs-4">
                                         <label class="control-label">{{::ctrl.text.Element.Component.Select.Database}}</label>
-                                        <input type="text" class="form-control"
-                                               ng-model="editedDatasource.parameters.database">
+                                        <div class="row">
+                                            <div class="col-sm-6">
+                                                <input type="text" class="form-control"
+                                                       ng-show="databases.length === 0"
+                                                       ng-model="newSource.parameters.database">
+                                                <select type="text" class="form-control"
+                                                        ng-show="databases.length > 0"
+                                                        ng-options="database.database for database in databases| orderBy: 'database' track by database.database"  
+                                                        ng-model="$parent.databaseSelected"
+                                                        ng-change="editedDatasource.parameters.database = databaseSelected.database" required></select>
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <button type="button" class="btn btn-success form-control" ng-click="ctrl.setLocalDatabases(editedDatasource.parameters.database)">
+                                                    <span class="glyphicon glyphicon-share-alt"></span> {{::ctrl.text.Element.Component.Select.Database_List}}
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                     <!--Schema-->
-                                    <div class="element-margin form-group-xxs col-xs-6">
+                                    <div class="element-margin form-group-xxs col-xs-4">
                                         <label class="control-label">{{::ctrl.text.Element.Component.Select.Schema}}</label>
                                         <div class="row">
-                                            <div class="col-sm-9">
+                                            <div class="col-sm-6">
                                                 <input type="text" class="form-control"
                                                        ng-show="schemas.length === 0"
                                                        ng-model="editedDatasource.parameters.schema">
                                                 <select type="text" class="form-control"
                                                         ng-show="schemas.length > 0"
-                                                        ng-options="schema.schemaname for schema in schemas| orderBy: 'schemaname' track by schema.schemaname" 
+                                                        ng-options="schema.schema_name for schema in schemas| orderBy: 'schema_name' track by schema.schema_name" 
                                                         ng-model="$parent.schemaSelected"
-                                                        ng-change="editedDatasource.parameters.schema = schemaSelected.schemaname" required></select>
+                                                        ng-change="editedDatasource.parameters.schema = schemaSelected.schema_name" required></select>
                                             </div>
-                                            <div class="col-sm-3">
+                                            <div class="col-sm-6">
                                                 <button type="button" class="btn btn-success form-control" ng-click="ctrl.setLocalDatabaseSchemas(editedDatasource.parameters.database)">
                                                     <span class="glyphicon glyphicon-share-alt"></span> {{::ctrl.text.Element.Component.Select.Schema_List}}
                                                 </button>
@@ -317,10 +327,10 @@
                                         </div>
                                     </div>
                                     <!--Table-->
-                                    <div class="element-margin form-group-xxs col-xs-6">
+                                    <div class="element-margin form-group-xxs col-xs-4">
                                         <label class="control-label">{{::ctrl.text.Element.Component.Select.Table}}</label>
                                         <div class="row">
-                                            <div class="col-sm-9">
+                                            <div class="col-sm-6">
                                                 <input type="text" class="form-control"
                                                        ng-show="tables.length === 0"
                                                        ng-model="editedDatasource.parameters.table">
@@ -332,7 +342,7 @@
                                                         required>      
                                                 </select>
                                             </div>
-                                            <div class="col-sm-3">
+                                            <div class="col-sm-6">
                                                 <button type="button" class="btn btn-success form-control" ng-click="ctrl.reloadTablesList(editedDatasource.parameters.schema, editedDatasource.parameters.database)">
                                                     <span class="glyphicon glyphicon-share-alt"></span> {{::ctrl.text.Element.Component.Select.Table_List}}
                                                 </button>
@@ -340,10 +350,48 @@
                                         </div>
                                     </div>
                                     <!--Filter-->
-                                    <div class="element-margin form-group-xxs col-xs-12">
-                                        <label class="control-label">{{::ctrl.text.Element.Component.Select.Filter}}</label>
-                                        <input type="text" class="form-control" placeholder="ex: name='Public'"
-                                               ng-model="editedDatasource.parameters.filter">
+                                    <div class="row">
+                                        <div class="margin-sides-10 col-xs-12">
+                                            <label class="control-label">{{::ctrl.text.Element.Component.Select.Filter}}</label>
+                                        </div>
+                                        <div class="element-margin form-group-xxs col-xs-12">
+                                            <div ng-repeat = " (i, operator) in editedDatasource.parameters.filter.operators track by $index">
+                                                <div  class="element-margin form-group-xxs col-xs-4">
+                                                    <label class="control-label">{{::ctrl.text.Element.Component.Select.KeyValue}}</label>
+                                                    <input type="text" class="form-control" placeholder=""
+                                                           ng-model="editedDatasource.parameters.filter.operators[i].column" >
+                                                </div>
+                                                <div class="element-margin form-group-xxs col-xs-2">
+                                                    <label class="control-label">{{::ctrl.text.Element.Component.Select.CompareOperator}}</label>
+                                                    <select class="form-control" id="sel1" ng-model="editedDatasource.parameters.filter.operators[i].compare_operator" >
+                                                        <option>=</option>
+                                                        <option>!=</option>
+                                                        <option><</option>
+                                                        <option>></option>
+                                                        <option>IN</option>
+                                                        <option>LIKE</option>
+                                                        <option>NOT NULL</option>
+                                                    </select>
+                                                </div>
+                                                <div class="element-margin form-group-xxs col-xs-3">
+                                                    <label class="control-label">{{::ctrl.text.Element.Component.Select.Value}}</label>
+                                                    <input type="text" class="form-control" placeholder=""
+                                                           ng-model="editedDatasource.parameters.filter.operators[i].value" >
+                                                </div>
+                                                <div class="element-margin form-group-xxs col-xs-2" ng-if="i === 0">
+                                                    <label class="control-label">{{::ctrl.text.Element.Component.Select.Relation}}</label>
+                                                    <select class="form-control" ng-model="editedDatasource.parameters.filter.relation">
+                                                        <option>AND</option>
+                                                        <option>OR</option>
+                                                    </select>
+                                                </div>
+                                                <div class="element-margin form-group-xxs col-xs-1">
+                                                    <br>
+                                                    <div class="btn btn-danger btn-xs addfields" ng-click="ctrl.removeFilterOperator(editedDatasource, operator)" ng-if="i > 0"> - </div>
+                                                    <div class="btn btn-primary btn-xs addfields" ng-click="ctrl.addNewFilterOperator(editedDatasource)" ng-if="i === 0"> + </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 <!--webService-->
@@ -390,7 +438,6 @@
                                 </div>
                                 <!--externalDatabase-->
                                 <div id="externalDatabaseDatasourceAddform" ng-if="editedDatasource.dataType === 'externalDatabase'">
-                                    <!--Description du serveur-->
                                     <!--Serveur-->
                                     <div class="element-margin form-group-xxs col-xs-6">
                                         <label class="control-label">{{::ctrl.text.Element.Component.Select.Server}}</label>
@@ -469,11 +516,10 @@
                                     <!--Filter-->
                                     <div class="element-margin form-group-xxs col-xs-12">
                                         <label class="control-label">{{::ctrl.text.Element.Component.Select.Filter}}</label>
-                                        <input type="text" class="form-control" placeholder="ex: name='Public'"
-                                               ng-model="editedDatasource.parameters.filter">
+                                        <input type="text" class="form-control" placeholder="ex: name='Public'" ng-model="editedDatasource.parameters.filter">
                                     </div>
                                 </div>
-                                <!--test-->
+                                <!--Fenêtre de test-->
                                 <div class="col-xs-12" id="Layout_Preview">
                                     <!--Text-->
                                     <div ng-show="editedDatasource.dataType === 'text'">
@@ -528,8 +574,9 @@
                         <div class="row">
                             <div class="element-margin form-group-xs col-sm-6">
                                 <label for="Element_Form_Datasource_Select" id="Element_Form_Datasource_label" class="control-label">{{::ctrl.text.Element.Component.Select.Select_Type}}</label>
+                                <span class="form-field-label-tooltip" id="typeSourceTooltip" data-trigger="hover"></span>
                                 <select class="form-control element-margin"
-                                        ng-change="ctrl.clearTestGrids()"
+                                        ng-change="ctrl.loadDatasourceDefaultValues(newSource)"
                                         ng-model="newSource.dataType">
                                     <option value="text">{{::ctrl.text.Element.Component.Select.Select_Text}}</option>
                                     <option value="tableValue">{{::ctrl.text.Element.Component.Select.Select_Table_Values}}</option>
@@ -561,7 +608,7 @@
                                     <label class="control-label">{{::ctrl.text.Element.Component.Select.Description}}</label>
                                     <input type="text" class="form-control"
                                            ng-model="newSource.description">
-                                </div>-->
+                                       </div>-->
                                 <!--text-->
                                 <div id="textDatasourceAddform" class="col-xs-12" ng-if="newSource.dataType === 'text'">
                                     <!--Contenu-->
@@ -578,39 +625,53 @@
                                 </div>
                                 <!--tableValue-->
                                 <div id="tableValueDatasourceAddform" ng-if="newSource.dataType === 'tableValue'">
-                                    <!--Base-->
-                                    <div class="element-margin form-group-xxs col-xs-12">
+                                    <!--DatabaseV2-->
+                                    <div class="element-margin form-group-xxs col-xs-4">
                                         <label class="control-label">{{::ctrl.text.Element.Component.Select.Database}}</label>
-                                        <input type="text" class="form-control"
-                                               ng-model="newSource.parameters.database">
+                                        <div class="row">
+                                            <div class="col-sm-6">
+                                                <input type="text" class="form-control"
+                                                       ng-show="databases.length === 0"
+                                                       ng-model="newSource.parameters.database">
+                                                <select type="text" class="form-control"
+                                                        ng-show="databases.length > 0"
+                                                        ng-options="database.database for database in databases| orderBy: 'database' track by database.database"  
+                                                        ng-model="$parent.databaseSelected"
+                                                        ng-change="newSource.parameters.database = databaseSelected.database" required></select>
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <button type="button" class="btn btn-success form-control" ng-click="ctrl.setLocalDatabases(newSource.parameters.database)">
+                                                    <span class="glyphicon glyphicon-share-alt"></span> {{::ctrl.text.Element.Component.Select.Database_List}}
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                     <!--Schema-->
-                                    <div class="element-margin form-group-xxs col-xs-6">
+                                    <div class="element-margin form-group-xxs col-xs-4">
                                         <label class="control-label">{{::ctrl.text.Element.Component.Select.Schema}}</label>
                                         <div class="row">
-                                            <div class="col-sm-9">
+                                            <div class="col-sm-6">
                                                 <input type="text" class="form-control"
                                                        ng-show="schemas.length === 0"
                                                        ng-model="newSource.parameters.schema">
                                                 <select type="text" class="form-control"
                                                         ng-show="schemas.length > 0"
-                                                        ng-options="schema.schemaname for schema in schemas| orderBy: 'schemaname' track by schema.schemaname" 
+                                                        ng-options="schema.schema_name for schema in schemas| orderBy: 'schema_name' track by schema.schema_name" 
                                                         ng-model="$parent.schemaSelected"
-                                                        ng-change="newSource.parameters.schema = schemaSelected.schemaname" required></select>
+                                                        ng-change="newSource.parameters.schema = schemaSelected.schema_name" required></select>
                                             </div>
-                                            <div class="col-sm-3">
+                                            <div class="col-sm-6">
                                                 <button type="button" class="btn btn-success form-control" ng-click="ctrl.setLocalDatabaseSchemas(newSource.parameters.database)">
                                                     <span class="glyphicon glyphicon-share-alt"></span> {{::ctrl.text.Element.Component.Select.Schema_List}}
                                                 </button>
                                             </div>
                                         </div>
                                     </div>
-
                                     <!--Table-->
-                                    <div class="element-margin form-group-xxs col-xs-6">
+                                    <div class="element-margin form-group-xxs col-xs-4">
                                         <label class="control-label">{{::ctrl.text.Element.Component.Select.Table}}</label>
                                         <div class="row">
-                                            <div class="col-sm-9">
+                                            <div class="col-sm-6">
                                                 <input type="text" class="form-control"
                                                        ng-show="tables.length === 0"
                                                        ng-model="newSource.parameters.table">
@@ -622,19 +683,56 @@
                                                         required>      
                                                 </select>
                                             </div>
-                                            <div class="col-sm-3">
+                                            <div class="col-sm-6">
                                                 <button type="button" class="btn btn-success form-control" ng-click="ctrl.reloadTablesList(newSource.parameters.schema, newSource.parameters.database)">
                                                     <span class="glyphicon glyphicon-share-alt"></span> {{::ctrl.text.Element.Component.Select.Table_List}}
                                                 </button>
                                             </div>
                                         </div>
                                     </div>
-
                                     <!--Filter-->
-                                    <div class="element-margin form-group-xxs col-xs-12">
-                                        <label class="control-label">{{::ctrl.text.Element.Component.Select.Filter}}</label>
-                                        <input type="text" class="form-control" placeholder="ex: name='Public'"
-                                               ng-model="newSource.parameters.filter">
+                                    <div class="row">
+                                        <div class="margin-sides-10 col-xs-12">
+                                            <label class="control-label">{{::ctrl.text.Element.Component.Select.Filter}}</label>
+                                        </div>
+                                        <div class="element-margin form-group-xxs col-xs-12">
+                                            <div ng-repeat = " (i, operator) in newSource.parameters.filter.operators track by $index">
+                                                <div  class="element-margin form-group-xxs col-xs-4">
+                                                    <label class="control-label">{{::ctrl.text.Element.Component.Select.KeyValue}}</label>
+                                                    <input type="text" class="form-control" placeholder=""
+                                                           ng-model="newSource.parameters.filter.operators[i].column" >
+                                                </div>
+                                                <div class="element-margin form-group-xxs col-xs-2">
+                                                    <label class="control-label">{{::ctrl.text.Element.Component.Select.CompareOperator}}</label>
+                                                    <select class="form-control" id="sel1" ng-model="newSource.parameters.filter.operators[i].compare_operator" >
+                                                        <option>=</option>
+                                                        <option>!=</option>
+                                                        <option><</option>
+                                                        <option>></option>
+                                                        <option>IN</option>
+                                                        <option>LIKE</option>
+                                                        <option>NOT NULL</option>
+                                                    </select>
+                                                </div>
+                                                <div class="element-margin form-group-xxs col-xs-3">
+                                                    <label class="control-label">{{::ctrl.text.Element.Component.Select.Value}}</label>
+                                                    <input type="text" class="form-control" placeholder=""
+                                                           ng-model="newSource.parameters.filter.operators[i].value" >
+                                                </div>
+                                                <div class="element-margin form-group-xxs col-xs-2" ng-if="i === 0">
+                                                    <label class="control-label">{{::ctrl.text.Element.Component.Select.Relation}}</label>
+                                                    <select class="form-control" ng-model="newSource.parameters.filter.relation">
+                                                        <option>AND</option>
+                                                        <option>OR</option>
+                                                    </select>
+                                                </div>
+                                                <div class="element-margin form-group-xxs col-xs-1">
+                                                    <br>
+                                                    <div class="btn btn-danger btn-xs addfields" ng-click="ctrl.removeFilterOperator(newSource, operator)" ng-if="i > 0"> - </div>
+                                                    <div class="btn btn-primary btn-xs addfields" ng-click="ctrl.addNewFilterOperator(newSource)" ng-if="i === 0"> + </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 <!--webService-->
@@ -681,7 +779,6 @@
                                 </div>
                                 <!--externalDatabase-->
                                 <div id="externalDatabaseDatasourceAddform" ng-if="newSource.dataType === 'externalDatabase'">
-                                    <!--Description du serveur-->
                                     <!--Serveur-->
                                     <div class="element-margin form-group-xxs col-xs-6">
                                         <label class="control-label">{{::ctrl.text.Element.Component.Select.Server}}</label>
@@ -763,7 +860,7 @@
                                         <input type="text" class="form-control" placeholder="ex: name='Public'" ng-model="newSource.parameters.filter">
                                     </div>
                                 </div>
-                                <!--Test-->
+                                <!--Fenêtre de test-->
                                 <div class="col-xs-12" id="Layout_Preview">
                                     <!--Text-->
                                     <div ng-show="newSource.dataType === 'text'">
@@ -782,7 +879,7 @@
                                                 <button ng-if="newSource.dataType === 'tableValue' || newSource.dataType === 'webService' || newSource.dataType === 'businessObject' || newSource.dataType === 'externalDatabase' || newSource.dataType === 'text'" 
                                                         type="submit" 
                                                         class="btn btn-primary right">{{::ctrl.text.Element.Component.Select.Save}}</button>
-                                            </div>
+                                            </div> 
                                         </div>
                                     </div>
                                     <!--Valeurs d'une table-->
@@ -944,37 +1041,41 @@
                         <div class="row" 
                              style="height: calc(100% - 70px);"
                              ng-if="wabSelectedGroup !== ''">
-                            <div class="col-xs-7 height-100" style="overflow-x: auto">
+                            <div class="col-xs-7 height-100 table-responsive">
                                 <!--Sélection des attributs dans les onglets-->
-                                <table style="width:100%">
-                                    <tr>
-                                        <th class=""></th>
-                                        <th ng-repeat="(stateName, oState) in wab">
-                                            {{stateName}}
-                                        </th>
-                                    </tr>
-                                    <tr ng-repeat="(elemIndex, elem) in elems">
-                                        <td class="width-20" ng-class="{'bold': buttons.indexOf(elem) !== -1}">{{elem}}</td>
-                                        <td style="width:"
-                                            ng-repeat="(stateName, oState) in wab">
-                                            <span class="checkbox margin-0 left checkbox-info"
-                                                  title="{{::ctrl.text.Loader.AllowDisplayElement}}">
-                                                <input id="studio-wabmanager-modal-display-elem-checkbox-{{elemIndex}}-{{stateName}}" 
-                                                       type="checkbox"
-                                                       ng-checked="oState[wabSelectedGroup][elem] === 'r' || oState[wabSelectedGroup][elem] === 'rw'"
-                                                       ng-click="ctrl.toggleElemOnWab(elem, oState, wabSelectedGroup, 'r')">
-                                                <label for="studio-wabmanager-modal-display-elem-checkbox-{{elemIndex}}-{{stateName}}" class="control-label"></label>
-                                            </span>
-                                            <span class="checkbox margin-0 left checkbox-primary"
-                                                  title="{{::ctrl.text.Loader.AllowEditElement}}">
-                                                <input id="studio-wabmanager-modal-edit-elem-checkbox-{{elemIndex}}-{{stateName}}" 
-                                                       type="checkbox"
-                                                       ng-checked="oState[wabSelectedGroup][elem] === 'rw'"
-                                                       ng-click="ctrl.toggleElemOnWab(elem, oState, wabSelectedGroup, 'rw')">
-                                                <label for="studio-wabmanager-modal-edit-elem-checkbox-{{elemIndex}}-{{stateName}}" class="control-label"></label>
-                                            </span>
-                                        </td>
-                                    </tr>
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th class=""></th>
+                                            <th ng-repeat="(stateName, oState) in wab" style="text-align: center;">
+                                                {{stateName}}
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr ng-repeat="(elemIndex, elem) in elems">
+                                            <td class="width-20" ng-class="{'bold': buttons.indexOf(elem) !== -1}">{{elem}}</td>
+                                            <td style="padding-left: 4%; min-width: 120px"
+                                                ng-repeat="(stateName, oState) in wab">
+                                                <span class="checkbox margin-0 left checkbox-info"
+                                                      title="{{::ctrl.text.Loader.AllowDisplayElement}}">
+                                                    <input id="studio-wabmanager-modal-display-elem-checkbox-{{elemIndex}}-{{stateName}}" 
+                                                           type="checkbox"
+                                                           ng-checked="oState[wabSelectedGroup][elem] === 'r' || oState[wabSelectedGroup][elem] === 'rw'"
+                                                           ng-click="ctrl.toggleElemOnWab(elem, oState, wabSelectedGroup, 'r')">
+                                                    <label for="studio-wabmanager-modal-display-elem-checkbox-{{elemIndex}}-{{stateName}}" class="control-label"></label>
+                                                </span>
+                                                <span class="checkbox margin-0 left checkbox-primary"
+                                                      title="{{::ctrl.text.Loader.AllowEditElement}}">
+                                                    <input id="studio-wabmanager-modal-edit-elem-checkbox-{{elemIndex}}-{{stateName}}" 
+                                                           type="checkbox"
+                                                           ng-checked="oState[wabSelectedGroup][elem] === 'rw'"
+                                                           ng-click="ctrl.toggleElemOnWab(elem, oState, wabSelectedGroup, 'rw')">
+                                                    <label for="studio-wabmanager-modal-edit-elem-checkbox-{{elemIndex}}-{{stateName}}" class="control-label"></label>
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
                                 </table>
                             </div>
                             <div class="col-xs-5 height-100" style="overflow-x: auto">
@@ -986,7 +1087,8 @@
                                      app-form-definition="oTestWabFormDefinition"
                                      app-form-events-container="oTestWabFormScope"
                                      app-properties="oProperties"
-                                     app-token="sToken"></div>
+                                     app-token="sToken"
+                                     app-dont-use-wab-parameter="true"></div>
                             </div>
                         </div>
                     </div>

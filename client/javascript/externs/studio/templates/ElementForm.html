@@ -410,24 +410,6 @@
 
                             <div class="row">
                                 <div class="col-sm-10">
-                                    <!--Key-->
-                                    <div class="input-group element-margin input-group-xs">
-                                        <span class="input-group-addon" id="Element_Form_WS_Column_label">{{::ctrl.text.Component.Select.Webservice_Id}}</span>
-                                        <!--Si aWebServiceAttributs est vide-->
-                                        <select class="form-control element-margin"
-                                                ng-if="aWebServiceAttributs.length > 0"
-                                                ng-disabled="locker" 
-                                                ng-model="model.datasource.id_key"
-                                                ng-change="ctrl.updateDatasourceInfos(this)">
-                                            <option ng-repeat="attribute in aWebServiceAttributs" ng-value="attribute">{{attribute}}</option>
-                                        </select>
-                                        <!--Sinon-->
-                                        <input id="Element_Form_WS_Id_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Select.Webservice_Id_PH}}" aria-describedby="Element_Form_WS_Column_label" 
-                                               ng-if="aWebServiceAttributs.length === 0"
-                                               ng-disabled="locker" 
-                                               ng-model="model.datasource.id_key" 
-                                               ng-change="ctrl.updateDatasourceInfos(this)">
-                                    </div>
                                     <!--Value-->
                                     <div class="input-group element-margin input-group-xs">
                                         <span class="input-group-addon" id="Element_Form_WS_Column_label">{{::ctrl.text.Component.Select.Webservice_Label}}</span>
@@ -445,6 +427,24 @@
                                                 ng-disabled="locker" 
                                                 ng-model="model.datasource.label_key" 
                                                 ng-change="ctrl.updateDatasourceInfos(this)">
+                                    </div>
+                                    <!--Key-->
+                                    <div class="input-group element-margin input-group-xs">
+                                        <span class="input-group-addon" id="Element_Form_WS_Column_label">{{::ctrl.text.Component.Select.Webservice_Id}}</span>
+                                        <!--Si aWebServiceAttributs est vide-->
+                                        <select class="form-control element-margin"
+                                                ng-if="aWebServiceAttributs.length > 0"
+                                                ng-disabled="locker" 
+                                                ng-model="model.datasource.id_key"
+                                                ng-change="ctrl.updateDatasourceInfos(this)">
+                                            <option ng-repeat="attribute in aWebServiceAttributs" ng-value="attribute">{{attribute}}</option>
+                                        </select>
+                                        <!--Sinon-->
+                                        <input id="Element_Form_WS_Id_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Select.Webservice_Id_PH}}" aria-describedby="Element_Form_WS_Column_label" 
+                                               ng-if="aWebServiceAttributs.length === 0"
+                                               ng-disabled="locker" 
+                                               ng-model="model.datasource.id_key" 
+                                               ng-change="ctrl.updateDatasourceInfos(this)">
                                     </div>
                                 </div>
                                 <div class="col-sm-2 padding-sides-0" style="width:25px">

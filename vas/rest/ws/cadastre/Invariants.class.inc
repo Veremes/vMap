@@ -121,7 +121,7 @@ class Invariants extends Vmap {
      * @return  Invariants
      */
     function GET() {
-        $aReturn = $this->genericGet('public', 'v_bati_a00_ident_local', 'ID_BAT');
+        $aReturn = $this->genericGet('public', $this->aProperties['cadastre']['views']['invariant'], 'ID_BAT');
         return $aReturn['sMessage'];
     }
     

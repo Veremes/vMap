@@ -47,12 +47,13 @@ class Vm4msMetadataAccess {
     var $bTestMode = false;
 
     /**
-    * Définition d'une connexion. // vm4ms_public
-    */
+     * Définition d'une connexion. // vm4ms_public
+     */
     var $sConnectionDefinition = '
     CONNECTIONTYPE postgis
     CONNECTION "user={CONNECTION_LOGIN} password={CONNECTION_PASSWORD} dbname={CONNECTION_DATABASE} host={CONNECTION_SERVER} port={CONNECTION_PORT}"
     ';
+
     /**
      * \param $oBd Base de données liée.
      * \param $sLogin Identifiant de l'utilisateur en cours.
@@ -69,8 +70,8 @@ class Vm4msMetadataAccess {
         include $this->sSQLFile;
         $this->aSql = $aSql[$oBd->sgbd];
         // Création des répertoires pour les flux WMS + dossier temporaire pour MapServer.
-        $aWmsDir = array('wms_test', 'wms_public', 'wms_private', 'tmp');
-        foreach($aWmsDir as $sWmsDir) {
+        $aWmsDir = array('wms_test', 'wms_public', 'wms_private', 'tmp', 'proj');
+        foreach ($aWmsDir as $sWmsDir) {
             $sWmsDir = $this->aProperties["map_dir"] . '/' . $sWmsDir;
             if (!is_dir($sWmsDir))
                 mkdir($sWmsDir, 0777);
@@ -82,51 +83,11 @@ class Vm4msMetadataAccess {
             mkdir($this->aProperties['ms_log_dir'] . '/test/', 0777);
         if (!file_exists($this->aProperties['ms_log_dir'] . '/prod/'))
             mkdir($this->aProperties['ms_log_dir'] . '/prod/', 0777);
-    }
 
-    /**
-     * Création du fichier ".map" à utiliser pour les couches du service WMS à tester associées au flux WMS de test.
-     * \param $sWmsServiceId Identifiant du service WMS qui va être utilisée.
-     * \return Retourne le chemin du fichier "map" à utiliser.
-     */
-    /*
-      function saveWmsServiceTestMapFile($sWmsServiceId){
-      // Supprime les accents et caractères spéciaux.
-      $sWmsServiceId = htmlentities($sWmsServiceId, ENT_NOQUOTES, 'UTF-8');
-      $sWmsServiceId = preg_replace('#&([A-za-z])(?:acute|cedil|caron|circ|grave|orn|ring|slash|th|tilde|uml);#', '\1', $sWmsServiceId);
-      $sWmsServiceId = preg_replace('#&([A-za-z]{2})(?:lig);#', '\1', $sWmsServiceId); // pour les ligatures e.g. '&oelig;'
-      $sWmsServiceId = preg_replace('#&[^;]+;#', '', $sWmsServiceId); // supprime les autres caractères
-      // Typede Flux WMS (public ou privé).
-      if ($sWmsServiceId == $this->aProperties['private_wms_service'])
-      $sSql=$this->aSql['getPrivateWmsServiceLayersDef'];
-      else {
-      $sSql=$this->aSql['getWmsServiceLayersDef'];
-      $sSql=str_replace('$sWmsServiceId', $sWmsServiceId, $sSql);
-      }
-      // Définition des couches associées au flux WMS.
-      $iRecordset=$this->oBd->execute ($sSql);
-      $aRecordset=$this->oBd->getResultTableAssoc($iRecordset);
-      $iRecordset=$this->oBd->fermeResultat();
-      $aLayerGroups = array();
-      $sLayersDef = '';
-      foreach($aRecordset as $valeur => $aLigne)
-      $sLayersDef .= $this->getWmsServiceLayerDef($aLigne, true);
-      // Définition du flux WMS de test + association des couches du flux à tester.
-      $sWmsServiceDef = $this->getWmsServiceDef($this->aProperties["test_wms_service"], $sLayersDef);
-      // Fichier de log = "nom du flux".log
-      $sMapServerLogFile = $this->aProperties["map_dir"] . '/tmp/Test_' . $this->aProperties["test_wms_service"] . '.log';
-      $sWmsServiceDef = str_replace("{MS_LOG_FILE}", $sMapServerLogFile, $sWmsServiceDef);
-      // Sauve le fichier ".map".
-      $sFilename=$this->aProperties["map_dir"] . '/tmp/Test_' . $this->aProperties["test_wms_service"] . ".map";
-      //if(file_exists($sFilename))
-      //unlink($sFilename);
-      writeToFile(str_ireplace("STATUS DEFAULT", "STATUS ON", $sWmsServiceDef),$sFilename);
-      // Supprime le fichier de log de MapServer pour le flux.
-      if (file_exists($sMapServerLogFile))
-      unlink($sMapServerLogFile);
-      return $sFilename;
-      }
-     */
+        // Remplace l'échappement sur les doubles quotes.
+        if (!empty($this->aProperties['test_wms_service_default_content']))
+            $this->aProperties['test_wms_service_default_content'] = preg_replace('/\\\\+"/', '"', $this->aProperties['test_wms_service_default_content']);
+    }
 
     /**
      * Création du fichier ".map" à utiliser pour le service WMS et ses couches.
@@ -144,22 +105,27 @@ class Vm4msMetadataAccess {
         $sWmsServiceId = preg_replace('#&[^;]+;#', '', $sWmsServiceId); // supprime les autres caractères        
         $sWmsServiceId = str_replace(' ', '_', $sWmsServiceId); // Remplace les espaces.
         // Nom du fichier ".map".
+        $sToken = hash('sha256', $this->sSID);
+        $sMapServerProjDir = $this->aProperties["map_dir"] . '/proj';
         if ($sWmsServiceId == $this->aProperties['private_wms_service']) {
-            $sFilename = $this->aProperties["map_dir"] . '/wms_test/' . $this->sSID . ".map";
-            $sMapServerLogFile = $this->aProperties['ms_log_dir'] . '/test/' . $this->sSID . '.log';
-        }
-        else {
-            $sFilename = $this->aProperties["map_dir"] . '/wms_test/' . $this->sSID . '_' . $sWmsServiceId . ".map";
-            $sMapServerLogFile = $this->aProperties['ms_log_dir'] . '/test/' . $this->sSID . '_' . $sWmsServiceId . '.log';
+            $sFilename = $this->aProperties["map_dir"] . '/wms_test/' . $sToken . ".map";
+            $sMapServerLogFile = $this->aProperties['ms_log_dir'] . '/test/' . $sToken . '.log';
+        } else {
+            $sFilename = $this->aProperties["map_dir"] . '/wms_test/' . $sToken . '_' . $sWmsServiceId . ".map";
+            $sMapServerLogFile = $this->aProperties['ms_log_dir'] . '/test/' . $sToken . '_' . $sWmsServiceId . '.log';
         }
         // Fichier de log pour MapServer.
         $sWmsServiceDef = str_replace("{MS_LOG_FILE}", $sMapServerLogFile, $sWmsServiceDef);
+        $sWmsServiceDef = str_replace("{MS_PROJ_DIR}", $sMapServerProjDir, $sWmsServiceDef);
         // Contenu par défaut du flux de test.
-        $sWmsServiceDef = str_replace("MAP\r\n", "MAP\r\n#Debut Configuration par defaut du serveur de test\r\n".str_replace("<return>", "\r\n", $this->aProperties['test_wms_service_default_content'])."\r\n#Fin Configuration par defaut du serveur de test\r\n", $sWmsServiceDef);
-        // Sauve le fichier .map
+        if (!empty($this->aProperties['test_wms_service_default_content']))
+            $sWmsServiceDef = preg_replace('/^\s*MAP\s*(\n|\r)/', "MAP\r\n#Début Configuration par défaut du serveur de test\r\n" . str_replace("<return>", "\r\n", $this->aProperties['test_wms_service_default_content']) . "\r\n#Fin Configuration par défaut du serveur de test\r\n", $sWmsServiceDef);
+        // Génère le fichier .map
         if (file_exists($sFilename))
             unlink($sFilename);
         writeToFile(str_ireplace("STATUS DEFAULT", "STATUS ON", $sWmsServiceDef), $sFilename);
+        // Génère le fichier de proj
+        $this->generateProjFiles();
         // Supprime le fichier de log de MapServer pour le flux.
         if (file_exists($sMapServerLogFile))
             unlink($sMapServerLogFile);
@@ -182,17 +148,21 @@ class Vm4msMetadataAccess {
         $sWmsServiceId = preg_replace('#&[^;]+;#', '', $sWmsServiceId); // supprime les autres caractères        
         $sWmsServiceId = str_replace(' ', '_', $sWmsServiceId); // Remplace les espaces.
         // Nom du fichier ".map".
+        $sMapServerProjDir = $this->aProperties["map_dir"] . '/proj';
         $sMapServerLogFile = $this->aProperties['ms_log_dir'] . '/prod/' . $sWmsServiceId . '.log';
         if ($sWmsServiceId == $this->aProperties['private_wms_service'])
-            $sFilename = $this->aProperties["map_dir"] . '/wms_private/' . $sToken . ".map";
+            $sFilename = $this->aProperties["map_dir"] . '/wms_private/' . hash('sha256', $sToken) . ".map";
         else
             $sFilename = $this->aProperties["map_dir"] . '/wms_public/' . $sWmsServiceId . ".map";
         // Fichier de log pour MapServer.
         $sWmsServiceDef = str_replace("{MS_LOG_FILE}", $sMapServerLogFile, $sWmsServiceDef);
+        $sWmsServiceDef = str_replace("{MS_PROJ_DIR}", $sMapServerProjDir, $sWmsServiceDef);
         // Sauve le fichier .map
         if (file_exists($sFilename))
             unlink($sFilename);
         writeToFile(str_ireplace("STATUS DEFAULT", "STATUS ON", $sWmsServiceDef), $sFilename);
+        // Génère le fichier de proj
+        $this->generateProjFiles();
         // Supprime le fichier de log de MapServer pour le flux.
         if (file_exists($sMapServerLogFile))
             unlink($sMapServerLogFile);
@@ -208,11 +178,10 @@ class Vm4msMetadataAccess {
     function getWmsServiceDef($sWmsServiceId, $sLayerDef = '') {
         $oBd = $this->oBd;
         $aProperties = $this->aProperties;
-        $sSql = $this->aSql['getWmsServiceDef'];
-        $sSql = str_replace('$sWmsServiceId', $sWmsServiceId, $sSql);
-        $iRecordset = $oBd->execute($sSql);
-        $aLigne = $oBd->ligneSuivante($iRecordset);
-        $iRecordset = $oBd->fermeResultat();
+        $aParams['sWmsServiceId'] = array('value' => $sWmsServiceId, 'type' => 'string');
+        $oPDOresult = $oBd->executeWithParams($this->aSql['getWmsServiceDef'], $aParams);
+        $aLigne = $oBd->ligneSuivante($oPDOresult);
+        $oPDOresult = $oBd->fermeResultat();
         $sResult = $aLigne["definition"];
         // Mode de debug.
         if ($this->bTestMode)
@@ -228,15 +197,16 @@ class Vm4msMetadataAccess {
             $aObjDef[strtoupper($sFieldId)] = $this->getObjDef($iFieldValue, $sFieldId);
         }
         // Définitions des couches du service WMS.
+        $aParams = array();
         if ($sWmsServiceId == $this->aProperties['private_wms_service'])
             $sSql = $this->aSql['getPrivateWmsServiceLayersDef'];
         else {
             $sSql = $this->aSql['getWmsServiceLayersDef'];
-            $sSql = str_replace('$sWmsServiceId', $sWmsServiceId, $sSql);
+            $aParams['sWmsServiceId'] = array('value' => $sWmsServiceId, 'type' => 'string');
         }
-        $iRecordset = $oBd->execute($sSql);
-        $aRecordset = $oBd->getResultTableAssoc($iRecordset);
-        $iRecordset = $oBd->fermeResultat();
+        $oPDOresult = $oBd->executeWithParams($sSql, $aParams);
+        $aRecordset = $oBd->getResultTableAssoc($oPDOresult);
+        $oPDOresult = $oBd->fermeResultat();
         $aLayerGroups = array();
         $i = 0;
         $aObjDef["LAYERS"] = "";
@@ -262,18 +232,16 @@ class Vm4msMetadataAccess {
     function getObjDef($iObjId, $sObjName) {
         $sResult = "";
         if ($iObjId) {
-            if($sObjName == "connection")
+            if ($sObjName == "connection")
                 $sResult = $this->getConnectionDef($iObjId);
             else {
                 $oBd = $this->oBd;
                 $sSqlTableName = strtolower($sObjName);
-                $sSql = $this->aSql['getObjDef'];
-                $sSql = str_replace('$sObjName', $sObjName, $sSql);
-                $sSql = str_replace('$sSqlTableName', $sSqlTableName, $sSql);
-                $sSql = str_replace('$sObjName', $sObjName, $sSql);
-                $sSql = str_replace('$iObjId', $iObjId, $sSql);
-                $iRecordset = $oBd->execute($sSql);
-                $aLigne = $oBd->ligneSuivante($iRecordset);
+                $sSql = str_replace('[sObjName]', $sObjName, $this->aSql['getObjDef']);
+                $aParams['sSqlTableName'] = array('value' => $sSqlTableName, 'type' => 'table_name');
+                $aParams['iObjId'] = array('value' => $iObjId, 'type' => 'number');
+                $oPDOresult = $oBd->executeWithParams($sSql, $aParams);
+                $aLigne = $oBd->ligneSuivante($oPDOresult);
                 $sResult = $aLigne['definition'];
                 if ($sSqlTableName == "web") {
                     // Template pour le test de la couche.
@@ -286,7 +254,7 @@ class Vm4msMetadataAccess {
                     $sResult = str_replace("{MS_CGI_URL}", $this->aProperties["ms_cgi_url"] . '/', $sResult);
                     $sResult = str_replace("{WMSSERVICE_ID}", $this->sWmsServiceId, $sResult);
                 }
-                $iRecordset = $oBd->fermeResultat();
+                $oPDOresult = $oBd->fermeResultat();
             }
         }
         return $sResult . chr(13);
@@ -304,27 +272,38 @@ class Vm4msMetadataAccess {
         $aProperties = $this->aProperties;
         $sLayerDef = "";
         $sLayerDef = $this->getObjDef($aLayerInfos["ms_layer_id"], "ms_layer") . chr(13);
-        $sSql = $this->aSql['getLayerDef'];
-        $sSql = str_replace('$aLayerInfos["ms_layer_id"]', $aLayerInfos['ms_layer_id'], $sSql);
-        $iRecordsetLayer = $oBd->execute($sSql);
-        $aLigneLayer = $oBd->ligneSuivante($iRecordsetLayer);
-        $iRecordsetLayer = $oBd->fermeResultat();
+        $aParams['ms_layer_id'] = array('value' => $aLayerInfos['ms_layer_id'], 'type' => 'number');
+        $oPDOresult = $oBd->executeWithParams($this->aSql['getLayerDef'], $aParams);
+        $aLigneLayer = $oBd->ligneSuivante($oPDOresult);
+        $oPDOresult = $oBd->fermeResultat();
         // Définition du système de coordonnées.
         $aCoordsys = $this->getCoordsysDef($aLigneLayer["coordsys_id"]);
-        if (is_array($aCoordsys)) {
-            list($sCoordsysDef, $iSrid) = $aCoordsys;
-            $sLayerDef = str_replace("{COORDSYS}", $sCoordsysDef, $sLayerDef);
-            if (is_int($iSrid))
-                $sLayerDef = str_replace("{SRID}", $iSrid, $sLayerDef);
-        }
-        $sLayerDef = str_replace("{CONNECTION}", $this->getConnectionDef($aLigneLayer["connection_id"]), $sLayerDef);
+        list($sCoordsysDef, $iSrid) = $aCoordsys;
+        $sLayerDef = str_replace("{COORDSYS}", $sCoordsysDef, $sLayerDef);
+        if (is_int($iSrid))
+            $sLayerDef = str_replace("{SRID}", $iSrid, $sLayerDef);
+        // Définition de la connexion.
+        $sConnectionDef = '';
+        if (!empty($aLigneLayer["connection_id"]))
+            $sConnectionDef = $this->getConnectionDef($aLigneLayer["connection_id"]);
+        $sLayerDef = str_replace("{CONNECTION}", $sConnectionDef, $sLayerDef);
+        // Définition des métadonnées.
+        $sMetadataDef = '';
+        if (!empty($aLigneLayer["metadata_id"]))
+            $sMetadataDef = $this->getMetadataDef($aLigneLayer["metadata_id"]);
+        $sLayerDef = str_replace("{METADATA}", $sMetadataDef, $sLayerDef);
+        //
         $sLayerDef = str_replace("{LAYER_NAME}", $aLayerInfos['name'], $sLayerDef);
         $sLayerDef = str_replace("{LAYER_TYPE}", $aLayerInfos['ms_layertype_id'], $sLayerDef);
         $sLayerDef = str_replace("{LAYER_OPACITY}", $aLigneLayer["opacity"], $sLayerDef);
         $sLayerDef = str_replace("{TABLE_ID}", $aLigneLayer["tableidfield"], $sLayerDef);
-        $sLayerDef = str_replace("{TABLE_NAME}", $aLigneLayer["tablename"], $sLayerDef);
-        $sLayerDef = str_replace("{TABLE_SCHEMA}", $aLigneLayer["tableschema"], $sLayerDef);
+        $sLayerDef = str_replace("{TABLE_NAME}", '\"' . $aLigneLayer["tablename"] . '\"', $sLayerDef);
+        $sLayerDef = str_replace("{TABLE_SCHEMA}", '\"' . $aLigneLayer["tableschema"] . '\"', $sLayerDef);
         $sLayerDef = str_replace("{LAYER_TITLE}", str_replace('"', '\"', $aLigneLayer['title']), $sLayerDef);
+        $sDataDir = '';
+        if (!empty($aProperties['datadir']))
+            $sDataDir = $aProperties['datadir'];
+        $sLayerDef = str_replace("{DATADIR}", $sDataDir, $sLayerDef);
         $sLayerDef = $sLayerDef . chr(13);
         return $sLayerDef;
     }
@@ -336,17 +315,16 @@ class Vm4msMetadataAccess {
      * \return Retourne la définition MapServer de l'objet.
      */
     function getCoordsysDef($iCoordsysId) {
-        $sResult = "";
+        $aResult = array('', '');
         if ($iCoordsysId) {
             $oBd = $this->oBd;
-            $sSql = $this->aSql['getCoordsysDef'];
-            $sSql = str_replace('$iCoordsysId', $iCoordsysId, $sSql);
-            $iRecordset = $oBd->execute($sSql);
-            $aLigne = $oBd->ligneSuivante($iRecordset);
-            $iRecordset = $oBd->fermeResultat();
-            $sResult = array($aLigne["definition"] . chr(13), $aLigne["srid"]);
+            $aParams['iCoordsysId'] = array('value' => $iCoordsysId, 'type' => 'number');
+            $oPDOresult = $oBd->executeWithParams($this->aSql['getCoordsysDef'], $aParams);
+            $aLigne = $oBd->ligneSuivante($oPDOresult);
+            $oPDOresult = $oBd->fermeResultat();
+            $aResult = array($aLigne["definition"] . chr(13), $aLigne["srid"]);
         }
-        return $sResult;
+        return $aResult;
     }
 
     /**
@@ -357,54 +335,72 @@ class Vm4msMetadataAccess {
      */
     function saveLayerTestMapFile($sWmsServiceId, $iLayerToTest) {
         $oBd = $this->oBd;
-        $aLayerToTest = Array($iLayerToTest);
-        $sLayersDef = "";
         $this->bTestMode = true;
         $this->sWmsServiceId = $sWmsServiceId;
-
-        foreach ($aLayerToTest as $iLayerToTest) {
-            $sSql = $this->aSql['getLayerInfoToTest'];
-            $sSql = str_replace('$iLayerToTest', $iLayerToTest, $sSql);
-            $iRecordset = $oBd->execute($sSql);
-            $aLigne = $oBd->ligneSuivante($iRecordset);
-            $iRecordset = $oBd->fermeResultat();
+        // Infos de la couche (si elle n'est pas déja associée au flux wms de test).
+        $aParams['iLayerToTest'] = array('value' => $iLayerToTest, 'type' => 'number');
+        $aParams['sWmsServiceId'] = array('value' => $sWmsServiceId, 'type' => 'string');
+        $oPDOresult = $oBd->executeWithParams($this->aSql['getLayerInfoToTest'], $aParams);
+        $aLigne = $oBd->ligneSuivante($oPDOresult);
+        if ($aLigne['nb_layer_to_test'] == 0) {
+            $oPDOresult = $oBd->fermeResultat();
             // Définition de la couche à tester.
-            $sSql = $this->aSql['getLayerDefToTest'];
-            $sSql = str_replace('$iLayerToTest', $iLayerToTest, $sSql);
-            $iRecordset = $oBd->execute($sSql);
-            $oLayers = $oBd->objetSuivant($iRecordset);
-            $sLayer = $oLayers->definitiontmp;
+            $sLayersDef = "";
+            $sLayer = $aLigne['definitiontmp'];
             // Définition du système de coordonnées.
-            $aCoordsys = array($oLayers->coordsys_definition . chr(13), $oLayers->srid);
-            if (is_array($aCoordsys)) {
-                list($sCoordsysDef, $iSrid) = $aCoordsys;
-                $sLayer = str_replace("{COORDSYS}", $sCoordsysDef, $sLayer);
-                if (is_int($iSrid))
-                    $sLayer = str_replace("{SRID}", $iSrid, $sLayer);
-            }
+            $aCoordsys = array($aLigne['coordsys_definition'] . chr(13), $aLigne['srid']);
+            list($sCoordsysDef, $iSrid) = $aCoordsys;
+            $sLayer = str_replace("{COORDSYS}", $sCoordsysDef, $sLayer);
+            if (is_int($iSrid))
+                $sLayer = str_replace("{SRID}", $iSrid, $sLayer);
             // Connexion.
-            $sLayer = str_replace("{CONNECTION}", $this->getConnectionDef($oLayers->connection_id), $sLayer);
+            $sConnectionDef = '';
+            if (!empty($aLigne['connection_id']))
+                $sConnectionDef = $this->getConnectionDef($aLigne['connection_id']);
+            $sLayer = str_replace("{CONNECTION}", $sConnectionDef, $sLayer);
+            // Définition des métadonnées.
+            $sMetadataDef = '';
+            if (!empty($aLigne["metadata_id"]))
+                $sMetadataDef = $this->getMetadataDef($aLigne["metadata_id"]);
+            $sLayer = str_replace("{METADATA}", $sMetadataDef, $sLayer);
             // Autres tags.
             $sLayer = str_replace("{LAYER_NAME}", $aLigne['name'], $sLayer);
             $sLayer = str_replace("{LAYER_TYPE}", $aLigne['ms_layertype_id'], $sLayer);
             $sLayer = str_replace("{LAYER_OPACITY}", $aLigne["opacity"], $sLayer);
             $sLayer = str_replace("{TABLE_ID}", $aLigne["tableidfield"], $sLayer);
-            $sLayer = str_replace("{TABLE_NAME}", $aLigne["tablename"], $sLayer);
-            $sLayer = str_replace("{TABLE_SCHEMA}", $aLigne["tableschema"], $sLayer);
+            $sLayer = str_replace("{TABLE_NAME}", '\"' . $aLigne["tablename"] . '\"', $sLayer);
+            $sLayer = str_replace("{TABLE_SCHEMA}", '\"' . $aLigne["tableschema"] . '\"', $sLayer);
             $sLayer = str_replace("{LAYER_TITLE}", str_replace('"', '\"', $aLigne['title']), $sLayer);
+            $sDataDir = '';
+            if (!empty($aProperties['datadir']))
+                $sDataDir = $aProperties['datadir'];
+            $sLayer = str_replace("{DATADIR}", $sDataDir, $sLayer);
             $sLayersDef .= $sLayer;
+            // Définition du flux wms de test (et ses couches) avec la couche à tester.
+            $sMapDef = $this->getWmsServiceDef($sWmsServiceId, $sLayersDef);
         }
-        $sMapDef = $this->getWmsServiceDef($sWmsServiceId, $sLayersDef);
+        else {
+            // Définition du flux wms de test (et ses couches) sans la couche à tester (déja associée).
+            $sMapDef = $this->getWmsServiceDef($sWmsServiceId);
+        }
         // Fichier de log pour MapServer.
-        $sMapServerLogFile = $this->aProperties['ms_log_dir'] . '/test/' . session_id() . '_' . $aLigne['name'] . '.log';
+        $sMapServerLogFile = $this->aProperties['ms_log_dir'] . '/test/' . hash('sha256', session_id()) . '_' . $aLigne['name'] . '.log';
         $sMapDef = str_replace("{MS_LOG_FILE}", $sMapServerLogFile, $sMapDef);
+
+        // Dossier de proj
+        $sMapServerProjDir = $this->aProperties["map_dir"] . '/proj';
+        $sMapDef = str_replace("{MS_PROJ_DIR}", $sMapServerProjDir, $sMapDef);
+
         // Contenu par défaut du flux de test.
-        $sMapDef = str_replace("MAP\r\n", "MAP\r\n#Debut Configuration par defaut du serveur de test\r\n".str_replace("<return>", "\r\n", $this->aProperties['test_wms_service_default_content'])."\r\n#Fin Configuration par defaut du serveur de test\r\n", $sMapDef);
+        if (!empty($this->aProperties['test_wms_service_default_content']))
+            $sMapDef = preg_replace('/^\s*MAP\s*(\n|\r)/', "MAP\r\n#Début Configuration par défaut du serveur de test\r\n" . str_replace("<return>", "\r\n", $this->aProperties['test_wms_service_default_content']) . "\r\n#Fin Configuration par défaut du serveur de test\r\n", $sMapDef);
         // Sauve le fichier ".map".
-        $sFilename = $this->aProperties["map_dir"] . '/wms_test/' . session_id() . '_' . $aLigne['name'] . ".map";
+        $sFilename = $this->aProperties["map_dir"] . '/wms_test/' . hash('sha256', session_id()) . '_' . $aLigne['name'] . ".map";
         if (file_exists($sFilename))
             unlink($sFilename);
         writeToFile($sMapDef, $sFilename);
+        // Génère le fichier de proj
+        $this->generateProjFiles();
         // Supprime le fichier de log de MapServer pour le flux de test + la couche.
         if (file_exists($sMapServerLogFile))
             unlink($sMapServerLogFile);
@@ -412,19 +408,18 @@ class Vm4msMetadataAccess {
     }
 
     /**
-    * Retourne la définition d'une connexion.
-    * \param iConnectionId Identifiant de la connexion
-    * \return Retourne la définition de la connexion.
-    */
-    function getConnectionDef($iConnectionId){
+     * Retourne la définition d'une connexion.
+     * \param iConnectionId Identifiant de la connexion
+     * \return Retourne la définition de la connexion.
+     */
+    function getConnectionDef($iConnectionId) {
         // $sConnectionDefinition
         $sDefinition = "";
         if (!empty($iConnectionId)) {
-            $sSql = $this->aSql['getConnection'];
-            $sSql = str_replace('$iConnectionId',$iConnectionId,$sSql);
-            $iRecordset = $this->oBd->execute($sSql);
-            $aLigne = $this->oBd->ligneSuivante($iRecordset);
-            $iRecordset = $this->oBd->fermeResultat();
+            $aParams['iConnectionId'] = array('value' => $iConnectionId, 'type' => 'number');
+            $oPDOresult = $this->oBd->executeWithParams($this->aSql['getConnection'], $aParams);
+            $aLigne = $this->oBd->ligneSuivante($oPDOresult);
+            $oPDOresult = $this->oBd->fermeResultat();
             $sDefinition = $this->sConnectionDefinition;
             $sLogin = $this->sLogin;
             $sPassword = $this->sPassword;
@@ -432,26 +427,25 @@ class Vm4msMetadataAccess {
                 if ((!empty($aLigne['user']) && $aLigne['user'] != '{CONNECTION_LOGIN}') && (!empty($aLigne['password']) && $aLigne['password'] != '{CONNECTION_PASSWORD}')) {
                     $sLogin = $aLigne['user'];
                     $sPassword = $aLigne['password'];
-                }
-                else {
+                } else {
                     $sLogin = $_SESSION["ses_Login"];
                     $sPassword = decodepass($_SESSION["ses_Password"]);
                 }
             }
-            $sDefinition = str_replace("{CONNECTION_LOGIN}",$sLogin, $sDefinition);
-            $sDefinition = str_replace("{CONNECTION_PASSWORD}",$sPassword, $sDefinition);
+            $sDefinition = str_replace("{CONNECTION_LOGIN}", $sLogin, $sDefinition);
+            $sDefinition = str_replace("{CONNECTION_PASSWORD}", $sPassword, $sDefinition);
             // Serveur.
             if (!empty($aLigne['server']))
                 $sServer = $aLigne['server'];
             else
                 $sServer = $this->aProperties['server'];
-            $sDefinition = str_replace("{CONNECTION_SERVER}",$sServer, $sDefinition);
+            $sDefinition = str_replace("{CONNECTION_SERVER}", $sServer, $sDefinition);
             // Port.
             if (!empty($aLigne['port']))
                 $sPort = $aLigne['port'];
             else
                 $sPort = $this->aProperties['port'];
-            $sDefinition = str_replace("{CONNECTION_PORT}",$sPort, $sDefinition);
+            $sDefinition = str_replace("{CONNECTION_PORT}", $sPort, $sDefinition);
             // Base de données.
             if (!empty($aLigne['database']))
                 $sDatabase = $aLigne['database'];
@@ -461,6 +455,55 @@ class Vm4msMetadataAccess {
         }
         return $sDefinition;
     }
+
+    /**
+     * Generate the epsg file in the proj directory
+     * @return string
+     */
+    function generateProjFiles() {
+
+        $aProj = array();
+        $aSQLParams = array(
+            'sSchema' => array('value' => $this->aProperties['schema_vm4ms'], 'type' => 'schema_name')
+        );
+        $oResult = $this->oBd->executeWithParams($this->aSql['getCoordsys'], $aSQLParams);
+        if (gettype($oResult) == 'object') {
+            $aProj = $this->oBd->getResultTableAssoc($oResult);
+        }
+
+        $sFilename = $this->aProperties["map_dir"] . '/proj/epsg';
+        if (file_exists($sFilename)) {
+            unlink($sFilename);
+        }
+
+        $sProjDefs = '';
+        for ($i = 0; $i < count($aProj); $i++) {
+            $sProjDef = '# ' . $aProj[$i]['label'] . PHP_EOL;
+            $sProjDef .= '<' . $aProj[$i]['coordsys_id'] . '> ' . $aProj[$i]['epsg_definition'] . ' <>';
+            $sProjDefs .= $sProjDef . PHP_EOL;
+        }
+
+        writeToFile($sProjDefs, $sFilename);
+        return $sFilename;
+    }
+
+    /**
+     * Retourne la définition des métadonnées d'une couche.
+     * \param iMetadataId Identifiant de la métadonnée
+     * \return Retourne la définition de la métadonnée.
+     */
+    function getMetadataDef($iMetadataId) {
+        $sDefinition = '';
+        if (!empty($iMetadataId)) {
+            $aParams['iMetadataId'] = array('value' => $iMetadataId, 'type' => 'number');
+            $oPDOresult = $this->oBd->executeWithParams($this->aSql['getMetadata'], $aParams);
+            $aLigne = $this->oBd->ligneSuivante($oPDOresult);
+            $oPDOresult = $this->oBd->fermeResultat();
+            $sDefinition = $aLigne['definition'];
+        }
+        return $sDefinition;
+    }
+
 }
 
 ?>

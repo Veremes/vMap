@@ -43,7 +43,7 @@ class BusinessObjects extends Vmap {
         $this->aPath = $aPath;
         $this->aProperties = $properties;
         $this->oConnection = new Connection($this->aValues, $this->aProperties);
-        $this->aSelectedFields = Array("business_object_id", "title", "id_field", "database", "schema", "table", "sql_summary", "sql_list", "sorted_by", "geom_column", "search_field", "result_field", "search_use_strict", "event_id", "index", "add_form_size", "edit_form_size", "display_form_size");
+        $this->aSelectedFields = Array("business_object_id", "title", "id_field", "database", "schema", "table", "sql_summary", "sql_list", "sorted_by", "geom_column", "search_field", "result_field", "search_use_strict", "event_id", "index", "add_form_size", "edit_form_size", "display_form_size", "selection_buffer", "user_rights");
     }
 
     /**
@@ -220,6 +220,13 @@ class BusinessObjects extends Vmap {
             $bo_table = $oBusinessObject->aFields['table'];
             $bo_id_field = $oBusinessObject->aFields['id_field'];
             $geom_column = $oBusinessObject->aFields['geom_column'];
+
+            // Connexion à la base de donées
+            if (!empty($bo_database) && $bo_database != $this->oConnection->oBd->base) {
+                $sLogin = $this->oConnection->oBd->login;
+                $sPassword = $this->oConnection->oBd->mdp;
+                $this->oConnection->oBd = new Vm($sLogin, $sPassword, $bo_database, $this->oConnection->oBd->serveur, $this->oConnection->oBd->port, $this->oConnection->oBd->sgbd, $this->oConnection->oBd->sPageEncoding);
+            }
 
             $oForm = new Form($this->aProperties, $this->oConnection);
             $aTableColumns = $oForm->getTableColumns($bo_schema, $bo_table);
@@ -558,7 +565,7 @@ class BusinessObjects extends Vmap {
         $sDir = $this->UniqFileName();
         $aReturn = $this->postFileSave('package_definition', '../../tmp/', $sDir);
         $sPath = $this->aProperties['vas_home'] . '/tmp/' . $sDir;
-        $this->unZip($sPath . '/' . $sZipName, $sPath . '/' . $sFolderName);
+        unZip($sPath . '/' . $sZipName, $sPath . '/' . $sFolderName);
 
         // Cas où il y ait dans le zip un dossier de même nom
         $sFolderPath = $sPath . '/' . $sFolderName;
@@ -651,10 +658,10 @@ class BusinessObjects extends Vmap {
             $sDatabase = $this->aProperties['database'];
         }
 
-        $aFileRequests = $this->getDataModelFileRequests($sFilePath);
+        $sFileRequests = $this->getDataModelFileRequests($sFilePath);
 
         // Execute le SQL
-        $aResults = $this->executeDataModelRequests($aFileRequests, $sDatabase);
+        $aResults = $this->executeDataModelRequests($sFileRequests, $sDatabase);
 
         // Supprime le dossier précédemment uploadé
         clearDir($sPath);
@@ -664,7 +671,7 @@ class BusinessObjects extends Vmap {
             $sMessage = $this->oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
             return $sMessage;
         } else {
-            $aReturn = array(status => 1);
+            $aReturn = array('status' => 1);
             return json_encode($aReturn);
         }
     }
@@ -672,7 +679,7 @@ class BusinessObjects extends Vmap {
     /**
      * Parse the data-model file contents and return an array of requests
      * @param string $sFilePath
-     * @return array
+     * @return string
      */
     function getDataModelFileRequests($sFilePath) {
 
@@ -685,11 +692,11 @@ class BusinessObjects extends Vmap {
             $sFileContents .= $aFileContents[$i] . ' ';
         }
 
-        // Travail sur chacune des requêtes du fichier
-        $aFileContents = explode(';', $sFileContents);
-        $aFileContents = $this->cleanDataModelFileArray($aFileContents);
+//        // Travail sur chacune des requêtes du fichier
+//        $aFileContents = explode(';', $sFileContents);
+//        $aFileContents = $this->cleanDataModelFileArray($aFileContents);
 
-        return $aFileContents;
+        return $sFileContents;
     }
 
     /**
@@ -726,7 +733,7 @@ class BusinessObjects extends Vmap {
      * @param array $aFileRequests
      * @return array results
      */
-    function executeDataModelRequests($aFileRequests, $sDatabase) {
+    function executeDataModelRequests($sFileRequests, $sDatabase) {
 
         // Connexion avec uVitis
         $oBD = new Vm($this->aProperties['owner_login'], $this->aProperties['owner_pass'], $sDatabase, $this->aProperties['server'], $this->aProperties['port'], $this->aProperties['sgbd'], $this->aProperties['page_encoding']);
@@ -734,19 +741,14 @@ class BusinessObjects extends Vmap {
 
         $this->oConnection->oBd->demarreTransaction();
 
-        $aResults = Array();
         $bError = false;
-
-        for ($i = 0; $i < count($aFileRequests); $i++) {
-
-            $oResult = $this->oConnection->oBd->execute($aFileRequests[$i]);
-            array_push($aResults, $oResult);
-
-            if ($this->oConnection->oBd->enErreur()) {
-                $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
-                $bError = true;
-                break;
-            }
+        $oPDOresult = $this->oConnection->oBd->executeBlock($sFileRequests);
+        
+        if ($this->oConnection->oBd->enErreur()) {
+            $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
+            $bError = true;
+        }else{
+            $aResults = $this->oConnection->oBd->getResultTableAssoc($oPDOresult);
         }
 
         if ($bError) {
@@ -958,49 +960,6 @@ class BusinessObjects extends Vmap {
         }
 
         return $sDirPath;
-    }
-
-    /**
-     * Creates a compressed zip file
-     * @param string $sFolder
-     * @param string $sDestination
-     * @return boolean
-     */
-    function createZip($sFolder, $sDestination) {
-
-        $zip = new ZipArchive();
-        $zip->open($sDestination, ZipArchive::CREATE | ZipArchive::OVERWRITE);
-
-        $files = new RecursiveIteratorIterator(
-                new RecursiveDirectoryIterator($sFolder), RecursiveIteratorIterator::LEAVES_ONLY
-        );
-
-        foreach ($files as $name => $file) {
-            if (!$file->isDir()) {
-                $filePath = $file->getRealPath();
-                $relativePath = substr($filePath, strlen($sFolder) + 1);
-                $zip->addFile($filePath, $relativePath);
-            }
-        }
-
-        $zip->close();
-
-        return file_exists($sDestination);
-    }
-
-    /**
-     * Unzip a compressed zip file
-     * @param string $sZipFile
-     * @param string $sDestination
-     */
-    function unZip($sZipFile, $sDestination) {
-        $zip = new ZipArchive;
-        $res = $zip->open($sZipFile);
-        if ($res === TRUE) {
-            // extract it to the path we determined above
-            $zip->extractTo($sDestination);
-            $zip->close();
-        }
     }
 
     /**
@@ -1273,6 +1232,9 @@ class BusinessObjects extends Vmap {
             $sFormName = $this->aPath[4];
             $sComand = $this->aValues['cmd'];
             $this->putForm($sBusinessObjectId, $sFormName, $sComand);
+            $aXmlRacineAttribute['status'] = 1;
+            $sMessage = $this->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+            return $sMessage;
         } else {
             $aReturn = $this->genericPut($this->aProperties['schema_vmap'], 'business_object', 'business_object_id');
             return $aReturn['sMessage'];
@@ -1465,7 +1427,6 @@ class BusinessObjects extends Vmap {
      * @return id of business_object deleted or error object if a business_object is not deleted
      */
     function DELETE() {
-
         $aBos = array();
 
         //forme 'veremes_cadastre_parcelle'|'veremes_cadatre_commune'

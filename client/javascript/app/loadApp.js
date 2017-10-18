@@ -19,7 +19,17 @@ loadExternalJs(aAngularJsFiles, {
     "scriptInBody": true,
     "callback": function () {
         // Bootstrapping dès le chargement de tous les js.
-        angular.bootstrap(document, ['vitisApp']);
+        // BUG IE : certains fichiers de directives sont chargés après.
+        if (sessionStorage['debug'] == "true") {
+            var iIntervalId = setInterval(function(){
+                if (typeof(vitisApp.appInitDrtv) != "undefined" && typeof(vitisApp.appLoginDrtv) != "undefined") {
+                    clearInterval(iIntervalId);
+                    angular.bootstrap(document, ['vitisApp']);
+                }
+            }, 100);
+        }
+        else
+            angular.bootstrap(document, ['vitisApp']);
     }
 });
 

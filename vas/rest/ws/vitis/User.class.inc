@@ -82,9 +82,9 @@ class User extends Vitis{
     function getGroups(){
         require $this->sRessourcesFile;
         if (in_array("groups", $this->aSelectedFields)){
-           $sSql = str_replace('[sSchemaFramework]', $this->aProperties['schema_framework'], $aSql['getGroups']);
-            $sSql = str_replace('[user_id]', $this->aValues['my_vitis_id'], $sSql);
-		$oPDOresult =$this->oConnection->oBd->execute ($sSql);
+                $aParams['sSchemaFramework'] = array('value' => $this->aProperties['schema_framework'], 'type' => 'schema_name');
+                $aParams['user_id'] = array('value' => $this->aValues['my_vitis_id'], 'type' => 'number');
+                $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['getGroups'], $aParams);
 		$sListGroupId = "";
 		$aListGroupName = array();
 		while($aLigne=$this->oConnection->oBd->ligneSuivante ($oPDOresult)) {
@@ -106,9 +106,9 @@ class User extends Vitis{
     function getPrivileges(){
         require $this->sRessourcesFile;
         if (in_array("privileges", $this->aSelectedFields)){
-            $sSql = str_replace('[sSchemaFramework]', $this->aProperties['schema_framework'], $aSql['getUserPrivileges']);
-            $sSql = str_replace('[user_id]', $this->aValues['my_vitis_id'], $sSql);
-            $oPDOresult =$this->oConnection->oBd->execute ($sSql);
+                $aParams['sSchemaFramework'] = array('value' => $this->aProperties['schema_framework'], 'type' => 'schema_name');
+                $aParams['user_id'] = array('value' => $this->aValues['my_vitis_id'], 'type' => 'number');
+                $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['getUserPrivileges'], $aParams);
 		$sListPrivileges = "";
 		while($aLigne=$this->oConnection->oBd->ligneSuivante ($oPDOresult)) {
 			if ($sListPrivileges == ""){
@@ -127,21 +127,52 @@ class User extends Vitis{
      */
     function DELETE(){
         require $this->sRessourcesFile;
-        $sSql = str_replace('[user_id]', $this->aValues['my_vitis_id'], $aSql['getLoginbyId']);
-        $sSql = str_replace('[sSchemaFramework]', $this->aProperties['schema_framework'], $sSql);
-        $resultat = $this->oConnection->oBd->execute($sSql);
-        $oUserDeleted = $this->oConnection->oBd->objetSuivant($resultat);
-        $sLoginUserDeleted = $oUserDeleted->login;
-        //delete in table
-        $this->deleteChild($this->aProperties['schema_framework'], 'v_user', 'user_id', "vitis_admin");
+        $sErrorMesssage = '';
+        $aParams['sSchemaFramework'] = array('value' => $this->aProperties['schema_framework'], 'type' => 'schema_name');
+        $aParams['user_id'] = array('value' => $this->aValues['my_vitis_id'], 'type' => 'number');
+        $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['getLoginbyId'], $aParams);
+        $oUserDeleted = $this->oConnection->oBd->objetSuivant($oPDOresult);
         if (!$this->oConnection->oBd->enErreur()) {
-            //delete rolgroup vitis_admin vitis_user ans delete role if no more rolgroup
-            $oSgbdDataAccess = new PgsqlDataAccess($this->oConnection->oBd, $this->aProperties["database"], $this->aProperties["server"], "vitis_user", "vitis_admin", $this->aProperties["schema_framework"]);
-            //Suppression du role gtf_user pour les utilisateurs supprimés
-            $oSgbdDataAccess->deleteDatabaseUser($sLoginUserDeleted);
-            //Suppression du role gtf_admin pour les utilisateurs supprimés
-            $oSgbdDataAccess->deleteDatabaseAdminV2($sLoginUserDeleted);
-            $sErrorMesssage = $oSgbdDataAccess->DeleteDatabaseRole($sLoginUserDeleted);
+            // Liste des privilèges de l'utilisateur présents dans la table s_vitis.privileges.
+            $aParams = array();
+            $aParams['sSchemaFramework'] = array('value' => $this->aProperties['schema_framework'], 'type' => 'schema_name');
+            $aParams['login'] = array('value' => $oUserDeleted->login, 'type' => 'string');
+            $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['userApplicationPrivileges'], $aParams);
+            if ($this->oConnection->oBd->enErreur()) {
+                $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
+                $aXmlRacineAttribute['status'] = 0;
+                $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+                return $sMessage;
+            }
+            else {
+                if ($oPDOresult->rowCount() > 0) {
+                    $aUserPrivileges = $this->oConnection->oBd->getResultTableAssoc($oPDOresult);
+                    // Revoke sur les privilèges.
+                    foreach($aUserPrivileges as $aPrivilege) {
+                        $aParams = array();
+                        $aParams['sValue'] = array('value' => $oUserDeleted->login, 'type' => 'double_quote');
+                        $aParams['sId'] = array('value' => $aPrivilege['groname'], 'type' => 'double_quote');
+                        $this->oConnection->oBd->executeWithParams($aSql['revokePrivilege'], $aParams);
+                        if ($this->oConnection->oBd->enErreur()) {
+                            $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
+                            $aXmlRacineAttribute['status'] = 0;
+                            $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+                            return $sMessage;
+                        }
+                    }
+                }
+                // Si l'utilisateur n'a plus de privilèges associés -> suppression du rôle de connexion.
+                $aParams = array();
+                $aParams['sSchemaFramework'] = array('value' => $this->aProperties['schema_framework'], 'type' => 'schema_name');
+                $aParams['login'] = array('value' => $oUserDeleted->login, 'type' => 'string');
+                $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['getAllUserPrivileges'], $aParams);
+                if ($oPDOresult->rowCount() == 0) {
+                    $oSgbdDataAccess = new PgsqlDataAccess($this->oConnection->oBd, $this->aProperties["database"], $this->aProperties["server"], "vitis_user", "vitis_admin", $this->aProperties["schema_framework"]);
+                    $sErrorMesssage = $oSgbdDataAccess->DeleteDatabaseRole($oUserDeleted->login);
+                }
+                // Supprime l'utilisateur dans la table s_vitis.user.
+                $this->deleteChild($this->aProperties['schema_framework'], 'v_user', 'user_id', "vitis_admin");
+            }
             if ($sErrorMesssage == "") {
                 $this->aFields["user_id"] = $this->aValues['my_vitis_id'];
             } else {

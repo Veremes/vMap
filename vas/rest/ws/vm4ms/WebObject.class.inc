@@ -111,7 +111,7 @@ class WebObject extends Vmap4MapServer {
         // Récupère l'id du service vMap
         $aGetWmsServicesValues = Array(
             'token' => $this->aValues['token'],
-            'filter' => "web_id='" . $this->aValues['my_vitis_id'] . "'",
+            'filter' => '{"relation": "AND", "operators": [{"column": "web_id", "compare_operator": "=", "value": ' . $this->aValues['my_vitis_id'] . '}]}',
             'vitis_version' => $this->aValues['vitis_version'],
             'id' => 'wmsservices',
             'output' => $this->aValues['output'],

@@ -79,9 +79,9 @@ class VmapUser  extends Vmap {
     function getPrintStyles(){
         require $this->sRessourcesFile;
         if (in_array("print_styles", $this->aSelectedFields)){
-                $sSql = str_replace('[sSchemaVmap]', $this->aProperties['schema_vmap'], $aSql['getUserPrintStyles']);
-                $sSql = str_replace('[user_id]', $this->aValues['my_vitis_id'], $sSql);
-		$oPDOresult =$this->oConnection->oBd->execute ($sSql);
+                $aParams['sSchemaVmap'] = array('value' => $this->aProperties['schema_vmap'], 'type' => 'schema_name');
+                $aParams['user_id'] = array('value' => $this->aValues['my_vitis_id'], 'type' => 'number');
+                $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['getUserPrintStyles'], $aParams);
 		$sListPrintStyleId = "";
                 $aListPrintStyleId = array();
 		while($aLigne=$this->oConnection->oBd->ligneSuivante ($oPDOresult)) {

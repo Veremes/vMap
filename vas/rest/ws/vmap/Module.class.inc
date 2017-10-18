@@ -30,7 +30,7 @@ class Module extends Vmap {
         $this->aPath = $aPath;
         $this->aProperties = $properties;
         $this->oConnection = $oConnection;
-		$this->aSelectedFields = Array("module_id", "label", "description", "rolname");
+        $this->aSelectedFields = Array("module_id", "label", "description", "rolname", "rolname_list");
     }
 
     /**
@@ -69,5 +69,7 @@ class Module extends Vmap {
         require $this->sRessourcesFile;
         $this->aFields = $this->getFields($this->aProperties['schema_vmap'], 'module', 'module_id');
     }
+
 }
+
 ?>

@@ -335,6 +335,9 @@ class PrintTemplateServices extends PrintServices {
                     $aMapsDefinition[$i]['map_definition']['map_json'] = json_encode($aMapsDefinition[$i]['map_definition']['map_json']);
                 }
             }
+            
+            // Ajout du token
+            $aMapsDefinition[$i]['map_definition']['token'] = $this->aValues['token'];
 
             $oTmpMapPrint = new PrintMapServices($this->aPath, $aMapsDefinition[$i]['map_definition'], $this->aProperties);
             $sTmpMapPrintResult = $oTmpMapPrint->POST();

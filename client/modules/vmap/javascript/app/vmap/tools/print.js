@@ -73,7 +73,7 @@ nsVmap.nsToolsManager.Print.prototype.printDirective = function () {
  * @constructor
  * @ngInject
  */
-nsVmap.nsToolsManager.Print.prototype.printController = function ($timeout, $http, $compile, $scope) {
+nsVmap.nsToolsManager.Print.prototype.printController = function ($timeout, $compile, $scope) {
     oVmap.log("nsVmap.nsToolsManager.Print.prototype.printController");
 
     var this_ = this;
@@ -82,11 +82,6 @@ nsVmap.nsToolsManager.Print.prototype.printController = function ($timeout, $htt
      * @private
      */
     this.$timeout_ = $timeout;
-
-    /**
-     * @private
-     */
-    this.$http_ = $http;
 
     /**
      * @private
@@ -195,26 +190,30 @@ nsVmap.nsToolsManager.Print.prototype.printController.prototype.loadPrintPropert
     var this_ = this;
 
     showAjaxLoader();
+    ajaxRequest({
+        'method': 'GET',
+        'url': oVmap['properties']['api_url'] + '/vmap/userprinttemplates',
+        'headers': {
+            'Accept': 'application/x-vm-json'
+        },
+        'params': {
+            'distinct': true
+        },
+        'scope': this.$scope_,
+        'success': function (response) {
+            hideAjaxLoader();
 
-    this.$http_({
-        method: 'GET',
-        url: oVmap['properties']['api_url'] + '/vmap/userprinttemplates?distinct=true&token=' + oVmap['properties']['token']
-    }).then(function (response) {
-
-        hideAjaxLoader();
-
-        // Vérifie si le fichier a bien été chargé, donne un modèle par défaut en cas d'erreur
-        if (goog.isDefAndNotNull(response['data'])) {
-            if (goog.isArray(response['data']['userprinttemplates'])) {
-                if (response['data']['userprinttemplates'].length > 0) {
-                    this_['properties'] = {
-                        'models': response['data']['userprinttemplates']
-                    };
+            // Vérifie si le fichier a bien été chargé, donne un modèle par défaut en cas d'erreur
+            if (goog.isDefAndNotNull(response['data'])) {
+                if (goog.isArray(response['data']['userprinttemplates'])) {
+                    if (response['data']['userprinttemplates'].length > 0) {
+                        this_['properties'] = {
+                            'models': response['data']['userprinttemplates']
+                        };
+                    }
                 }
             }
         }
-    }, function (response) {
-        console.error(response);
     });
 };
 
@@ -251,7 +250,7 @@ nsVmap.nsToolsManager.Print.prototype.printController.prototype.listenScaleChang
  */
 nsVmap.nsToolsManager.Print.prototype.printController.prototype.unlistenScaleChanges = function () {
     oVmap.log('nsVmap.nsToolsManager.Print.printController.unlistenScaleChanges');
-    this['map'].unByKey(this.scaleListener_);
+    ol.Observable.unByKey(this.scaleListener_);
 };
 
 /**
@@ -526,126 +525,134 @@ nsVmap.nsToolsManager.Print.prototype.printController.prototype.print = function
     printWindow.document.write('<div style="width: 100%; text-align: center; margin-top: 80px"><img src="images/ajax-big-loader.GIF" alt="Load img" style="width: 200px;height: 170px;"><br><br><i style="color: gray">Construction de la fiche en cours..</i></div>');
 
     // Récupère les infos du template
-    this.$http_({
-        method: 'GET',
-        url: oVmap['properties']['api_url'] + '/vmap/printtemplates/' + templateId + '?token=' + oVmap['properties']['token']
-    }).then(function (response) {
-
-        var bError = false;
-        if (!goog.isDefAndNotNull(response['data'])) {
-            bError = true;
-        } else if (!goog.isDefAndNotNull(response['data']['data'])) {
-            bError = true;
-        } else if (!goog.isDefAndNotNull(response['data']['data'][0])) {
-            bError = true;
-        } else if (!goog.isDefAndNotNull(response['data']['data'][0]['definition'])) {
-            bError = true;
-        } else if (!goog.isDefAndNotNull(response['data']['data'][0]['rt_format_id'])) {
-            bError = true;
-        } else if (!goog.isDefAndNotNull(response['data']['data'][0]['rt_orientation_id'])) {
-            bError = true;
-        }
-        if (bError) {
-            $.notify('Erreur lors du chargement des données du template ' + templateId, 'error');
-            console.error("response: ", response);
-            return 0;
-        }
-
-        var sFormat = response['data']['data'][0]['rt_format_id'];
-        var sOrientation = response['data']['data'][0]['rt_orientation_id'];
-
-        var template = document.createElement("div");
-        template.innerHTML = response['data']['data'][0]['definition'];
-
-        var mapImageSize = this_.getTemplateTargetSize(template, '#map_image');
-        var overviezSize = this_.getTemplateTargetSize(template, '#map_overview');
-
-        if (goog.isDefAndNotNull(mapImageSize)) {
-            var oMapDef = {
-                'token': oVmap['properties']['token'],
-                'map_id': sMapId,
-                'map_json': sMapJSON,
-                'image_size': (mapImageSize[0] * resolutionCoeff) + '|' + (mapImageSize[1] * resolutionCoeff),
-                'resolution_coeff': resolutionCoeff,
-                'extent': sExtent,
-                'features': sEWKTFeatures,
-                'features_zoom': sFeaturesZoom
-            };
-        }
-
-        if (goog.isDefAndNotNull(overviezSize)) {
-            var oOverviewDef = {
-                'token': oVmap['properties']['token'],
-                'map_id': sMapId,
-                'map_json': sMapJSON,
-                'image_size': (overviezSize[0] * resolutionCoeff) + '|' + (overviezSize[1] * resolutionCoeff),
-                'resolution_coeff': resolutionCoeff,
-                'extent': sOverviewExtent,
-                'features': sEWKTFeatures,
-                'features_zoom': 400
-            };
-        }
-
-        var oMapsJson = [];
-        if (goog.isDefAndNotNull(oMapDef)) {
-            oMapsJson.push({
-                'target': '#map_image',
-                'map_definition': oMapDef
-            });
-        }
-        if (goog.isDefAndNotNull(oOverviewDef)) {
-            oMapsJson.push({
-                'target': '#map_overview',
-                'map_definition': oOverviewDef
-            });
-        }
-        var mapsJson = JSON.stringify(oMapsJson);
-
-        // Envoi de l'impression
-        this_.$http_({
-            method: 'POST',
-            url: oVmap['properties']['api_url'] + '/vmap/printtemplateservices',
-            data: {
-                'token': oVmap['properties']['token'],
-                'printtemplate_id': templateId,
-                'format': sFormat,
-                'orientation': sOrientation,
-                'includes_json': includesJson,
-                'maps_json': mapsJson,
-                'scope_json': sScope
-            }
-        }).then(function (response) {
-
+    ajaxRequest({
+        'method': 'GET',
+        'url': oVmap['properties']['api_url'] + '/vmap/printtemplates/' + templateId,
+        'headers': {
+            'Accept': 'application/x-vm-json'
+        },
+        'scope': this.$scope_,
+        'success': function (response) {
             var bError = false;
             if (!goog.isDefAndNotNull(response['data'])) {
                 bError = true;
-            } else if (!goog.isDefAndNotNull(response['data']['printtemplateservices'])) {
+            } else if (!goog.isDefAndNotNull(response['data']['data'])) {
                 bError = true;
-            } else if (!goog.isDefAndNotNull(response['data']['printtemplateservices']['image'])) {
+            } else if (!goog.isDefAndNotNull(response['data']['data'][0])) {
                 bError = true;
-            } else if (response['data']['status'] !== 1) {
+            } else if (!goog.isDefAndNotNull(response['data']['data'][0]['definition'])) {
+                bError = true;
+            } else if (!goog.isDefAndNotNull(response['data']['data'][0]['rt_format_id'])) {
+                bError = true;
+            } else if (!goog.isDefAndNotNull(response['data']['data'][0]['rt_orientation_id'])) {
                 bError = true;
             }
             if (bError) {
-                $.notify('Une erreur est survenue lors de l\'impression', 'error');
-                printWindow.document.write('<div style="width: 100%; text-align: center; margin-top: 80px">Une erreur est survenue lors de l\'impression</div>');
+                $.notify('Erreur lors du chargement des données du template ' + templateId, 'error');
                 console.error("response: ", response);
                 return 0;
             }
 
-            $.notify('Impression réussie', 'success');
-            printWindow.location.href = response['data']['printtemplateservices']['image'];
+            var sFormat = response['data']['data'][0]['rt_format_id'];
+            var sOrientation = response['data']['data'][0]['rt_orientation_id'];
 
-        }, function (response) {
+            var template = document.createElement("div");
+            template.innerHTML = response['data']['data'][0]['definition'];
+
+            var mapImageSize = this_.getTemplateTargetSize(template, '#map_image');
+            var overviezSize = this_.getTemplateTargetSize(template, '#map_overview');
+
+            if (goog.isDefAndNotNull(mapImageSize)) {
+                var oMapDef = {
+//                    'token': oVmap['properties']['token'],
+                    'map_id': sMapId,
+                    'map_json': sMapJSON,
+                    'image_size': (mapImageSize[0] * resolutionCoeff) + '|' + (mapImageSize[1] * resolutionCoeff),
+                    'resolution_coeff': resolutionCoeff,
+                    'extent': sExtent,
+                    'features': sEWKTFeatures,
+                    'features_zoom': sFeaturesZoom
+                };
+            }
+
+            if (goog.isDefAndNotNull(overviezSize)) {
+                var oOverviewDef = {
+//                    'token': oVmap['properties']['token'],
+                    'map_id': sMapId,
+                    'map_json': sMapJSON,
+                    'image_size': (overviezSize[0] * resolutionCoeff) + '|' + (overviezSize[1] * resolutionCoeff),
+                    'resolution_coeff': resolutionCoeff,
+                    'extent': sOverviewExtent,
+                    'features': sEWKTFeatures,
+                    'features_zoom': 400
+                };
+            }
+
+            var oMapsJson = [];
+            if (goog.isDefAndNotNull(oMapDef)) {
+                oMapsJson.push({
+                    'target': '#map_image',
+                    'map_definition': oMapDef
+                });
+            }
+            if (goog.isDefAndNotNull(oOverviewDef)) {
+                oMapsJson.push({
+                    'target': '#map_overview',
+                    'map_definition': oOverviewDef
+                });
+            }
+            var mapsJson = JSON.stringify(oMapsJson);
+
+            ajaxRequest({
+                'method': 'POST',
+                'url': oVmap['properties']['api_url'] + '/vmap/printtemplateservices',
+                'headers': {
+                    'Accept': 'application/x-vm-json'
+                },
+                'data': {
+                    'printtemplate_id': templateId,
+                    'format': sFormat,
+                    'orientation': sOrientation,
+                    'includes_json': includesJson,
+                    'maps_json': mapsJson,
+                    'scope_json': sScope
+                },
+                'scope': this_.$scope_,
+                'timeout': 120000,
+                'success': function (response) {
+
+                    var bError = false;
+                    if (!goog.isDefAndNotNull(response['data'])) {
+                        bError = true;
+                    } else if (!goog.isDefAndNotNull(response['data']['printtemplateservices'])) {
+                        bError = true;
+                    } else if (!goog.isDefAndNotNull(response['data']['printtemplateservices']['image'])) {
+                        bError = true;
+                    } else if (response['data']['status'] !== 1) {
+                        bError = true;
+                    }
+                    if (bError) {
+                        $.notify('Une erreur est survenue lors de l\'impression', 'error');
+                        printWindow.document.write('<div style="width: 100%; text-align: center; margin-top: 80px">Une erreur est survenue lors de l\'impression</div>');
+                        console.error("response: ", response);
+                        return 0;
+                    }
+
+                    $.notify('Impression réussie', 'success');
+                    printWindow.location.href = response['data']['printtemplateservices']['image'];
+                },
+                'error': function (response) {
+                    console.error(response);
+                    $.notify('Une erreur est survenue lors de l\'impression', 'error');
+                    printWindow.document.write('<div style="width: 100%; text-align: center; margin-top: 80px">Une erreur est survenue lors de l\'impression</div>');
+                }
+            });
+        },
+        'error': function (response) {
             console.error(response);
             $.notify('Une erreur est survenue lors de l\'impression', 'error');
             printWindow.document.write('<div style="width: 100%; text-align: center; margin-top: 80px">Une erreur est survenue lors de l\'impression</div>');
-        });
-
-    }, function (response) {
-        console.error(response);
-        $.notify('Une erreur est survenue lors de l\'impression', 'error');
-        printWindow.document.write('<div style="width: 100%; text-align: center; margin-top: 80px">Une erreur est survenue lors de l\'impression</div>');
+        }
     });
     return 1;
 };

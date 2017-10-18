@@ -30,7 +30,7 @@ class CoordinateSystem extends Vmap4MapServer {
         $this->aPath = $aPath;
         $this->aProperties = $properties;
         $this->oConnection = $oConnection;
-        $this->aSelectedFields = Array("coordsys_id", "epsg", "definition", "label");
+        $this->aSelectedFields = Array("coordsys_id", "epsg", "definition", "label", "epsg_definition");
     }
 
     /**
@@ -109,7 +109,7 @@ class CoordinateSystem extends Vmap4MapServer {
         // Récupère l'id du service vMap
         $aGetLayersValues = Array(
             'token' => $this->aValues['token'],
-            'filter' => "coordsys_id='" . $this->aValues['my_vitis_id'] . "'",
+            'filter' => '{"relation": "AND", "operators": [{"column": "coordsys_id", "compare_operator": "=", "value": ' . $this->aValues['my_vitis_id'] . '}]}',
             'vitis_version' => $this->aValues['vitis_version'],
             'id' => 'layers',
             'output' => $this->aValues['output'],

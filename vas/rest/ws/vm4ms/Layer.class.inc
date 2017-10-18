@@ -30,7 +30,7 @@ class Layer extends Vmap4MapServer {
         $this->aPath = $aPath;
         $this->aProperties = $properties;
         $this->oConnection = $oConnection;
-		$this->aSelectedFields = Array("ms_layer_id", "name", "title", "coordsys_id", "coordsys_label", "source_id", "connection_id", "tableschema", "tablename", "tableidfield", "definition", "opacity", "active", "ms_layertype_id", "wmsservices", "wmsservices_label", "private_connection", "connection_label", "source_label", "definitiontmp");
+		$this->aSelectedFields = Array("ms_layer_id", "name", "title", "coordsys_id", "coordsys_label", "source_id", "connection_id", "tableschema", "tablename", "tableidfield", "definition", "opacity", "active", "ms_layertype_id", "wmsservices", "wmsservices_label", "private_connection", "connection_label", "source_label", "definitiontmp", "metadata_id");
     }
 
     /**
@@ -69,16 +69,14 @@ class Layer extends Vmap4MapServer {
     function GET() {
         require $this->sRessourcesFile;
         // Infos de la couche.
-        $sSql = str_replace('[sSchemaVm4ms]', $this->aProperties['schema_vm4ms'], $aSql['getLayer']);
-        $sSql = str_replace('[ms_layer_id]', $this->aValues['my_vitis_id'], $sSql);
-        $oPDOresult = $this->oConnection->oBd->execute ($sSql);
+        $aParams['sSchemaVm4ms'] = array('value' => $this->aProperties['schema_vm4ms'], 'type' => 'schema_name');
+        $aParams['ms_layer_id'] = array('value' => $this->aValues['my_vitis_id'], 'type' => 'number');
+        $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['getLayer'], $aParams);
         if ($this->oConnection->oBd->nombreLigne($oPDOresult) > 0) {
             $this->aFields = $this->oConnection->oBd->ligneSuivante ($oPDOresult);
             // Flux wms rattachés à la couche.
             if (in_array("wmsservices", $this->aSelectedFields)){
-                $sSql = str_replace('[sSchemaVm4ms]', $this->aProperties['schema_vm4ms'], $aSql['getLayerWmsServices']);
-                $sSql = str_replace('[ms_layer_id]', $this->aValues['my_vitis_id'], $sSql);
-                $oPDOresult =$this->oConnection->oBd->execute ($sSql);
+                $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['getLayerWmsServices'], $aParams);
                 $sListWmsServiceId = "";
                 $aListWmsServiceName = array();
                 while($aLigne=$this->oConnection->oBd->ligneSuivante ($oPDOresult)) {
@@ -102,9 +100,9 @@ class Layer extends Vmap4MapServer {
         require $this->sRessourcesFile;
         // Liste des flux WMS associés à la couche.
         $aWmsServicesId = array();
-        $sSql = str_replace('[sSchemaVm4ms]', $this->aProperties['schema_vm4ms'], $aSql['getLayerWmsServices']);
-        $sSql = str_replace('[ms_layer_id]', $this->aValues['my_vitis_id'], $sSql);
-        $oPDOresult =$this->oConnection->oBd->execute ($sSql);
+        $aParams['sSchemaVm4ms'] = array('value' => $this->aProperties['schema_vm4ms'], 'type' => 'schema_name');
+        $aParams['ms_layer_id'] = array('value' => $this->aValues['my_vitis_id'], 'type' => 'number');
+        $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['getLayerWmsServices'], $aParams);
         while($aLigne=$this->oConnection->oBd->ligneSuivante ($oPDOresult)) {
             $aWmsServicesId[] = $aLigne['wmsservice_id'];
         }
@@ -116,9 +114,7 @@ class Layer extends Vmap4MapServer {
         $oLayer->GET();
         $oLayer->createLayerWmsServicesMapFile($oLayer->aFields['private_connection'], $aWmsServicesId);
         // Nom de la couche.
-        $sSql = str_replace('[ms_layer_id]', $this->aValues['my_vitis_id'], $aSql['getLayerName']);
-        $sSql = str_replace('[sSchemaVm4ms]', $this->aProperties['schema_vm4ms'], $sSql);
-        $oPDOresult = $this->oConnection->oBd->execute($sSql);
+        $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['getLayerName'], $aParams);
         $aLayer = $this->oConnection->oBd->ligneSuivante ($oPDOresult);
         // Supprime la couche.
         $this->oConnection->oBd->delete($this->aProperties['schema_vm4ms'], 'ms_layer', 'name', $aLayer['name'], 'text');
@@ -148,9 +144,9 @@ class Layer extends Vmap4MapServer {
         else {
             // Tous les fluxs WMS publics.
             if (empty($aWmsServicesId)) {
-                $sSql = str_replace('[sSchemaVm4ms]', $this->aProperties['schema_vm4ms'], $aSql['getLayerWmsServices']);
-                $sSql = str_replace('[ms_layer_id]', $this->aValues['my_vitis_id'], $sSql);
-                $oPDOresult =$this->oConnection->oBd->execute ($sSql);
+                $aParams['sSchemaVm4ms'] = array('value' => $this->aProperties['schema_vm4ms'], 'type' => 'schema_name');
+                $aParams['ms_layer_id'] = array('value' => $this->aValues['my_vitis_id'], 'type' => 'number');
+                $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['getLayerWmsServices'], $aParams);
                 while($aLigne=$this->oConnection->oBd->ligneSuivante ($oPDOresult)) {
                     $aWmsServicesId[] = $aLigne['wmsservice_id'];
                 }
@@ -158,7 +154,7 @@ class Layer extends Vmap4MapServer {
             }
             // Création des fichiers .map des flux WMS.
             foreach($aWmsServicesId as $sWmsServiceId) {
-                $aValues = array('token' => session_id(), 'wmsservice_id' => $sWmsServiceId, 'my_vitis_id' => $sWmsServiceId, 'type' => 'prod');
+                $aValues = array('token' => session_id(), 'wmsservice_id' => $sWmsServiceId, 'my_vitis_id' => $sWmsServiceId, 'type' => 'prod', 'sEncoding' => $this->aValues['sEncoding'], 'sSourceEncoding' => $this->aValues['sSourceEncoding'], 'output' => $this->aValues['output']);
                 $oWmsServices = new WmsServices($this->aPath, $aValues, $this->aProperties, $this->oConnection);
                 $oWmsServices->GET();
                 $oWmsServices->createMapFile();

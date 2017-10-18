@@ -81,7 +81,7 @@ class FicheDescriptiveParcelle extends Cadastre {
 
         $ID_PAR = $this->aPath[2];
 
-        if (!in_array('vmap_cadastre_user', $this->oConnection->aPrivileges)) {
+        if (!in_array('vmap_cadastre_user', $this->oConnection->aPrivileges) && !in_array('vmap_cadastre_light_user', $this->oConnection->aPrivileges)) {
             $oError = new VitisError(0, 'INSUFFICIENT_PRIVILEGES');
             $aXmlRacineAttribute['status'] = 0;
             $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
@@ -90,6 +90,7 @@ class FicheDescriptiveParcelle extends Cadastre {
 
         // Vérifie les droits de d'utilisateur sur la commune
         if ($this->haveCommuneRights(substr($ID_PAR, 0, 5)) == false) {
+            http_response_code(403);
             $aReturn['error']['errorMessage'] .= "L'utilisateur n'a pas les droits sur la commune";
             return json_encode($aReturn);
         }
@@ -97,53 +98,81 @@ class FicheDescriptiveParcelle extends Cadastre {
         // Infos sur la parcelle
         $sSchema = $this->aProperties['schema_majic'];
         $sTable = 'v_vmap_maj_fiche_prc_descr';
-        $sFilter = "\"id_par\" = '" . $ID_PAR . "'";
+        $aFilter = array(
+            'column' => 'id_par',
+            'compare_operator' => '=',
+            'value' => $ID_PAR
+        );
         $aAttributs = Array('id_par as "ID_PAR"', 'id_com as "ID_COM"', 'parcelle', 'commune', 'sup_fiscale', 'dcntpa as "DCNTPA"', 'dnvoiri as "DNVOIRI"', 'dindic as "DINDIC"', 'l_nature_voie as "L_NATURE_VOIE"', 'dvoilib as "DVOILIB"', 'ccoriv as "CCORIV"', 'gparbat as "GPARBAT"', 'gurbpa as "GURBPA"');
 
-        $oParcelleInfos['data'] = $this->vmapGet($sSchema, $sTable, $aAttributs, $sFilter)[0];
+        $oParcelleInfos['data'] = $this->vmapGet($sSchema, $sTable, $aAttributs, $aFilter)[0];
 
         // Infos sur le proprietaire
         $sSchemaProp = $this->aProperties['schema_majic'];
         $sTableProp = 'v_vmap_maj_fiche_prc_prop';
-        $sFilterProp = "\"id_par\" = '" . $ID_PAR . "'";
+        $aFilterProp = array(
+            'column' => 'id_par',
+            'compare_operator' => '=',
+            'value' => $ID_PAR
+        );
         $aAttributsProp = Array('id_par as "ID_PAR"', 'dqualp as "DQUALP"', 'dnupro as "DNUPRO"', 'ddenom as "DDENOM"', 'jdatnss as "JDATNSS"', 'dldnss as "DLDNSS"', 'dlign3 as "DLIGN3"', 'dlign6 as "DLIGN6"', 'l_ccodem as "L_CCODEM"', 'l_ccodro as "L_CCODRO"', 'gdesip as "GDESIP"', 'dlign4 as "DLIGN4"');
 
-        $oParcelleInfos['data']['aProprietaires'] = $this->vmapGet($sSchemaProp, $sTableProp, $aAttributsProp, $sFilterProp);
+        $oParcelleInfos['data']['aProprietaires'] = $this->vmapGet($sSchemaProp, $sTableProp, $aAttributsProp, $aFilterProp);
 
         // infos sur la subdivision fiscale
         $sSchemaSub = $this->aProperties['schema_majic'];
         $sTableSub = 'v_vmap_maj_fiche_prc_suf';
-        $sFilterSub = "\"id_par\" = '" . $ID_PAR . "'";
+        $aFilterSub = array(
+            'column' => 'id_par',
+            'compare_operator' => '=',
+            'value' => $ID_PAR
+        );
         $aAttributsSub = Array('id_par as "ID_PAR"', 'ccosub as "CCOSUB"', 'dsgrpf as "DSGRPF"', 'cnatsp as "CNATSP"', 'l_dsgrpf as "L_DSGRPF"', 'dclssf as "DCLSSF"', 'dcntsf as "DCNTSF"', 'drcsuba as "DRCSUBA"', 'drcsub as "DRCSUB"');
 
-        $oParcelleInfos['data']['aSubdivisionFiscale'] = $this->vmapGet($sSchemaSub, $sTableSub, $aAttributsSub, $sFilterSub);
+        $oParcelleInfos['data']['aSubdivisionFiscale'] = $this->vmapGet($sSchemaSub, $sTableSub, $aAttributsSub, $aFilterSub);
 
         // Infos sur le bâti
         $sSchemaBatis = $this->aProperties['schema_majic'];
         $sTableBatis = 'v_vmap_maj_fiche_prc_bat';
-        $sFilterBatis = "\"id_par\" = '" . $ID_PAR . "'";
+        $aFilterBatis = array(
+            'column' => 'id_par',
+            'compare_operator' => '=',
+            'value' => $ID_PAR
+        );
         $aAttributsBatis = Array('id_local as "ID_BAT"', 'id_par as "ID_PAR"', 'invar as "INVAR"', 'id_local as "ID_BAT"', 'l_dteloc as "L_DTELOC"', 'l_cconlc as "L_CCONLC"', 'l_dnatlc as "L_DNATLC"', 'jdatat as "JDATAT"', 'jannat as "JANNAT"', 'ddenom as "DDENOM"');
 
-        $oParcelleInfos['data']['aBatis'] = $this->vmapGet($sSchemaBatis, $sTableBatis, $aAttributsBatis, $sFilterBatis);
+        $oParcelleInfos['data']['aBatis'] = $this->vmapGet($sSchemaBatis, $sTableBatis, $aAttributsBatis, $aFilterBatis);
 
 
         // Infos complémentaires (paramétrées par l'administrateur)
-
         $aIntersectionViews = $this->aProperties['cadastre']['descr_parcel']['intersect']['views'];
+        $iTolerance = $this->aProperties["cadastre"]["descr_parcel"]["intersect"]["tolerance"];
 
         // Récupère la géométrie de la parcelle
         $sSchema = $this->aProperties['schema_cadastre'];
-        $sTable = 'v_vmap_parcelle';
-        $sFilter = "\"id_par\" = '" . $ID_PAR . "'";
+        $sTable = $this->aProperties['cadastre']['views']['parcelle'];
+        $aFilter = array(
+            'column' => 'id_par',
+            'compare_operator' => '=',
+            'value' => $ID_PAR
+        );
         $aAttributs = Array('ST_AsEWKT(geom) as geom');
-        $parcelleGeom = $this->vmapGet($sSchema, $sTable, $aAttributs, $sFilter)[0]['geom'];
+        $parcelleGeom = $this->vmapGet($sSchema, $sTable, $aAttributs, $aFilter)[0]['geom'];
 
         // Récupère les intersections
         $oParcelleInfos['data']['aIntersections'] = array();
+        
 
         foreach ($aIntersectionViews as $key => $value) {
 
-            $sTable = $key;
+            if (strpos($key, ".") === false) {
+                $sSchema = "public";
+                $sTable = $key;
+            } else {
+                $aTmp = explode(".", $key);
+                $sSchema = $aTmp[0];
+                $sTable = $aTmp[1];
+            }
             $aAttributs = Array();
 
             foreach ($value as $key2 => $value2) {
@@ -152,7 +181,7 @@ class FicheDescriptiveParcelle extends Cadastre {
                 }
             }
 
-            $oIntersect = $this->vmapIntersectGet($sSchema, $sTable, $parcelleGeom, $aAttributs);
+            $oIntersect = $this->vmapIntersectGet($sSchema, $sTable, $parcelleGeom, $aAttributs, $iTolerance);
 
             $value['data'] = $oIntersect;
             if (isset($value['data'][0]) && !empty($value['data'][0])) {

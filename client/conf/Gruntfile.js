@@ -28,7 +28,9 @@ module.exports = function (grunt) {
                         sHome + 'javascript/externs/studio/properties/properties.js',
                         sHome + 'javascript/externs/studio/javascript/app/**/*.js',
                         // Fichiers vMap4MapServer
-                        sHome + 'modules/vm4ms/javascript/**/*.js'
+                        sHome + 'modules/vm4ms/javascript/**/*.js',
+                        // Fichiers ANC
+                        sHome + 'modules/anc/javascript/**/*.js'
                     ]
                 },
                 options: {
@@ -109,6 +111,8 @@ module.exports = function (grunt) {
                     '"' + sHome + 'javascript/externs/studio/javascript/app ' + sClosureDepsHome + 'javascript/externs/studio/javascript/app"',
                     // Fichiers vMap4MapServer
                     '"' + sHome + 'modules/vm4ms/javascript ' + sClosureDepsHome + 'modules/vm4ms/javascript"',
+                    // Fichiers vMap4MapServer
+                    '"' + sHome + 'modules/anc/javascript ' + sClosureDepsHome + 'modules/anc/javascript"',
                     // Closure library
                     '"' + sHome + 'conf/node_modules/google-closure-library/closure/goog ' + sClosureDepsHome + 'conf/node_modules/google-closure-library/closure/goog"'
                 ]

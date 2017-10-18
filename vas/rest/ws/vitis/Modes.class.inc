@@ -147,7 +147,7 @@ class Modes extends Vitis {
                 require_once'Tabs.class.inc';
                 foreach ($aObjects as $oMode) {
                     $oMode->aFields["reload"] = true;
-                    $aValues = array("filter" => "mode_id='" . $oMode->aFields["mode_id"] . "' AND lang='" . $this->aProperties["language"] . "'", "token" => $this->aValues['token'], 'order_by' => 'index');
+                    $aValues = array("filter" => '{"relation": "AND","operators":[{"column": "mode_id","compare_operator": "=","value": "' . $oMode->aFields["mode_id"] . '"}, {"column": "lang","compare_operator": "=","value": "' . $this->aProperties["language"] . '"}]}', "token" => $this->aValues['token'], 'order_by' => 'index');
                     $oTabs = new Tabs($this->aPath, $aValues, $this->aProperties);
                     $oTabs->GET();
                     array_push($oMode->aObjects, $oTabs);
@@ -209,10 +209,11 @@ class Modes extends Vitis {
                     $aModes = explode('|', $this->aValues['modes_id']);
                     $i = 1;
                     foreach ($aModes as $iModeId) {
-                        $sSql = str_replace('[mode_id]', str_replace('|', ',', $iModeId), $aSql['updateModesIndex']);
-                        $sSql = str_replace('[index]', $i, $sSql);
-                        $sSql = str_replace('[sSchemaName]', $this->aProperties['schema_framework'], $sSql);
-                        $resultat = $this->oConnection->oBd->execute($sSql);
+                        $aParams = array();
+                        $aParams['sSchemaName'] = array('value' => $this->aProperties['schema_framework'], 'type' => 'schema_name');
+                        $aParams['mode_id'] = array('value' => $iModeId, 'type' => 'string');
+                        $aParams['index'] = array('value' => $i, 'type' => 'number');
+                        $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['updateModesIndex'], $aParams);
                         if ($this->oConnection->oBd->enErreur()) {
                             $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                             $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());

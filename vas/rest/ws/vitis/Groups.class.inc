@@ -174,13 +174,6 @@ class Groups extends Vitis {
                 $sMessage = $this->importLdapGroup();
         }
         else {
-				$bSframework = false;
-				$sSql = "select nspname from pg_catalog.pg_namespace where nspname = 's_framework';";
-				$resultat = $this->oConnection->oBd->execute($sSql);
-				if ($resultat->rowCount() > 0) {
-					$bSframework = true;
-					$aReturnFramework = $this->genericPost("s_framework", 'group', "s_framework".'.seq_common', 'group_id', "framework_admin");
-				}
                 $aReturn = $this->genericPost($this->aProperties['schema_framework'], 'v_group', $this->aProperties['schema_framework'].'.seq_common', 'group_id');
                 if ($aReturn['sStatus'] == 1){
 					
@@ -195,20 +188,11 @@ class Groups extends Vitis {
                                 require $this->sRessourcesFile;
                                 $aUsers = explode('|', $this->aValues['users']);
                                 foreach ($aUsers as $iUserId) {
-                                        $sSql = str_replace('[user_id]', $iUserId, $aSql['insertGroupUsers']);
-                                        $sSql = str_replace('[group_id]', $this->aValues["my_vitis_id"], $sSql);
-                                        $sSql = str_replace('[sSchemaFramework]', $this->aProperties['schema_framework'], $sSql);
-                                        $resultat = $this->oConnection->oBd->execute($sSql);
-										if ($bSframework){
-											$sSql = "select login from ".$this->aProperties['schema_framework'].".\"user\" where user_id = $iUserId;";
-											$resultat = $this->oConnection->oBd->execute($sSql);
-											if ($resultat->rowCount() > 0) {
-												while($aLigne=$this->oConnection->oBd->ligneSuivante ($resultat)) {
-													$sSql = "INSERT INTO s_framework.user_group (user_id, group_id) VALUES ((select user_id from s_framework.\"user\" where login  = '".$aLigne['login']."'), (select group_id from s_framework.\"group\" where name  = '".$oGroup->aFields['name']."'))";
-													 $resultat = $this->oConnection->oBd->execute($sSql);
-												}
-											}
-										}
+                                        $aParams = array();
+                                        $aParams['sSchemaFramework'] = array('value' => $this->aProperties['schema_framework'], 'type' => 'schema_name');
+                                        $aParams['user_id'] = array('value' => $iUserId, 'type' => 'number');
+                                        $aParams['group_id'] = array('value' => $this->aValues["my_vitis_id"], 'type' => 'number');
+                                        $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['insertGroupUsers'], $aParams);
                                 }
                             }
                     }
@@ -270,27 +254,11 @@ class Groups extends Vitis {
     function PUT() {
         $aValues = $this->aValues;
 		// Recherche de l'ancien nom de groupe
-		$sSql = "SELECT name FROM " . $this->aProperties['schema_framework'] . ".group WHERE group_id = " . $aValues['my_vitis_id'] . ";";
-		$resultat = $this->oConnection->oBd->execute($sSql);
-		$aLigne=$this->oConnection->oBd->ligneSuivante ($resultat);
-		$sOldName = $aLigne['name'];
-
-		$bSframework = false;
-		$iFrameworkGroudId = 0;
-		$sSql = "select nspname from pg_catalog.pg_namespace where nspname = 's_framework';";
-		$resultat = $this->oConnection->oBd->execute($sSql);
-		if ($resultat->rowCount() > 0) {
-			$bSframework = true;
-			$sSql = "select group_id from s_framework.group where name = '" . $sOldName . "';";
-			$resultat = $this->oConnection->oBd->execute($sSql);
-			if ($resultat->rowCount() > 0) {
-				while($aLigne=$this->oConnection->oBd->ligneSuivante ($resultat)) {
-					$this->aValues['my_vitis_id'] = $aLigne['group_id'];
-					$iFrameworkGroudId = $aLigne['group_id'];
-					$this->genericPut("s_framework", 'group', 'group_id');
-				}
-			}
-		}
+		$sSql = "SELECT name FROM [sSchemaFramework].group WHERE group_id = [group_id];";
+                $aParams['sSchemaFramework'] = array('value' => $this->aProperties['schema_framework'], 'type' => 'schema_name');
+                $aParams['group_id'] = array('value' => $this->aValues['my_vitis_id'], 'type' => 'number');
+                $oPDOresult = $this->oConnection->oBd->executeWithParams($sSql, $aParams);
+		$aLigne=$this->oConnection->oBd->ligneSuivante ($oPDOresult);
 		$this->aValues = $aValues;
         $aReturn = $this->genericPut($this->aProperties['schema_framework'], 'v_group', 'group_id');
         if ($aReturn['sStatus'] == 1){
@@ -299,8 +267,7 @@ class Groups extends Vitis {
             $oGroup = new Group($this->aPath, $this->aValues, $this->aProperties, $this->oConnection);
             $oGroup->GET();
             // Supprime les Utilisateurs rattachés au groupe.
-            $this->oConnection->oBd->delete($this->aProperties['schema_framework'], 'v_user_group', 'group_id', $this->aValues["my_vitis_id"]);
-            $this->oConnection->oBd->delete("s_framework", 'user_group', 'group_id', $iFrameworkGroudId);
+            $this->oConnection->oBd->delete($this->aProperties['schema_framework'], 'v_user_group_by_rights', 'group_id', $this->aValues["my_vitis_id"]);
             // Le paramètre "users" est passé dans la requête ?
             if ($this->aValues['users'] !== NULL) {
                     // Utilisateurs à rattacher au groupe ?
@@ -308,20 +275,11 @@ class Groups extends Vitis {
                         require $this->sRessourcesFile;
                         $aUsers = explode('|', $this->aValues['users']);
                         foreach ($aUsers as $iUserId) {
-                                $sSql = str_replace('[user_id]', $iUserId, $aSql['insertGroupUsers']);
-                                $sSql = str_replace('[group_id]', $this->aValues["my_vitis_id"], $sSql);
-                                $sSql = str_replace('[sSchemaFramework]', $this->aProperties['schema_framework'], $sSql);
-                                $resultat = $this->oConnection->oBd->execute($sSql);
-								if ($bSframework){
-									$sSql = "select login from ".$this->aProperties['schema_framework'].".\"user\" where user_id = $iUserId;";
-									$resultat = $this->oConnection->oBd->execute($sSql);
-									if ($resultat->rowCount() > 0) {
-										while($aLigne=$this->oConnection->oBd->ligneSuivante ($resultat)) {
-											$sSql = "INSERT INTO s_framework.user_group (user_id, group_id) VALUES ((select user_id from s_framework.\"user\" where login  = '".$aLigne['login']."'), (select group_id from s_framework.\"group\" where name  = '".$oGroup->aFields['name']."'))";
-											 $resultat = $this->oConnection->oBd->execute($sSql);
-										}
-									}
-								}
+                            $aParams = array();
+                            $aParams['sSchemaFramework'] = array('value' => $this->aProperties['schema_framework'], 'type' => 'schema_name');
+                            $aParams['user_id'] = array('value' => $iUserId, 'type' => 'number');
+                            $aParams['group_id'] = array('value' => $this->aValues["my_vitis_id"], 'type' => 'number');
+                            $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['insertGroupUsers'], $aParams);
                         }
                     }
             }        
@@ -394,29 +352,6 @@ class Groups extends Vitis {
      * @return id of group deleted or error object if a group is not deleted
      */
     function DELETE() {
-		$sSql = "select nspname from pg_catalog.pg_namespace where nspname = 's_framework';";
-		$resultat = $this->oConnection->oBd->execute($sSql);
-		if ($resultat->rowCount() > 0) {
-			$sSql = "select name from ".$this->aProperties['schema_framework'].".group where group_id IN";
-			if (isset($this->aValues['my_vitis_id'])) {
-				$sSql .= "(".$this->aValues['my_vitis_id'].")";
-			}else{
-				$sSql .= "(".str_replace("|", ",", $this->aValues['idList']).")";
-			}
-			$resultat = $this->oConnection->oBd->execute($sSql);
-			if ($resultat->rowCount() > 0) {
-				$sDomaineNames = "";
-				while($aLigne=$this->oConnection->oBd->ligneSuivante ($resultat)) {
-					if ($sDomaineNames == ""){
-						$sDomaineNames = "'".$aLigne['name']."'";
-					}else{
-						$sDomaineNames .= ",'".$aLigne['name']."'";
-					}
-				}
-				$sSql = "delete from s_framework.group where name in (".$sDomaineNames.")";
-				$resultat = $this->oConnection->oBd->execute($sSql);
-			}
-		}
         $aReturn = $this->genericDelete($this->aProperties['schema_framework'], 'v_group', 'group_id');
         return $aReturn['sMessage'];
     }
@@ -426,43 +361,24 @@ class Groups extends Vitis {
 	*/
 	Public function importLdapGroup(){
 		require $this->sRessourcesFile;
-		$bSframework = false;
-		$sSql = "select nspname from pg_catalog.pg_namespace where nspname = 's_framework';";
-		$resultat = $this->oConnection->oBd->execute($sSql);
-		if ($resultat->rowCount() > 0) {
-			$bSframework = true;
-		}
 		// Le groupe existe déja ?
-		$sSql = $aSql['getGroupId'];
-		$sSql = str_replace('[sSchemaFramework]', $this->aProperties["schema_framework"], $sSql);
-		$sSql = str_replace('[sName]', str_replace("'", "''", $this->aValues['name']), $sSql);
-		$resultat = $this->oConnection->oBd->execute ($sSql);
+		$aParams = array();
+		$aParams['sSchemaFramework'] = array('value' => $this->aProperties['schema_framework'], 'type' => 'schema_name');
+		$aParams['sName'] = array('value' => $this->aValues['name'], 'type' => 'string');
+		$oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['getGroupId'], $aParams);
 		if ($this->oConnection->oBd->enErreur()) {
 			$oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
 			$aXmlRacineAttribute['status'] = 0;
 			$sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
 		} else {
-			$oResult = $this->oConnection->oBd->objetSuivant ($resultat);
+			$oResult = $this->oConnection->oBd->objetSuivant ($oPDOresult);
 			if($oResult){
-				if ($bSframework) {
-					$sSql = "select group_id from s_framework.group where name = '". $this->aValues['name']."';";
-					$resultat = $this->oConnection->oBd->execute($sSql);
-					if ($resultat->rowCount() > 0) {
-						while($aLigne=$this->oConnection->oBd->ligneSuivante ($resultat)) {
-							 $this->oConnection->oBd->update("s_framework",'group' , $this->aValues, "group_id", $aLigne["group_id"]);
-						}
-					}
-				}
 				$this->oConnection->oBd->update($this->aProperties["schema_framework"],'group' , $this->aValues, "group_id", $oResult->group_id);
 				$this->aFields['group_id'] = $oResult->group_id;
 			} else {
-					if ($bSframework) {
-						$this->oConnection->oBd->insert("s_framework",'group' , $this->aValues, "s_framework".'.seq_common', 'group_id');
-					}
-					$iId = $this->oConnection->oBd->insert($this->aProperties["schema_framework"],'group' , $this->aValues, $this->aProperties['schema_framework'].'.seq_common', 'group_id');
-					$this->aFields['group_id'] = $iId;
+				$iId = $this->oConnection->oBd->insert($this->aProperties["schema_framework"],'group' , $this->aValues, $this->aProperties['schema_framework'].'.seq_common', 'group_id');
+				$this->aFields['group_id'] = $iId;
 			}
-			//
 			if ($this->oConnection->oBd->enErreur()){
 					$oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
 					$aXmlRacineAttribute['status'] = 0;

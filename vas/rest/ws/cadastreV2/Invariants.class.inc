@@ -1,23 +1,23 @@
 <?php
+
 /**
-* \file Invariants.class.inc
-* \class Invariants
-*
-* \author Armand Bahi <armand.bahi@veremes.com>.
-*
-* \brief This file contains the Invariants php class
-*
-* This class defines Rest Api to Vmap Invariants
-* 
-*/
+ * \file Invariants.class.inc
+ * \class Invariants
+ *
+ * \author Armand Bahi <armand.bahi@veremes.com>.
+ *
+ * \brief This file contains the Invariants php class
+ *
+ * This class defines Rest Api to Vmap Invariants
+ * 
+ */
 require_once 'Cadastre.class.inc';
 require_once 'Invariant.class.inc';
 require_once __DIR__ . '/../../class/vitis_lib/Connection.class.inc';
 require_once __DIR__ . '/../../class/vmlib/BdDataAccess.inc';
 
 class Invariants extends Vmap {
-    
-     /**
+    /**
      * @SWG\Definition(
      *   definition="/invariants",
      *   allOf={
@@ -29,6 +29,7 @@ class Invariants extends Vmap {
      *   description="Operations about Invariants"
      * )
      */
+
     /**
      * construct
      * @param type $aPath url of the request
@@ -40,9 +41,9 @@ class Invariants extends Vmap {
         $this->aPath = $aPath;
         $this->aProperties = $properties;
         $this->oConnection = new Connection($this->aValues, $this->aProperties);
-		$this->aSelectedFields = Array('id_local', 'id_com as ID_COM','invar as INVAR', 'dnupro as DNUPRO','id_par as ID_PAR', 'ccosec as CCOSEC','dnupla as DNUPLA');
+        $this->aSelectedFields = Array('id_local', 'id_com as ID_COM', 'invar as INVAR', 'dnupro as DNUPRO', 'id_par as ID_PAR', 'ccosec as CCOSEC', 'dnupla as DNUPLA');
     }
-    
+
     /**
      * @SWG\Get(path="/invariants",
      *   tags={"Invariant"},
@@ -77,7 +78,7 @@ class Invariants extends Vmap {
      *     description="number of element",
      *     required=false,
      *     type="integer",
-	 *     default="4",
+     *     default="4",
      *     format="int32"
      *   ),
      * @SWG\Parameter(
@@ -116,14 +117,16 @@ class Invariants extends Vmap {
      *     )
      *  )
      */
+
     /**
      * get Invariants
      * @return  Invariants
      */
     function GET() {
-        $aReturn = $this->genericGet($this->aProperties['schema_majic'], 'v_vmap_bati_0010_local', 'id_local');
+        $aReturn = $this->genericGet($this->aProperties['schema_majic'], $this->aProperties['cadastre']['views']['invariant'], 'id_local');
         return $aReturn['sMessage'];
     }
-    
+
 }
+
 ?>

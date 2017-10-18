@@ -59,6 +59,10 @@ nsVmap.nsToolsManager.Controls = function (aControls) {
             'title': 'Projection en cours',
             'description': 'Affiche la projection de la carte en cours'
         }, {
+            'id': 'MapName',
+            'title': 'Nom de la carte en cours',
+            'description': 'Affiche le nom de la carte en cours'
+        }, {
             'id': 'OverviewMap',
             'title': 'Carte de supervision',
             'description': 'Affiche la carte de supervision'
@@ -90,6 +94,7 @@ nsVmap.nsToolsManager.Controls = function (aControls) {
      * @private
      */
     this.map_ = oVmap.getMap().getOLMap();
+
 
     this.handleDragOver = function (event) {
         event.stopPropagation();
@@ -125,16 +130,19 @@ nsVmap.nsToolsManager.Controls.prototype.addControl = function (control) {
 
     switch (control) {
         case 'Attribution':
+
             var oControl = new ol.control.Attribution();
             oControl.set('type', control);
             this.map_.addControl(oControl);
             break;
         case 'FullScreen':
+
             var oControl = new ol.control.FullScreen();
             oControl.set('type', control);
             this.map_.addControl(oControl);
             break;
         case 'MousePosition':
+
             var oControl = new ol.control.MousePosition({
                 coordinateFormat: function (coordinate) {
                     return [coordinate[0].toPrecision(8), coordinate[1].toPrecision(8)];
@@ -144,6 +152,7 @@ nsVmap.nsToolsManager.Controls.prototype.addControl = function (control) {
             this.map_.addControl(oControl);
             break;
         case 'OverviewMap':
+
             var oControl = new ol.control.OverviewMap({
                 view: new ol.View({
                     projection: this.map_.getView().getProjection()
@@ -154,6 +163,7 @@ nsVmap.nsToolsManager.Controls.prototype.addControl = function (control) {
             this.map_.addControl(oControl);
             break;
         case 'Rotate':
+
             var oControl = new ol.control.Rotate({
                 autoHide: false
             });
@@ -161,6 +171,7 @@ nsVmap.nsToolsManager.Controls.prototype.addControl = function (control) {
             this.map_.addControl(oControl);
             break;
         case 'ScaleLine':
+
             var oControl = new ol.control.ScaleLine({
                 minWidth: 80
             });
@@ -168,16 +179,19 @@ nsVmap.nsToolsManager.Controls.prototype.addControl = function (control) {
             this.map_.addControl(oControl);
             break;
         case 'Zoom':
+
             var oControl = new ol.control.Zoom();
             oControl.set('type', control);
             this.map_.addControl(oControl);
             break;
         case 'ZoomSlider':
+
             var oControl = new ol.control.ZoomSlider();
             oControl.set('type', control);
             this.map_.addControl(oControl);
             break;
         case 'ZoomToExtent':
+
             var oControl = new ol.control.ZoomToExtent();
             oControl.set('type', control);
             this.map_.addControl(oControl);
@@ -191,9 +205,25 @@ nsVmap.nsToolsManager.Controls.prototype.addControl = function (control) {
 //        this.DragAndDrop = true;
 //        break;
         case 'CurrentProjection':
+
             $('#olMap').children().children('.ol-overlaycontainer-stopevent').append('<div id="current-projection" class="ol-current-projection ol-unselectable ol-control"></div>');
+
             $("#current-projection").html(oVmap['oProjections'][oVmap.getMap().getOLMap().getView().getProjection().getCode()]);
+
             break;
+
+        case 'MapName':
+
+            $('#olMap').children().children('.ol-overlaycontainer-stopevent').append('<div id="map-name" class="ol-map-name ol-unselectable ol-control"></div>');
+            var vMapCatalog = oVmap.getMapManager().getMapCatalog();
+            for (var i = 0; i < vMapCatalog['maps'].length; i++) {
+                if (vMapCatalog['maps'][i]['used'] === true) {
+                    var currentMapName = vMapCatalog['maps'][i]['name'];
+                }
+            }
+            $("#map-name").html(currentMapName);
+            break;
+
         case 'Scale':
 
             var tool = '<div class="dropup"> <button class="btn btn-sm btn-default dropdown-toggle padding-sides-10 set-scale-btn" style="width: auto" type="button" onclick="$(\'#scale-list\').toggle()"> <span id="current-scale">' + oVmap.getMap().getScale({
@@ -262,7 +292,7 @@ nsVmap.nsToolsManager.Controls.prototype.setToolActive = function (control, bAct
         if (bActive === true) {
             $("#current-projection").show();
         } else {
-            $("#current-projection").hide();
+            $("#current-projection").remove();
         }
 
     } else if (control === 'Scale') {
@@ -271,6 +301,13 @@ nsVmap.nsToolsManager.Controls.prototype.setToolActive = function (control, bAct
             $("#current-scale-tool").show();
         } else {
             $("#current-scale-tool").hide();
+        }
+    } else if (control === 'MapName') {
+
+        if (bActive === true) {
+            $("#map-name").show();
+        } else {
+            $("#map-name").remove();
         }
 
     } else if (control === 'RefreshSocket') {

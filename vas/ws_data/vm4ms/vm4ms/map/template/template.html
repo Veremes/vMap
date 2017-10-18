@@ -3,6 +3,14 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <!--<link rel="stylesheet" href="css/lib/bootstrap/css/bootstrap.min.css?version=2">-->
     <!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">-->
+    <style>
+        .legendLayerName {
+            word-break: break-all;
+        }
+        .legendClassName {
+            word-break: break-all;
+        }
+    </style>
 </head>
 <body>
     <form method="get" action="[ms_cgi_url]" name="mapForm">
@@ -11,23 +19,24 @@
             <input type="hidden" name="map" value="[map]">
             <input type="hidden" name="imgext" value="[mapext]">
             <input type="hidden" name="LAYERS" value="[LAYERS]">
+            <input type="hidden" name="MAPSIZE" value="[MAPSIZE]">
         </p>
         <div class="container-fluid">
-            <div class="col-md-10">
+            <div class="col-md-12" style="padding: 0">
                 <div class="container-fluid">
                     <div class="row">
-                        <div class="col-xs-2" style="padding:21px">
+                        <div class="col-xs-3" style="padding: 0 21px 0 0; height: [mapheight]px; overflow-x: hidden; overflow-y: auto">
                             <!--Légende-->
                             [legend]
                         </div>
-                        <div class="col-xs-8">
+                        <div class="col-xs-9" style="padding: 0">
                             <!--Carte-->
                             <input class="MapLayer" type="image" name="img" src="[img]" width="[mapwidth]" height="[mapheight]" border="0" alt="">
                         </div>
                     </div>
                 </div>
-                <div class="container-fluid">
-                    <div class="bg-info" style="width:calc(17% + [mapwidth]px)">
+                <div class="container-fluid" style="padding: 0">
+                    <div class="bg-info" style="width:100%">
                         <div class="container-fluid" style="padding: 7px;margin-left: 5px;margin-right: -5px;margin-top: 15px;">
                             <div class="col-xs-6">
                                 <!--Échelle-->

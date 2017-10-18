@@ -74,9 +74,9 @@ class Mode extends Vitis {
      * get informations about mode
      */
     function GET() {
-        require $this->sRessourcesFile;        
+        require $this->sRessourcesFile;
         $this->aFields = $this->getFields($this->aProperties['schema_framework'], "v_mode", "mode_id");
-        $aValues = array("filter" => "mode_id='" . $this->aFields["mode_id"]."'", "token" => $this->aValues['token']);
+        $aValues = array("filter" => '{"column":"mode_id","compare_operator":"=","value":"' . $this->aFields["mode_id"] . '"}', "token" => $this->aValues['token']);
         require_once'Tabs.class.inc';
         $oTabs = new Tabs($this->aPath, $aValues, $this->aProperties);
         $oTabs->GET();

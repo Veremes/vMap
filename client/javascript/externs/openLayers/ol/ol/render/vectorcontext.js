@@ -5,6 +5,7 @@ goog.provide('ol.render.VectorContext');
  * Context for drawing geometries.  A vector context is available on render
  * events and does not need to be constructed directly.
  * @constructor
+ * @abstract
  * @struct
  * @api
  */
@@ -17,7 +18,7 @@ ol.render.VectorContext = function() {
  *
  * @param {ol.geom.Geometry} geometry The geometry to render.
  */
-ol.render.VectorContext.prototype.drawGeometry = goog.abstractMethod;
+ol.render.VectorContext.prototype.drawGeometry = function(geometry) {};
 
 
 /**
@@ -25,21 +26,21 @@ ol.render.VectorContext.prototype.drawGeometry = goog.abstractMethod;
  *
  * @param {ol.style.Style} style The rendering style.
  */
-ol.render.VectorContext.prototype.setStyle = goog.abstractMethod;
+ol.render.VectorContext.prototype.setStyle = function(style) {};
 
 
 /**
  * @param {ol.geom.Circle} circleGeometry Circle geometry.
- * @param {ol.Feature} feature Feature,
+ * @param {ol.Feature} feature Feature.
  */
-ol.render.VectorContext.prototype.drawCircle = goog.abstractMethod;
+ol.render.VectorContext.prototype.drawCircle = function(circleGeometry, feature) {};
 
 
 /**
  * @param {ol.Feature} feature Feature.
  * @param {ol.style.Style} style Style.
  */
-ol.render.VectorContext.prototype.drawFeature = goog.abstractMethod;
+ol.render.VectorContext.prototype.drawFeature = function(feature, style) {};
 
 
 /**
@@ -47,7 +48,7 @@ ol.render.VectorContext.prototype.drawFeature = goog.abstractMethod;
  *     collection.
  * @param {ol.Feature} feature Feature.
  */
-ol.render.VectorContext.prototype.drawGeometryCollection = goog.abstractMethod;
+ol.render.VectorContext.prototype.drawGeometryCollection = function(geometryCollectionGeometry, feature) {};
 
 
 /**
@@ -55,7 +56,7 @@ ol.render.VectorContext.prototype.drawGeometryCollection = goog.abstractMethod;
  *     string geometry.
  * @param {ol.Feature|ol.render.Feature} feature Feature.
  */
-ol.render.VectorContext.prototype.drawLineString = goog.abstractMethod;
+ol.render.VectorContext.prototype.drawLineString = function(lineStringGeometry, feature) {};
 
 
 /**
@@ -63,7 +64,7 @@ ol.render.VectorContext.prototype.drawLineString = goog.abstractMethod;
  *     MultiLineString geometry.
  * @param {ol.Feature|ol.render.Feature} feature Feature.
  */
-ol.render.VectorContext.prototype.drawMultiLineString = goog.abstractMethod;
+ol.render.VectorContext.prototype.drawMultiLineString = function(multiLineStringGeometry, feature) {};
 
 
 /**
@@ -71,21 +72,21 @@ ol.render.VectorContext.prototype.drawMultiLineString = goog.abstractMethod;
  *     geometry.
  * @param {ol.Feature|ol.render.Feature} feature Feature.
  */
-ol.render.VectorContext.prototype.drawMultiPoint = goog.abstractMethod;
+ol.render.VectorContext.prototype.drawMultiPoint = function(multiPointGeometry, feature) {};
 
 
 /**
  * @param {ol.geom.MultiPolygon} multiPolygonGeometry MultiPolygon geometry.
- * @param {ol.Feature} feature Feature.
+ * @param {ol.Feature|ol.render.Feature} feature Feature.
  */
-ol.render.VectorContext.prototype.drawMultiPolygon = goog.abstractMethod;
+ol.render.VectorContext.prototype.drawMultiPolygon = function(multiPolygonGeometry, feature) {};
 
 
 /**
  * @param {ol.geom.Point|ol.render.Feature} pointGeometry Point geometry.
  * @param {ol.Feature|ol.render.Feature} feature Feature.
  */
-ol.render.VectorContext.prototype.drawPoint = goog.abstractMethod;
+ol.render.VectorContext.prototype.drawPoint = function(pointGeometry, feature) {};
 
 
 /**
@@ -93,7 +94,7 @@ ol.render.VectorContext.prototype.drawPoint = goog.abstractMethod;
  *     geometry.
  * @param {ol.Feature|ol.render.Feature} feature Feature.
  */
-ol.render.VectorContext.prototype.drawPolygon = goog.abstractMethod;
+ol.render.VectorContext.prototype.drawPolygon = function(polygonGeometry, feature) {};
 
 
 /**
@@ -104,23 +105,23 @@ ol.render.VectorContext.prototype.drawPolygon = goog.abstractMethod;
  * @param {ol.geom.Geometry|ol.render.Feature} geometry Geometry.
  * @param {ol.Feature|ol.render.Feature} feature Feature.
  */
-ol.render.VectorContext.prototype.drawText = goog.abstractMethod;
+ol.render.VectorContext.prototype.drawText = function(flatCoordinates, offset, end, stride, geometry, feature) {};
 
 
 /**
  * @param {ol.style.Fill} fillStyle Fill style.
  * @param {ol.style.Stroke} strokeStyle Stroke style.
  */
-ol.render.VectorContext.prototype.setFillStrokeStyle = goog.abstractMethod;
+ol.render.VectorContext.prototype.setFillStrokeStyle = function(fillStyle, strokeStyle) {};
 
 
 /**
  * @param {ol.style.Image} imageStyle Image style.
  */
-ol.render.VectorContext.prototype.setImageStyle = goog.abstractMethod;
+ol.render.VectorContext.prototype.setImageStyle = function(imageStyle) {};
 
 
 /**
  * @param {ol.style.Text} textStyle Text style.
  */
-ol.render.VectorContext.prototype.setTextStyle = goog.abstractMethod;
+ol.render.VectorContext.prototype.setTextStyle = function(textStyle) {};

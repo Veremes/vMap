@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Module vMap -->
+<installer>
+	<dependenciesCollection>
+		<dependency>
+			<nature>core</nature>
+			<version>2017.02.00</version>
+		</dependency>
+		<dependency>
+			<nature>web_services</nature>
+			<name>vmap</name>
+			<version>2017.03.00</version>
+		</dependency>
+		<dependency>
+			<nature>web_services</nature>
+			<name>anc</name>
+			<version>2017.01.00</version>
+		</dependency>
+	</dependenciesCollection>
+</installer>

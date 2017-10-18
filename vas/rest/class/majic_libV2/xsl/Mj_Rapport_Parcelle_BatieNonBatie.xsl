@@ -55,7 +55,7 @@
 		</Styles>
 		 <Worksheet ss:Name="Feuil1">
 			<!--<xsl:variable name="nb_ligne"><xsl:value-of select="./XmlMapLog/XmlLog/@nb_ligne" /></xsl:variable>-->
-			<Table ss:ExpandedColumnCount="7" x:FullColumns="1" x:FullRows="1" ss:DefaultColumnWidth="60" ss:DefaultRowHeight="15">
+			<Table ss:DefaultColumnWidth="60" ss:DefaultRowHeight="15">
 				<!--<xsl:attribute name="ss:ExpandedRowCount"><xsl:value-of select="1000" /></xsl:attribute>-->
 				<Column ss:AutoFitWidth="0" ss:Width="103.5"/>
 				<Column ss:AutoFitWidth="0" ss:Width="105"/>

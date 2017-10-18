@@ -44,14 +44,13 @@ nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectDirective = function () {
 /**
  * @ngInject
  * @constructor
- * @param {object} $http
  * @param {object} $scope
  * @param {object} $timeout
  * @param {object} $q
  * @returns {nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController}
  * @export
  */
-nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController = function ($http, $scope, $timeout, $q) {
+nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController = function ($scope, $timeout, $q) {
     oVmap.log("nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController");
 
     var this_ = this;
@@ -60,11 +59,6 @@ nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController = function ($h
      * The vMap scope
      */
     $scope['vmapScope'] = oVmap['scope'];
-
-    /**
-     * @private
-     */
-    this.$http_ = $http;
 
     /**
      * @private
@@ -82,7 +76,7 @@ nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController = function ($h
     this.$q_ = $q;
 
     /**
-     * Dummy canceler (use canceler.resolve() for cancel the $http request)
+     * Dummy canceler (use canceler.resolve() for cancel the ajax request)
      * @private
      */
     this.canceler_ = $q.defer();
@@ -154,8 +148,9 @@ nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController = function ($h
 
     var setQueryableBos = function () {
         this_.$scope_.$applyAsync(function () {
-            // rempli this.oQueryableBOs
-            this_['oQueryableBOs'] = oVmap.getMapManager().getQueryableBusinessObjects();
+            // rempli this.oQueryableBOs et aQueryableBOs
+            this_['oQueryableBOs'] = oVmap.getMapManager().getQueryableBusinessObjects(true);
+            this_['aQueryableBOs'] = oVmap.getMapManager().getQueryableBusinessObjectsAsArray(true);
             this_['aBusinessObjectsList'] = Object.keys(this_['oQueryableBOs']);
 
             // séléctionne le premier objet métier si besoin
@@ -209,7 +204,7 @@ nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController = function ($h
             this_.canceler_.resolve();
         }
     });
-    
+
     // Vide les popups quand on change de carte
     oVmap['scope'].$on('mapChanged', function () {
         this_.removePopups();
@@ -242,21 +237,26 @@ nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController.prototype.quer
 
     // Réinitialise canceler_
     this.canceler_ = this.$q_.defer();
-    
+
     // Objet métier sur lequel effectuer la selection
     sQueryBo = goog.isDefAndNotNull(sQueryBo) ? sQueryBo : this['sSelectedBo'];
 
     // Interroge l'objet métier sélectionné
-    this.oSelect.queryByEWKTGeom({
-        bo_id: sQueryBo,
-        EWKTGeometry: EWKTGeometry,
-        canceler: this.canceler_,
-        useTableFormat: false,
-        callback: function (data) {
-            $('body').css({"cursor": ""});
-            this_.replaceSelectionPopup(data, olPoint);
-        }
-    });
+    if (goog.isDefAndNotNull(this['oQueryableBOs'][sQueryBo])) {
+        this.oSelect.queryByEWKTGeom({
+            bo_id: sQueryBo,
+            EWKTGeometry: EWKTGeometry,
+            canceler: this.canceler_,
+            useTableFormat: false,
+            buffer: this['oQueryableBOs'][sQueryBo]['bo_selection_buffer'],
+            callback: function (data) {
+                $('body').css({"cursor": ""});
+                this_.replaceSelectionPopup(data, olPoint);
+            }
+        });
+    } else {
+        $('body').css({"cursor": ""});
+    }
 };
 
 // Ajout de la sélection
@@ -360,6 +360,13 @@ nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController.prototype.disp
         // Crée la nouvelle popup
         if (goog.isDef(aSelection[i]['mapPopup']))
             aSelection[i]['mapPopup'].remove(false);
+
+        // Si le résultat est un point, alors colle la popup sur le point
+        if (goog.isDefAndNotNull(aSelection[i]['olFeature'].getGeometry().getType)) {
+            if (aSelection[i]['olFeature'].getGeometry().getType() === 'Point') {
+                olPoint = aSelection[i]['olFeature'].getGeometry();
+            }
+        }
 
         aSelection[i]['mapPopup'] = new nsVmap.Map.MapPopup(aSelection[i]['olFeature'], olPoint);
 
@@ -496,10 +503,10 @@ nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController.prototype.cent
         if (geom.getPoints().length === 1) {
             this['map'].getView().setCenter(geom.getPoint(0).getCoordinates());
         } else {
-            this['map'].getView().fit(geom, this['map'].getSize());
+            this['map'].getView().fit(geom);
         }
     } else {
-        this['map'].getView().fit(geom, this['map'].getSize());
+        this['map'].getView().fit(geom);
     }
 
 };
@@ -525,7 +532,7 @@ nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController.prototype.disp
 nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController.prototype.displayEditFrom = function (selection) {
     oVmap.log('nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController.prototype.displayEditFrom');
     var this_ = this;
-    var sQueryBo = angular.copy(selection['bo_type']);    
+    var sQueryBo = angular.copy(selection['bo_type']);
     this.oSelect.displayEditFrom(selection, function () {
         this_.queryByEWKTGeom(this_.EWKTGeometry, this_.olPoint, sQueryBo);
     });

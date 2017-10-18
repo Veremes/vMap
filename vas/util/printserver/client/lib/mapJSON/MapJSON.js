@@ -1,4 +1,4 @@
-/* global goog, ol, nsVitisComponent, vitisApp */
+/* global goog, ol, nsVitisComponent, vitisApp, URL */
 
 /**
  * @author: Armand Bahi
@@ -13,6 +13,7 @@ goog.provide('MapJSON');
 
 goog.require('ol');
 goog.require('ol.View');
+goog.require('ol.Map');
 goog.require('ol.extent');
 goog.require('ol.tilegrid.TileGrid');
 goog.require('ol.format.GeoJSON');
@@ -35,6 +36,17 @@ goog.require('ol.source.OSM');
 goog.require('ol.layer.Tile');
 goog.require('ol.layer.Image');
 goog.require('ol.layer.Vector');
+
+// ol3-ext
+goog.require('ol.ordering');
+goog.require('ol.style.Shadow');
+goog.require('ol.style.FontSymbol');
+goog.require('ol.style.FontSymbol.FontAwesome');
+
+// ol3-veremes
+goog.require('ol.veremes');
+
+
 
 MapJSON = function (opt_options) {
 
@@ -102,7 +114,8 @@ MapJSON.prototype.getViewFromDef = function (oMapDefinition, opt_options) {
     // Étendue de la vue
     if (goog.isDefAndNotNull(oViewDef['extent'])) {
         if (goog.isDefAndNotNull(opt_options['size'])) {
-            olView.fit(oViewDef['extent'], opt_options['size'], {
+            olView.fit(oViewDef['extent'], {
+                size: opt_options['size'],
                 nearest: true
             });
         } else {
@@ -287,8 +300,47 @@ MapJSON.prototype.getSourceFromLayerDef_ = function (oMapDefinition, oLayerDef, 
         }
     }
 
-    // Valeurs STYLES par défaut
+    // Options du service
+    var oServiceOptions = {};
+    if (typeof (oLayerDef['service_options']) === "string") {
+        try {
+            oServiceOptions = JSON.parse(oLayerDef['service_options']);
+        } catch (e) {
+            oServiceOptions = {};
+        }
+    } else if (typeof (oLayerDef['service_options']) !== "object") {
+        oServiceOptions = oLayerDef['service_options'];
+    }
+    
+    // Options de la couche
+    var oLayerOptions = {};
+    if (typeof (oLayerDef['layer_options']) === "string") {
+        try {
+            oLayerOptions = JSON.parse(oLayerDef['layer_options']);
+        } catch (e) {
+            oLayerOptions = {};
+        }
+    } else if (typeof (oLayerDef['layer_options']) !== "object") {
+        oLayerOptions = oLayerDef['layer_options'];
+    }
+
+    // Paramétrage en fonction du type de couche
     if (type === 'tilewms' || type === 'imagewms') {
+        // Styles des couches
+        if (goog.isDefAndNotNull(oLayerOptions)) {
+            if (goog.isDefAndNotNull(oLayerOptions['layer_style'])) {
+                var aLayers = oLayerDef['params']['LAYERS'].split(',');
+                var aStyles = [];
+                for (var i = 0; i < aLayers.length; i++) {
+                    if (goog.isDefAndNotNull(oLayerOptions['layer_style'][aLayers[i]])) {
+                        aStyles.push(oLayerOptions['layer_style'][aLayers[i]]['Name']);
+                    } else {
+                        aStyles.push('');
+                    }
+                }
+                oLayerDef['params']['STYLES'] = aStyles.join(',');
+            }
+        }
         if (!goog.isDefAndNotNull(oLayerDef['params']['STYLES']) &&
                 !goog.isDefAndNotNull(oLayerDef['params']['styles'])) {
             oLayerDef['params']['STYLES'] = '';
@@ -298,6 +350,30 @@ MapJSON.prototype.getSourceFromLayerDef_ = function (oMapDefinition, oLayerDef, 
                 src = src.replace('STYLES&', 'STYLES=&');
                 imageTile.getImage().src = src;
             };
+        }
+
+        // Authentification des couches
+        if (goog.isDefAndNotNull(oServiceOptions)) {
+
+            // Si login et password sont renseignés, alors effectue une requête "fantome" pour logguer l'ip client
+            if (goog.isDefAndNotNull(oServiceOptions['login'])) {
+                if (goog.isDefAndNotNull(oServiceOptions['password'])) {
+                    var newLoadFunction = function (image, src) {
+                        var xhr = new XMLHttpRequest();
+                        xhr.responseType = 'blob';
+                        xhr.onreadystatechange = function () {
+                            if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+                                image.getImage().src = URL.createObjectURL(xhr.response);
+                            }
+                        };
+                        xhr.open('GET', src, true);
+                        xhr.setRequestHeader("Authorization", "Basic " + btoa(oServiceOptions['login'] + ":" + oServiceOptions['password']));
+                        xhr.send();
+                    };
+                    oLayerDef['tileLoadFunction'] = newLoadFunction;
+                    oLayerDef['imageLoadFunction'] = newLoadFunction;
+                }
+            }
         }
     }
 
@@ -468,34 +544,44 @@ MapJSON.prototype.getLayerFromLayerDef_ = function (oMapDefinition, oLayerDef, o
     if (oLayerDef['bo_queryable'] === true) {
         layer.set('bo_queryable', true);
 
-        // Défini les droits sur le business object
-        if (goog.isDefAndNotNull(oLayerDef['bo_user_rights'])) {
-            layer.set('bo_user_rights', oLayerDef['bo_user_rights']);
+//        // Défini les droits sur le business object
+//        if (goog.isDefAndNotNull(oLayerDef['bo_user_rights'])) {
+//            layer.set('bo_user_rights', oLayerDef['bo_user_rights']);
+//        }
+
+        // Défini les business object
+        if (goog.isDefAndNotNull(oLayerDef['business_objects'])) {
+            layer.set('business_objects', oLayerDef['business_objects']);
         }
     }
 
     layer.set('layer_id', oLayerDef['layer_id']);
 
-    if (goog.isDefAndNotNull(oLayerDef['bo_id']))
-        layer.set('bo_id', oLayerDef['bo_id']);
-    if (goog.isDefAndNotNull(oLayerDef['bo_title']))
-        layer.set('bo_title', oLayerDef['bo_title']);
-    if (goog.isDefAndNotNull(oLayerDef['bo_id_field']))
-        layer.set('bo_id_field', oLayerDef['bo_id_field']);
-    if (goog.isDefAndNotNull(oLayerDef['bo_search_field']))
-        layer.set('bo_search_field', oLayerDef['bo_search_field']);
-    if (goog.isDefAndNotNull(oLayerDef['bo_result_field']))
-        layer.set('bo_result_field', oLayerDef['bo_result_field']);
-    if (goog.isDefAndNotNull(oLayerDef['bo_search_use_strict']))
-        layer.set('bo_search_use_strict', oLayerDef['bo_search_use_strict']);
-    if (goog.isDefAndNotNull(oLayerDef['bo_geom_column']))
-        layer.set('bo_geom_column', oLayerDef['bo_geom_column']);
-    if (goog.isDefAndNotNull(oLayerDef['bo_geom_type']))
-        layer.set('bo_geom_type', oLayerDef['bo_geom_type']);
-    if (goog.isDefAndNotNull(oLayerDef['bo_index']))
-        layer.set('bo_index', oLayerDef['bo_index']);
-    if (goog.isDefAndNotNull(oLayerDef['events']))
+//    if (goog.isDefAndNotNull(oLayerDef['bo_id']))
+//        layer.set('bo_id', oLayerDef['bo_id']);
+//    if (goog.isDefAndNotNull(oLayerDef['bo_title']))
+//        layer.set('bo_title', oLayerDef['bo_title']);
+//    if (goog.isDefAndNotNull(oLayerDef['bo_id_field']))
+//        layer.set('bo_id_field', oLayerDef['bo_id_field']);
+//    if (goog.isDefAndNotNull(oLayerDef['bo_search_field']))
+//        layer.set('bo_search_field', oLayerDef['bo_search_field']);
+//    if (goog.isDefAndNotNull(oLayerDef['bo_result_field']))
+//        layer.set('bo_result_field', oLayerDef['bo_result_field']);
+//    if (goog.isDefAndNotNull(oLayerDef['bo_search_use_strict']))
+//        layer.set('bo_search_use_strict', oLayerDef['bo_search_use_strict']);
+//    if (goog.isDefAndNotNull(oLayerDef['bo_selection_buffer']))
+//        layer.set('bo_selection_buffer', oLayerDef['bo_selection_buffer']);
+//    if (goog.isDefAndNotNull(oLayerDef['bo_geom_column']))
+//        layer.set('bo_geom_column', oLayerDef['bo_geom_column']);
+//    if (goog.isDefAndNotNull(oLayerDef['bo_geom_type']))
+//        layer.set('bo_geom_type', oLayerDef['bo_geom_type']);
+//    if (goog.isDefAndNotNull(oLayerDef['bo_index']))
+//        layer.set('bo_index', oLayerDef['bo_index']);
+
+
+    if (goog.isDefAndNotNull(oLayerDef['events'])) {
         layer.set('events', oLayerDef['events']);
+    }
     if (goog.isDefAndNotNull(oLayerDef['is_dynamic']))
         layer.set('is_dynamic', oLayerDef['is_dynamic']);
     if (goog.isDefAndNotNull(oLayerDef['is_filtered'])) {
@@ -558,8 +644,9 @@ MapJSON.prototype.setFilterOnLayer_ = function (olLayer) {
 
         for (var key in oValues) {
 
-            if (!goog.isDefAndNotNull(oValues[key]) || oValues[key] === '')
-                oValues[key] = '-1000000';
+//            if (!goog.isDefAndNotNull(oValues[key]) || oValues[key] === ''){
+//                oValues[key] = '-1000000';
+//            }
 
             if (goog.isArray(oValues[key])) {
                 // en cas de tableau, affiche les valeurs séparées par des virgules
@@ -580,7 +667,7 @@ MapJSON.prototype.setFilterOnLayer_ = function (olLayer) {
                     }
                 }
             } else {
-                params[key] = '-1000000';
+//                params[key] = '-1000000';
             }
         }
 

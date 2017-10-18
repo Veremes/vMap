@@ -9,6 +9,7 @@
                 "FORM_TOOLS_ATTRIBUTION_CONFIGURATION_CONFIGURATION_VMAP_CONFIG|Attribution",
                 "FORM_TOOLS_MOUSE_POSITION_CONFIGURATION_CONFIGURATION_VMAP_CONFIG|MousePosition",
                 "FORM_TOOLS_CURRENT_PROJECTION_CONFIGURATION_CONFIGURATION_VMAP_CONFIG|CurrentProjection",
+                "FORM_TOOLS_MAP_NAME_CONFIGURATION_CONFIGURATION_VMAP_CONFIG|MapName",
                 "FORM_TOOLS_SCALE_CONFIGURATION_CONFIGURATION_VMAP_CONFIG|Scale",
                 "FORM_TOOLS_SCALE_LINE_CONFIGURATION_CONFIGURATION_VMAP_CONFIG|ScaleLine",
                 "FORM_TOOLS_OVERVIEW_MAP_CONFIGURATION_CONFIGURATION_VMAP_CONFIG|OverviewMap",
@@ -297,29 +298,6 @@
                         "label": "FORM_SELECTION_LIMIT_LIST_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
                         "required": true,
                         "default_value": 50,
-                        "nb_cols": 12
-                    }
-                ]
-            },
-            {
-                "fields": [
-                    {
-                        "type": "text",
-                        "name": "selection.buffer",
-                        "label": "FORM_SELECTION_BUFFER_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
-                        "required": true,
-                        "default_value": 5,
-                        "nb_cols": 12
-                    }
-                ]
-            },
-            {
-                "fields": [
-                    {
-                        "type": "text",
-                        "name": "selection.max_buffer",
-                        "label": "FORM_SELECTION_MAX_SCALE_BUFFER_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
-                        "required": true,
                         "nb_cols": 12
                     }
                 ]

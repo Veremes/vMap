@@ -169,7 +169,37 @@ class Layers extends Vmap {
         }
 
         $aReturn = $this->genericGet($this->aProperties['schema_vmap'], 'v_layer', 'layer_id');
+
+        // Récupère les informations des objets métiers correcpondants aux couches
+        if ($aReturn['sStatus'] === 1) {
+            $aReturn = $this->getLayersBusinessObjectsInfos();
+        }
         return $aReturn['sMessage'];
+    }
+
+    /**
+     * Get the layers business objects infos
+     * @return array
+     */
+    function getLayersBusinessObjectsInfos() {
+
+        // Récupère les infos des objets métiers
+        for ($i = 0; $i < count($this->aObjects); $i++) {
+            if (!empty($this->aObjects[$i]->aFields['bo_id_list'])) {
+                $aBoIds = explode('|', $this->aObjects[$i]->aFields['bo_id_list']);
+                $this->aObjects[$i]->aFields['business_objects'] = $this->aObjects[$i]->getBusinessObjectsInfos($aBoIds);
+            }
+        }
+
+        // Met le tout en forme
+        $sEncoding = isset($this->aValues['sEncoding']) ? $this->aValues['sEncoding'] : null;
+        $sSourceEncoding = isset($this->aValues['sSourceEncoding']) ? $this->aValues['sSourceEncoding'] : null;
+        $output = isset($this->aValues['output']) ? $this->aValues['output'] : null;
+        $aXmlRacineAttribute['status'] = 1;
+        $sMessage = $this->asDocument('', 'vitis', $sEncoding, True, $aXmlRacineAttribute, $sSourceEncoding, $output);
+        $aReturn = array('sStatus' => $aXmlRacineAttribute['status'], "sMessage" => $sMessage);
+
+        return $aReturn;
     }
 
     /**
@@ -305,8 +335,27 @@ class Layers extends Vmap {
             $sFormName = $this->aPath[4];
             return $this->generateEmptyForm($layerId, $sFormName);
         }
-
+        // Supprime le champ 'bo_id' à NULL si il est vide (sinon erreur avec la contrainte "fk_layer_business_object").
+        $sBoId = $this->aValues['bo_id'];
+        if (empty($sBoId))
+            unset($this->aValues['bo_id']);
         $aReturn = $this->genericPost($this->aProperties['schema_vmap'], 'layer', $this->aProperties['schema_vmap'] . '.seq_common', 'layer_id');
+        if ($aReturn['sStatus'] == 1) {
+            // Met à jour le champ 'bo_id' à NULL.
+            if (empty($sBoId)) {
+                require $this->sRessourcesFile;
+                $aParams['sSchemaVmap'] = array('value' => $this->aProperties['schema_vmap'], 'type' => 'schema_name');
+                $aParams['layer_id'] = array('value' => $this->aValues['my_vitis_id'], 'type' => 'number');
+                $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['setLayerBoId'], $aParams);
+            }
+            // Associe les objets métiers à la couche
+            if (!empty($this->aValues['bo_id_list'])) {
+                if (!empty($this->aValues['my_vitis_id'])) {
+                    $aBoList = explode('|', $this->aValues['bo_id_list']);
+                    $this->associateBusinessobjects($aBoList, $this->aValues['my_vitis_id']);
+                }
+            }
+        }
         return $aReturn['sMessage'];
     }
 
@@ -537,8 +586,27 @@ class Layers extends Vmap {
             $sComand = $this->aValues['cmd'];
             $this->putForm($layerId, $sFormName, $sComand);
         }
-
+        // Supprime le champ 'bo_id' à NULL si il est vide (sinon erreur avec la contrainte "fk_layer_business_object").
+        $sBoId = $this->aValues['bo_id'];
+        if (empty($sBoId))
+            unset($this->aValues['bo_id']);
         $aReturn = $this->genericPut($this->aProperties['schema_vmap'], 'layer', 'layer_id');
+        if ($aReturn['sStatus'] == 1) {
+            // Met à jour le champ 'bo_id' à NULL.
+            if (empty($sBoId)) {
+                require $this->sRessourcesFile;
+                $aParams['sSchemaVmap'] = array('value' => $this->aProperties['schema_vmap'], 'type' => 'schema_name');
+                $aParams['layer_id'] = array('value' => $this->aValues['my_vitis_id'], 'type' => 'number');
+                $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['setLayerBoId'], $aParams);
+            }
+            // Associe les objets métiers à la couche
+            if (!empty($this->aValues['bo_id_list'])) {
+                if (!empty($this->aValues['my_vitis_id'])) {
+                    $aBoList = explode('|', $this->aValues['bo_id_list']);
+                    $this->associateBusinessobjects($aBoList, $this->aValues['my_vitis_id']);
+                }
+            }
+        }
         return $aReturn['sMessage'];
     }
 
@@ -634,6 +702,32 @@ class Layers extends Vmap {
                     $this->generateEmptyForm($layerId, $sFormName);
                     break;
             }
+        }
+    }
+
+    /**
+     * Associate the business objects to the layer
+     * @param array $aBoList
+     * @param integer $iLayerId
+     */
+    function associateBusinessobjects($aBoList, $iLayerId) {
+        require $this->sRessourcesFile;
+
+        // Supprime les objets métiers actuellements liés à la couche
+        $aSQLParams = array(
+            'sSchemaVmap' => array('value' => $this->aProperties['schema_vmap'], 'type' => 'column_name'),
+            'layer_id' => array('value' => $iLayerId, 'type' => 'number')
+        );
+        $oResult = $this->oConnection->oBd->executeWithParams($aSql['deleteAssociatedBos'], $aSQLParams);
+
+        // Ajoute les objets métiers à la couche
+        for ($i = 0; $i < count($aBoList); $i++) {
+            $aSQLParams = array(
+                'sSchemaVmap' => array('value' => $this->aProperties['schema_vmap'], 'type' => 'column_name'),
+                'business_object_id' => array('value' => $aBoList[$i], 'type' => 'string'),
+                'layer_id' => array('value' => $iLayerId, 'type' => 'number')
+            );
+            $oResult = $this->oConnection->oBd->executeWithParams($aSql['addAssociatedBos'], $aSQLParams);
         }
     }
 

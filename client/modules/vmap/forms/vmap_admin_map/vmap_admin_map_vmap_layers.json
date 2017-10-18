@@ -178,8 +178,13 @@
                                 },
                                 {
                                     "label": "FORM_BTN_REMOVE_LAYER_LIST_VMAP_MAP_LAYER",
-                                    "name": "add_layers_to_layer_btn",
+                                    "name": "remove_layers_to_layer_btn",
                                     "event": "removeLayersOfLayer()"
+                                },
+                                {
+                                    "label": "FORM_BTN_CHECK_LAYERS_VMAP_MAP_LAYER",
+                                    "name": "check_wms_layers",
+                                    "event": "checkVmapLayerWmsLayers()"
                                 }
                             ],
                             "data": [
@@ -250,18 +255,24 @@
             {
                 "fields":[
                     {
-                        "type":"select",
-                        "name":"bo_id",
+                        "type":"double_select",
+                        "name":"bo_id_list",
+                        "name_to":"bo_id_list",
+                        "name_from":"bo_id_list_from",
                         "label":"FORM_BUSINESS_OBJECT_VMAP_MAP_LAYER",
-                        "nb_cols":6,
+                        "label_from":"FORM_BUSINESS_OBJECT_VMAP_MAP_LAYER_FROM",
+                        "label_to":"FORM_BUSINESS_OBJECT_VMAP_MAP_LAYER_TO",
+                        "visible": false,
                         "web_service":{
                             "ressource_id":"vmap/businessobjects",
                             "id_key":"business_object_id",
                             "label_key":"business_object_id",
                             "parameters":{
-                                "order_by":"business_object_id"
+                                    "order_by":"business_object_id"
                             }
-                        }
+                        },
+                        "size":9,
+                        "nb_cols":12
                     }
                 ]
             },
@@ -450,6 +461,11 @@
                                     "label": "FORM_BTN_REMOVE_LAYER_LIST_VMAP_MAP_LAYER",
                                     "name": "add_layers_to_layer_btn",
                                     "event": "removeLayersOfLayer()"
+                                },
+                                {
+                                    "label": "FORM_BTN_CHECK_LAYERS_VMAP_MAP_LAYER",
+                                    "name": "check_wms_layers",
+                                    "event": "checkVmapLayerWmsLayers()"
                                 }
                             ],
                             "data": [
@@ -521,19 +537,24 @@
             {
                 "fields":[
                     {
-                        "type":"select",
-                        "name":"bo_id",
+                        "type":"double_select",
+                        "name":"bo_id_list",
+                        "name_to":"bo_id_list",
+                        "name_from":"bo_id_list_from",
                         "label":"FORM_BUSINESS_OBJECT_VMAP_MAP_LAYER",
-                        "nb_cols":6,
+                        "label_from":"FORM_BUSINESS_OBJECT_VMAP_MAP_LAYER_FROM",
+                        "label_to":"FORM_BUSINESS_OBJECT_VMAP_MAP_LAYER_TO",
+                        "visible": false,
                         "web_service":{
                             "ressource_id":"vmap/businessobjects",
                             "id_key":"business_object_id",
                             "label_key":"business_object_id",
                             "parameters":{
-                                "order_by":"business_object_id"
+                                    "order_by":"business_object_id"
                             }
                         },
-                        "visible": false
+                        "size":9,
+                        "nb_cols":12
                     }
                 ]
             },
@@ -721,10 +742,25 @@
             {
                 "fields":[
                     {
-                        "type":"label",
-                        "name":"bo_id",
+                        "type":"double_select",
+                        "name":"bo_id_list",
+                        "name_to":"bo_id_list",
+                        "name_from":"bo_id_list_from",
                         "label":"FORM_BUSINESS_OBJECT_VMAP_MAP_LAYER",
-                        "nb_cols":6
+                        "label_from":"FORM_BUSINESS_OBJECT_VMAP_MAP_LAYER_FROM",
+                        "label_to":"FORM_BUSINESS_OBJECT_VMAP_MAP_LAYER_TO",
+                        "visible": false,
+                        "disabled": true,
+                        "web_service":{
+                            "ressource_id":"vmap/businessobjects",
+                            "id_key":"business_object_id",
+                            "label_key":"business_object_id",
+                            "parameters":{
+                                    "order_by":"business_object_id"
+                            }
+                        },
+                        "size":9,
+                        "nb_cols":12
                     }
                 ]
             },

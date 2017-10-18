@@ -81,9 +81,9 @@ class Group extends Vitis{
     function getUsers(){
         require $this->sRessourcesFile;
         if (in_array("users", $this->aSelectedFields)){
-                $sSql = str_replace('[sSchemaFramework]', $this->aProperties['schema_framework'], $aSql['getGroupUsers']);
-                $sSql = str_replace('[group_id]', $this->aValues['my_vitis_id'], $sSql);
-		$oPDOresult =$this->oConnection->oBd->execute ($sSql);
+                $aParams['sSchemaFramework'] = array('value' => $this->aProperties['schema_framework'], 'type' => 'schema_name');
+                $aParams['group_id'] = array('value' => $this->aValues['my_vitis_id'], 'type' => 'number');
+                $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['getGroupUsers'], $aParams);
 		$sListUserId = "";
 		$aListUserLogin = array();
 		while($aLigne=$this->oConnection->oBd->ligneSuivante ($oPDOresult)) {

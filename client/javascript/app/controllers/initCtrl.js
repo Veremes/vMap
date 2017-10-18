@@ -1,3 +1,5 @@
+'use strict';
+
 // Google closure
 goog.provide("vitis.controllers.init");
 goog.require("vitis.modules.main");
@@ -13,10 +15,9 @@ goog.require("vitis.modules.main");
  * @param {service} propertiesSrvc Paramètres des properties.
  * @param {service} userSrvc Paramètres de l'utilisateur.
  * @param {$translateProvider.$translate} $translate TranslateProvider translate service.
- * @param {service} Restangular Service Restangular.
  * @ngInject
  **/
-vitisApp.initCtrl = function ($scope, $log, $q, envSrvc, sessionSrvc, propertiesSrvc, userSrvc, $translate, Restangular) {
+vitisApp.initCtrl = function ($scope, $log, $q, envSrvc, sessionSrvc, propertiesSrvc, userSrvc, $translate) {
         /**
          * getMainTemplateUrl function.
          * Change le template de l'élément principal de l'application.
@@ -61,34 +62,38 @@ vitisApp.initCtrl = function ($scope, $log, $q, envSrvc, sessionSrvc, properties
          **/
         $scope.$root["connectFromUrl"] = function (oConnexionId) {
             $log.info("connectFromUrl");
-            // Paramètres du webservice.
-            var oWebServiceBase = Restangular["one"](oClientProperties["services_alias"] + "/" + sessionSrvc["web_service"], sessionSrvc["web_service_controller"]);
-            var oElem = {"user": oConnexionId["login"], "password": oConnexionId["password"], "duration": sessionSrvc["duration"]};
-            var sPath = "";
-            var oParams = {"token": sessionSrvc["token"]};
             // Demande de token pour l'utilisateur.
-            oWebServiceBase["customPOST"](JSON.stringify(oElem), sPath, oParams)
-                    .then(function (data) {
-                        if (data["status"] == 1) {
-                            // Cache le message d'erreur.
-                            //$scope["hideErrorAlert"]();
-                            // Sauve les données du token.
-                            sessionSrvc["token"] = data["token"];
-                            sessionSrvc["validity_date"] = data["validity_date"];
-                            sessionStorage["session_token"] = sessionSrvc["token"];
-                            // Sauve les données de l'utilisateur.
-                            userSrvc["login"] = oConnexionId["login"];
-                            userSrvc["id"] = parseInt(data["user_id"]);
-                            userSrvc["privileges"] = data["privileges"];
-                            sessionStorage["user_login"] = oConnexionId["login"];
-                            sessionStorage["user_id"] = userSrvc["id"];
-                            sessionStorage["privileges"] = userSrvc["privileges"];
-                            sessionSrvc["saveSessionToLocalStorage"]();
-                            //
-                            deferred.resolve();
-                        } else
-                            sessionSrvc["disconnect"]();
-                    });
+            ajaxRequest({
+                "method": "POST",
+                "url": oClientProperties["web_server_name"] + "/" + oClientProperties["services_alias"] + "/" + sessionSrvc["web_service"] + "/" + sessionSrvc["web_service_controller"],
+                "scope": $scope,
+                "data": {
+                    "user": oConnexionId["login"],
+                    "password": oConnexionId["password"],
+                    "duration": sessionSrvc["duration"]
+                },
+                "success": function(response){
+                    if (response["data"]["status"] == 1) {
+                        // Cache le message d'erreur.
+                        //$scope["hideErrorAlert"]();
+                        // Sauve les données du token.
+                        sessionSrvc["token"] = response["data"]["token"];
+                        sessionSrvc["validity_date"] = response["data"]["validity_date"];
+                        sessionStorage["session_token"] = sessionSrvc["token"];
+                        // Sauve les données de l'utilisateur.
+                        userSrvc["login"] = oConnexionId["login"];
+                        userSrvc["id"] = parseInt(response["data"]["user_id"]);
+                        userSrvc["privileges"] = response["data"]["privileges"];
+                        sessionStorage["user_login"] = oConnexionId["login"];
+                        sessionStorage["user_id"] = userSrvc["id"];
+                        sessionStorage["privileges"] = userSrvc["privileges"];
+                        sessionSrvc["saveSessionToLocalStorage"]();
+                        //
+                        deferred.resolve();
+                    } else
+                        sessionSrvc["disconnect"]();
+                }
+            });
         };
         
         // Sauve le nom de l'application (pour les modes de l'utilisateur)
@@ -121,41 +126,43 @@ vitisApp.initCtrl = function ($scope, $log, $q, envSrvc, sessionSrvc, properties
                     // Sauve les properties du client.
                     propertiesSrvc = _["extendOwn"](propertiesSrvc, oClientProperties);
                     if (propertiesSrvc["status"] != "unstable") {
-                            // Vérification de la validité du token côté serveur.
-                            var oWebServiceBase = Restangular["one"](propertiesSrvc["services_alias"] + "/vitis/privatetoken");
-                            oWebServiceBase["customGET"]("" , {"token": sLocalStorageSessionToken}).then(function (data) {
-                                    if (data["status"] == 1) {
-                                            // Sauve le token valide.
-                                            sessionStorage["session_token"] = sLocalStorageSessionToken;
-                                            // Paramètrage de l'url de base pour Restangular.
-                                            vitisApp["RestangularProvider"]["setBaseUrl"](propertiesSrvc["web_server_name"]);
-                                            // Charge les properties stockées côté serveur.
-                                            propertiesSrvc["getFromServer"]().then(function() {
-                                                    // Paramètrage de la langue.
-                                                    $translate["use"](propertiesSrvc["language"]);
-                                                    bootbox["setLocale"](propertiesSrvc["language"]);
-                                                    // Restauration des données de session sauvées dans le local storage.
-                                                    sessionSrvc["restoreSessionFromAppLocalStorage"]();
-                                                    // Récupération des données (token, utilisateur) sauvé dans la session.
-                                                    sessionSrvc["token"] = sLocalStorageSessionToken;
-                                                    userSrvc["login"] = sessionStorage["user_login"];
-                                                    userSrvc["id"] = parseInt(sessionStorage["user_id"]);
-                                                    userSrvc["privileges"] = data["privileges"];
-                                                    sessionStorage["privileges"] = data["privileges"];
-                                                    // Surcharge la propriété "app_name" par le nom de l'application passé dans l'url.
-                                                    propertiesSrvc["app_name"] = sessionStorage["application"].toLowerCase().charAt(0).toUpperCase() + sessionStorage["application"].slice(1);
-                                                    // Titre de la page
-                                                    document.title = propertiesSrvc["app_name"].toUpperCase();
-                                                    // Paramètre "environment".
-                                                    if (typeof(sessionStorage['environment']) != "undefined")
-                                                        propertiesSrvc["environment"] = sessionStorage['environment'];
-                                                    // Connexion à l'application.
-                                                    sessionSrvc["connect"]();
-                                            });
-                                    }
-                                    else
-                                            sessionSrvc["disconnect"]();
-                            });
+                        // Sauve le token du session storage.
+                        sessionStorage["session_token"] = sLocalStorageSessionToken;
+                        // Vérification de la validité du token côté serveur.
+                        ajaxRequest({
+                            "method": "GET",
+                            "url": propertiesSrvc["web_server_name"] + "/" + propertiesSrvc["services_alias"] + "/vitis/privatetoken",
+                            "scope": $scope,
+                            "success": function(response) {
+                                if (response["data"]["status"] == 1) {
+                                        // Charge les properties stockées côté serveur.
+                                        propertiesSrvc["getFromServer"]().then(function() {
+                                                // Paramètrage de la langue.
+                                                $translate["use"](propertiesSrvc["language"]);
+                                                bootbox["setLocale"](propertiesSrvc["language"]);
+                                                // Restauration des données de session sauvées dans le local storage.
+                                                sessionSrvc["restoreSessionFromAppLocalStorage"]();
+                                                // Récupération des données (token, utilisateur) sauvé dans la session.
+                                                sessionSrvc["token"] = sLocalStorageSessionToken;
+                                                userSrvc["login"] = sessionStorage["user_login"];
+                                                userSrvc["id"] = parseInt(sessionStorage["user_id"]);
+                                                userSrvc["privileges"] = response["data"]["privileges"];
+                                                sessionStorage["privileges"] = response["data"]["privileges"];
+                                                // Surcharge la propriété "app_name" par le nom de l'application passé dans l'url.
+                                                propertiesSrvc["app_name"] = sessionStorage["application"].toLowerCase().charAt(0).toUpperCase() + sessionStorage["application"].slice(1);
+                                                // Titre de la page
+                                                document.title = propertiesSrvc["app_name"].toUpperCase();
+                                                // Paramètre "environment".
+                                                if (typeof(sessionStorage['environment']) != "undefined")
+                                                    propertiesSrvc["environment"] = sessionStorage['environment'];
+                                                // Connexion à l'application.
+                                                sessionSrvc["connect"]();
+                                        });
+                                }
+                                else
+                                        sessionSrvc["disconnect"]();
+                            }
+                        });
                     }
                     else
                             sessionSrvc["disconnect"]();
@@ -163,9 +170,31 @@ vitisApp.initCtrl = function ($scope, $log, $q, envSrvc, sessionSrvc, properties
             else {
                     // Supprime les données de la session.
                     sessionSrvc["clearSessionStorage"]();
-                    // Affichage de la page de login.
-                    envSrvc["sMainTemplateUrl"] = "templates/loginTpl.html";
-                    envSrvc["sFormDefinitionName"] = "login_form";
+                    
+                    // Sauve les properties du client.
+                    propertiesSrvc = _["extendOwn"](propertiesSrvc, oClientProperties);
+                    // Chargement des properties côté serveur.
+                    propertiesSrvc["getFromServer"]().then(function () {
+                        // Paramètrage de la langue
+                        $translate["use"](propertiesSrvc["language"]);
+                        bootbox["setLocale"](propertiesSrvc["language"]);
+                        // Surcharge la propriété "app_name" par le nom de l'application passé dans l'url.
+                        propertiesSrvc["app_name"] = sessionStorage["application"].toLowerCase().charAt(0).toUpperCase() + sessionStorage["application"].slice(1);
+                        // Nom de l'application
+                        $scope["translationData"] = {
+                            "app_name": propertiesSrvc["app_name"]
+                        };
+                        // Titre de la page
+                        document.title = propertiesSrvc["app_name"].toUpperCase();
+                        //
+                        $scope.$evalAsync(function () {
+                            // theme de la page
+                            // less.modifyVars({'@application-color-theme': '@veremes-' + angular.lowercase(propertiesSrvc["app_name"]) + '-color'});
+                        });
+                        // Affichage de la page de login.
+                        envSrvc["sMainTemplateUrl"] = "templates/loginTpl.html";
+                        envSrvc["sFormDefinitionName"] = "login_form";
+                    });
             }
         });
 };

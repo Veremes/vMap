@@ -112,7 +112,7 @@ class BD {
      */
     function __construct($login, $motDePasse, $base, $serveur, $port, $sgbd, $sPageEncoding = "ISO-8859-1", $lang = "fr") {
         $this->login = $login;
-        $this->mdp = $motDePasse;
+        $this->mdp = utf8_decode($motDePasse);
         $this->base = $base;
         $this->serveur = $serveur;
         $this->sgbd = $sgbd;
@@ -178,9 +178,8 @@ class BD {
                         // Requête qui va permettre de récupérer l'encodage de la base
                         break;
                     case "pgsql" :
-                        $sSql = "SELECT datname,encoding FROM pg_database where datname='sDataBase'";
-                        $sSql = str_replace('sDataBase', $this->base, $sSql);
-                        $oPDOresult = $this->execute($sSql);
+                        $sSql = "SELECT datname,encoding FROM pg_database where datname=[sDataBase]";
+                        $oPDOresult = $this->executeWithParams($sSql, array('sDataBase' => array('type' => 'string', 'value' => $this->base)));
                         $this->aSourceEncoding = $this->ligneSuivante($oPDOresult);
                         switch ($this->aSourceEncoding["encoding"]) {
                             case 6:
@@ -199,8 +198,8 @@ class BD {
                         break;
                     case "oci" :
                         $sSql = "select * from NLS_DATABASE_PARAMETERS where parameter='NLS_CHARACTERSET'";
-                        $sSql = str_replace('sDataBase', $this->base, $sSql);
-                        $oPDOresult = $this->execute($sSql);
+//                        $sSql = str_replace('sDataBase', $this->base, $sSql);
+                        $oPDOresult = $this->executeWithParams($sSql, array());
                         $this->aSourceEncoding = $this->ligneSuivante($oPDOresult);
                         switch ($this->aSourceEncoding["NLS_CHARACTERSET"]) {
                             /* case 6:
@@ -290,6 +289,7 @@ class BD {
     // ---- Partie publique -------------------------
 
     /**
+     * DEPRECATED
      * Méthode indiquant la liste des tables contenues dans la base de données.
      * \return Le jeu d'enregistrement de la liste des tables.
      */
@@ -301,28 +301,242 @@ class BD {
 
     /**
      * Méthode d'exécution d'une requête.
+     * Si la requête SQL est variable en fonction d'un ou plusieurs paramètres
+     * il faut ABSOLUMENT utiliser executeWithParams au lieu de execute
+     * afin d'éviter les injections SQL
      * \param $sRequete Requête à exécuter.
      * \return Le jeu d'enregistrement généré par l'exécution.
      */
     function execute($sRequete) {
         writeToDebugLog($sRequete);
-        //$iDebut = (date("G")*60)*60 + (date("i")*60) + date("s");
-        if (strtolower(substr($sRequete, 0, 6)) != "select") {
-            writeToSqlLog($this->login . " | " . $sRequete);
+        if (is_null($this->connexion)) {
+            $this->erreurRencontree = 1;
+            $this->setBDMessage(ERROR_REQUEST_ERROR);
+            writeToErrorLog(html_entity_decode(ERROR_REQUEST_IMPOSSIBLE . $sRequete));
+            writeToSqlErrorLog($sRequete);
+            return false;
         }
         $oPDOresult = $this->connexion->query($sRequete);
-
-        //$iFin = (date("G")*60)*60 + (date("i")*60) + date("s");
-        //writeToDebugLog('Temps d\'exécution : '.($iFin-$iDebut));
         if ($this->connexion->errorCode() === "00000") {
             $this->erreurRencontree = 0;
+            if (strtolower(substr($sRequete, 0, 6)) != "select") {
+                writeToSqlLog($sRequete);
+            }
             return $oPDOresult;
         } else {
             $aPDOError = $this->connexion->errorInfo();
             $this->erreurRencontree = 1;
-            //$this->setStringMessage(ERROR_REQUEST_IMPOSSIBLE.$sRequete);
-            $this->setBDMessage(RETURN_BD_LABEL . "'" . $aPDOError[2] . "'");
+            $this->setBDMessage(ERROR_REQUEST_ERROR);
             writeToErrorLog(html_entity_decode(ERROR_REQUEST_IMPOSSIBLE . $sRequete . "." . RETURN_BD_LABEL . "'" . $aPDOError[2] . "'"));
+            writeToSqlErrorLog($sRequete);
+            return false;
+        }
+    }
+
+    /**
+     * Méthode sure d'exécution d'une requête avec paramètres.
+     * Si la requête SQL est variable en fonction d'un ou plusieurs paramètres
+     * il faut ABSOLUMENT utiliser executeWithParams au lieu de execute
+     * afin d'éviter les injections SQL
+     * \param $sRequete Requête à exécuter.
+     * \param $aParams Paramètres à ajouter dans la requête.
+     * \param $bLogSQL true si on veut logger les requêtes autre que SELECT dans sql.log
+     * \return Le jeu d'enregistrement généré par l'exécution.
+     */
+    function executeWithParams($sRequete, $aParams, $bLogSQL = true) {
+
+        $this->connexion->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_WARNING);
+
+        $aSqlParams = array();
+        $aParamsCpy = $aParams;
+        $sRequeteToLog2 = $sRequete . ' | ' . json_encode($aParams, true);
+
+        // Pré-traitement des paramètres
+        foreach ($aParamsCpy as $key => $value) {
+            switch ($aParamsCpy[$key]['type']) {
+                case 'group':
+                    $aGroupValues = explode('|', $aParamsCpy[$key]['value']);
+                    $sInFilter = '';
+                    for ($i = 0; $i < count($aGroupValues); $i++) {
+                        $aGroupValues[$i] = trim($aGroupValues[$i]);
+                        if (strlen($sInFilter) > 0) {
+                            $sInFilter .= ', ';
+                        }
+                        $sValueKey = 'value_' . vitisUniqId();
+                        $aParams[$sValueKey] = array('value' => $aGroupValues[$i], 'type' => 'string');
+                        $sInFilter .= '[' . $sValueKey . ']';
+                    }
+                    unset($aParams[$key]);
+                    $sRequete = str_replace('[' . $key . ']', $sInFilter, $sRequete);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        $sRequeteToLog1 = $sRequete;
+
+        // Traitement des paramètres
+        foreach ($aParams as $key => $value) {
+
+            // Requête à logger
+            switch ($aParams[$key]['type']) {
+                case 'integer':
+                case 'column_name':
+                case 'schema_name':
+                case 'table_name':
+                    $sRequeteToLog1 = str_replace('[' . $key . ']', $aParams[$key]['value'], $sRequeteToLog1);
+                    break;
+                default:
+                    $sRequeteToLog1 = str_replace('[' . $key . ']', "'" . $aParams[$key]['value'] . "'", $sRequeteToLog1);
+                    break;
+            }
+
+            // Requête à executer
+            switch ($aParams[$key]['type']) {
+                case 'integer':
+                case 'number':
+                case 'string':
+                case 'boolean':
+                    // Valeur de type booléen et vide.
+                    if ($aParams[$key]['type'] == 'boolean' && $aParams[$key]['value'] == '')
+                        $aParams[$key]['value'] = null;
+                    // Configuration du pramètre à utiliser lors de l'execution
+                    $aSqlParams[':' . $key] = $aParams[$key]['value'];
+                    $sRequete = str_replace('[' . $key . ']', ':' . $key, $sRequete);
+                    break;
+                    // Configuration du pramètre à utiliser lors de l'execution
+                    $aSqlParams[':' . $key] = $aParams[$key]['value'];
+                    $sRequete = str_replace('[' . $key . ']', ':' . $key, $sRequete);
+                    break;
+                case 'geometry':
+                case 'quoted_string':
+                    // Protège contre les quotes
+                    $aParams[$key]['value'] = $this->protegeChaine($aParams[$key]['value']);
+                    // Remplacement dans la reaqête
+                    $sRequete = str_replace('[' . $key . ']', $aParams[$key]['value'], $sRequete);
+                    break;
+                case 'column_name':
+                case 'schema_name':
+                case 'table_name':
+                    // Vérification de la syntaxe pour qu'elle corresponde à une colonne, table, schema
+                    if (preg_match('/^[\p{L}\p{N}@$#_]{0,127}$/', $aParams[$key]['value'])) {
+                        // Remplacement dans la reaqête
+                        $sRequete = str_replace('[' . $key . ']', $aParams[$key]['value'], $sRequete);
+                    } else {
+                        writeToSqlErrorLog($sRequeteToLog2 . ' | ' . $sRequeteToLog1 . ' | ' . $aParams[$key]['value'] . ' not match with column_name, schema_name, table_name');
+                    }
+                    break;
+                case 'double_quote':
+                    $aParams[$key]['value'] = '"' . $aParams[$key]['value'] . '"';
+                    $sRequete = str_replace('[' . $key . ']', $aParams[$key]['value'], $sRequete);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        $oPDOresult = $this->connexion->prepare($sRequete);
+        if ($oPDOresult) {
+            foreach ($aParams as $key => $value) {
+                $bBindOk = true;
+                switch ($aParams[$key]['type']) {
+                    case 'integer':
+                        $bBindOk = $oPDOresult->bindValue(':' . $key, $aParams[$key]['value'], PDO::PARAM_INT);
+                        break;
+                    case 'number':
+                        // Vérifications
+                        if (is_string($aParams[$key]['value'])) {
+                            // Valeur vide ?
+                            if (strlen(trim($aParams[$key]['value'])) == 0) {
+                                $aParams[$key]['value'] = null;
+                            }
+                            // Valeur non numérique ?
+                            elseif (!is_numeric($aParams[$key]['value'])) {
+                                writeToErrorLog('Error when trying to insert a textual value into a numeric attribute' . json_encode($aParams[$key], true));
+                                writeToSqlErrorLog($sRequeteToLog2 . ' | ' . $sRequeteToLog1);
+                                $this->setBDMessage(ERROR_REQUEST_ERROR);
+                                $this->erreurRencontree = 1;
+                                return false;
+                            }
+                            // Valeur numérique entre côtes
+                            else {
+                                $aParams[$key]['value'] = floatval($aParams[$key]['value']);
+                            }
+                        }
+                        $bBindOk = $oPDOresult->bindValue(':' . $key, $aParams[$key]['value']);
+                        break;
+                    case 'string':
+                        $bBindOk = $oPDOresult->bindValue(':' . $key, $aParams[$key]['value'], PDO::PARAM_STR);
+                        break;
+                    case 'boolean':
+                        $bBindOk = $oPDOresult->bindValue(':' . $key, $aParams[$key]['value'], PDO::PARAM_BOOL);
+                        break;
+                    default:
+                        break;
+                }
+                if (!$bBindOk) {
+                    writeToErrorLog('Error when binding ' . print_r($aParams[$key], true));
+                    $this->setBDMessage(ERROR_REQUEST_ERROR);
+                    writeToErrorLog(print_r($this->connexion->errorInfo(), true));
+                    return false;
+                }
+            }
+
+            $oPDOresult->execute();
+            writeToDebugLog($sRequeteToLog2 . ' | ' . $sRequeteToLog1);
+
+            if ($oPDOresult->errorCode() === "00000") {
+                $this->erreurRencontree = 0;
+                if (strtolower(substr($sRequete, 0, 6)) != "select" && $bLogSQL) {
+                    writeToSqlLog($sRequeteToLog1);
+                }
+                return $oPDOresult;
+            } else {
+                $aPDOError = $oPDOresult->errorInfo();
+                $this->erreurRencontree = 1;
+                $this->setBDMessage(ERROR_REQUEST_ERROR);
+                writeToErrorLog(html_entity_decode(ERROR_REQUEST_IMPOSSIBLE . $sRequete . "." . RETURN_BD_LABEL . "'" . $aPDOError[2] . "'"));
+                writeToSqlErrorLog($sRequeteToLog2 . ' | ' . $sRequeteToLog1);
+                return false;
+            }
+        }
+    }
+
+    /**
+     * Execute un bloc de multiples requêtes SQL
+     * @param string $sSql
+     * @return Le jeu d'enregistrement généré par l'exécution.
+     */
+    function executeBlock($sSql) {
+
+        $this->connexion->setAttribute(PDO::ATTR_EMULATE_PREPARES, 1);
+        $this->connexion->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        try {
+            $oPDOresult = $this->connexion->prepare($sSql);
+            if ($oPDOresult) {
+                $oPDOresult->execute();
+                writeToDebugLog($sSql);
+                if ($this->connexion->errorCode() === "00000") {
+                    $this->erreurRencontree = 0;
+                    writeToSqlLog($sSql);
+                    return $oPDOresult;
+                } else {
+                    $aPDOError = $this->connexion->errorInfo();
+                    $this->erreurRencontree = 1;
+                    $this->setBDMessage(ERROR_REQUEST_ERROR);
+                    writeToErrorLog(html_entity_decode(ERROR_REQUEST_IMPOSSIBLE . $sSql . "." . RETURN_BD_LABEL . "'" . $aPDOError[2] . "'"));
+                    writeToSqlErrorLog($sSql);
+                    return false;
+                }
+            }
+        } catch (PDOException $e) {
+            $sPDOErrorMessage = $e->getMessage();
+            $this->erreurRencontree = 1;
+            $this->setBDMessage(ERROR_REQUEST_ERROR);
+            writeToErrorLog(html_entity_decode(ERROR_REQUEST_IMPOSSIBLE . $sSql . "." . RETURN_BD_LABEL . "'" . $sPDOErrorMessage . "'"));
+            writeToSqlErrorLog($sSql);
+            die();
             return false;
         }
     }
@@ -402,7 +616,7 @@ class BD {
     }
 
     /**
-     * DEPRECATED ?
+     * DEPRECATED
      * Méthode donnant l'id de la dernière ligne insérée.
      * \return L'id de la dernière ligne insérée.
      */
@@ -442,7 +656,8 @@ class BD {
             return UNKNOWN_BD_LABEL;
         } else {
             if ($this->sgbd == 'oci') {
-                $resultat = $this->execute('SELECT * FROM COLS WHERE name = \'' . strtoupper($sTable) . '\'');
+//                $resultat = $this->execute('SELECT * FROM COLS WHERE name = \'' . strtoupper($sTable) . '\'');
+                $resultat = $this->executeWithParams('SELECT * FROM COLS WHERE name = \'[sTable]\'', array('sTable' => array('type' => 'column_name', 'value' => $sTable)));
                 for ($i = 0; $aLigne = $this->ligneSuivante($resultat); $i++) {
                     if ($i == $iPosition) {
                         return $aLigne['COLUMN_NAME'];
@@ -483,7 +698,8 @@ class BD {
     function getType($oPDOresult, $iNumFields, $sFieldName, $sTable) {
         $sType = -1;
         if ($this->sgbd == 'oci') {
-            $resultat = $this->execute('SELECT * FROM COLS WHERE name = \'' . strtoupper($sTable) . '\'');
+//            $resultat = $this->execute('SELECT * FROM COLS WHERE name = \'' . strtoupper($sTable) . '\'');
+            $resultat = $this->executeWithParams('SELECT * FROM COLS WHERE name = \'[sTable]\'', array('sTable' => array('type' => 'column_name', 'value' => $sTable)));
             for ($i = 0; $aLigne = $this->ligneSuivante($resultat); $i++) {
                 if ($aLigne['COLUMN_NAME'] == $sFieldName) {
                     return $aLigne['DATA_TYPE'];
@@ -501,6 +717,7 @@ class BD {
     }
 
     /**
+     * DEPRECATED
      * Méthode permettant de construire une clause WHERE SQL à partir d'une liste de valeur passées en requête.
      * La table cible est spécifiée en paramètre de la méthode.
      * \param $sSchema Schema de la base de données
@@ -655,20 +872,32 @@ class BD {
      * \return L'id de la dernière ligne insérée.
      */
     function insert($sSchema, $sTable, $aValues, $sSequence, $iIdField, $bGetSql = false) {
+
+        $aSQLParams = array(
+            'sSchema' => array('type' => 'column_name', 'value' => $sSchema),
+            'sTable' => array('type' => 'column_name', 'value' => $sTable)
+        );
+
         // Insére les éléments du tableau $aValues dans $sTable et renvoie l'identifiant de l'enregistrement correspondant (en fait le dernier)
         switch ($this->sgbd) {
-            case 'mysql' :
-                $sSql = "INSERT INTO `$sTable` (";
-                $sSqlList = $this->AddLimite(0, 0, "SELECT * FROM " . $sTable);
-                $sProtectField = "`";
-                break;
+//            case 'mysql' :
+//                $sSql = "INSERT INTO `$sTable` (";
+//                $sSqlList = $this->AddLimite(0, 0, "SELECT * FROM " . $sTable);
+//                $sProtectField = "`";
+//                break;
             case 'pgsql' :
-                $sSql = 'INSERT INTO ' . $sSchema . '.' . $sTable . '(';
-                $sSqlList = $this->AddLimite(0, 0, 'SELECT * FROM ' . $sSchema . '.' . $sTable);
+                $sSql = 'INSERT INTO "[sSchema]"."[sTable]" (';
+//                $sSqlList = $this->AddLimite(0, 0, 'SELECT * FROM ' . $sSchema . '.' . $sTable);
+
+                $aSqlList = $this->AddLimiteWithParams(0, 0, 'SELECT * FROM "[sSchema]"."[sTable]"');
+                $sSqlList = $aSqlList['sql'];
+                $aSQLListParams = array_merge($aSQLParams, $aSqlList['params']);
+
                 $sProtectField = '"';
                 // Utilisation de la sequence pour récupérer un identifiant
                 if ($sSequence) {
-                    $oPDOresult = $this->execute('SELECT nextval(\'' . $sSequence . '\')');
+//                    $oPDOresult = $this->execute('SELECT nextval(\'' . $sSequence . '\')');
+                    $oPDOresult = $this->executeWithParams('SELECT nextval([sSequence])', array('sSequence' => array('type' => 'string', 'value' => $sSequence)));
                     if ($oPDOresult !== false)
                         $aIdValue = $this->ligneSuivante($oPDOresult);
                     $iIdValue = $aIdValue['nextval'];
@@ -676,37 +905,58 @@ class BD {
                     $oPDOresult = $this->fermeResultat();
                 }
                 break;
-            case 'oci' :
-                $sSql = 'INSERT INTO ' . $sTable . '(';
-                $sSqlList = 'SELECT ' . $sTable . '.* FROM ' . $sTable . ' WHERE ROWNUM <=1 AND ROWNUM >=0';
-                $sProtectField = '"';
-                // Utilisation de la sequence pour récupérer un identifiant
-                if ($sSequence) {
-                    $oPDOresult = $this->execute('SELECT ' . $sSequence . '.nextval FROM dual');
-                    if ($oPDOresult !== false)
-                        $aIdValue = $this->ligneSuivante($oPDOresult);
-                    $iIdValue = $aIdValue['NEXTVAL'];
-                    $aValues[$iIdField] = $iIdValue;
-                    $oPDOresult->closeCursor();
-                }
-                break;
+//            case 'oci' :
+//                $sSql = 'INSERT INTO ' . $sTable . '(';
+//                $sSqlList = 'SELECT ' . $sTable . '.* FROM ' . $sTable . ' WHERE ROWNUM <=1 AND ROWNUM >=0';
+//                $sProtectField = '"';
+//                // Utilisation de la sequence pour récupérer un identifiant
+//                if ($sSequence) {
+//                    $oPDOresult = $this->execute('SELECT ' . $sSequence . '.nextval FROM dual');
+//                    if ($oPDOresult !== false)
+//                        $aIdValue = $this->ligneSuivante($oPDOresult);
+//                    $iIdValue = $aIdValue['NEXTVAL'];
+//                    $aValues[$iIdField] = $iIdValue;
+//                    $oPDOresult->closeCursor();
+//                }
+//                break;
         }
         $sFields = "";
         $sValues = "";
 
-        $resultat = $this->execute($sSqlList);
+//        $resultat = $this->execute($sSqlList);
+        $resultat = $this->executeWithParams($sSqlList, $aSQLListParams);
         $iNumFields = $this->getFieldsNumber($resultat);
+
         foreach ($aValues as $sField => $sValue) {
             if ($iIdField == $sField)
                 $iIdValue = $sValue;
             if (substr_count($sField, '.') == 1)
                 $sField = substr($sField, strlen($sTable) + 1);
             $sType = $this->getType($resultat, $iNumFields, $sField, $sTable);
-
             if ($sType != -1) {
+
                 $sFields = addDelimitedAttribute($sFields, $sField, ",", $sProtectField);
-                $sValue = $this->formatForSql($sValue, $sType, $sSchema, $sTable);
-                $sValues = addDelimitedString($sValues, $sValue, ",");
+                $aFormatedField = $this->formatForSqlWithParams($sValue, $sField, $sType, $sSchema, $sTable);
+                $sValues = addDelimitedString($sValues, $aFormatedField['field'], ",");
+
+                switch ($this->parseType($sType)) {
+                    case 'int':
+                        $aSQLParams[$aFormatedField['fieldKey']] = array('type' => 'number', 'value' => $aFormatedField['value']);
+                        break;
+                    case 'float':
+                    case 'decimal':
+                        $aSQLParams[$aFormatedField['fieldKey']] = array('type' => 'number', 'value' => $aFormatedField['value']);
+                        break;
+                    case 'bool':
+                        $aSQLParams[$aFormatedField['fieldKey']] = array('type' => 'boolean', 'value' => $aFormatedField['value']);
+                        break;
+                    case 'geometry':
+                        $aSQLParams[$aFormatedField['fieldKey']] = array('type' => 'geometry', 'value' => $aFormatedField['value']);
+                        break;
+                    default:
+                        $aSQLParams[$aFormatedField['fieldKey']] = array('type' => 'string', 'value' => $aFormatedField['value']);
+                        break;
+                }
             }
         }
 
@@ -720,11 +970,12 @@ class BD {
         if ($bGetSql) {
             return $sSql;
         } else {
-            $iResult = $this->execute($sSql);
+
+            $iResult = $this->executeWithParams($sSql, $aSQLParams);
             if ($iResult === false) {
                 return $iResult;
             }
-            
+
             // Valeur retour au cas où $iIdValue soit vide
             if (empty($iIdValue)) {
                 $iIdValue = $iResult->fetchColumn();
@@ -740,6 +991,7 @@ class BD {
     }
 
     /**
+     * DEPRECATED
      * Méthode permettant d'ajouter des enregistrements par le biais de la commande SQL 'COPY'.
      * Methode implémentée pour PostgreSQL.
      * \param $sSchema Schema de la base de données
@@ -802,60 +1054,118 @@ class BD {
      * \param $sIdType Type de l'attribut.
      */
     function update($sSchema, $sTable, $aValues, $sAttribute, $sId, $sIdType = "") {
-// Modifie la table $sTable à partir du contenu du tableau $aValues
-// Le nom des éléments de $aValues doit être le même que les nom de champs
-// Le type de chaque champ est pris en compte de manière dynamque
+
+        $aSQLParams = array(
+            'sSchema' => array('type' => 'column_name', 'value' => $sSchema),
+            'sTable' => array('type' => 'column_name', 'value' => $sTable)
+        );
+
+        // Modifie la table $sTable à partir du contenu du tableau $aValues
+        // Le nom des éléments de $aValues doit être le même que les nom de champs
+        // Le type de chaque champ est pris en compte de manière dynamque
         switch ($this->sgbd) {
-            case 'mysql' :
-                $sSql = "UPDATE `$sTable` set ";
-                $sSqlList = $this->AddLimite(0, 0, "SELECT * FROM " . $sTable);
-                $sProtectField = "`";
-                break;
+//            case 'mysql' :
+//                $sSql = "UPDATE `$sTable` set ";
+//                $sSqlList = $this->AddLimite(0, 0, "SELECT * FROM " . $sTable);
+//                $sProtectField = "`";
+//                break;
             case 'pgsql' :
-                $sSql = 'UPDATE ' . $sSchema . '.' . $sTable . ' set ';
-                $sSqlList = $this->AddLimite(0, 0, 'SELECT * FROM ' . $sSchema . '.' . $sTable);
+                $sSql = 'UPDATE "' . $sSchema . '"."' . $sTable . '" set ';
+//                $sSqlList = $this->AddLimite(0, 0, 'SELECT * FROM ' . $sSchema . '.' . $sTable);
+                $aSqlList = $this->AddLimiteWithParams(0, 0, 'SELECT * FROM "[sSchema]"."[sTable]"');
+                $sSqlList = $aSqlList['sql'];
+                $aSQLListParams = array_merge($aSQLParams, $aSqlList['params']);
                 $sProtectField = '"';
                 break;
-            case 'oci' :
-                $sSql = 'UPDATE ' . $sTable . ' set ';
-                $sSqlList = $this->AddLimite(0, 1, 'SELECT * FROM ' . $sTable);
-                $sProtectField = '';
-                break;
+//            case 'oci' :
+//                $sSql = 'UPDATE ' . $sTable . ' set ';
+//                $sSqlList = $this->AddLimite(0, 1, 'SELECT * FROM ' . $sTable);
+//                $sProtectField = '';
+//                break;
         }
         $sPaires = "";
         $sFields = "";
         $sValues = "";
-        $resultat = $this->execute($sSqlList);
+
+        $resultat = $this->executeWithParams($sSqlList, $aSQLListParams);
         $iNumFields = $this->getFieldsNumber($resultat);
 
         foreach ($aValues as $sField => $sValue) {
             if (substr_count($sField, '.') == 1)
                 $sField = substr($sField, strlen($sTable) + 1);
             $sType = $this->getType($resultat, $iNumFields, $sField, $sTable);
+
             if ($sType != -1) {
-                $sValue = $this->formatForSql($sValue, $sType, $sSchema, $sTable);
-                $sPaire = addDelimitedAttribute("", $sField, "", $sProtectField) . '=' . $sValue;
+
+                $aFormatedField = $this->formatForSqlWithParams($sValue, $sField, $sType, $sSchema, $sTable);
+                $sPaire = addDelimitedAttribute("", $sField, "", $sProtectField) . '=' . $aFormatedField['field'];
                 $sPaires = addDelimitedString($sPaires, $sPaire, ", ");
+
+                switch ($this->parseType($sType)) {
+                    case 'int':
+                        $aSQLParams[$aFormatedField['fieldKey']] = array('type' => 'number', 'value' => $aFormatedField['value']);
+                        break;
+                    case 'float':
+                    case 'decimal':
+                        $aSQLParams[$aFormatedField['fieldKey']] = array('type' => 'number', 'value' => $aFormatedField['value']);
+                        break;
+                    case 'bool':
+                        $aSQLParams[$aFormatedField['fieldKey']] = array('type' => 'boolean', 'value' => $aFormatedField['value']);
+                        break;
+                    case 'geometry':
+                        $aSQLParams[$aFormatedField['fieldKey']] = array('type' => 'geometry', 'value' => $aFormatedField['value']);
+                        break;
+                    default:
+                        $aSQLParams[$aFormatedField['fieldKey']] = array('type' => 'string', 'value' => $aFormatedField['value']);
+                        break;
+                }
             }
         }
 
         if ($sPaires != "") {
             $sSql = $sSql . $sPaires;
             if ($sAttribute != "") {
+
                 if (!is_array($sId)) {
-                    $sWhereClause = $this->AddWhereClause($sAttribute, $sId, $sIdType);
+                    $aWhereClause = $this->AddWhereClauseWithParams($sAttribute, $sId, 'string');
+                    $aSQLParams = array_merge($aSQLParams, $aWhereClause['params']);
+                    $sSql = $sSql . $aWhereClause['sql'];
                 } else {
                     $sId = implode(",", $sId);
-                    $sWhereClause = " WHERE " . $this->AddInClause($sSchema, $sAttribute, $sId);
+                    $aInClause = $this->AddInClauseWithParams($sSchema, $sAttribute, $sId);
+                    $aSQLParams = array_merge($aSQLParams, $aInClause['params']);
+                    $sSql = $sSql . ' WHERE ' . $aInClause['sql'];
                 }
-                $sSql = $sSql . $sWhereClause;
             }
             $resultat = $this->fermeResultat();
-            $iResult = $this->execute($sSql);
+            $iResult = $this->executeWithParams($sSql, $aSQLParams);
+
             if ($iResult !== false) {
                 $iResult = $this->fermeResultat();
             }
         }
+    }
+
+    /**
+     * Récupère un type de colonne Postgres (int8, varchar(255) etc..) et renvoie le type simple (int, varchar, float)
+     * @param string $str
+     * @return string
+     */
+    function parseType($str) {
+
+        $sType = '';
+        $arr = str_split($str);
+        $pattern = '/^[a-z]/';
+
+        for ($i = 0; $i < count($arr); $i++) {
+            if (!preg_match($pattern, $arr[$i])) {
+                break;
+            } else {
+                $sType .= $arr[$i];
+            }
+        }
+
+        return $sType;
     }
 
     /**
@@ -867,37 +1177,48 @@ class BD {
      * \param $sIdType Types de l'attribut.
      */
     function delete($sSchema, $sTable, $sAttribute, $sId, $sIdType = "") {
+
+        $aSQLParams = array(
+            'sSchema' => array('type' => 'column_name', 'value' => $sSchema),
+            'sTable' => array('type' => 'column_name', 'value' => $sTable)
+        );
+
         switch ($this->sgbd) {
-            case 'mysql' :
-                $sSql = "DELETE FROM `$sTable` WHERE " . $sAttribute;
-                break;
+//            case 'mysql' :
+//                $sSql = "DELETE FROM `$sTable` WHERE " . $sAttribute;
+//                break;
             case 'pgsql' :
-                if (substr_count($sAttribute, '.') != 1)
-                    $sAttribute = '"' . $sAttribute . '"';
-                else {
-                    $sAttribute = str_replace('.', '."', $sAttribute . '"');
-                    $sAttribute = $sSchema . '.' . $sAttribute;
+
+                $aAttributs = explode('.', $sAttribute);
+
+                // Si le schema est ou pas défini dans sAttribute
+                if (count($aAttributs) === 1) {
+                    $sColumnKey = 'column_' . vitisUniqId();
+                    $sSql = 'DELETE FROM "[sSchema]"."[sTable]" WHERE "[' . $sColumnKey . ']"';
+                    $aSQLParams[$sColumnKey] = array('type' => 'column_name', 'value' => $aAttributs[0]);
+                } else if (count($aAttributs) === 2) {
+                    $sSchemaKey = 'schema_' . vitisUniqId();
+                    $sColumnKey = 'column_' . vitisUniqId();
+                    $sSql = 'DELETE FROM "[sSchema]"."[sTable]" WHERE "[' . $sSchemaKey . ']"."[' . $sColumnKey . ']"';
+                    $aSQLParams[$sSchemaKey] = array('type' => 'column_name', 'value' => $aAttributs[0]);
+                    $aSQLParams[$sColumnKey] = array('type' => 'column_name', 'value' => $aAttributs[1]);
                 }
 
-                $sSql = 'DELETE FROM ' . $sSchema . '.' . $sTable . ' WHERE ' . $sAttribute . '';
                 break;
-            case 'oci' :
-                $sSql = "DELETE FROM $sTable WHERE " . $sAttribute;
-                break;
+//            case 'oci' :
+//                $sSql = "DELETE FROM $sTable WHERE " . $sAttribute;
+//                break;
         }
-        if ($sIdType == "text" && (substr($sId, 1) !== "'" && substr($sId, -1) !== "'")) {
-            $sSql .= " IN ('" . $sId . "')";
-            $sSql = str_replace(',', "','", $sSql);
-        } else {
-            $sSql .= ' IN (' . $sId . ')';
-        }
-        $iResult = $this->execute($sSql);
+        $sSql .= ' IN ([sIds])';
+        $aSQLParams['sIds'] = array('type' => 'group', 'value' => $sId);
+        $iResult = $this->executeWithParams($sSql, $aSQLParams);
         if ($iResult !== false) {
             $iResult = $this->fermeResultat();
         }
     }
 
     /**
+     * DEPRECATED
      * Méthode permettant d'ajouter des enregistrements dans une table liée.
      * \param $sTableName Table dans laquelle on ajoute.
      * \param $sAttributePK Attribut PK.
@@ -927,6 +1248,7 @@ class BD {
     }
 
     /**
+     * DEPRECATED
      * Méthode permettant d'ajouter des enregistrements sans ajout de nouvel Id dans une table liée.
      * \param $sSchema Schéma.
      * \param $sTable Table dans laquelle on ajoute.
@@ -948,6 +1270,7 @@ class BD {
     }
 
     /**
+     * DEPRECATED
      * Méthode permettant de mettre à jour des enregistrements dans une table liée.
      * \param $sTableName Table dans laquelle on met un enregistrement à jour.
      * \param $sAttributePK Attribut PK.
@@ -971,12 +1294,13 @@ class BD {
         //Met à jour les enregistrements de $aFKList
         foreach ($aFKList as $sFKValue) {
             writeToDebugLog($sSql . $sFKValue);
-            writeToSqlLog($this->login . " | " . $sSql);
+            writeToSqlLog($sSql);
             $this->connexion->query($sSql . $sFKValue);
         }
     }
 
     /**
+     * DEPRECATED
      * Méthode permettant de générer une clause SQL simple de type "LIMIT" selon le sgbd.
      * \param $iMinRowValue Valeur minimale du limit.
      * \param $iRowPage Nombre d'enregistrements sélectionnés.
@@ -1003,6 +1327,40 @@ class BD {
     }
 
     /**
+     * Méthode permettant de générer une clause SQL simple de type "LIMIT" selon le sgbd.
+     * \param $iMinRowValue Valeur minimale du limit.
+     * \param $iRowPage Nombre d'enregistrements sélectionnés.
+     */
+    function AddLimiteWithParams($iMinRowValue, $iRowPage, $sSql) {
+        switch ($this->sgbd) {
+//            case 'mysql' :
+//                $sSql .= " LIMIT " . $iMinRowValue . "," . $iRowPage;
+//                break;
+            case 'pgsql' :
+                $sSql .= " LIMIT [iRowPage] OFFSET [iMinRowValue]";
+                $aSQLParams = array(
+                    'iRowPage' => array('type' => 'string', 'value' => $iRowPage),
+                    'iMinRowValue' => array('type' => 'string', 'value' => $iMinRowValue)
+                );
+                break;
+//            case 'oci' :
+//                $iRowPage = $iRowPage + $iMinRowValue;
+//                $sSql1 = "SELECT * FROM ( SELECT * FROM (" . $sSql . ") WHERE ROWNUM <= " . $iRowPage . ") MINUS ( SELECT * FROM (" . $sSql . ") WHERE ROWNUM <= " . $iMinRowValue . ")";
+//                if (substr_count($sSql, "ORDER BY") >= 1) {
+//                    $sSql = "SELECT * FROM ( " . $sSql1 . ")" . stristr($sSql, "ORDER BY");
+//                } else {
+//                    $sSql = $sSql1;
+//                }
+//                break;
+        }
+        return array(
+            'sql' => $sSql,
+            'params' => $aSQLParams
+        );
+    }
+
+    /**
+     * DEPRECATED
      * Méthode permettant de générer une clause SQL simple de type "ORDER BY" selon le sgbd.
      * \param $sAttribute Attribut.
      * \param $sOrder Ordre dans lequel doivent étre triées les données "ASC" ou "DESC".
@@ -1025,6 +1383,7 @@ class BD {
     }
 
     /**
+     * DEPRECATED
      * Méthode permettant de générer une clause SQL simple de type "WHERE" selon le sgbd.
      * \param $sAttribute Attribut.
      * \param $sId Valeur de l'attribut.
@@ -1052,6 +1411,60 @@ class BD {
     }
 
     /**
+     * Selon executeWithParams
+     * Méthode permettant de générer une clause SQL simple de type "WHERE" selon le sgbd.
+     * \param $sAttribute Attribut.
+     * \param $sId Valeur de l'attribut.
+     * \param $sType Type de l'attribut.
+     */
+    function AddWhereClauseWithParams($sAttribute, $sId, $sType = "string") {
+        switch ($this->sgbd) {
+//            case 'mysql' :
+//                $sSql = " WHERE " . $sAttribute . "=" . $sId;
+//                break;
+            case 'pgsql' :
+
+                $aAttributs = explode('.', $sAttribute);
+
+                // Si le schema est ou pas défini dans sAttribute
+                if (count($aAttributs) === 1) {
+
+                    $sColumnKey = 'column_' . vitisUniqId();
+                    $sValueKey = 'value_' . vitisUniqId();
+
+                    $sSql = ' WHERE "[' . $sColumnKey . ']" = [' . $sValueKey . ']';
+                    $aSQLParams = array(
+                        $sColumnKey => array('type' => 'column_name', 'value' => $aAttributs[0]),
+                        $sValueKey => array('type' => $sType, 'value' => $sId)
+                    );
+                } else if (count($aAttributs) === 2) {
+
+                    $sSchemaKey = 'schema_' . vitisUniqId();
+                    $sColumnKey = 'column_' . vitisUniqId();
+                    $sValueKey = 'value_' . vitisUniqId();
+
+                    $sSql = ' WHERE "[' . $sSchemaKey . ']"."[' . $sColumnKey . ']" = [' . $sValueKey . ']';
+                    $aSQLParams = array(
+                        $sSchemaKey => array('type' => 'column_name', 'value' => $aAttributs[0]),
+                        $sColumnKey => array('type' => 'column_name', 'value' => $aAttributs[1]),
+                        $sValueKey => array('type' => $sType, 'value' => $sId)
+                    );
+                }
+
+                break;
+//            case 'oci' :
+//                $sId = "'" . $sId . "'";
+//                $sSql = ' WHERE ' . $sAttribute . '= ' . $sId;
+//                break;
+        }
+        return array(
+            'sql' => $sSql,
+            'params' => $aSQLParams
+        );
+    }
+
+    /**
+     * DEPRECATED
      * Méthode permettant de générer une clause SQL simple de type "AND" selon le sgbd.
      * \param $sSchema Schema de la base de données
      * \param $sAttribute Attribut.
@@ -1086,6 +1499,7 @@ class BD {
     }
 
     /**
+     * DEPRECATED
      * Méthode permettant de générer une clause SQL simple de type "IN" selon le sgbd.
      * \param $sSchema Schema de la base de données
      * \param $sAttribute Attribut.
@@ -1113,6 +1527,58 @@ class BD {
     }
 
     /**
+     * Selon executeWithParams
+     * Méthode permettant de générer une clause SQL simple de type "IN" selon le sgbd.
+     * \param $sSchema Schema de la base de données
+     * \param $sAttribute Attribut.
+     * \param $sId Valeurs de l'attribut.
+     */
+    function AddInClauseWithParams($sSchema, $sAttribute, $sId) {
+        switch ($this->sgbd) {
+//            case 'mysql' :
+//                // Vide
+//                break;
+            case 'pgsql' :
+
+                $aAttributs = explode('.', $sAttribute);
+
+                // Si le schema est ou pas défini dans sAttribute
+                if (count($aAttributs) === 1) {
+
+                    $sColumnKey = 'column_' . vitisUniqId();
+                    $sValueKey = 'value_' . vitisUniqId();
+
+                    $sSql = '"[' . $sColumnKey . ']" IN ([' . $sValueKey . '])';
+                    $aSQLParams = array(
+                        $sColumnKey => array('type' => 'column_name', 'value' => $aAttributs[0]),
+                        $sValueKey => array('type' => 'group', 'value' => $sId)
+                    );
+                } else if (count($aAttributs) === 2) {
+
+                    $sSchemaKey = 'schema_' . vitisUniqId();
+                    $sColumnKey = 'column_' . vitisUniqId();
+                    $sValueKey = 'value_' . vitisUniqId();
+
+                    $sSql = '"[' . $sSchemaKey . ']"."[' . $sColumnKey . ']" IN ([' . $sValueKey . '])';
+                    $aSQLParams = array(
+                        $sSchemaKey => array('type' => 'column_name', 'value' => $aAttributs[0]),
+                        $sColumnKey => array('type' => 'column_name', 'value' => $aAttributs[1]),
+                        $sValueKey => array('type' => 'group', 'value' => $sId)
+                    );
+                }
+                break;
+//            case 'oci' :
+//                // Vide
+//                break;
+        }
+        return array(
+            'sql' => $sSql,
+            'params' => $aSQLParams
+        );
+    }
+
+    /**
+     * DEPRECATED
      * Méthode qui renvoie une chaine formatée pour pouvoir étre utilisé dans un requête insert, update ou select.
      * \param $sValue Chaine qui va doit être formatée.
      * \param $sType Type de l'attribut.
@@ -1168,7 +1634,7 @@ class BD {
                         $sValue = "'" . $sValue . "'";
                     }
                     break;
-                case ($sType == "date" || $sType == "DATETIME"):
+                case ($sType == "date" || $sType == "DATETIME" || $sType == "timestamptz"):
                     $sValue = "'" . implode("-", array_reverse(explode("/", $sValue))) . "'";
                     break;
                 default:
@@ -1184,6 +1650,54 @@ class BD {
     }
 
     /**
+     * Méthode qui renvoie une chaine formatée pour pouvoir étre utilisé dans un requête insert, update ou select.
+     * \param $sValue Chaine qui va doit être formatée.
+     * \param $sType Type de l'attribut.
+     * \param $sSchema Schema contenant la table dont est issu le champ à traiter (vide par défaut).
+     * \param $sTable Table dont est issu le champ à traiter (vide par défaut).
+     */
+    function formatForSqlWithParams($sValue, $sField, $sType, $sSchema = "", $sTable = "") {
+
+        $sFieldKey = $sField . '_' . vitisUniqId();
+
+        switch ($this->sgbd) {
+            case "pgsql" :
+                if (($sType === "geometry") && ($sValue !== "")) {
+                    $iTableDimension = $this->getTableDimension($sTable, $sSchema);
+                    $sForce3DDebut = "";
+                    $sForce3DFin = "";
+                    if ($iTableDimension == 3) {
+                        $sForce3DDebut = "st_force_3d(";
+                        $sForce3DFin = ")";
+                    }
+                    $sOriginTable = $this->ifTableIsAView($sTable, $sSchema);
+                    if ($sOriginTable != $sTable) {
+                        $sTable = $sOriginTable;
+                        $sOriginSchema = $this->getTableSchema($sTable);
+                        if ($sOriginSchema != $sSchema)
+                            $sSchema = $sOriginSchema;
+                    }
+                    // Si il s'agit de format EWKT, alors on connait la projection de la géométrie. On peut alors procéder à une reprojection automatique des données
+                    if ($this->isEWKTFormat($sValue)) {
+                        $sField = $sForce3DDebut . "ST_transform(ST_GeomFromEWKT([" . $sFieldKey . "]), " . $this->getTableSRID($sTable, $sSchema) . ")" . $sForce3DFin;
+                    } else {
+                        $sField = $sForce3DDebut . "st_geometryFromText([" . $sFieldKey . "]," . $this->getTableSRID($sTable, $sSchema) . ") " . $sForce3DFin;
+                    }
+                } else {
+                    $sField = '[' . $sFieldKey . ']';
+                }
+                break;
+        }
+
+        return array(
+            'field' => $sField,
+            'fieldKey' => $sFieldKey,
+            'value' => $sValue
+        );
+    }
+
+    /**
+     * DEPRECATED
      * Méthode permettant de construire une clause WHERE SQL é partir d'une liste de valeur passées en requête et avec une jointure sur une autre table.
      * La table cible est spécifiée en paramètre de la méthode.
      * \param $sSchema Schema de la base de données

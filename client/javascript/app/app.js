@@ -3,6 +3,11 @@
 'use strict';
 
 goog.provide("vitis");
+goog.require("goog.crypt.Md5");
+goog.require("goog.crypt.Sha1");
+goog.require("goog.crypt.Sha256");
+goog.require("goog.crypt.Sha512");
+goog.require("goog.crypt.base64");
 
 /**
  * Vitis object
@@ -114,7 +119,7 @@ String.prototype.removeURLParams = function (aForbiddenParams) {
             // Enlève le paramètre de la chaine
             if (nextParamIndex > 0) {
                 sUrl = sUrl.replace(sUrl.slice(paramIndex, nextParamIndex), '');
-            }else{
+            } else {
                 sUrl = sUrl.replace(sUrl.slice(paramIndex), '');
             }
             continue;
@@ -130,11 +135,47 @@ String.prototype.removeURLParams = function (aForbiddenParams) {
             // Enlève le paramètre de la chaine
             if (nextParamIndex > 0) {
                 sUrl = sUrl.replace(sUrl.slice(paramIndex, nextParamIndex + 1), '?');
-            }else{
+            } else {
                 sUrl = sUrl.replace(sUrl.slice(paramIndex), '');
             }
             continue;
         }
     }
     return sUrl;
+};
+
+var md5 = function (input) {
+    var oCrypt = new goog.crypt.Md5();
+    var bytes = goog.crypt.stringToByteArray(input);
+    oCrypt.update(bytes);
+    var hash = oCrypt.digest();
+    hash = goog.crypt.byteArrayToHex(hash);
+    return hash;
+};
+
+var sha1 = function (input) {
+    var oCrypt = new goog.crypt.Sha1();
+    var bytes = goog.crypt.stringToByteArray(input);
+    oCrypt.update(bytes);
+    var hash = oCrypt.digest();
+    hash = goog.crypt.byteArrayToHex(hash);
+    return hash;
+};
+
+var sha256 = function (input) {
+    var oCrypt = new goog.crypt.Sha256();
+    var bytes = goog.crypt.stringToByteArray(input);
+    oCrypt.update(bytes);
+    var hash = oCrypt.digest();
+    hash = goog.crypt.byteArrayToHex(hash);
+    return hash;
+};
+
+var sha512 = function (input) {
+    var oCrypt = new goog.crypt.Sha512();
+    var bytes = goog.crypt.stringToByteArray(input);
+    oCrypt.update(bytes);
+    var hash = oCrypt.digest();
+    hash = goog.crypt.byteArrayToHex(hash);
+    return hash;
 };

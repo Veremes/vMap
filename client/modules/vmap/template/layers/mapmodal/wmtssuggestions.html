@@ -46,13 +46,13 @@
 
 <div id="load-img-wmts" style="display: none; text-align: center"><img src="images/ajax-load-big.gif"></div>
 <div id="wmts-suggestions-list" style="display: none">
-    
+
     <input class="form-control input-sm right margin-sides-10 margin-5" 
            type="text" 
            placeholder="Rechercher" 
            style="width: 200px;"
            ng-model="filter">
-    
+
     <table class="table table-striped">
         <thead>
             <tr>
@@ -93,14 +93,12 @@
                 <div class="row">
                     <div class="col-xs-4">
                         <label>Style</label>
-                        <select id="select-wmts-service" class="form-control" 
-                                ng-model="iSelectedStyleIndex"
-                                ng-change="ctrl.sLayerToAdd_style_name = ctrl.oLayerToAdd.Style[iSelectedStyleIndex].Identifier">
-                            <option value="?"></option>
-                            <option ng-repeat="oStyle in ctrl.oLayerToAdd.Style" value="{{$index}}">{{(oStyle.Title| isDef) ? oStyle.Title : oStyle.Identifier}}</option>
-                        </select>
+                        <select class="form-control" 
+                                ng-model="oSelectedStyle" 
+                                ng-change="ctrl.sLayerToAdd_style_name = oSelectedStyle.Identifier"
+                                ng-options="oStyle.Title for oStyle in ctrl.oLayerToAdd.Style"></select>
                         <br>
-                        <div ng-repeat="(key, value) in ctrl.oLayerToAdd.Style[iSelectedStyleIndex]" ng-if="(value | getType) == 'string'">
+                        <div ng-repeat="(key, value) in oSelectedStyle" ng-if="(value | getType) == 'string'">
                             <label>{{key}}: </label>{{value}}
                         </div>
                     </div>

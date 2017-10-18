@@ -90,17 +90,22 @@ class FicheDescriptiveInvariant extends Cadastre {
         $ID_BAT = $this->aPath[2];
         $sSchema = $this->aProperties['schema_majic'];
         $sTable = 'v_vmap_maj_fiche_inv_descr';
-        $sFilter = "\"id_local\" = '" . $ID_BAT . "'";
+//        $sFilter = "\"id_local\" = '" . $ID_BAT . "'";
+        $aFilter = array(
+            'column' => 'id_local',
+            'compare_operator' => '=',
+            'value' => $ID_BAT
+        );
         $aAttributs = Array('id_local as "ID_BAT"', 'dvoilib as "DVOILIB"', 'libcom as "LIBCOM"', 'id_com as "ID_COM"', 'l_dteloc as "L_DTELOC"', 'l_cconlc as "L_CCONLC"', 'l_dnatlc as "L_DNATLC"', 'jdatat as "JDATAT"', 'jannat as "JANNAT"', 'cchpr as "CCHPR"', 'bipevla1 as "BIPEVLA1"', 'dnbniv as "DNBNIV"', 'dnubat as "DNUBAT"', '"desc" as "DESC"', 'dniv as "DNIV"', 'dvltrt as "DVLTRT"', 'invar as "INVAR"');
 
-        $oInvariantInfos['data'] = $this->vmapGet($sSchema, $sTable, $aAttributs, $sFilter)[0];
+        $oInvariantInfos['data'] = $this->vmapGet($sSchema, $sTable, $aAttributs, $aFilter)[0];
 
         // Infos sur le P.E.V
         $sSchema = $this->aProperties['schema_majic'];
         $sTable = 'v_vmap_maj_fiche_inv_pev';
         $aAttributs = Array('id_local as "ID_BAT"', 'dnupev as "DNUPEV"', 'l_ccoaff as "L_CCOAFF"', 'dcapec as "DCAPEC"', 'ccostb as "CCOSTB"', 'dnuref as "DNUREF"', 'bipevla1 as "BIPEVLA1"', 'vlbaia1 as "VLBAIA1"');
 
-        $oInvariantInfos['data']['PEV'] = $this->vmapGet($sSchema, $sTable, $aAttributs, $sFilter);
+        $oInvariantInfos['data']['PEV'] = $this->vmapGet($sSchema, $sTable, $aAttributs, $aFilter);
 
         // Infos sur les habitations
         $sSchema = $this->aProperties['schema_majic'];
@@ -109,35 +114,35 @@ class FicheDescriptiveInvariant extends Cadastre {
             'dsupdc as "DSUPDC"', 'l_dmagtm as "L_DMATGM"', 'l_dmatto as "L_DMATTO"', 'jannat as "JANNAT"', 'l_detent as "L_DETENT"', 'dnbniv as "DNBNIV"', 'dnbsam as "DNBSAM"', 'dnbcha as "DNBCHA"', 'dnbcu8 as "DNBCU8"', 'dnbcu9 as "DNBCU9"', 'dnbsea as "DNBSEA"', 'dnbann as "DNBANN"', 'cconad1 as "CCONAD1"',
             'l_cconad1 as "L_CCONAD1"', 'dsueic1 as "DSUEIC1"', 'cconad2 as "CCONAD2"', 'l_cconad2 as "L_CCONAD2"', 'dsueic2 as "DSUEIC2"', 'cconad3 as "CCONAD3"', 'l_cconad3 as "L_CCONAD3"', 'dsueic3 as "DSUEIC3"', 'cconad4 as "CCONAD4"', 'l_cconad4 as "L_CCONAD4"', 'dsueic4 as "DSUEIC4"');
 
-        $oInvariantInfos['data']['habitations'] = $this->vmapGet($sSchema, $sTable, $aAttributs, $sFilter);
+        $oInvariantInfos['data']['habitations'] = $this->vmapGet($sSchema, $sTable, $aAttributs, $aFilter);
 
         // Infos sur les locaux pros
         $sSchema = $this->aProperties['schema_majic'];
         $sTable = 'v_vmap_maj_fiche_inv_local_pro';
         $aAttributs = Array('id_local as "ID_BAT"', 'dnupev as "DNUPEV"', 'dnudes as "DNUDES"', 'vsurzt as "VSURZT"');
 
-        $oInvariantInfos['data']['locauxPros'] = $this->vmapGet($sSchema, $sTable, $aAttributs, $sFilter);
+        $oInvariantInfos['data']['locauxPros'] = $this->vmapGet($sSchema, $sTable, $aAttributs, $aFilter);
 
         // Infos sur les dépendances
         $sSchema = $this->aProperties['schema_majic'];
         $sTable = 'v_vmap_maj_fiche_inv_dep';
         $aAttributs = Array('id_local as "ID_BAT"', 'dnupev as "DNUPEV"', 'dsudep as "DSUDEP"', 'geaulc as "GEAULC"', 'gelelc as "GELELC"', 'gchclc as "GCHCLC"', 'dnbbai as "DNBBAI"', 'dnbdou as "DNBDOU"', 'dnblav as "DNBLAV"', 'dnbwc as "DNBWC"', 'l_dmagtm as "L_DMATGM"', 'l_dmatto as "L_DMATTO"', 'l_detent as "L_DETENT"', 'l_cconad as "L_CCONAD"');
 
-        $oInvariantInfos['data']['dependances'] = $this->vmapGet($sSchema, $sTable, $aAttributs, $sFilter);
+        $oInvariantInfos['data']['dependances'] = $this->vmapGet($sSchema, $sTable, $aAttributs, $aFilter);
 
         // Infos sur les propriétaires
         $sSchema = $this->aProperties['schema_majic'];
         $sTable = 'v_vmap_maj_fiche_inv_prop';
         $aAttributs = Array('id_local as "ID_BAT"', 'dqualp as "DQUALP"', 'ddenom as "DDENOM"', 'jdatnss as "JDATNSS"', 'dldnss as "DLDNSS"', 'dlign3 as "DLIGN3"', 'dlign4 as "DLIGN4"', 'dlign6 as "DLIGN6"', 'l_ccodem as "L_CCODEM"', 'l_ccodro as "L_CCODRO"');
 
-        $oInvariantInfos['data']['proprietaires'] = $this->vmapGet($sSchema, $sTable, $aAttributs, $sFilter);
+        $oInvariantInfos['data']['proprietaires'] = $this->vmapGet($sSchema, $sTable, $aAttributs, $aFilter);
 
         // Infos sur les lots
         $sSchema = $this->aProperties['schema_majic'];
         $sTable = 'v_vmap_maj_fiche_inv_lot';
         $aAttributs = Array('id_local as "ID_BAT"', 'klot as "KLOT"', 'dnumql as "DNUMQL"', 'ddenql as "DDENQL"');
 
-        $oInvariantInfos['data']['lots'] = $this->vmapGet($sSchema, $sTable, $aAttributs, $sFilter);
+        $oInvariantInfos['data']['lots'] = $this->vmapGet($sSchema, $sTable, $aAttributs, $aFilter);
 
         return json_encode($oInvariantInfos);
     }

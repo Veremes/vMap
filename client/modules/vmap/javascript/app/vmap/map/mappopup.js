@@ -290,6 +290,8 @@ nsVmap.Map.MapPopup.prototype.addMessageTable = function (data) {
 
     var HTMLMessageContainer = document.createElement('table');
 
+    var aAllowedFunctions = ['getPropertie'];
+
     for (var item in data) {
 
         // car feature est le mot clé utilisé pour stocker la feature dans infocontainer
@@ -308,9 +310,17 @@ nsVmap.Map.MapPopup.prototype.addMessageTable = function (data) {
 
         if (goog.isString(data[item])) {
             data[item] = data[item].replace(/</g, "&lt;").replace(/>/g, "&gt;");
-            if (data[item].indexOf('[bo_link') !== -1 && data[item].indexOf('[/bo_link]') !== -1) {
-                data[item] = this.parseBoLink_(data[item]);
+            // Recherche les liens
+            if (oVmap.isLink(data[item], 'bo_link')) {
+                data[item] = oVmap.parseLink(data[item], 'bo_link');
             }
+            // Recherche les fonctions autorisées
+            for (var i = 0; i < aAllowedFunctions.length; i++) {
+                if (data[item].indexOf('{{' + aAllowedFunctions[i] + '(') !== -1 && data[item].indexOf(')}}') !== -1) {
+                    data[item] = this.parseFunction_(data[item], aAllowedFunctions[i]);
+                }
+            }
+
         }
 
         column1.innerHTML = item;
@@ -328,172 +338,29 @@ nsVmap.Map.MapPopup.prototype.addMessageTable = function (data) {
 };
 
 /**
- * Parse the bo_link string and returns a <a></a> tag
+ * Parse and execute a function defines in sString
  * @param {string} sString
- * @returns {String}
- * @private
+ * @returns {string}
  */
-nsVmap.Map.MapPopup.prototype.parseBoLink_ = function (sString) {
+nsVmap.Map.MapPopup.prototype.parseFunction_ = function (sString) {
 
-    var sBoLink = sString.substr(sString.indexOf('[bo_link'), sString.indexOf('[/bo_link]') - sString.indexOf('[bo_link') + 10);
-    var sBoLinkFirstTag = this.getFirstBoLinkTag_(sBoLink);
-    var sBoLinkLastTag = '[/bo_link]';
-    var sBoLinkContent = this.getBoLinkContent_(sBoLink, sBoLinkFirstTag, sBoLinkLastTag);
-    var oBoLinkArgs = this.getBoLinkTagArguments_(sBoLinkFirstTag);
+    var sFunction = sString.substr(sString.indexOf('{{') + 2, sString.indexOf('}}') - sString.indexOf('{{') - 2);
+    var sResult = '';
 
-    var sHref = goog.isDefAndNotNull(oBoLinkArgs['href']) ? oBoLinkArgs['href'] : null;
-    var sTarget = goog.isDefAndNotNull(oBoLinkArgs['target']) ? oBoLinkArgs['target'] : '_blank';
-    var sContent = sBoLinkContent.length > 0 ? sBoLinkContent : sHref;
-
-    if (goog.isDefAndNotNull(sHref)) {
-        var sLink = '<a href="' + sHref + '" target="' + sTarget + '">' + sContent + '</a>';
-        return sLink;
-    } else {
-        console.error('cannot parse href');
-        return sString;
+    if (sFunction.split(';').length > 1) {
+        console.error('Attention: plusieurs fonctions détectées dans ' + sString);
     }
-};
 
+    try {
+        // Split vérifie qu'il n'y a qu'une seule fonction à executer
+        sResult = eval('angular.element(vitisApp.appMainDrtv).scope().' + sFunction.split(';')[0]);
+    } catch (e) {
 
-/**
- * Get the fisrt bo_link tag
- * @param {string} sBoLink
- * @returns {String}
- * @private
- */
-nsVmap.Map.MapPopup.prototype.getFirstBoLinkTag_ = function (sBoLink) {
-
-    var quoteIndex1 = null;
-    var quoteIndex2 = null;
-    var bInArgument = false;
-    var sBoLinkFirstTag = '';
-
-    for (var i = 0; i < sBoLink.length; i++) {
-        sBoLinkFirstTag += sBoLink[i];
-        if (sBoLink[i] === '"') {
-            if (quoteIndex1 === null) {
-                if (sBoLink[i - 1] !== '\\') {
-                    quoteIndex1 = i;
-                    continue;
-                }
-            }
-        }
-        if (sBoLink[i] === '"') {
-            if (quoteIndex2 === null && quoteIndex1 !== null) {
-                if (sBoLink[i - 1] !== '\\') {
-                    quoteIndex2 = i;
-                    continue;
-                }
-            }
-        }
-
-        if (quoteIndex1 !== null && quoteIndex2 === null) {
-            bInArgument = true;
-        } else {
-            bInArgument = false;
-            if (quoteIndex1 !== null && quoteIndex2 !== null) {
-                quoteIndex1 = null;
-                quoteIndex2 = null;
-            }
-        }
-
-        if (!bInArgument && sBoLink[i] === ']') {
-            break;
-        }
     }
-    return sBoLinkFirstTag;
-};
 
-/**
- * Get the bo_link content (between tags)
- * @param {string} sBoLink
- * @param {string} sBoLinkFirstTag
- * @param {string} sBoLinkLastTag
- * @returns {String}
- * @private
- */
-nsVmap.Map.MapPopup.prototype.getBoLinkContent_ = function (sBoLink, sBoLinkFirstTag, sBoLinkLastTag) {
+    sString = sString.replace('{{' + sFunction + '}}', sResult);
 
-    // sBoLink sans le premier tag
-    var content1 = sBoLink.substr(sBoLink.indexOf(sBoLinkFirstTag) + sBoLinkFirstTag.length);
-    // Contenu
-    var content = content1.substr(0, content1.indexOf(sBoLinkLastTag));
-    return content;
-};
-
-/**
- * Get the fisrt bo_link tag arguments on object form
- * @param {string} sBoLinkTag
- * @returns {object}
- * @private
- */
-nsVmap.Map.MapPopup.prototype.getBoLinkTagArguments_ = function (sBoLinkTag) {
-
-    var quoteIndex1 = null;
-    var quoteIndex2 = null;
-    var spaceIndex = null;
-    var equalIndex = null;
-    var content = null;
-    var argument = null;
-    var bInArgument = false;
-    var oArguments = {};
-
-    for (var i = 0; i < sBoLinkTag.length; i++) {
-
-        if (sBoLinkTag[i] === '"') {
-            if (quoteIndex1 === null) {
-                if (sBoLinkTag[i - 1] !== '\\') {
-                    quoteIndex1 = i;
-                    continue;
-                }
-            }
-        }
-        if (sBoLinkTag[i] === '"') {
-            if (quoteIndex2 === null && quoteIndex1 !== null) {
-                if (sBoLinkTag[i - 1] !== '\\') {
-                    quoteIndex2 = i;
-                    continue;
-                }
-            }
-        }
-
-        if (quoteIndex1 !== null && quoteIndex2 === null) {
-            bInArgument = true;
-        } else {
-            bInArgument = false;
-            if (quoteIndex1 !== null && quoteIndex2 !== null) {
-                content = sBoLinkTag.substr(quoteIndex1 + 1, quoteIndex2 - quoteIndex1 - 1);
-                quoteIndex1 = null;
-                quoteIndex2 = null;
-            }
-        }
-
-        if (!bInArgument) {
-            if (sBoLinkTag[i] === ' ') {
-                if (spaceIndex === null) {
-                    spaceIndex = i;
-                }
-            }
-            if (sBoLinkTag[i] === '=') {
-                if (equalIndex === null) {
-                    equalIndex = i;
-                }
-            }
-
-            if (spaceIndex !== null && equalIndex !== null) {
-                argument = sBoLinkTag.substr(spaceIndex + 1, equalIndex - spaceIndex - 1);
-                spaceIndex = null;
-                equalIndex = null;
-            }
-        }
-
-        if (content !== null && argument !== null) {
-            oArguments[argument] = content;
-            content = null;
-            argument = null;
-        }
-    }
-    return oArguments;
+    return sString;
 };
 
 /**

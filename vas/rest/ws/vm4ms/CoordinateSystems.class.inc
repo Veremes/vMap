@@ -1,23 +1,24 @@
 <?php
+
 /**
-* \file CoordinateSystems.class.inc
-* \class CoordinateSystems
-*
-* \author Armand Bahi <armand.bahi@veremes.com>.
-*
-* \brief This file contains the CoordinateSystems php class
-*
-* This class defines Rest Api to Vmap4MapServer CoordinateSystems
-* 
-*/
+ * \file CoordinateSystems.class.inc
+ * \class CoordinateSystems
+ *
+ * \author Armand Bahi <armand.bahi@veremes.com>.
+ *
+ * \brief This file contains the CoordinateSystems php class
+ *
+ * This class defines Rest Api to Vmap4MapServer CoordinateSystems
+ * 
+ */
 require_once 'Vmap4MapServer.class.inc';
 require_once 'CoordinateSystem.class.inc';
 require_once __DIR__ . '/../../class/vitis_lib/Connection.class.inc';
 require_once __DIR__ . '/../../class/vmlib/BdDataAccess.inc';
+require_once 'Vm4msMetadataAccess.class.inc';
 
 class CoordinateSystems extends Vmap4MapServer {
-    
-     /**
+    /**
      * @SWG\Definition(
      *   definition="/coordinatesystems",
      *   allOf={
@@ -29,6 +30,7 @@ class CoordinateSystems extends Vmap4MapServer {
      *   description=""
      * )
      */
+
     /**
      * construct
      * @param type $aPath url of the request
@@ -40,8 +42,9 @@ class CoordinateSystems extends Vmap4MapServer {
         $this->aPath = $aPath;
         $this->aProperties = $properties;
         $this->oConnection = new Connection($this->aValues, $this->aProperties);
-		$this->aSelectedFields = Array("coordsys_id", "epsg", "definition", "label");
+        $this->aSelectedFields = Array("coordsys_id", "epsg", "definition", "label", "epsg_definition");
     }
+
     /**
      * @SWG\Get(path="/coordinatesystems",
      *   tags={"CoordinateSystems"},
@@ -114,6 +117,7 @@ class CoordinateSystems extends Vmap4MapServer {
      *     )
      *  )
      */
+
     /**
      * get CoordinateSystems
      * @return  CoordinateSystems
@@ -122,7 +126,7 @@ class CoordinateSystems extends Vmap4MapServer {
         $aReturn = $this->genericGet($this->aProperties['schema_vm4ms'], 'coordsys', 'coordsys_id');
         return $aReturn['sMessage'];
     }
-    
+
     /**
      * @SWG\Post(path="/coordinatesystems",
      *   tags={"CoordinateSystems"},
@@ -173,17 +177,17 @@ class CoordinateSystems extends Vmap4MapServer {
      */
     function POST() {
         $aReturn = $this->genericPost($this->aProperties['schema_vm4ms'], 'coordsys', false, 'coordsys_id');
-        if ($aReturn['sStatus'] == 1){
+        if ($aReturn['sStatus'] == 1) {
             $aXmlRacineAttribute['status'] = 1;
             $sMessage = $this->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
             $oCoordinateSystem = new CoordinateSystem($this->aPath, $this->aValues, $this->aProperties, $this->oConnection);
             $oCoordinateSystem->GET();
-        }else{
+        } else {
             $sMessage = $aReturn['sMessage'];
         }
         return $sMessage;
     }
-    
+
     /**
      * @SWG\Put(path="/coordinatesystems/{coordsys_id}",
      *   tags={"CoordinateSystems"},
@@ -235,10 +239,14 @@ class CoordinateSystems extends Vmap4MapServer {
      */
     function PUT() {
         $aReturn = $this->genericPut($this->aProperties['schema_vm4ms'], 'coordsys', 'coordsys_id');
+        
+        // Génère les fichiers de projection        
+        $oVm4msMetadataAccess = new Vm4msMetadataAccess($this->oConnection->oBd, '', '', session_id(), $this->aProperties);
+        $oVm4msMetadataAccess->generateProjFiles();
+        
         return $aReturn['sMessage'];
     }
 
-    
     /**
      * @SWG\Delete(path="/coordinatesystems/",
      *   tags={"CoordinateSystems"},
@@ -296,7 +304,7 @@ class CoordinateSystems extends Vmap4MapServer {
      *     )
      *  )
      */
-    
+
     /**
      * delete coordinate system
      * @return id of coordinate system deleted or error object if a coordinate system is not deleted
@@ -305,5 +313,7 @@ class CoordinateSystems extends Vmap4MapServer {
         $aReturn = $this->genericDelete($this->aProperties['schema_vm4ms'], 'coordsys', 'coordsys_id');
         return $aReturn['sMessage'];
     }
+
 }
+
 ?>

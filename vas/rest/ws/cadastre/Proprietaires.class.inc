@@ -121,7 +121,7 @@ class Proprietaires extends Cadastre {
      * @return  Proprietaires
      */
     function GET() {
-        $aReturn = $this->genericGet('public', 'v_maj_pc', 'oid');
+        $aReturn = $this->genericGet('public', $this->aProperties['cadastre']['views']['proprietaire'], 'oid');
         return $aReturn['sMessage'];
     }
     

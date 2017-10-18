@@ -56,9 +56,54 @@
                 <textarea id="wms_service_tests_wms_service_map_file_textarea"></textarea>
             </div>
         </div>
+        <!-- Modale de sélection de couches -->
+        <div class="modal fade" id="wms_service_tests_layer_select_modal" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">{{ 'TAB_TITLE_MAPSERVER_LAYERS_VM4MS_WMS_SERVICE_TESTS' | translate }}</h4>
+                    </div>
+                    <div class="modal-body">                
+                        <!-- Checkbox visible -->
+                        <div class="checkbox checkbox-info text-right">
+                            <input id="wms_service_tests_all_layers_checkbox" 
+                                   type="checkbox" 
+                                   style="cursor:pointer; position: absolute" 
+                                   title="Definit si la couche est visible"
+                                   ng-checked="aMSTestLayers.length === oGetCapabilities.json.Capability.Layer.Layer.length" 
+                                   ng-click="aMSTestLayers.length === oGetCapabilities.json.Capability.Layer.Layer.length ? aMSTestLayers.length = 0 : testWmsServiceSelectAllLayers()">
+                            <label for="wms_service_tests_all_layers_checkbox" style="cursor:pointer" title=""></label>
+                        </div> 
+                        <ul class="form-map-layertree-ul">
+                            <li ng-repeat="oLayer in oGetCapabilities.json.Capability.Layer.Layer" class="margin-3">
+                                <div class="list-group-item auto-height">
+                                    <span class="font-11 layer-name layer-name-tree" ng-attr-title="{{oLayer.Title}}">{{oLayer.Title}}</span>                     
+                                    <!-- Checkbox visible -->
+                                    <div class="checkbox checkbox-info inline-checkbox">
+                                        <input id="{{oLayer.Name}}_wms_service_tests_layer_checkbox" 
+                                               type="checkbox" 
+                                               style="cursor:pointer; position: absolute" 
+                                               title="Definit si la couche est visible"
+                                               ng-checked="aMSTestLayers.indexOf(oLayer.Name) !== -1" 
+                                               ng-click="aMSTestLayers.indexOf(oLayer.Name) === -1 ? aMSTestLayers.push(oLayer.Name) : aMSTestLayers.splice(aMSTestLayers.indexOf(oLayer.Name), 1)">
+                                        <label for="{{oLayer.Name}}_wms_service_tests_layer_checkbox" style="cursor:pointer" title="Definit si la couche est visible"></label>
+                                    </div> 
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="modal-footer">
+                        <!--<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>-->
+                        <button type="button" class="btn btn-primary" ng-click="testWmsServiceSelectedLayersWithMapServer(aMSTestLayers)">Ok</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 <div class="row wms-service-tests-connection-form">
     <div data-app-wms-service-tests-connection-form="" class="col-xs-12">
     </div>
 </div>
+

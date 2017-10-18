@@ -123,7 +123,7 @@ class Parcelles extends Cadastre {
      * @return  Parcelles
      */
     function GET() {
-        $aReturn = $this->genericGet($this->aProperties['schema_cadastre'], 'v_vmap_parcelle', 'id_par');
+        $aReturn = $this->genericGet($this->aProperties['schema_cadastre'], $this->aProperties['cadastre']['views']['parcelle'], 'id_par');
         return $aReturn['sMessage'];
     }
 

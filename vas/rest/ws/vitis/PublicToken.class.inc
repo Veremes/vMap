@@ -76,10 +76,9 @@ class PublicToken extends Vitis {
             $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
         } else {
             //verify if the ip from wich the user connect is allowed
-            $sSql = $aSql['checkIP'];
-            $sSql = str_replace('[sSchemaFramework]', $this->aProperties['schema_framework'], $sSql);
-            $sSql = str_replace('[sLogin]', $_SESSION["ses_Login"], $sSql);
-            $oPDOresult = $oBd->execute($sSql);
+            $aParams['sSchemaFramework'] = array('value' => $this->aProperties['schema_framework'], 'type' => 'schema_name');
+            $aParams['sLogin'] = array('value' => $_SESSION["ses_Login"], 'type' => 'string');
+            $oPDOresult = $oBd->executeWithParams($aSql['checkIP'], $aParams);
             $aFields = $oBd->ligneSuivante($oPDOresult);
             $oMetadataAccess = new MetadataAccess($oBd, $_SESSION["ses_Login"], $_SESSION["ses_Password"], session_id(), $this->aProperties);
             $bAuthorizedIp = $oMetadataAccess->checkUserIp($_SERVER['REMOTE_ADDR']);

@@ -6,19 +6,18 @@ require_once __DIR__ . '/../../class/vitis_lib/Connection.class.inc';
 require_once __DIR__ . '/../../class/vmlib/BdDataAccess.inc';
 
 /**
-* \file lieuditbygeom.class.inc
-* \class LieuDitByGeom
-*
-* \author Armand Bahi <armand.bahi@veremes.com>.
-*
-*	\brief This file contains the LieuDitByGeom php class
-*
-* This class defines the rest api for lieuditbygeom
-* 
-*/
-class LieuDitByGeom  extends Cadastre{
-    
-     /**
+ * \file lieuditbygeom.class.inc
+ * \class LieuDitByGeom
+ *
+ * \author Armand Bahi <armand.bahi@veremes.com>.
+ *
+ * 	\brief This file contains the LieuDitByGeom php class
+ *
+ * This class defines the rest api for lieuditbygeom
+ * 
+ */
+class LieuDitByGeom extends Cadastre {
+    /**
      * @SWG\Definition(
      *   definition="/lieuditbyGeom",
      *   allOf={
@@ -30,6 +29,7 @@ class LieuDitByGeom  extends Cadastre{
      *   description="Operations about LieuDitByGeom"
      * )
      */
+
     /**
      * construct
      * @param type $aPath url of the request
@@ -37,16 +37,17 @@ class LieuDitByGeom  extends Cadastre{
      * @param type $properties properties
      * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties){
+    function __construct($aPath, $aValues, $properties) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
-		$this->oConnection = new Connection($this->aValues, $this->aProperties);
-		$this->sSchema = $this->aProperties['schema_cadastre'];
-		$this->sTable = 'v_lieudit';
-		$this->aAttributs = Array("id" ,"id_com", "section", "pre", "texte", "geom");
+        $this->oConnection = new Connection($this->aValues, $this->aProperties);
+        $this->sSchema = $this->aProperties['schema_cadastre'];
+        $this->sTable = 'v_lieudit';
+        $this->aAttributs = Array("id", "id_com", "section", "pre", "texte", "geom");
     }
-	/**
+
+    /**
      * @SWG\Get(path="/lieuditbygeom",
      *   tags={"LieuDit"},
      *   summary="Get the lieuditbygeom whith a table",
@@ -74,22 +75,24 @@ class LieuDitByGeom  extends Cadastre{
      *     )
      *  )
      */
+
     /**
      * Get function to generate a token
      * @return the token
      */
     function GET() {
-		
-		$sSchema = $this->sSchema;
-		$sTable = $this->sTable;
-		$aAttributs = $this->aAttributs;
-		$geom = $this->aValues['geom'];
-		
-		$aResult = $this->vmapIntersectGet($sSchema, $sTable, $geom, $aAttributs);
-		
+
+        $sSchema = $this->sSchema;
+        $sTable = $this->sTable;
+        $aAttributs = $this->aAttributs;
+        $geom = $this->aValues['geom'];
+
+        $aResult = $this->vmapIntersectGet($sSchema, $sTable, $geom, $aAttributs);
+
 
         return json_encode($aResult);
-    }    
+    }
+
 }
- 
+
 ?>

@@ -8,24 +8,38 @@
     <div class="row">
         <div class="col-xs-3">
             <b>Service: </b>
-            <select class="form-control" ng-model="ctrl.sRequestUrl">
-                <option value=""></option>
-                <option ng-repeat="node in ctrl.catalog.services.wms" value="{{node.url}}">{{node.name}}</option>
-            </select>
+            <select class="form-control" 
+                    ng-model="oSelectedService" 
+                    ng-options="oSelectedService.name for oSelectedService in aServices"></select>
         </div>
         <div class="col-xs-9">
             <b>URL: </b>
             <div class="input-group">
-                <input type="text" class="form-control" placeholder="Service url" aria-describedby="sizing-addon1" ng-model="ctrl.sRequestUrl">
+                <input type="text" class="form-control" placeholder="Service url" aria-describedby="sizing-addon1" ng-model="oSelectedService.url" ng-change="ctrl.reloadServicesList()">
                 <span class="input-group-btn">
                     <button type="submit" class="btn btn-success">Voir le contenu</button>
                 </span>
             </div>
         </div>
     </div>
+    <br>
+    <div class="row">
+        <div class="col-xs-6">
+        </div>
+        <div class="col-xs-3">
+            <div class="form-group">
+                <b>Identifiant (optionnel):</b>
+                <input type="text" class="form-control" ng-model="oSelectedService.login" ng-change="ctrl.reloadServicesList()">
+            </div>
+        </div>
+        <div class="col-xs-3">
+            <div class="form-group">
+                <b>Mot de passe (optionnel):</b>
+                <input type="password" class="form-control" ng-model="oSelectedService.password" ng-change="ctrl.reloadServicesList()">
+            </div>
+        </div>
+    </div>
 </form>
-
-<br>
 
 <div id="load-img-wms" style="display: none; text-align: center"><img src="images/ajax-load-big.gif"></div>
 <div id="wms-suggestions-list" style="display: none">
@@ -63,7 +77,6 @@
 </div>
 <button id="btn-reload-wms" style="display: none" ng-click="ctrl.reload()">Reload map</button>
 
-
 <div id="wms-select-style-modal" class="modal fade" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -72,26 +85,24 @@
                 <h4 class="modal-title">{{ctrl.oLayerToAdd.Title}}</h4>
             </div>
             <div class="modal-body">
-
-                <div class="row">
-                    <div class="col-xs-4">
-                        <label>Style</label>
-                        <select class="form-control" 
-                                ng-model="iSelectedStyleIndex"
-                                ng-change="ctrl.sLayerToAdd_style_name = ctrl.oLayerToAdd.Style[iSelectedStyleIndex].Name">
-                            <option value="?"></option>
-                            <option ng-repeat="oStyle in ctrl.oLayerToAdd.Style" value="{{$index}}">{{(oStyle.Title| isDef) ? oStyle.Title : oStyle.Name}}</option>
-                        </select>
-                        <br>
-                        <div ng-repeat="(key, value) in ctrl.oLayerToAdd.Style[iSelectedStyleIndex]" ng-if="(value | getType) == 'string'">
-                            <label>{{key}}: </label>{{value}}
+                <form id="wms-select-style-modal-form"
+                      ng-submit="ctrl.addLayer(ctrl.oLayerToAdd, oSelectedStyle.Name)">
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <label>Style</label>                            
+                            <select class="form-control" 
+                                    ng-model="oSelectedStyle" 
+                                    ng-options="oStyle.Title for oStyle in ctrl.oLayerToAdd.Style"></select>
+                            <br>
+                            <div ng-repeat="(key, value) in ctrl.oLayerToAdd.Style[iSelectedStyleIndex]" ng-if="(value | getType) == 'string'">
+                                <label>{{key}}: </label>{{value}}
+                            </div>
                         </div>
                     </div>
-                </div>
-
+                </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary" ng-click="ctrl.addLayer(ctrl.oLayerToAdd, ctrl.sLayerToAdd_style_name)">Valider</button>
+                <button type="submit" class="btn btn-primary" form="wms-select-style-modal-form">Valider</button>
             </div>
         </div>
     </div>

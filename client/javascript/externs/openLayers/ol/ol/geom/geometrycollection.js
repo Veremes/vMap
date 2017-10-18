@@ -1,11 +1,12 @@
 goog.provide('ol.geom.GeometryCollection');
 
+goog.require('ol');
 goog.require('ol.events');
 goog.require('ol.events.EventType');
 goog.require('ol.extent');
 goog.require('ol.geom.Geometry');
 goog.require('ol.geom.GeometryType');
-goog.require('ol.object');
+goog.require('ol.obj');
 
 
 /**
@@ -15,11 +16,11 @@ goog.require('ol.object');
  * @constructor
  * @extends {ol.geom.Geometry}
  * @param {Array.<ol.geom.Geometry>=} opt_geometries Geometries.
- * @api stable
+ * @api
  */
 ol.geom.GeometryCollection = function(opt_geometries) {
 
-  goog.base(this);
+  ol.geom.Geometry.call(this);
 
   /**
    * @private
@@ -29,7 +30,7 @@ ol.geom.GeometryCollection = function(opt_geometries) {
 
   this.listenGeometriesChange_();
 };
-goog.inherits(ol.geom.GeometryCollection, ol.geom.Geometry);
+ol.inherits(ol.geom.GeometryCollection, ol.geom.Geometry);
 
 
 /**
@@ -82,7 +83,8 @@ ol.geom.GeometryCollection.prototype.listenGeometriesChange_ = function() {
 /**
  * Make a complete copy of the geometry.
  * @return {!ol.geom.GeometryCollection} Clone.
- * @api stable
+ * @override
+ * @api
  */
 ol.geom.GeometryCollection.prototype.clone = function() {
   var geometryCollection = new ol.geom.GeometryCollection(null);
@@ -140,7 +142,7 @@ ol.geom.GeometryCollection.prototype.computeExtent = function(extent) {
 /**
  * Return the geometries that make up this geometry collection.
  * @return {Array.<ol.geom.Geometry>} Geometries.
- * @api stable
+ * @api
  */
 ol.geom.GeometryCollection.prototype.getGeometries = function() {
   return ol.geom.GeometryCollection.cloneGeometries_(this.geometries_);
@@ -160,7 +162,7 @@ ol.geom.GeometryCollection.prototype.getGeometriesArray = function() {
  */
 ol.geom.GeometryCollection.prototype.getSimplifiedGeometry = function(squaredTolerance) {
   if (this.simplifiedGeometryRevision != this.getRevision()) {
-    ol.object.clear(this.simplifiedGeometryCache);
+    ol.obj.clear(this.simplifiedGeometryCache);
     this.simplifiedGeometryMaxMinSquaredTolerance = 0;
     this.simplifiedGeometryRevision = this.getRevision();
   }
@@ -200,7 +202,7 @@ ol.geom.GeometryCollection.prototype.getSimplifiedGeometry = function(squaredTol
 
 /**
  * @inheritDoc
- * @api stable
+ * @api
  */
 ol.geom.GeometryCollection.prototype.getType = function() {
   return ol.geom.GeometryType.GEOMETRY_COLLECTION;
@@ -209,7 +211,7 @@ ol.geom.GeometryCollection.prototype.getType = function() {
 
 /**
  * @inheritDoc
- * @api stable
+ * @api
  */
 ol.geom.GeometryCollection.prototype.intersectsExtent = function(extent) {
   var geometries = this.geometries_;
@@ -245,9 +247,26 @@ ol.geom.GeometryCollection.prototype.rotate = function(angle, anchor) {
 
 
 /**
+ * @inheritDoc
+ * @api
+ */
+ol.geom.GeometryCollection.prototype.scale = function(sx, opt_sy, opt_anchor) {
+  var anchor = opt_anchor;
+  if (!anchor) {
+    anchor = ol.extent.getCenter(this.getExtent());
+  }
+  var geometries = this.geometries_;
+  for (var i = 0, ii = geometries.length; i < ii; ++i) {
+    geometries[i].scale(sx, opt_sy, anchor);
+  }
+  this.changed();
+};
+
+
+/**
  * Set the geometries that make up this geometry collection.
  * @param {Array.<ol.geom.Geometry>} geometries Geometries.
- * @api stable
+ * @api
  */
 ol.geom.GeometryCollection.prototype.setGeometries = function(geometries) {
   this.setGeometriesArray(
@@ -268,7 +287,7 @@ ol.geom.GeometryCollection.prototype.setGeometriesArray = function(geometries) {
 
 /**
  * @inheritDoc
- * @api stable
+ * @api
  */
 ol.geom.GeometryCollection.prototype.applyTransform = function(transformFn) {
   var geometries = this.geometries_;
@@ -284,6 +303,7 @@ ol.geom.GeometryCollection.prototype.applyTransform = function(transformFn) {
  * Translate the geometry.
  * @param {number} deltaX Delta X.
  * @param {number} deltaY Delta Y.
+ * @override
  * @api
  */
 ol.geom.GeometryCollection.prototype.translate = function(deltaX, deltaY) {
@@ -301,5 +321,5 @@ ol.geom.GeometryCollection.prototype.translate = function(deltaX, deltaY) {
  */
 ol.geom.GeometryCollection.prototype.disposeInternal = function() {
   this.unlistenGeometriesChange_();
-  goog.base(this, 'disposeInternal');
+  ol.geom.Geometry.prototype.disposeInternal.call(this);
 };

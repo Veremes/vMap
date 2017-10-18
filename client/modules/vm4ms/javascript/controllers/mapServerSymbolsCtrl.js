@@ -11,13 +11,12 @@ goog.require("vitis.modules.main");
  * @param {angular.$scope} $scope Angular scope.
  * @param {angular.$timeout} $timeout Angular timeout service.
  * @param {angular.$sce} $sce Angular sce service.
- * @param {service} Restangular Service Restangular.
  * @param {service} propertiesSrvc Paramètres des properties.
  * @param {service} envSrvc Paramètres d'environnement.
  * @param {service} sessionSrvc Service de gestion des sessions.
  * @ngInject
  **/
-vitisApp.mapServerSymbolsCtrl = function ($log, $scope, $timeout, $sce, Restangular, propertiesSrvc, envSrvc, sessionSrvc) {
+vitisApp.mapServerSymbolsCtrl = function ($log, $scope, $timeout, $sce, propertiesSrvc, envSrvc, sessionSrvc) {
         // Initialisation
         $log.info("initMapServerSymbols");
         /**
@@ -26,15 +25,13 @@ vitisApp.mapServerSymbolsCtrl = function ($log, $scope, $timeout, $sce, Restangu
          **/
         $scope["loadMapServerSymbols"] = function() {
             $log.info("loadMapServerSymbols");
-            var oWebServiceBase = Restangular["one"](propertiesSrvc["services_alias"] + "/vm4ms", "mapserver");
-            // Requête pour récupérer le chemin vers le fichier ".map" du service wms.
-            var $oParams = {
-                "token": sessionSrvc["token"]
-            };
-            oWebServiceBase["customGET"]("Symbols", $oParams)
-                .then(function (data) {
-                    if (data["status"] == 1) {
-                        var oMapServerSymbols = envSrvc["extractWebServiceData"]("mapserver", data)[0];
+            ajaxRequest({
+                "method": "GET",
+                "url": propertiesSrvc["web_server_name"] + "/" + propertiesSrvc["services_alias"] + "/vm4ms/mapserver/Symbols",
+                "scope": $scope,
+                "success": function(response) {
+                    if (response["data"]["status"] == 1) {
+                        var oMapServerSymbols = envSrvc["extractWebServiceData"]("mapserver", response["data"])[0];
                         var oMapServerSymbols = angular.copy(oMapServerSymbols["symbols_content"])
                         oMapServerSymbols.forEach(function(oSymbol, iSymbolIndex){
                             oSymbol["definition"].forEach(function(sDefinition, iDefinitionIndex){
@@ -42,21 +39,18 @@ vitisApp.mapServerSymbolsCtrl = function ($log, $scope, $timeout, $sce, Restangu
                             });
                         });
                         $scope["oMapServerSymbols"] = oMapServerSymbols;
-                        $timeout(function () {
-                            $(".collapse").collapse('hide');
-                        });
-                        
                     } else {
                         //
                         var oOptions = {
                             "className": "modal-danger"
                         };
                         // Message d'erreur ?
-                        if (data["errorMessage"] != null)
-                            oOptions["message"] = data["errorMessage"];
+                        if (response["data"]["errorMessage"] != null)
+                            oOptions["message"] = response["data"]["errorMessage"];
                         $scope.$root["modalWindow"]("alert", "REQUEST_ERROR", oOptions);
                     }
-                });
+                }
+            });
         };
         /**
          * trustAsHtml function.

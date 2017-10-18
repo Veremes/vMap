@@ -4,6 +4,20 @@
             <ul class="nav nav-pills basic-tools-nav">
                 <!-- Outils de localisation -->
                 <div app-location app-lang="ctrl.lang" app-map="ctrl.map"></div>
+                <!-- Login de l'utilisateur -->
+                <div class="right">
+                    <li role="presentation" style="position: inherit" class="basic-tools-dropdown">
+                        <a class="basic-tools-element pointer"
+                           title="Utilisateur"
+                           onclick="oVmap.getToolsManager().getBasicTools().toggleTool(this)">
+                            <span class="icon-user" aria-hidden="true"></span>
+                        </a>
+                        <div app-vmap-user app-lang="ctrl.lang" app-map="ctrl.map" app-action="ctrl.currentAction"
+                             id="basic-tools-dropdown-user"
+                             class="dropdown-menu basic-tools-dropdown-element basic-tools-dropdown-controls-content">
+                        </div>
+                    </li>
+                </div>
                 <!-- Contrôles -->
                 <div class="right">
                     <li role="presentation" style="position: inherit" class="basic-tools-dropdown">
@@ -23,7 +37,7 @@
                     <li role="presentation" style="position: inherit" class="basic-tools-dropdown">
                         <a id="print-select-btn"
                            class="basic-tools-element pointer"
-                           title="Imprimer"
+                           title="Impression"
                            onclick="oVmap.getToolsManager().getBasicTools().toggleTool(this)">
                             <span class="glyphicon glyphicon-print" aria-hidden="true"></span>
                         </a>
@@ -48,10 +62,8 @@
                         </div>
                     </li>
                 </div>
-                
                 <!--Outils de sélection-->
                 <div app-select app-lang="ctrl.lang" app-map="ctrl.map" app-action="ctrl.currentAction" class="right basic-tools-nav"></div>
-                
                 <!-- Mesure -->
                 <div class="right">
                     <li style="position: inherit" class="basic-tools-dropdown">

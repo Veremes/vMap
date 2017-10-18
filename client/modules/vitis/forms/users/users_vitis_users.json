@@ -129,7 +129,7 @@
                 "fields":[
                     {
                         "type":"label",
-                        "name":"last_connection",
+                        "name":"last_connection_pretty",
                         "label":"FORM_LAST_CONNECTION_USERS_USER",
                         "nb_cols":12
                     }
@@ -573,7 +573,7 @@
                 "fields":[
                     {
                         "type":"label",
-                        "name":"last_connection",
+                        "name":"last_connection_pretty",
                         "label":"FORM_LAST_CONNECTION_USERS_USER",
                         "nb_cols":12
                     }

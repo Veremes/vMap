@@ -3,17 +3,16 @@
       id="{{oFormDefinition[sFormDefinitionName].name}}" 
       style="margin: 0px 15px" 
       autocomplete="{{(oFormDefinition[sFormDefinitionName].autocomplete === true) ? 'on' : 'off'}}">
-    <div ng-class="{'row':oFormDefinition[sFormDefinitionName].tabs.position === 'left'}">
+    <div ng-class=" {'row':oFormDefinition[sFormDefinitionName].tabs.position === 'left'}">
         <!--Boutons onglets-->
         <div ng-class="{'col-xs-3':oFormDefinition[sFormDefinitionName].tabs.position === 'left'}">
             <ul class="nav" 
-                ng-class="{'vitis-nav-left nav-pills nav-stacked':oFormDefinition[sFormDefinitionName].tabs.position === 'left', 'nav-tabs vitis-nav-top':oFormDefinition[sFormDefinitionName].tabs.position === 'top'}"
+                ng-class="{'vitis-nav-left nav-pills nav-stacked':oFormDefinition[sFormDefinitionName].tabs.position === 'left', 'nav-tabs vitis-nav-top':oFormDefinition[sFormDefinitionName].tabs.position === 'top', 'nav-justified':oFormDefinition[sFormDefinitionName].tabs.justified === true, 'vitis-background-app-nav-top':oFormDefinition[sFormDefinitionName].tabs.justified === true}"
                 ng-if="oFormDefinition[sFormDefinitionName].tabs.list.length > 1 && showTabs !== false">
                 <li ng-repeat="tab in :refresh:oFormDefinition[sFormDefinitionName].tabs.list track by $index"
                     ng-class="{'active': $parent.$parent.iDisplayedTab === $index}"
                     ng-click="$parent.$parent.iDisplayedTab = $index">
-                    <a data-toggle="tab" href="#">
-                        {{tab.label}}
+                    <a data-toggle="tab" href="#" data-translate="{{:refresh:tab.label}}">
                         <span ng-if="oFormDefinition[sFormDefinitionName].tabs.position === 'left'"
                               class="icon-keyboard_arrow_right section-keyboard_arrow_right"></span>
                     </a>
@@ -41,6 +40,10 @@
                                     <div ng-switch-when="title">
                                         <div class="control-label form-title" ng-class="field.class" data-translate="{{:refresh:field.label}}"></div>
                                     </div>
+                                    <!-- Offset -->
+                                    <div ng-switch-when="offset">
+                                        <div ng-class="col-xs-{{:refresh:field.nb_cols}}"></div>
+                                    </div>
                                     <!-- Sous-titre -->
                                     <div ng-switch-when="subtitle">
                                         <div ng-class="field.class" data-translate="{{:refresh:field.label}}"></div>
@@ -49,6 +52,10 @@
                                     <div ng-switch-when="label">
                                         <label for="{{:refresh:field.id}}" id="{{:refresh:field.id}}_label" class="control-label" data-translate="{{:refresh:field.label}}"></label>
                                         <p class="form-control-static form-label form-label-field no-padding" name="{{:refresh:field.name}}" id="{{:refresh:field.id}}" ng-bind="oFormValues[sFormDefinitionName][field.name]"></p>
+                                    </div>
+                                    <!-- Captcha -->
+                                    <div ng-switch-when="captcha" class="center">
+                                        <div data-app-form-field-specific-params="" id="{{:refresh:field.id}}" class="g-recaptcha" data-sitekey="{{:refresh:field.key}}"></div>
                                     </div>
                                     <!-- Checkbox -->
                                     <div ng-switch-when="checkbox" class="checkbox checkbox-margin" style="padding-left: 20px">
@@ -313,6 +320,14 @@
                                                ng-value="oFormValues[sFormDefinitionName][field.name]" 
                                                ng-required="field.required">
                                     </div>
+                                    <!-- Map Workbench -->
+                                    <div ng-switch-when="map_workbench">
+                                        <div data-app-map-workbench="" id="{{:refresh:field.id}}_map_workbench"></div>
+                                        <input type="text" name="{{:refresh:field.name}}" id="{{:refresh:field.id}}" 
+                                               style="position: absolute;opacity: 0;bottom: 0px;"
+                                               ng-value="oFormValues[sFormDefinitionName][field.name]"
+                                               ng-required="field.required">
+                                    </div>
                                     <!--CodeMirror-->
                                     <div ng-switch-when="codemirror">
                                         <div>
@@ -328,7 +343,6 @@
                                                id="{{:refresh:field.id}}" 
                                                class="form-control" 
                                                ng-value="oFormValues[sFormDefinitionName][field.name]" 
-
                                                ng-required="field.required"/>
                                     </div>
                                     <!-- HR -->
@@ -355,7 +369,7 @@
                                         </div>
                                         <!--Si l'image existe-->
                                         <div ng-show="oFormValues[sFormDefinitionName][field.name].length > 0">
-                                            <img id="{{:refresh:field.id}}_img" ng-src="{{oFormValues[sFormDefinitionName][field.name]}}" alt="image" class="img-responsive" width="100%"/>                        
+                                            <img id="{{:refresh:field.id}}_img" ng-src="{{oFormValues[sFormDefinitionName][field.name]}}" alt="image" class="img-responsive" width="{{field.display_width}}"/>                        
                                             <div ng-if="!field.displayOnly">
                                                 <div style="float: left; width:95%">
                                                     <input ng-if="!field.multiple" data-app-form-field-specific-params="" type="file" id="{{:refresh:field.id}}" class="file" name="{{:refresh:field.name}}" class="form-control" ng-required="field.required">
@@ -442,6 +456,9 @@
                                     <div ng-switch-when="link">
                                         <label for="{{:refresh:field.id}}" id="{{:refresh:field.id}}_label" class="control-label row no-bs-row-margin" data-translate="{{:refresh:field.label}}"></label>
                                         <a id="{{:refresh:field.id}}" name="{{:refresh:field.name}}" ng-href="{{oProperties.web_server_name}}/{{oProperties[field.alias]}}/{{:refresh:field.folder}}/{{oFormValues[sFormDefinitionName][field.name]}}" target="{{field.target}}" class="row no-bs-row-margin form-control-static form-label-field formreader-link">{{oFormValues[sFormDefinitionName][field.name]}}</a>
+                                    </div>
+                                    <div ng-switch-when="linklabel">
+                                        <a id="{{:refresh:field.id}}" name="{{:refresh:field.name}}" ng-href="{{oFormValues[sFormDefinitionName][field.name]}}" target="{{field.target}}" class="row no-bs-row-margin form-control-static form-label-field formreader-link" data-translate="{{:refresh:field.label}}"></a>
                                     </div>
                                     <!-- Link URL -->
                                     <div ng-switch-when="linkurl">
@@ -608,6 +625,13 @@
                                                      data-ui-grid-resize-columns="" 
                                                      data-ui-grid-draggable-rows=""></div>
                                             </div>
+                                        </div>
+                                    </div>
+                                    <!-- Treeview -->
+                                    <div ng-switch-when="treeview">
+                                        <label ng-if=":refresh:field.label" for="{{:refresh:field.id}}_treeview" id="{{:refresh:field.id}}_treeview_label" class="control-label" data-translate="{{:refresh:field.label}}"></label>
+                                        <div class="treeview-container">
+                                            <div data-app-form-field-specific-params id="{{:refresh:field.id}}_treeview"></div>
                                         </div>
                                     </div>
                                     <!-- Default -->

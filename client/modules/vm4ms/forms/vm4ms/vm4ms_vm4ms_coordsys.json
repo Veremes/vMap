@@ -91,6 +91,21 @@
             {
                 "fields":[
                     {
+                        "type":"text",
+                        "name":"epsg_definition",
+                        "label":"FORM_EPSG_DEFINITION_VM4MS_VM4MS_COORDSYS",
+                        "nb_cols":12,
+                        "tooltip": {
+                            "title": "",
+                            "content": "FORM_EPSG_DEFINITION_DESCRIPTION_VM4MS_VM4MS_COORDSYS",
+                            "container": "body"
+                        }
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
                         "type":"codemirror",
                         "name":"definition",
                         "label":"FORM_DEFINITION_VM4MS_VM4MS_COORDSYS",
@@ -104,7 +119,7 @@
                             "indentWithTabs":true,
                             "enterMode":"keep",
                             "tabMode":"shift",
-                            "appHeight":"70%"
+                            "appHeight":"30%"
                         }
                     }
                 ]
@@ -173,6 +188,16 @@
             {
                 "fields":[
                     {
+                        "type":"text",
+                        "name":"epsg_definition",
+                        "label":"FORM_EPSG_DEFINITION_VM4MS_VM4MS_COORDSYS",
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
                         "type":"codemirror",
                         "name":"definition",
                         "label":"FORM_DEFINITION_VM4MS_VM4MS_COORDSYS",
@@ -186,7 +211,7 @@
                             "indentWithTabs":true,
                             "enterMode":"keep",
                             "tabMode":"shift",
-                            "appHeight":"70%"
+                            "appHeight":"30%"
                         }
                     }
                 ]
@@ -246,6 +271,16 @@
             {
                 "fields":[
                     {
+                        "type":"label",
+                        "name":"epsg_definition",
+                        "label":"FORM_EPSG_DEFINITION_VM4MS_VM4MS_COORDSYS",
+                        "nb_cols":12
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
                         "type":"codemirror",
                         "name":"definition",
                         "label":"FORM_DEFINITION_VM4MS_VM4MS_COORDSYS",
@@ -259,7 +294,7 @@
                             "indentWithTabs":true,
                             "enterMode":"keep",
                             "tabMode":"shift",
-                            "appHeight":"50%",
+                            "appHeight":"30%",
                             "readOnly":"true"
                         }
                     }

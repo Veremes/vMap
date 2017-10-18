@@ -40,7 +40,7 @@ class Modules extends Vmap {
         $this->aPath = $aPath;
         $this->aProperties = $properties;
         $this->oConnection = new Connection($this->aValues, $this->aProperties);
-		$this->aSelectedFields = Array("module_id", "label", "description", "rolname");
+		$this->aSelectedFields = Array("module_id", "label", "description", "rolname", "rolname_list");
     }
     /**
      * @SWG\Get(path="/modules",

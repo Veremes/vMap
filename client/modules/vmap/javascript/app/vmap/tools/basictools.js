@@ -9,6 +9,7 @@ goog.provide('nsVmap.nsToolsManager.BasicTools');
 
 goog.require('oVmap');
 
+goog.require('nsVmap.nsToolsManager.VmapUser');
 goog.require('nsVmap.nsToolsManager.Controls');
 goog.require('nsVmap.nsToolsManager.Location');
 goog.require('nsVmap.nsToolsManager.Measure');

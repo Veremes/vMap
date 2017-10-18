@@ -5,8 +5,10 @@
             <div id="user_column" class="user_column" data-toggle="dropdown">
                 {{sUserLoginText}} <span class="caret"></span>
             </div>
-            <ul class="dropdown-menu dropdown-user-menu">
-                <li><a href="" ng-click="selectMode('user')" data-translate="USER_INFOS"></a></li>
+            <ul class="dropdown-menu dropdown-user-menu" id="list-dropdown-menu">
+                <li ng-repeat="li in aDropdownMenu">
+                    <a href="" ng-click="executeEvent($event, li.event)" data-translate="{{li.label}}"></a>
+                </li>
                 <li><a id="btn_disconnect" href="" ng-click="disconnect()" data-translate="DISCONNECT"></a></li>
             </ul>
         </div>

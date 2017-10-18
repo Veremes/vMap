@@ -1,5 +1,4 @@
 
-
 /* global MozWebSocket, goog */
 
 goog.provide('vitis.VitisWebsocket');

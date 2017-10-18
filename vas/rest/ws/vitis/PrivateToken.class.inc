@@ -64,13 +64,12 @@ class PrivateToken extends Vitis {
      * @SWG\Parameter(
      *     name="duration",
      *     in="formData",
-     *     description="Duration of the token",
+     *     description="Session duration (minutes)",
      *     required=false,
      *     type="integer",
-     * format="int32"
+     *     format="int32",
+     *     default="60"
      *   ),
-     *
-     *
      *   @SWG\Response(
      *         response=200,
      *         description="Token Response",
@@ -100,6 +99,7 @@ class PrivateToken extends Vitis {
                 $aXmlRacineAttribute['status'] = 0;
                 $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
                 $bXMLError = true;
+                writeToErrorLog('ERROR : Connection forbidden with public account.');
             } else {
                 // Suppression des majuscules et accents.
                 $this->aValues['user'] = mb_strtolower($this->aValues['user'], 'UTF-8');
@@ -132,48 +132,61 @@ class PrivateToken extends Vitis {
                 $bXMLError = true;
             } else {
                 // Privilège 'vitis_user' obligatoire.
-                $sSql = $aSql['getUserConnectionPrivileges'];
-                $sSql = str_replace('[sLogin]', $this->aValues["user"], $sSql);
-                $oPDOresult = $oBd->execute($sSql);
+                $aParams['sLogin'] = array('value' => $this->aValues["user"], 'type' => 'string');
+                $oPDOresult = $oBd->executeWithParams($aSql['getUserConnectionPrivileges'], $aParams);
                 if ($oBd->nombreLigne($oPDOresult) == 0) {
                     $oError = new VitisError(1, "No 'vitis_user' privilege.");
                     $aXmlRacineAttribute['status'] = 0;
                     $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+                    writeToErrorLog("ERROR : No 'vitis_user' privilege for user '" . $this->aValues["user"] . "'.");
                 } else {
-                    //verify the ip from wich the user is connected
-                    $sSql = $aSql['checkIP'];
-                    $sSql = str_replace('[sSchemaFramework]', $this->aProperties['schema_framework'], $sSql);
-                    $sSql = str_replace('[sLogin]', $_SESSION["ses_Login"], $sSql);
-                    $oPDOresult = $oBd->execute($sSql);
-                    $aFields = $oBd->ligneSuivante($oPDOresult);
-                    $oMetadataAccess = new MetadataAccess($oBd, $_SESSION["ses_Login"], $_SESSION["ses_Password"], session_id(), $this->aProperties);
-                    $bAuthorizedIp = $oMetadataAccess->checkUserIp($_SERVER['REMOTE_ADDR']);
-                    if (!$bAuthorizedIp) {
-                        $oError = new VitisError(11, 'Connection to the database forbidden with the ip \'' . $_SERVER['REMOTE_ADDR'] . '\'.');
+                    // L'utilisateur doit exister dans la table s_vitis.user
+                    $aParams['sSchemaFramework'] = array('value' => $this->aProperties['schema_framework'], 'type' => 'schema_name');
+                    $aParams['sLogin'] = array('value' => $_SESSION["ses_Login"], 'type' => 'string');
+                    $oPDOresult = $oBd->executeWithParams($aSql['checkUser'], $aParams);
+                    if ($oBd->nombreLigne($oPDOresult) == 0) {
+                        $oError = new VitisError(1, 'The user ' . $_SESSION["ses_Login"] . ' does not exist');
                         $aXmlRacineAttribute['status'] = 0;
                         $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
-                        $bXMLError = true;
-                    } else {
-                        $oConnection = new Connection(Array('token' => session_id()), $this->aProperties);
-                        $this->aFields['token'] = session_id();
-                        $this->aFields['user'] = $_SESSION["ses_Login"];
-                        $this->aFields['validity_date'] = date('Y-m-d H:i:s', time() + ($this->aValues['duration'] * 60));
-                        $this->aFields['user_id'] = $aFields['user_id'];
-                        $this->aFields['privileges'] = $oConnection->aPrivileges;
-                        if ($this->aValues['output'] === 'application/xml') {
-                            $this->aFields['privileges'] = implode(',', $this->aFields['privileges']);
+                        writeToErrorLog('ERROR : The user ' . $_SESSION["ses_Login"] . ' does not exist.');
+                    }
+                    else {
+                        //verify the ip from wich the user is connected
+                        $aParams = array();
+                        $aParams['sSchemaFramework'] = array('value' => $this->aProperties['schema_framework'], 'type' => 'schema_name');
+                        $aParams['sLogin'] = array('value' => $_SESSION["ses_Login"], 'type' => 'string');
+                        $oPDOresult = $oBd->executeWithParams($aSql['checkIP'], $aParams);
+                        $aFields = $oBd->ligneSuivante($oPDOresult);
+                        $oMetadataAccess = new MetadataAccess($oBd, $_SESSION["ses_Login"], $_SESSION["ses_Password"], session_id(), $this->aProperties);
+                        $bAuthorizedIp = $oMetadataAccess->checkUserIp($_SERVER['REMOTE_ADDR']);
+                        if (!$bAuthorizedIp) {
+                            $oError = new VitisError(11, 'Connection to the database forbidden with the ip \'' . $_SERVER['REMOTE_ADDR'] . '\'.');
+                            $aXmlRacineAttribute['status'] = 0;
+                            $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+                            $bXMLError = true;
+                            writeToErrorLog('ERROR : Connection to the database forbidden with the ip \'' . $_SERVER['REMOTE_ADDR'] . '\'.');
+                        } else {
+                            $oConnection = new Connection(Array('token' => session_id()), $this->aProperties);
+                            $this->aFields['token'] = session_id();
+                            $this->aFields['user'] = $_SESSION["ses_Login"];
+                            $this->aFields['validity_date'] = date('Y-m-d H:i:s', time() + ($this->aValues['duration'] * 60));
+                            $this->aFields['user_id'] = $aFields['user_id'];
+                            $this->aFields['privileges'] = $oConnection->aPrivileges;
+                            if ($this->aValues['output'] === 'application/xml') {
+                                $this->aFields['privileges'] = implode(',', $this->aFields['privileges']);
+                            }
+                            $_SESSION["ses_user_id"] = $aFields['user_id'];
+                            $_SESSION["ses_restriction"] = $aFields['restriction'];
+                            $aXmlRacineAttribute['status'] = 1;
+                            $aParams = array();
+                            $aParams['sSchemaFramework'] = array('value' => $this->aProperties['schema_framework'], 'type' => 'schema_name');
+                            $aParams['user_id'] = array('value' => $aFields['user_id'], 'type' => 'number');
+                            $aParams['date'] = array('value' => date('Y-m-d H:i:s', time()), 'type' => 'string');
+                            $oPDOresult = $oBd->executeWithParams($aSql['updateLastConnection'], $aParams);
+                            $sLogString = "connection" . $this->aProperties["log_delim"] . $_SESSION["ses_Login"] . $this->aProperties["log_delim"] . session_id();
+                            writeToLog($sLogString, $this->aProperties["connexion_log_file"]);
+                            $sMessage = $this->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
                         }
-                        $_SESSION["ses_user_id"] = $aFields['user_id'];
-                        $_SESSION["ses_restriction"] = $aFields['restriction'];
-                        $aXmlRacineAttribute['status'] = 1;
-                        $sSql = $aSql['updateLastConnection'];
-                        $sSql = str_replace('[sSchemaFramework]', $this->aProperties['schema_framework'], $sSql);
-                        $sSql = str_replace('[user_id]', $aFields['user_id'], $sSql);
-                        $sSql = str_replace('[date]', date('Y-m-d H:i:s', time()), $sSql);
-                        $oPDOresult = $oBd->execute($sSql);
-                        $sLogString = "connection" . $this->aProperties["log_delim"] . $_SESSION["ses_Login"] . $this->aProperties["log_delim"] . session_id();
-                        writeToLog($sLogString, $this->aProperties["connexion_log_file"]);
-                        $sMessage = $this->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
                     }
                 }
             }
@@ -217,28 +230,39 @@ class PrivateToken extends Vitis {
             $aXmlRacineAttribute['status'] = 0;
             $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
         } else {
-            $this->aFields['token'] = $this->aValues['token'];
-            $this->aFields['user'] = $oConnection->aValues['login'];
-            $this->aFields['user_id'] = $_SESSION['ses_user_id'];
-            $this->aFields['validity_date'] = $oConnection->aValues['validity_date'];
-            $this->aFields['privileges'] = $oConnection->aPrivileges;
-            if ($this->aValues['output'] === 'application/xml') {
-                $this->aFields['privileges'] = implode(',', $this->aFields['privileges']);
+            // L'utilisateur doit exister dans la table s_vitis.user
+            $aParams['sSchemaFramework'] = array('value' => $this->aProperties['schema_framework'], 'type' => 'schema_name');
+            $aParams['sLogin'] = array('value' => $_SESSION["ses_Login"], 'type' => 'string');
+            $oPDOresult = $oConnection->oBd->executeWithParams($aSql['checkUser'], $aParams);
+            if ($oConnection->oBd->nombreLigne($oPDOresult) == 0) {
+                $oError = new VitisError(1, 'The user ' . $_SESSION["ses_Login"] . ' does not exist');
+                $aXmlRacineAttribute['status'] = 0;
+                $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+                writeToErrorLog('ERROR : The user ' . $_SESSION["ses_Login"] . ' does not exist.');
             }
-            $sLogString = "connection" . $this->aProperties["log_delim"] . $_SESSION["ses_Login"] . $this->aProperties["log_delim"] . session_id();
-            writeToLog($sLogString, $this->aProperties["connexion_log_file"]);
-            $aXmlRacineAttribute['status'] = 1;
-            $sMessage = $this->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+            else {
+                $this->aFields['token'] = $this->aValues['token'];
+                $this->aFields['user'] = $oConnection->aValues['login'];
+                $this->aFields['user_id'] = $_SESSION['ses_user_id'];
+                $this->aFields['validity_date'] = $oConnection->aValues['validity_date'];
+                $this->aFields['privileges'] = $oConnection->aPrivileges;
+                if ($this->aValues['output'] === 'application/xml') {
+                    $this->aFields['privileges'] = implode(',', $this->aFields['privileges']);
+                }
+                $sLogString = "connection" . $this->aProperties["log_delim"] . $_SESSION["ses_Login"] . $this->aProperties["log_delim"] . session_id();
+                writeToLog($sLogString, $this->aProperties["connexion_log_file"]);
+                $aXmlRacineAttribute['status'] = 1;
+                $sMessage = $this->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
 
-            // Écrit dans la variable de session
-            $oBd = $oConnection->oBd;
-            $sSql = $aSql['checkIP'];
-            $sSql = str_replace('[sSchemaFramework]', $this->aProperties['schema_framework'], $sSql);
-            $sSql = str_replace('[sLogin]', $_SESSION["ses_Login"], $sSql);
-            $oPDOresult = $oBd->execute($sSql);
-            $aFields = $oBd->ligneSuivante($oPDOresult);
-            $_SESSION["ses_user_id"] = $aFields['user_id'];
-            $_SESSION["ses_restriction"] = $aFields['restriction'];
+                // Écrit dans la variable de session
+                $oBd = $oConnection->oBd;
+                $aParams['sSchemaFramework'] = array('value' => $this->aProperties['schema_framework'], 'type' => 'schema_name');
+                $aParams['sLogin'] = array('value' => $_SESSION["ses_Login"], 'type' => 'string');
+                $oPDOresult = $oBd->executeWithParams($aSql['checkIP'], $aParams);
+                $aFields = $oBd->ligneSuivante($oPDOresult);
+                $_SESSION["ses_user_id"] = $aFields['user_id'];
+                $_SESSION["ses_restriction"] = $aFields['restriction'];
+            }
         }
         return $sMessage;
     }

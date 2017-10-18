@@ -7,6 +7,7 @@ $properties['language'] = 'fr';
 $properties['cookie_lifetime'] = 525600;
 $properties['max_upload_file_size'] = 100 * 1024 * 1024;
 $properties['max_execution_time'] = 3600;
+$properties['max_request_time'] = 10;
 $properties['minimum_refresh_period'] = 10;
 $properties['forbidden_extension'] = '*.bat|*.com|*.exe|*.php|*.phtml|*.vhtml|*.js|*.vbe|*.wsf|*.dll';
 $properties['rows_per_page'] = 20;
@@ -27,6 +28,8 @@ $properties['allow_public_connection'] = false;
 $properties['public_login'] = '';
 $properties['public_password'] = '';
 $properties['public_token'] = '';
+$properties["sign_up"] = "disabled";
+$properties["password_forgotten"] = "disabled";
 
 // Require tous les fichiers de tous les dossiers contenus sans properties
 $aDir = scandir(__DIR__);

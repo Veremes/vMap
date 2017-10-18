@@ -254,10 +254,10 @@ class Users extends Vitis {
                 require_once $this->sRessourcesFile;
                 $this->aValues["login"] = mb_strtolower($this->aValues["login"], 'UTF-8');
                 $this->aValues["login"] = str_replace(array('à', 'â', 'ä', 'á', 'ã', 'å', 'î', 'ï', 'ì', 'í', 'ô', 'ö', 'ò', 'ó', 'õ', 'ø', 'ù', 'û', 'ü', 'ú', 'é', 'è', 'ê', 'ë', 'ç', 'ÿ', 'ñ'), array('a', 'a', 'a', 'a', 'a', 'a', 'i', 'i', 'i', 'i', 'o', 'o', 'o', 'o', 'o', 'o', 'u', 'u', 'u', 'u', 'e', 'e', 'e', 'e', 'c', 'y', 'n',), $this->aValues["login"]);
-                $sSql = str_replace('[sSchemaFramework]', $this->aProperties["schema_framework"], $aSql['loginUnique']);
-                $sSql = str_replace('[sLoginUser]', $this->aValues["login"], $sSql);
-                $resultat = $this->oConnection->oBd->execute($sSql);
-                if ($this->oConnection->oBd->nombreLigne($resultat) > 0) {
+                $aParams['sSchemaFramework'] = array('value' => $this->aProperties['schema_framework'], 'type' => 'schema_name');
+                $aParams['sLoginUser'] = array('value' => $this->aValues["login"], 'type' => 'string');
+                $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['loginUnique'], $aParams);
+                if ($this->oConnection->oBd->nombreLigne($oPDOresult) > 0) {
                     $oError = new VitisError(1, "user already exists");
                     $aXmlRacineAttribute['status'] = 0;
                     $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
@@ -276,15 +276,7 @@ class Users extends Vitis {
                             $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                             $aXmlRacineAttribute['status'] = 0;
                             $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
-                            //insert into s_framework if exist
                         } else {
-                            $bSframework = false;
-                            $sSql = "select nspname from pg_catalog.pg_namespace where nspname = 's_framework';";
-                            $resultat = $this->oConnection->oBd->execute($sSql);
-                            if ($resultat->rowCount() > 0) {
-                                $bSframework = true;
-                                $iId2 = $this->oConnection->oBd->insert("s_framework", 'v_user', $this->aValues, $this->aProperties['schema_framework'] . '.seq_common', 'user_id');
-                            }
                             $this->aFields["user_id"] = $iId;
                             $aXmlRacineAttribute['status'] = 1;
                             $sMessage = $this->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
@@ -293,21 +285,8 @@ class Users extends Vitis {
                             if ($this->aValues['privileges'] == NULL) {
                                 $this->aValues['privileges'] = 'vitis_user';
                             }
-                            if ($bSframework) {
-                                if (strrpos($this->aValues['privileges'], "vitis_user") != false) {
-                                    $this->aValues['privileges'] .= "|framework_user";
-                                }
-                                if (strrpos($this->aValues['privileges'], "vitis_admin") != false) {
-                                    $this->aValues['privileges'] .= "|framework_admin";
-                                }
-                                if (strrpos($this->aValues['privileges'], "vmap_user") != false) {
-                                    $this->aValues['privileges'] .= "|veremap_user";
-                                }
-                                if (strrpos($this->aValues['privileges'], "vmap_admin") != false) {
-                                    $this->aValues['privileges'] .= "|veremap_admin";
-                                }
-                            }
-                            $sMessage = $this->setPrivileges($iId, $bSframework);
+                            
+                            $sMessage = $this->setPrivileges($iId);
                         }
                     }
                 }
@@ -450,22 +429,6 @@ class Users extends Vitis {
                     return $sMessage;
                 }
             }
-            $sSql = "select nspname from pg_catalog.pg_namespace where nspname = 's_framework';";
-            $resultat = $this->oConnection->oBd->execute($sSql);
-            $bIsFrameWork = false;
-            if ($resultat->rowCount() > 0) {
-                $bIsFrameWork = true;
-                $old_id = $this->aValues['my_vitis_id'];
-                $sSql = "select user_id from s_framework.\"user\" where login = '" . $sLogin . "';";
-                $resultat = $this->oConnection->oBd->execute($sSql);
-                if ($resultat->rowCount() > 0) {
-                    while ($aLigne = $this->oConnection->oBd->ligneSuivante($resultat)) {
-                        $this->aValues['my_vitis_id'] = $aLigne['user_id'];
-                        $this->genericPut("s_framework", 'v_user', 'user_id');
-                    }
-                }
-                $this->aValues['my_vitis_id'] = $old_id;
-            }
             // Attribution des privilèges.
             if (in_array("vitis_admin", $this->oConnection->aPrivileges)){
                 $sMessage = $this->setPrivileges($this->aValues['my_vitis_id'], $bIsFrameWork);
@@ -483,71 +446,47 @@ class Users extends Vitis {
     /**
      *  Set privileges of user.
      */
-    function setPrivileges($iUserId, $bSframework) {
+    function setPrivileges($iUserId) {
         require $this->sRessourcesFile;
 
         // Le paramètre "groups" est passé dans la requête ?
         if (isset($this->aValues['groups'])) {
             // Suppression des groupes rattachés à l'utilisateur.
-            $sSql = str_replace('[user_id]', $iUserId, $aSql['deleteUserGroups']);
-            $sSql = str_replace('[sSchemaFramework]', $this->aProperties['schema_framework'], $sSql);
-            $resultat = $this->oConnection->oBd->execute($sSql);
+            $aParams = array();
+            $aParams['sSchemaFramework'] = array('value' => $this->aProperties['schema_framework'], 'type' => 'schema_name');
+            $aParams['user_id'] = array('value' => $iUserId, 'type' => 'number');
+            $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['deleteUserGroups'], $aParams);
             if ($this->oConnection->oBd->enErreur()) {
                 $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                 $aXmlRacineAttribute['status'] = 0;
                 $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
                 return $sMessage;
-            } else {
-                if ($bSframework) {
-
-                    $sSql = "select login from " . $this->aProperties['schema_framework'] . ".\"user\" where user_id = '" . $iUserId . "';";
-                    $resultat = $this->oConnection->oBd->execute($sSql);
-                    if ($resultat->rowCount() > 0) {
-                        while ($aLigne = $this->oConnection->oBd->ligneSuivante($resultat)) {
-                            $sSql = "select user_id from s_framework.\"user\" where login = '" . $aLigne["login"] . "';";
-                            $resultat2 = $this->oConnection->oBd->execute($sSql);
-                            if ($resultat2->rowCount() > 0) {
-                                while ($aLigne2 = $this->oConnection->oBd->ligneSuivante($resultat2)) {
-                                    $this->oConnection->oBd->delete("s_framework", 'user_group', 'user_id', $aLigne2["user_id"]);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            } 
         }
 
         // Groupes à rattacher à l'utilisateur ?
         if (!empty($this->aValues['groups'])) {
-            $sSql = "select login from " . $this->aProperties['schema_framework'] . ".\"user\" where user_id = $iUserId;";
-            $resultat = $this->oConnection->oBd->execute($sSql);
-            if ($resultat->rowCount() > 0) {
-                while ($aLigne = $this->oConnection->oBd->ligneSuivante($resultat)) {
+            $sSql = "select login from " . $this->aProperties['schema_framework'] . ".\"user\" where user_id = [user_id];";
+            $aParams = array();
+            $aParams['user_id'] = array('value' => $iUserId, 'type' => 'number');
+            $oPDOresult = $this->oConnection->oBd->executeWithParams($sSql, $aParams);
+            if ($oPDOresult->rowCount() > 0) {
+                while ($aLigne = $this->oConnection->oBd->ligneSuivante($oPDOresult)) {
                     $sLogin = $aLigne['login'];
                 }
             }
             $aGroups = explode('|', $this->aValues['groups']);
             foreach ($aGroups as $iGroupId) {
-                $sSql = str_replace('[group_id]', $iGroupId, $aSql['insertUserGroups']);
-                $sSql = str_replace('[user_id]', $iUserId, $sSql);
-                $sSql = str_replace('[sSchemaFramework]', $this->aProperties['schema_framework'], $sSql);
-                $resultat = $this->oConnection->oBd->execute($sSql);
+                $aParams = array();
+                $aParams['sSchemaFramework'] = array('value' => $this->aProperties['schema_framework'], 'type' => 'schema_name');
+                $aParams['user_id'] = array('value' => $iUserId, 'type' => 'number');
+                $aParams['group_id'] = array('value' => $iGroupId, 'type' => 'number');
+                $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['insertUserGroups'], $aParams);
                 if ($this->oConnection->oBd->enErreur()) {
                     $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                     $aXmlRacineAttribute['status'] = 0;
                     $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
                     return $sMessage;
-                } else {
-                    if ($bSframework) {
-                        $sSql = "select name from " . $this->aProperties['schema_framework'] . ".\"group\" where group_id = $iGroupId;";
-                        $resultat = $this->oConnection->oBd->execute($sSql);
-                        if ($resultat->rowCount() > 0) {
-                            while ($aLigne = $this->oConnection->oBd->ligneSuivante($resultat)) {
-                                $sSql = "INSERT INTO s_framework.user_group (user_id, group_id) VALUES ((select user_id from s_framework.\"user\" where login  = '" . $sLogin . "'), (select group_id from s_framework.\"group\" where name  = '" . $aLigne['name'] . "'))";
-                                $resultat = $this->oConnection->oBd->execute($sSql);
-                            }
-                        }
-                    }
                 }
             }
         }
@@ -561,53 +500,33 @@ class Users extends Vitis {
 
             // Si login = l'utilisateur -> interdiction de supprimer les privilèges 'vitis_admin' et 'vitis_user'.
             if ($oUser->aFields['login'] == $_SESSION['ses_Login'])
-                $sExcludePrivileges = "'vitis_admin','vitis_user'";
+                $sExcludePrivileges = "vitis_admin|vitis_user";
             else
-                $sExcludePrivileges = "''";
-
+                $sExcludePrivileges = "";
             // Supprime tous les privilèges de l'utilisateur.
-            $sSql = $aSql['userPrivileges'];
-            $sSql = str_replace('[login]', $oUser->aFields['login'], $sSql);
-            $sSql = str_replace('[sSchemaFramework]', $this->aProperties["schema_framework"], $sSql);
-            $sSql = str_replace('[sExcludePrivileges]', $sExcludePrivileges, $sSql);
-            $resultat = $this->oConnection->oBd->execute($sSql);
+            $aParams = array();
+            $aParams['sSchemaFramework'] = array('value' => $this->aProperties['schema_framework'], 'type' => 'schema_name');
+            $aParams['login'] = array('value' => $oUser->aFields['login'], 'type' => 'string');
+            $aParams['sExcludePrivileges'] = array('value' => $sExcludePrivileges, 'type' => 'group');
+            $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['userPrivileges'], $aParams);
             if ($this->oConnection->oBd->enErreur()) {
                 $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                 $aXmlRacineAttribute['status'] = 0;
                 $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
                 return $sMessage;
             } else {
-                if ($resultat->rowCount() > 0) {
-                    $aResult = $this->oConnection->oBd->getResultTableAssoc($resultat);
+                if ($oPDOresult->rowCount() > 0) {
+                    $aResult = $this->oConnection->oBd->getResultTableAssoc($oPDOresult);
                     foreach ($aResult as $aRow) {
-                        $sSql = $aSql['revokePrivilege'];
-                        $sSql = str_replace('[sValue]', $oUser->aFields['login'], $sSql);
-                        $sSql = str_replace('[sId]', $aRow['groname'], $sSql);
-                        $this->oConnection->oBd->execute($sSql);
+                        $aParams = array();
+                        $aParams['sValue'] = array('value' => $oUser->aFields['login'], 'type' => 'double_quote');
+                        $aParams['sId'] = array('value' => $aRow['groname'], 'type' => 'double_quote');
+                        $this->oConnection->oBd->executeWithParams($aSql['revokePrivilege'], $aParams);
                         if ($this->oConnection->oBd->enErreur()) {
                             $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                             $aXmlRacineAttribute['status'] = 0;
                             $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
                             return $sMessage;
-                        } else {
-                            if ($bSframework) {
-                                if ($aRow['groname'] == 'vitis_user') {
-                                    $sSql = 'REVOKE "framework_user" FROM "' . $oUser->aFields['login'] . '"';
-                                    $this->oConnection->oBd->execute($sSql);
-                                }
-                                if ($aRow['groname'] == 'vitis_admin') {
-                                    $sSql = 'REVOKE "framework_admin" FROM "' . $oUser->aFields['login'] . '"';
-                                    $this->oConnection->oBd->execute($sSql);
-                                }
-                                if ($aRow['groname'] == 'vmap_admin') {
-                                    $sSql = 'REVOKE "veremap_admin" FROM "' . $oUser->aFields['login'] . '"';
-                                    $this->oConnection->oBd->execute($sSql);
-                                }
-                                if ($aRow['groname'] == 'vmap_user') {
-                                    $sSql = 'REVOKE "veremap_user" FROM "' . $oUser->aFields['login'] . '"';
-                                    $this->oConnection->oBd->execute($sSql);
-                                }
-                            }
                         }
                     }
                 }
@@ -618,34 +537,16 @@ class Users extends Vitis {
             if (!empty($this->aValues['privileges'])) {
                 $aPrivileges = explode('|', $this->aValues['privileges']);
                 foreach ($aPrivileges as $sPrivilegeId) {
-                    $sSql = str_replace('[sValue]', $oUser->aFields['login'], $aSql['grantPrivilege']);
-                    $sSql = str_replace('[sId]', $sPrivilegeId, $sSql);
-                    $resultat = $this->oConnection->oBd->execute($sSql);
+                    $aParams = array();
+                    $aParams['sValue'] = array('value' => $oUser->aFields['login'], 'type' => 'double_quote');
+                    $aParams['sId'] = array('value' => $sPrivilegeId, 'type' => 'double_quote');
+                    $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['grantPrivilege'], $aParams);
                     if ($this->oConnection->oBd->enErreur()) {
                         $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                         $aXmlRacineAttribute['status'] = 0;
                         $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
                         return $sMessage;
-                    } else {
-                        if ($bSframework) {
-                            if ($sPrivilegeId == 'vitis_user') {
-                                $sSql = 'GRANT "framework_user" TO "' . $oUser->aFields['login'] . '"';
-                                $this->oConnection->oBd->execute($sSql);
-                            }
-                            if ($sPrivilegeId == 'vitis_admin') {
-                                $sSql = 'GRANT "framework_admin" TO "' . $oUser->aFields['login'] . '"';
-                                $this->oConnection->oBd->execute($sSql);
-                            }
-                            if ($sPrivilegeId == 'vmap_admin') {
-                                $sSql = 'GRANT "veremap_admin" TO "' . $oUser->aFields['login'] . '"';
-                                $this->oConnection->oBd->execute($sSql);
-                            }
-                            if ($sPrivilegeId == 'vmap_user') {
-                                $sSql = 'GRANT "veremap_user" TO "' . $oUser->aFields['login'] . '"';
-                                $this->oConnection->oBd->execute($sSql);
-                            }
-                        }
-                    }
+                    } 
                 }
             }
 
@@ -656,8 +557,9 @@ class Users extends Vitis {
                     $sSql = $aSql['userCreateRole'];
                 else
                     $sSql = $aSql['userNoCreateRole'];
-                $sSql = str_replace('[login]', $oUser->aFields['login'], $sSql);
-                $resultat = $this->oConnection->oBd->execute($sSql);
+                $aParams = array();
+                $aParams['login'] = array('value' => $oUser->aFields['login'], 'type' => 'double_quote');
+                $oPDOresult = $this->oConnection->oBd->executeWithParams($sSql, $aParams);
                 if ($this->oConnection->oBd->enErreur()) {
                     $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                     $aXmlRacineAttribute['status'] = 0;
@@ -736,29 +638,6 @@ class Users extends Vitis {
      */
     function DELETE() {
          if ($this->oConnection->oError == null && in_array("vitis_admin", $this->oConnection->aPrivileges)) {
-            $sSql = "select nspname from pg_catalog.pg_namespace where nspname = 's_framework';";
-            $resultat = $this->oConnection->oBd->execute($sSql);
-            if ($resultat->rowCount() > 0) {
-                $sSql = "select login from " . $this->aProperties['schema_framework'] . ".\"user\" where user_id IN";
-                if (isset($this->aValues['my_vitis_id'])) {
-                    $sSql .= "(" . $this->aValues['my_vitis_id'] . ")";
-                } else {
-                    $sSql .= "(" . str_replace("|", ",", $this->aValues['idList']) . ")";
-                }
-                $resultat = $this->oConnection->oBd->execute($sSql);
-                if ($resultat->rowCount() > 0) {
-                    $sUserLogins = "";
-                    while ($aLigne = $this->oConnection->oBd->ligneSuivante($resultat)) {
-                        if ($sUserLogins == "") {
-                            $sUserLogins = "'" . $aLigne['login'] . "'";
-                        } else {
-                            $sUserLogins .= ",'" . $aLigne['login'] . "'";
-                        }
-                    }
-                    $sSql = "delete from s_framework.\"user\" where login in (" . $sUserLogins . ")";
-                    $resultat = $this->oConnection->oBd->execute($sSql);
-                }
-            }
             $aReturn = $this->genericDelete($this->aProperties['schema_framework'], 'v_user', 'user_id');
         }else{
                 $oError = new Error(1, "Invalid token");
@@ -782,28 +661,22 @@ class Users extends Vitis {
             $aXmlRacineAttribute['status'] = 0;
             $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
         } else {
-            $bSframework = false;
-            $sSql = "select nspname from pg_catalog.pg_namespace where nspname = 's_framework';";
-            $resultat = $this->oConnection->oBd->execute($sSql);
-            if ($resultat->rowCount() > 0) {
-                $bSframework = true;
-            }
             require $this->sRessourcesFile;
-            $sSql = $aSql['grantUser'];
-            $sSql = str_replace('[sLdapName]', 'vitis_' . $this->aValues['ldap_name'], $sSql);
-            $sSql = str_replace('[sLogin]', $this->aValues['login'], $sSql);
-            $resultat = $this->oConnection->oBd->execute($sSql);
+            $aParams = array();
+            $aParams['sLdapName'] = array('value' => 'vitis_' . $this->aValues['ldap_name'], 'type' => 'double_quote');
+            $aParams['sLogin'] = array('value' => $this->aValues['login'], 'type' => 'double_quote');
+            $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['grantUser'], $aParams);
             if ($this->oConnection->oBd->enErreur()) {
                 $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                 $aXmlRacineAttribute['status'] = 0;
                 $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
             } else {
-                $sSql = $aSql['getLogin'];
-                $sSql = str_replace('[sSchemaName]', $this->aProperties["schema_framework"], $sSql);
-                $sSql = str_replace('[sName]', 'user', $sSql);
-                $sSql = str_replace('[sLogin]', $this->aValues['login'], $sSql);
-                $resultat = $this->oConnection->oBd->execute($sSql);
-                $oResult = $this->oConnection->oBd->objetSuivant($resultat);
+                $aParams = array();
+                $aParams['sSchemaName'] = array('value' => $this->aProperties['schema_framework'], 'type' => 'schema_name');
+                $aParams['sName'] = array('value' => 'user', 'type' => 'column_name');
+                $aParams['sLogin'] = array('value' => $this->aValues['login'], 'type' => 'string');
+                $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['getLogin'], $aParams);
+                $oResult = $this->oConnection->oBd->objetSuivant($oPDOresult);
                 if ($this->oConnection->oBd->enErreur()) {
                     $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                     $aXmlRacineAttribute['status'] = 0;
@@ -811,21 +684,9 @@ class Users extends Vitis {
                 } else {
                     // Création ou maj de l'utilisateur
                     if ($oResult) {
-                        if ($bSframework) {
-                            $sSql = "select user_id from s_framework.\"user\" where login = '" . $this->aValues['login'] . "';";
-                            $resultat = $this->oConnection->oBd->execute($sSql);
-                            if ($resultat->rowCount() > 0) {
-                                while ($aLigne = $this->oConnection->oBd->ligneSuivante($resultat)) {
-                                    $this->oConnection->oBd->update("s_framework", 'user', $this->aValues, "user_id", $aLigne["user_id"]);
-                                }
-                            }
-                        }
                         $this->oConnection->oBd->update($this->aProperties["schema_framework"], 'user', $this->aValues, "user_id", $oResult->user_id);
                         $this->aFields['user_id'] = $oResult->user_id;
                     } else {
-                        if ($bSframework) {
-                            $this->oConnection->oBd->insert("s_framework", 'user', $this->aValues, "s_framework" . '.seq_common', 'user_id');
-                        }
                         $iId = $this->oConnection->oBd->insert($this->aProperties["schema_framework"], 'user', $this->aValues, $this->aProperties['schema_framework'] . '.seq_common', 'user_id');
                         $this->aFields['user_id'] = $iId;
                     }

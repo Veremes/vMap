@@ -1,29 +1,7 @@
 goog.provide('ol.MapEvent');
-goog.provide('ol.MapEventType');
 
+goog.require('ol');
 goog.require('ol.events.Event');
-
-
-/**
- * @enum {string}
- */
-ol.MapEventType = {
-
-  /**
-   * Triggered after a map frame is rendered.
-   * @event ol.MapEvent#postrender
-   * @api
-   */
-  POSTRENDER: 'postrender',
-
-  /**
-   * Triggered after the map is moved.
-   * @event ol.MapEvent#moveend
-   * @api stable
-   */
-  MOVEEND: 'moveend'
-
-};
 
 
 /**
@@ -40,12 +18,12 @@ ol.MapEventType = {
  */
 ol.MapEvent = function(type, map, opt_frameState) {
 
-  goog.base(this, type);
+  ol.events.Event.call(this, type);
 
   /**
    * The map where the event occurred.
    * @type {ol.Map}
-   * @api stable
+   * @api
    */
   this.map = map;
 
@@ -57,4 +35,4 @@ ol.MapEvent = function(type, map, opt_frameState) {
   this.frameState = opt_frameState !== undefined ? opt_frameState : null;
 
 };
-goog.inherits(ol.MapEvent, ol.events.Event);
+ol.inherits(ol.MapEvent, ol.events.Event);

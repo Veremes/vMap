@@ -6,6 +6,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Administration</title>
         <script src="javascript/externs/jquery/jquery-1.11.3.min.js"></script>
+        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     </head>
     <body data-app-init="">
         <div class=""></div>
@@ -85,10 +86,14 @@
             /**
              * Mode compiled/degug
              */
-            if (Object.keys(oUrlParams).indexOf("debug") !== -1)
+            if (Object.keys(oUrlParams).indexOf("debug") !== -1) {
                 sessionStorage['debug'] = 'true';
-            else
+                window['oClientProperties']["debug_mode"] = true;
+            }
+            else {
                 sessionStorage['debug'] = 'false';
+                window['oClientProperties']["debug_mode"] = false;
+            }
 
             /**
              * Paramètre "environment" : Nom de l'application concaténé avec le paramètre "environment".
@@ -116,7 +121,6 @@
                 'javascript/externs/angular/modules/ui-grid/plugins/draggable-rows.js',
                 'javascript/externs/angular/modules/angular-translate/angular-translate.min.js',
                 'javascript/externs/angular/modules/angular-translate/angular-translate-loader-partial.min.js',
-                'javascript/externs/angular/modules/restangular/restangular.min.js',
                 'javascript/externs/angular-bind-notifier/bindNotifier.js',
                 'javascript/externs/bootstrap/bootstrap.min.js',
                 'javascript/externs/jquery/plugins/bootstrap-slider/bootstrap-slider.min.js',

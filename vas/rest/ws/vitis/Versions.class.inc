@@ -132,8 +132,8 @@ class Versions extends Vitis {
                 if (!$this->oConnection->oBd->erreurRencontree) {
                     $bPostgresql = true;
                     $sSql = "SHOW server_version";
-                    $iResult = $this->oConnection->oBd->execute($sSql);
-                    $oPgVersion = $this->oConnection->oBd->objetSuivant($iResult);
+                    $oPDOresult = $this->oConnection->oBd->executeWithParams($sSql, array());
+                    $oPgVersion = $this->oConnection->oBd->objetSuivant($oPDOresult);
                     $sPostgresql = $oPgVersion->server_version;
                     $this->aFields['postgresql_version'] = $sPostgresql;
                     $this->oConnection->oBd->fermeResultat();
@@ -147,8 +147,8 @@ class Versions extends Vitis {
                     }
                     if ($bExtension == true) {
                         $sSql = "SELECT default_version FROM pg_catalog.pg_available_extensions where name = 'postgis';";
-                        $iResult = $this->oConnection->oBd->execute($sSql);
-                        if ($aPostgis = $this->oConnection->oBd->ligneSuivante($iResult)) {
+                        $oPDOresult = $this->oConnection->oBd->executeWithParams($sSql, array());
+                        if ($aPostgis = $this->oConnection->oBd->ligneSuivante($oPDOresult)) {
                             $bPostgis = true;
                             $sPostgis = $aPostgis['default_version'];
                         } else {
@@ -156,8 +156,8 @@ class Versions extends Vitis {
                         }
                     } else {
                         $sSql = "SELECT datname FROM pg_catalog.pg_database where datname = 'template_postgis_20';";
-                        $iResult = $this->oConnection->oBd->execute($sSql);
-                        if ($aPostgis = $this->oConnection->oBd->ligneSuivante($iResult)) {
+                        $oPDOresult = $this->oConnection->oBd->executeWithParams($sSql, array());
+                        if ($aPostgis = $this->oConnection->oBd->ligneSuivante($oPDOresult)) {
                             $bPostgis = true;
                             $sPostgis = '2.0';
                         } else {
@@ -166,8 +166,10 @@ class Versions extends Vitis {
                     }
                     $this->aFields['postgis_version'] = $sPostgis;
                     $this->oConnection->oBd->fermeResultat();
-                    $iResult = $this->oConnection->oBd->execute("SELECT distinct module_id from " . $this->aProperties["schema_framework"] . ".vm_mode");
-                    while ($aLigne = $this->oConnection->oBd->ligneSuivante($iResult)) {
+                    $sSql = 'SELECT distinct module_id from [sSchemaFramework].vm_mode';
+                    $aParams['sSchemaFramework'] = array('value' => $this->aProperties['schema_framework'], 'type' => 'schema_name');
+                    $oPDOresult = $this->oConnection->oBd->executeWithParams($sSql, $aParams);
+                    while ($aLigne = $this->oConnection->oBd->ligneSuivante($oPDOresult)) {
                         $aModules[] = $aLigne['module_id'];
                     }
                     $iRecordset = $this->oConnection->oBd->fermeResultat();

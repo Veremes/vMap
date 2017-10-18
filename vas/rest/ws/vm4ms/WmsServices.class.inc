@@ -190,8 +190,10 @@ class WmsServices extends Vmap4MapServer {
      * @return  WmsServices
      */
     function GET() {
-        $aReturn = $this->genericGet($this->aProperties['schema_vm4ms'], 'v_wms_service', 'wmsservice_id');
-        $sMessage = $aReturn['sMessage'];
+        if (in_array('vm4ms_admin', $this->oConnection->aPrivileges)) {
+            $aReturn = $this->genericGet($this->aProperties['schema_vm4ms'], 'v_wms_service', 'wmsservice_id');
+            $sMessage = $aReturn['sMessage'];
+        }
         if (!empty($this->aPath[3])) {
             if ($this->aPath[3] == "MapFile")
                 $sMessage = $this->getMapFile();
@@ -206,20 +208,29 @@ class WmsServices extends Vmap4MapServer {
      */
     function createMapFile() {
         require $this->sRessourcesFile;
-        $oBd = $this->oConnection->oBd;
+        //$oBd = $this->oConnection->oBd;
         // Login et mdp.
-        $sLogin = '';
-        $sPassword = '';
-        if (!empty($this->aValues['user_login']) && !empty($this->aValues['user_password'])) {
-            $sLogin = $this->aValues['user_login'];
-            $sPassword = $this->aValues['user_password'];
+        $oBd = new BD($this->aProperties["owner_login"], $this->aProperties["owner_pass"], $this->aProperties["database"], $this->aProperties["server"], $this->aProperties["port"], $this->aProperties["sgbd"], $this->aProperties["page_encoding"]);
+        if ($oBd->erreurRencontree) {
+            $oError = new VitisError(1, $oBd->sMessage);
+            $aXmlRacineAttribute['status'] = 0;
+            $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+            $bXMLError = true;
+            writeToErrorLog('Error: ' . $oBd->sMessage . ' -> ' . __FUNCTION__ . '(' . $this->aValues['my_vitis_id'] . ')' . ' in ' . __FILE__ . ' on line ' . __LINE__);
+        } else {
+            $sLogin = '';
+            $sPassword = '';
+            if (!empty($this->aValues['user_login']) && !empty($this->aValues['user_password'])) {
+                $sLogin = $this->aValues['user_login'];
+                $sPassword = $this->aValues['user_password'];
+            }
+            // Création du fichier ".map".
+            $oVm4msMetadataAccess = new Vm4msMetadataAccess($oBd, $sLogin, $sPassword, session_id(), $this->aProperties);
+            if ($this->aValues['type'] == 'prod')
+                $sMapFile = $oVm4msMetadataAccess->saveWmsServiceMapFile($this->aValues['my_vitis_id'], $this->aValues['token']);
+            else
+                $sMapFile = $oVm4msMetadataAccess->saveWmsServiceTestMapFile($this->aValues['my_vitis_id']);
         }
-        // Création du fichier ".map".
-        $oVm4msMetadataAccess = new Vm4msMetadataAccess($oBd, $sLogin, $sPassword, session_id(), $this->aProperties);
-        if ($this->aValues['type'] == 'prod')
-            $sMapFile = $oVm4msMetadataAccess->saveWmsServiceMapFile($this->aValues['my_vitis_id'], $this->aValues['token']);
-        else
-            $sMapFile = $oVm4msMetadataAccess->saveWmsServiceTestMapFile($this->aValues['my_vitis_id']);
     }
 
     /**
@@ -235,12 +246,14 @@ class WmsServices extends Vmap4MapServer {
             $sWmsServiceId = preg_replace('#&([A-za-z]{2})(?:lig);#', '\1', $sWmsServiceId); // pour les ligatures e.g. '&oelig;'
             $sWmsServiceId = preg_replace('#&[^;]+;#', '', $sWmsServiceId); // supprime les autres caractères        
             // Nom du fichier ".map".
+            $sMapFileHash = hash('sha256', $this->aValues['token']);
+            $this->aObjects[0]->aFields['map_file_hash'] = $sMapFileHash;
             if ($this->aValues['my_vitis_id'] == $this->aProperties['private_wms_service']) {
                 $sProdDir = 'wms_private';
-                $sMapFileName = $this->aValues['token'] . '.map';
+                $sMapFileName = $sMapFileHash . '.map';
             } else {
                 $sProdDir = 'wms_public';
-                $sMapFileName = $this->aValues['token'] . '_' . $sWmsServiceId . '.map';
+                $sMapFileName = $sMapFileHash . '_' . $sWmsServiceId . '.map';
             }
             // Chemin du fichier.
             if ($this->aValues['type'] == 'prod')
@@ -251,9 +264,9 @@ class WmsServices extends Vmap4MapServer {
             if (file_exists($this->aObjects[0]->aFields['map_file']))
                 $this->aObjects[0]->aFields['map_file_content'] = file_get_contents($this->aObjects[0]->aFields['map_file']);
             // Source des couches du flux de test.
-            $sSql = str_replace('[wmsservice_id]', $sWmsServiceId, $aSql['getWmsServiceLayersSource']);
-            $sSql = str_replace('[sSchemaVm4ms]', $this->aProperties['schema_vm4ms'], $sSql);
-            $oPDOresult = $this->oConnection->oBd->execute($sSql);
+            $aParams['sSchemaVm4ms'] = array('value' => $this->aProperties['schema_vm4ms'], 'type' => 'schema_name');
+            $aParams['wmsservice_id'] = array('value' => $sWmsServiceId, 'type' => 'string');
+            $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['getWmsServiceLayersSource'], $aParams);
             if (!$this->oConnection->oBd->erreurRencontree) {
                 $aLayersSource = array();
                 while ($aLayer = $this->oConnection->oBd->ligneSuivante($oPDOresult))
@@ -284,9 +297,9 @@ class WmsServices extends Vmap4MapServer {
      */
     function getMapServerLog() {
         if ($this->aObjects[0]->aFields['wmsservice_id'] == $this->aProperties['private_wms_service'])
-            $sMsLogFile = $this->aProperties['ms_log_dir'] . '/test/' . session_id() . '.log';
+            $sMsLogFile = $this->aProperties['ms_log_dir'] . '/test/' . hash('sha256', session_id()) . '.log';
         else
-            $sMsLogFile = $this->aProperties['ms_log_dir'] . '/test/' . session_id() . '_' . $this->aObjects[0]->aFields['wmsservice_id'] . '.log';
+            $sMsLogFile = $this->aProperties['ms_log_dir'] . '/test/' . hash('sha256', session_id()) . '_' . $this->aObjects[0]->aFields['wmsservice_id'] . '.log';
         if (file_exists($sMsLogFile))
             $this->aObjects[0]->aFields['log_file_content'] = utf8_encode(file_get_contents($sMsLogFile));
         $aXmlRacineAttribute['status'] = 1;
@@ -407,8 +420,11 @@ class WmsServices extends Vmap4MapServer {
         if (!empty($this->aPath[2])) {
             if ($this->aPath[2] == "MapFile") {
                 $this->aValues['my_vitis_id'] = $this->aValues['wmsservice_id'];
-                $aReturn = $this->genericGet($this->aProperties['schema_vm4ms'], 'v_wms_service', 'wmsservice_id');
-                $sMessage = $aReturn['sMessage'];
+                $aReturn['sStatus'] = 1;
+                if (in_array('vm4ms_admin', $this->oConnection->aPrivileges)) {
+                    $aReturn = $this->genericGet($this->aProperties['schema_vm4ms'], 'v_wms_service', 'wmsservice_id');
+                    $sMessage = $aReturn['sMessage'];
+                }
                 if ($aReturn['sStatus'] == 1) {
                     $this->createMapFile();
                     $sMessage = $this->getMapFile();

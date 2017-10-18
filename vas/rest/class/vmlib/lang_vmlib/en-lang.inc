@@ -7,6 +7,7 @@ define('ERROR_LABEL', '<br>Error: ');
 define('ERROR_IMPOSSIBLE_WRITE', 'Impossible to write in the file ');
 define('ERROR_RIGHTS_ON_FILE', ': the application does not arrange rights in writing on the file');
 define('ERROR_WRITING_FILE', ': failure of the writing');
+define('ERROR_REQUEST_ERROR', 'SQL Error, more information in the application logs');
 
 //BD.class
 define('ERROR_INCORRECT_SGBD', 'The dbms is not correct.\n Connection to the database impossible.');

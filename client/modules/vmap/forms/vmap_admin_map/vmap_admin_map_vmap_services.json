@@ -24,8 +24,8 @@
                             "ressource_id": "vmap/servicetypes",
                             "id_key": "service_type_id",
                             "label_key": "service_type_id",
-                            "parameters":{
-                                "order_by":"service_type_id"
+                            "parameters": {
+                                "order_by": "service_type_id"
                             }
                         }
                     }
@@ -124,18 +124,21 @@
                 ]
             },
             {
+                "class": "form-thumbnail",
                 "fields": [
                     {
-                        "tooltip": {
-                            "title": "",
-                            "content": "FORM_THUMBNAIL_VMAP_MAP_SERVICE_TOOLTIP",
-                            "container": "body"
-                        },
                         "type": "image_wsdata",
                         "name": "thumbnail",
                         "label": "FORM_THUMBNAIL_VMAP_MAP_SERVICE",
                         "visible": false,
-                        "nb_cols": 3
+                        "nb_cols": 3,
+                        "width": 300,
+                        "height": 180,
+                        "tooltip": {
+                            "title": "",
+                            "content": "FORM_THUMBNAIL_VMAP_MAP_SERVICE_TOOLTIP",
+                            "container": "body"
+                        }
                     }
                 ]
             },
@@ -175,15 +178,6 @@
                 ]
             },
             {
-                "fields":[
-                    {
-                        "type":"hidden",
-                        "name":"service_options",
-                        "nb_cols":3
-                    }
-                ]
-            },
-            {
                 "fields": [
                     {
                         "type": "text",
@@ -213,6 +207,34 @@
                         "label": "FORM_IMAGERY_VMAP_MAP_SERVICE",
                         "visible": false,
                         "nb_cols": 6
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "login",
+                        "label": "FORM_LOGIN_VMAP_MAP_SERVICE",
+                        "visible": false,
+                        "nb_cols": 3
+                    },
+                    {
+                        "type": "password",
+                        "name": "password",
+                        "label": "FORM_PASSWORD_VMAP_MAP_SERVICE",
+                        "autocomplete": true,
+                        "visible": false,
+                        "nb_cols": 3
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "hidden",
+                        "name": "service_options",
+                        "nb_cols": 3
                     }
                 ]
             },
@@ -281,6 +303,7 @@
         "title": "FORM_TITLE_VMAP_MAP_SERVICE",
         "input_size": "xs",
         "initEvent": "initVmapServiceForm()",
+        "beforeEvent": "beforeVmapServiceForm()",
         "event": "sendSimpleForm()",
         "afterEvent": "editSectionForm()",
         "nb_cols": 12,
@@ -322,18 +345,21 @@
                 ]
             },
             {
+                "class": "form-thumbnail",
                 "fields": [
                     {
-                        "tooltip": {
-                            "title": "",
-                            "content": "FORM_THUMBNAIL_VMAP_MAP_SERVICE_TOOLTIP",
-                            "container": "body"
-                        },
                         "type": "image_wsdata",
                         "name": "thumbnail",
                         "label": "FORM_THUMBNAIL_VMAP_MAP_SERVICE",
                         "visible": false,
-                        "nb_cols": 3
+                        "nb_cols": 3,
+                        "width": 300,
+                        "height": 180,
+                        "tooltip": {
+                            "title": "",
+                            "content": "FORM_THUMBNAIL_VMAP_MAP_SERVICE_TOOLTIP",
+                            "container": "body"
+                        }
                     }
                 ]
             },
@@ -373,15 +399,6 @@
                 ]
             },
             {
-                "fields":[
-                    {
-                        "type":"hidden",
-                        "name":"service_options",
-                        "nb_cols":3
-                    }
-                ]
-            },
-            {
                 "fields": [
                     {
                         "type": "text",
@@ -411,6 +428,34 @@
                         "label": "FORM_IMAGERY_VMAP_MAP_SERVICE",
                         "visible": false,
                         "nb_cols": 6
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "login",
+                        "label": "FORM_LOGIN_VMAP_MAP_SERVICE",
+                        "visible": false,
+                        "nb_cols": 3
+                    },
+                    {
+                        "type": "password",
+                        "name": "password",
+                        "label": "FORM_PASSWORD_VMAP_MAP_SERVICE",
+                        "autocomplete": true,
+                        "visible": false,
+                        "nb_cols": 3
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "hidden",
+                        "name": "service_options",
+                        "nb_cols": 3
                     }
                 ]
             },
@@ -589,6 +634,27 @@
                         "type": "label",
                         "name": "imagery",
                         "label": "FORM_IMAGERY_VMAP_MAP_SERVICE",
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "login",
+                        "label": "FORM_LOGIN_VMAP_MAP_SERVICE",
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "password",
+                        "label": "FORM_PASSWORD_VMAP_MAP_SERVICE",
+                        "autocomplete": true,
                         "nb_cols": 12
                     }
                 ]

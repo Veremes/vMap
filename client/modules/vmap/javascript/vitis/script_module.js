@@ -12,12 +12,27 @@ goog.require('nsVmap.importBoCtrl');
 goog.require('goog.array');
 
 vitisApp.on('appMainDrtvLoaded', function () {
+    var $q = angular.element(vitisApp.appMainDrtv).injector().get(['$q']);
+    var $log = angular.element(vitisApp.appMainDrtv).injector().get(['$log']);
+    var $timeout = angular.element(vitisApp.appMainDrtv).injector().get(['$timeout']);
+    var $translate = angular.element(vitisApp.appMainDrtv).injector().get(['$translate']);
+    var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(['envSrvc']);
+    var formSrvc = angular.element(vitisApp.appMainDrtv).injector().get(['formSrvc']);
+    var modesSrvc = angular.element(vitisApp.appMainDrtv).injector().get(['modesSrvc']);
+    var sessionSrvc = angular.element(vitisApp.appMainDrtv).injector().get(['sessionSrvc']);
+    var propertiesSrvc = angular.element(vitisApp.appMainDrtv).injector().get(['propertiesSrvc']);
+
+    // Rafraichit le flux WMS privé si besoin
+    var oFormData = new FormData();
+    oFormData.append("wmsservice_id", propertiesSrvc['private_wms_service']);
+    oFormData.append("type", "prod");
+    ajaxRequest({
+        "method": "POST",
+        "url": propertiesSrvc["web_server_name"] + "/" + propertiesSrvc["services_alias"] + "/vm4ms/WmsServices/MapFile",
+        "data": oFormData
+    });
 
     angular.element(vitisApp.appHtmlFormDrtv).scope().$on("updateStudio_vmap_business_object_vmap_business_object", function (event, data) {
-        var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
-        var propertiesSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["propertiesSrvc"]);
-        var sessionSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["sessionSrvc"]);
-
         if (data["index"] === 1 && data["oSectionForm"]["template"] === "modules/vmap/template/studio.html") {
             oVFB["reset"]();
             oVFB["setId"](envSrvc["sId"]);
@@ -26,7 +41,6 @@ vitisApp.on('appMainDrtvLoaded', function () {
             oVFB["setContainer"]("#container_section_" + envSrvc["oSelectedObject"]["name"] + "_studio");
             oVFB["setAppProperties"](propertiesSrvc);
         }
-
     }, true);
 
     /**
@@ -34,12 +48,6 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * Function éxécutée au chargement de Vmap.
      **/
     angular.element(vitisApp.appMainDrtv).scope()["loadVmap"] = function () {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
-        var $timeout = angular.element(vitisApp.appMainDrtv).injector().get(["$timeout"]);
-        var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
-        var modesSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["modesSrvc"]);
-
         $log.info("loadVmap");
 
         // Vmap en mode plein écran.
@@ -361,7 +369,6 @@ vitisApp.on('appMainDrtvLoaded', function () {
      **/
     angular.element(vitisApp.appMainDrtv).scope()['loadVmapGroup'] = function () {
         // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
         var envSrvc = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["envSrvc"]);
         //
         $log.info("loadVmapGroup");
@@ -419,20 +426,71 @@ vitisApp.on('appMainDrtvLoaded', function () {
                     clearObserver();
                 });
             }
-        }
+        };
     };
     vitisApp["compileProvider"].directive("appCrsListDescriptionColumn", vitisApp.appCrsListDescriptionColumnDrtv);
+
+    /**
+     * appStyleListColumn directive.
+     * Mise en forme du sélecteur de style pour couches WMS
+     * @returns {vitisApp.appStyleListColumnDrtv}
+     * @ngInject
+     */
+    vitisApp.appStyleListColumnDrtv = function () {
+        return {
+            template: ' <select class="form-control minus" ng-model="oLayerStyle" ng-options="oStyle.Title for oStyle in aStyles" ng-disabled="aStyles.length < 1"></select>',
+            link: function (scope, element, attrs) {
+
+                /**
+                 * Fonction d'initialisation de la ligne
+                 * @returns {undefined}
+                 */
+                var init = function () {
+                    // Liste des styles dispo
+                    scope['aStyles'] = angular.copy(scope['row']['entity'][scope['col']['field']]);
+                    scope['aStyles'] = goog.isDefAndNotNull(scope['aStyles']) ? scope['aStyles'] : [{
+                            'Title': '',
+                            'Name': ''
+                        }];
+                    // Un style a déjà été renseigné ?
+                    if (goog.isDefAndNotNull(scope['row']['entity'][scope['col']['field'] + '_selected'])) {
+                        // Calcul de l'index du style précédemment renseigné
+                        var index = 0;
+                        for (var i = 0; i < scope['aStyles'].length; i++) {
+                            if (scope['aStyles'][i]['Name'] === scope['row']['entity'][scope['col']['field'] + '_selected']['Name']) {
+                                index = angular.copy(i);
+                            }
+                        }
+                        // Re-donne l'ancienne valeur
+                        scope['oLayerStyle'] = scope['aStyles'][index];
+                    } else {
+                        // Prend la première valeur
+                        scope['oLayerStyle'] = scope['aStyles'][0];
+                    }
+                    // Met la nouvelle valeur dans "style_selected"
+                    scope.$watch('oLayerStyle', function () {
+                        scope['row']['entity'][scope['col']['field'] + '_selected'] = scope['oLayerStyle'];
+                        scope.$root.$broadcast('layerStyleChanged', scope['row']['entity']);
+                    });
+                };
+                // Rafraichit la grille quand des couches sont ajoutés au calque
+                scope.$root.$on('addLayersToLayer', function () {
+                    scope['row']['grid']['refresh']();
+                    setTimeout(function () {
+                        init();
+                    });
+                });
+                init();
+            }
+        };
+    };
+    vitisApp["compileProvider"].directive("appStyleListColumn", vitisApp.appStyleListColumnDrtv);
 
     /**
      * initVmapServiceForm function.
      * Traitements avant l'affichage du formulaire de service.
      **/
     angular.element(vitisApp.appMainDrtv).scope()['initVmapServiceForm'] = function () {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
-        var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
-        var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
-        //
         $log.info("initVmapServiceForm");
 
         var scope = angular.element(vitisApp.appMainDrtv).scope();
@@ -451,6 +509,23 @@ vitisApp.on('appMainDrtvLoaded', function () {
             // Lance un cycle $digest pour appliquer les changements de champs de form.
             angular.element("form[name='" + envSrvc["oFormDefinition"][envSrvc["sFormDefinitionName"]]["name"] + "']").scope().$apply();
         }
+
+        if (goog.isDefAndNotNull(envSrvc["oFormValues"][envSrvc["sFormDefinitionName"]]["service_options"])) {
+            var oOptions = envSrvc["oFormValues"][envSrvc["sFormDefinitionName"]]["service_options"];
+            if (!goog.isDefAndNotNull(oOptions)) {
+                oOptions = {};
+            } else if (goog.isString(oOptions)) {
+                oOptions = JSON.parse(oOptions);
+            } else {
+                oOptions = {};
+            }
+            if (goog.isDefAndNotNull(oOptions['login'])) {
+                if (goog.isDefAndNotNull(oOptions['password'])) {
+                    envSrvc['oFormValues'][envSrvc['sFormDefinitionName']]['login'] = oOptions['login'];
+                    envSrvc['oFormValues'][envSrvc['sFormDefinitionName']]['password'] = oOptions['password'];
+                }
+            }
+        }
     };
 
     /**
@@ -458,22 +533,15 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * Affichage des champs de formulaires suivant le type de service sélectionné.
      **/
     angular.element(vitisApp.appMainDrtv).scope()['setVmapServiceForm'] = function (sServiceTypeId) {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(['$log']);
-        var $translate = angular.element(vitisApp.appMainDrtv).injector().get(['$translate']);
-        var $timeout = angular.element(vitisApp.appMainDrtv).injector().get(['$timeout']);
-        var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(['envSrvc']);
-        var formSrvc = angular.element(vitisApp.appMainDrtv).injector().get(['formSrvc']);
-        //
         $log.info('setVmapServiceForm');
         // Champs de form. à afficher pour chaque type de service.
         var oServiceFormElements = {
             'xyz': ['name', 'description', 'url', 'thumbnail', 'form_submit', 'return_list'],
             'osm': ['name', 'description', 'url', 'thumbnail', 'form_submit', 'return_list'],
             'bing': ['name', 'description', 'key', 'thumbnail', 'lang', 'imagery', 'form_submit', 'return_list'],
-            'imagewms': ['name', 'wms_service_type', 'description', 'url', 'service_type_version', 'wms_test_button', 'wms_test_submit_button', 'return_list'],
-            'tilewms': ['name', 'wms_service_type', 'description', 'url', 'service_type_version', 'wms_test_button', 'wms_test_submit_button', 'return_list'],
-            'wmts': ['name', 'description', 'url', 'service_type_version', 'service_type_type', 'capabilities_url', 'wmts_test_button', 'wmts_test_submit_button', 'return_list']
+            'imagewms': ['name', 'wms_service_type', 'description', 'url', 'service_type_version', 'wms_test_button', 'wms_test_submit_button', 'return_list', 'login', 'password', 'service_options'],
+            'tilewms': ['name', 'wms_service_type', 'description', 'url', 'service_type_version', 'wms_test_button', 'wms_test_submit_button', 'return_list', 'login', 'password', 'service_options'],
+            'wmts': ['name', 'description', 'url', 'service_type_version', 'service_type_type', 'capabilities_url', 'wmts_test_button', 'wmts_test_submit_button', 'return_list', 'service_options']
         };
         // Champs de form. affichés par défaut.
         Object.keys(oServiceFormElements).forEach(function (sServiceType) {
@@ -566,18 +634,45 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * Function called before sending the vMap service form
      */
     angular.element(vitisApp.appMainDrtv).scope()['beforeVmapServiceForm'] = function () {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(['$log']);
-        var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(['envSrvc']);
-        var formSrvc = angular.element(vitisApp.appMainDrtv).injector().get(['formSrvc']);
-
         $log.info('beforeVmapServiceForm');
 
         var sServiceTypeId = envSrvc['oFormValues'][envSrvc['sFormDefinitionName']]['service_type_id'];
 
         if (sServiceTypeId === 'tilewms' || sServiceTypeId === 'imagewms') {
-            envSrvc['oFormValues'][envSrvc['sFormDefinitionName']]['service_type_id'] = envSrvc['oFormValues'][envSrvc['sFormDefinitionName']]['wms_service_type']['selectedOption']['value'];
-            formSrvc['getFormElementDefinition']('service_type_id', envSrvc['sFormDefinitionName'], envSrvc['sFormDefinition'])['type'] = 'text';
+            // Changement de type (tilewms, imagewms)
+            if (goog.isDefAndNotNull(envSrvc['oFormValues'][envSrvc['sFormDefinitionName']]['wms_service_type'])) {
+                if (goog.isDefAndNotNull(envSrvc['oFormValues'][envSrvc['sFormDefinitionName']]['wms_service_type']['selectedOption'])) {
+                    if (goog.isDefAndNotNull(envSrvc['oFormValues'][envSrvc['sFormDefinitionName']]['wms_service_type']['selectedOption']['value'])) {
+                        envSrvc['oFormValues'][envSrvc['sFormDefinitionName']]['service_type_id'] = envSrvc['oFormValues'][envSrvc['sFormDefinitionName']]['wms_service_type']['selectedOption']['value'];
+                        formSrvc['getFormElementDefinition']('service_type_id', envSrvc['sFormDefinitionName'], envSrvc['sFormDefinition'])['type'] = 'text';
+                    }
+                }
+            }
+            // service_options (login, password etc..)
+            this['setWMSServiceOptions']();
+        }
+    };
+
+    /**
+     * Set the service_options value
+     */
+    angular.element(vitisApp.appMainDrtv).scope()['setWMSServiceOptions'] = function () {
+        $log.info('setWMSServiceOptions');
+
+        if (goog.isDefAndNotNull(envSrvc['oFormValues'][envSrvc['sFormDefinitionName']]['login'])) {
+            if (goog.isDefAndNotNull(envSrvc['oFormValues'][envSrvc['sFormDefinitionName']]['password'])) {
+                var oOptions = envSrvc['oFormValues'][envSrvc['sFormDefinitionName']]['service_options'];
+                if (!goog.isDefAndNotNull(oOptions)) {
+                    oOptions = {};
+                } else if (goog.isString(oOptions)) {
+                    oOptions = JSON.parse(oOptions);
+                } else {
+                    oOptions = {};
+                }
+                oOptions['login'] = envSrvc['oFormValues'][envSrvc['sFormDefinitionName']]['login'];
+                oOptions['password'] = envSrvc['oFormValues'][envSrvc['sFormDefinitionName']]['password'];
+                envSrvc['oFormValues'][envSrvc['sFormDefinitionName']]['service_options'] = JSON.stringify(oOptions);
+            }
         }
     };
 
@@ -585,11 +680,6 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * Function called after sending the vMap service form
      */
     angular.element(vitisApp.appMainDrtv).scope()['afterVmapServiceForm'] = function () {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(['$log']);
-        var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(['envSrvc']);
-        var formSrvc = angular.element(vitisApp.appMainDrtv).injector().get(['formSrvc']);
-
         $log.info('afterVmapServiceForm');
 
         var sServiceTypeId = envSrvc['oFormValues'][envSrvc['sFormDefinitionName']]['service_type_id'];
@@ -601,18 +691,12 @@ vitisApp.on('appMainDrtvLoaded', function () {
         this['editSectionForm']();
     };
 
-
     /**
      * Test the WMTS service doing a getCapabilities request and show a message
      * to say if the service is correct or not
      * @param {boolean} bSendForm true if the form has to bo sended if the test is correct
      */
     angular.element(vitisApp.appMainDrtv).scope()['testWMTSCapabilities'] = function (bSendForm) {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(['$log']);
-        var $timeout = angular.element(vitisApp.appMainDrtv).injector().get(['$timeout']);
-        var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(['envSrvc']);
-
         $log.info('testWMTSCapabilities');
 
         var this_ = this;
@@ -690,10 +774,6 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * @param {function} errorCallback
      */
     angular.element(vitisApp.appMainDrtv).scope()['WMTSCapabilities'] = function (opt_options, successCallback, errorCallback) {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(['$log']);
-        var $http = angular.element(vitisApp.appMainDrtv).injector().get(['$http']);
-        var propertiesSrvc = angular.element(vitisApp.appMainDrtv).injector().get(['propertiesSrvc']);
         var this_ = this;
 
         $log.info('WMTSCapabilities');
@@ -739,71 +819,87 @@ vitisApp.on('appMainDrtvLoaded', function () {
             sCapabilitiesUrl = serviceUrl + '/' + serviceVersion + '/WMTSCapabilities.xml';
         }
 
+        function rhtmlspecialchars(str) {
+            if (typeof (str) == "string") {
+                str = str.replace(/&gt;/ig, ">");
+                str = str.replace(/&lt;/ig, "<");
+                str = str.replace(/&#039;/g, "'");
+                str = str.replace(/&quot;/ig, '"');
+                str = str.replace(/&amp;/ig, '&'); /* must do &amp; last */
+            }
+            return str;
+        }
+
         if (goog.isDefAndNotNull(sCapabilitiesUrl)) {
-            $http({
-                url: propertiesSrvc['proxy_url'] + '?url=' + encodeURIComponent(sCapabilitiesUrl),
+            ajaxRequest({
+                "method": "GET",
+                "url": propertiesSrvc['proxy_url'] + '?url=' + encodeURIComponent(sCapabilitiesUrl),
                 headers: {
                     'charset': 'charset=utf-8'
-                }
-            }).then(angular.bind(this, function (response) {
-                var text = response['data'];
-                if (goog.isString(response['data'])) {
-                    if (response['data'].length > 0) {
+                },
+                "responseType": "text",
+                "scope": this_,
+                "success": function (response) {
+                    var text = response['data'];
+                    if (goog.isString(response['data'])) {
+                        if (response['data'].length > 0) {
 
-                        try {
-                            var result = new ol.format.WMTSCapabilities().read(text);
-                        } catch (e) {
-                            var result = {};
-                            sError = text;
-                        }
+                            try {
+                                var result = new ol.format.WMTSCapabilities().read(rhtmlspecialchars(text));
+                            } catch (e) {
+                                var result = {};
+                                sError = text;
+                            }
 
-                        $log.info(result);
+                            $log.info(result);
 
-                        if (goog.isDefAndNotNull(result['Contents'])) {
-                            if (goog.isArray(result['Contents']['Layer'])) {
-                                if (goog.isDefAndNotNull(result['Contents']['Layer'][0])) {
-                                    if (goog.isArray(result['Contents']['Layer'][0]['TileMatrixSetLink'])) {
-                                        if (goog.isDefAndNotNull(result['Contents']['Layer'][0]['TileMatrixSetLink'][0])) {
-                                            if (goog.isString(result['Contents']['Layer'][0]['TileMatrixSetLink'][0]['TileMatrixSet'])) {
-                                                bError = false;
+                            if (goog.isDefAndNotNull(result['Contents'])) {
+                                if (goog.isArray(result['Contents']['Layer'])) {
+                                    if (goog.isDefAndNotNull(result['Contents']['Layer'][0])) {
+                                        if (goog.isArray(result['Contents']['Layer'][0]['TileMatrixSetLink'])) {
+                                            if (goog.isDefAndNotNull(result['Contents']['Layer'][0]['TileMatrixSetLink'][0])) {
+                                                if (goog.isString(result['Contents']['Layer'][0]['TileMatrixSetLink'][0]['TileMatrixSet'])) {
+                                                    bError = false;
+                                                } else {
+                                                    sError = 'Contents.Layer[0].TileMatrixSetLink[0].TileMatrixSet undefined';
+                                                }
                                             } else {
-                                                sError = 'Contents.Layer[0].TileMatrixSetLink[0].TileMatrixSet undefined';
+                                                sError = 'Contents.Layer[0].TileMatrixSetLink[0] undefined';
                                             }
                                         } else {
-                                            sError = 'Contents.Layer[0].TileMatrixSetLink[0] undefined';
+                                            sError = 'Contents.Layer[0].TileMatrixSetLink undefined';
                                         }
                                     } else {
-                                        sError = 'Contents.Layer[0].TileMatrixSetLink undefined';
+                                        sError = 'Contents.Layer[0] undefined';
                                     }
                                 } else {
-                                    sError = 'Contents.Layer[0] undefined';
+                                    sError = 'Contents.Layer undefined';
                                 }
                             } else {
-                                sError = 'Contents.Layer undefined';
+                                sError = 'Contents undefined';
                             }
-                        } else {
-                            sError = 'Contents undefined';
                         }
                     }
-                }
 
-                if (bError) {
-                    var message = 'Impossible de récupérer les informations depuis ' + sCapabilitiesUrl;
-                    if (text.length < 500) {
-                        message += '<br><br>' + text;
+                    if (bError) {
+                        var message = 'Impossible de récupérer les informations depuis ' + sCapabilitiesUrl.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                        if (text.length < 500) {
+                            message += '<br><br>' + text;
+                        }
+                        if (goog.isDefAndNotNull(errorCallback)) {
+                            errorCallback.call(this_, message);
+                        }
+                    } else {
+                        successCallback.call(this_, result);
                     }
+                },
+                "error": function (response) {
                     if (goog.isDefAndNotNull(errorCallback)) {
-                        errorCallback.call(this_, message);
+                        errorCallback.call(this_, 'Impossible de récupérer les informations depuis ' + sCapabilitiesUrl.replace(/</g, "&lt;").replace(/>/g, "&gt;"));
                     }
-                } else {
-                    successCallback.call(this_, result);
+                    console.error('error: ', response);
                 }
-            })), function errorCallback(response) {
-                if (goog.isDefAndNotNull(errorCallback)) {
-                    errorCallback.call(this_, 'Impossible de récupérer les informations depuis ' + sCapabilitiesUrl);
-                }
-                console.error('error: ', response);
-            };
+            });
         }
     };
 
@@ -813,11 +909,6 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * @param {boolean} bSendForm true if the form has to bo sended if the test is correct
      */
     angular.element(vitisApp.appMainDrtv).scope()['testWMSCapabilities'] = function (bSendForm) {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(['$log']);
-        var $timeout = angular.element(vitisApp.appMainDrtv).injector().get(['$timeout']);
-        var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(['envSrvc']);
-
         $log.info('testWMSCapabilities');
 
         var this_ = this;
@@ -881,11 +972,6 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * Clonage d'un service de vmap.
      **/
     angular.element(vitisApp.appMainDrtv).scope()['cloneService'] = function () {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
-        var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
-        var formSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["formSrvc"]);
-        //
         $log.info("cloneService");
     };
 
@@ -895,44 +981,35 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * @param {object} sId Id de l'enregistrement sélectionné dans la liste.
      **/
     angular.element(vitisApp.appMainDrtv).scope()['initVmapLayerForm'] = function (sId) {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
-        var Restangular = angular.element(vitisApp.appMainDrtv).injector().get(["Restangular"]);
-        var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
-        var sessionSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["sessionSrvc"]);
-        var propertiesSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["propertiesSrvc"]);
         $log.info("initVmapLayerForm");
 
         // Affiche ou pas la section "Formulaire de filtre"
         this['showStudioIfLayerIsFiltered']()
         //
-        // rootScope
         var scope = angular.element(vitisApp.appMainDrtv).scope();
-        // Paramètres du service web.
-        var oWebServiceBase = Restangular["one"](propertiesSrvc["services_alias"] + "/vmap", "services");
-        // Attend la fin du chargement de la définition du formulaire.
-        //var clearListener = scope.$root.$on('formDefinitionLoaded', function (event, sFormDefinitionName) {
         // Requête pour la liste des services.
-        oWebServiceBase["customGET"]("", {"token": sessionSrvc["token"]}).then(function (data) {
-            if (data["status"] == 1) {
-                // Sauve le type de chaque service.
-                if (data["list_count"] > 0) {
-                    var oServices = {};
-                    data["services"].forEach(function (oService) {
-                        oServices[oService["service_id"]] = oService;
-                    });
-                    // Sauve la liste des services.
-                    scope["oServices"] = oServices;
-                    // Affichage du formulaire du calque suivant le service sélectionné.
-                    if (envSrvc["sMode"] == "update") {
-                        scope.$root["setVmapLayerForm"]();
+        ajaxRequest({
+            "method": "GET",
+            "url": propertiesSrvc["web_server_name"] + "/" + propertiesSrvc["services_alias"] + "/vmap/services",
+            "scope": scope,
+            "success": function (response) {
+                if (response["data"]["status"] == 1) {
+                    // Sauve le type de chaque service.
+                    if (response["data"]["list_count"] > 0) {
+                        var oServices = {};
+                        response["data"]["services"].forEach(function (oService) {
+                            oServices[oService["service_id"]] = oService;
+                        });
+                        // Sauve la liste des services.
+                        scope["oServices"] = oServices;
+                        // Affichage du formulaire du calque suivant le service sélectionné.
+                        if (envSrvc["sMode"] == "update") {
+                            scope.$root["setVmapLayerForm"]();
+                        }
                     }
                 }
             }
         });
-        // Supprime le "listener".
-        //clearListener();
-        //});
 
         // Attend la fin de la compilation du formulaire.
         //var clearListener2 = scope.$root.$on('endFormNgRepeat', function (event) {
@@ -949,6 +1026,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
 
                 if (sSelectedLayers != null)
                     aSelectedLayers = sSelectedLayers.split(",");
+
+                aSelectedLayers = scope['cleanLayersArray'](aSelectedLayers);
 
                 for (var i = aSelectedLayers.length - 1; i >= 0; i--) {
                     aGridData.push({
@@ -987,25 +1066,18 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * Affichage des champs de formulaires suivant le service sélectionné.
      **/
     angular.element(vitisApp.appMainDrtv).scope()['setVmapLayerForm'] = function (sServiceId) {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(['$log']);
-        var $http = angular.element(vitisApp.appMainDrtv).injector().get(['$http']);
-        var $timeout = angular.element(vitisApp.appMainDrtv).injector().get(['$timeout']);
-        var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(['envSrvc']);
-        var formSrvc = angular.element(vitisApp.appMainDrtv).injector().get(['formSrvc']);
-        //
         $log.info('setVmapLayerForm');
         var scope = angular.element(vitisApp.appMainDrtv).scope();
         var this_ = this;
 
         // Champs de form. à afficher pour chaque type de service.
         var oLayerFormElements = {
-            'xyz': ['layer_id', 'service_id', 'service_name', 'name', 'layertheme_id', 'theme_name', 'bo_id', 'form_submit', 'return_list'],
-            'osm': ['layer_id', 'service_id', 'service_name', 'name', 'layertheme_id', 'theme_name', 'bo_id', 'form_submit', 'return_list'],
-            'bing': ['layer_id', 'service_id', 'service_name', 'name', 'layertheme_id', 'theme_name', 'bo_id', 'form_submit', 'return_list'],
-            'tilewms': ['layer_id', 'service_id', 'service_name', 'name', 'description', 'layertheme_id', 'theme_name', 'layer_list', 'bo_id', 'is_dynamic', 'is_filtered', 'form_submit', 'return_list'],
-            'imagewms': ['layer_id', 'service_id', 'service_name', 'name', 'description', 'layertheme_id', 'theme_name', 'layer_list', 'bo_id', 'is_dynamic', 'is_filtered', 'form_submit', 'return_list'],
-            'wmts': ['layer_id', 'service_id', 'service_name', 'name', 'description', 'layertheme_id', 'theme_name', 'wmts_layer', 'matrix_set', 'layer_style', 'layer_format', 'layer_options', 'bo_id', 'form_submit', 'return_list']
+            'xyz': ['layer_id', 'service_id', 'service_name', 'name', 'layertheme_id', 'theme_name', 'bo_id', 'bo_id_list', 'form_submit', 'return_list'],
+            'osm': ['layer_id', 'service_id', 'service_name', 'name', 'layertheme_id', 'theme_name', 'bo_id', 'bo_id_list', 'form_submit', 'return_list'],
+            'bing': ['layer_id', 'service_id', 'service_name', 'name', 'layertheme_id', 'theme_name', 'bo_id', 'bo_id_list', 'form_submit', 'return_list'],
+            'tilewms': ['layer_id', 'service_id', 'service_name', 'name', 'description', 'layertheme_id', 'theme_name', 'layer_list', 'layer_options', 'bo_id', 'bo_id_list', 'is_dynamic', 'is_filtered', 'form_submit', 'return_list'],
+            'imagewms': ['layer_id', 'service_id', 'service_name', 'name', 'description', 'layertheme_id', 'theme_name', 'layer_list', 'layer_options', 'bo_id', 'bo_id_list', 'is_dynamic', 'is_filtered', 'form_submit', 'return_list'],
+            'wmts': ['layer_id', 'service_id', 'service_name', 'name', 'description', 'layertheme_id', 'theme_name', 'wmts_layer', 'matrix_set', 'layer_style', 'layer_format', 'layer_options', 'bo_id', 'bo_id_list', 'form_submit', 'return_list']
         };
 
         var sServiceType;
@@ -1371,9 +1443,6 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * Chargement de la section "Calques de la carte" dans l'onglet "Cartes".
      **/
     angular.element(vitisApp.appMainDrtv).scope()['loadVmapMapLayers'] = function () {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
-        var $translate = angular.element(vitisApp.appMainDrtv).injector().get(["$translate"]);
         var envSrvc = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["envSrvc"]);
         //
         $log.info("loadVmapMapLayers");
@@ -1381,7 +1450,6 @@ vitisApp.on('appMainDrtvLoaded', function () {
         // Sauve le tri par défaut de l'onglet "Cartes".
         var sSortedBy = envSrvc["oSelectedObject"]["sorted_by"];
         var sSortedDir = envSrvc["oSelectedObject"]["sorted_dir"];
-        var oSaveUrlParams = angular.copy(envSrvc["oGridOptionsCopy"][envSrvc["oSelectedObject"]["name"]]["oUrlParams"]);
         // Tri pour la section "Calques de la carte".
         envSrvc["oSelectedObject"]["sorted_by"] = "layer_index";
         envSrvc["oSelectedObject"]["sorted_dir"] = "ASC";
@@ -1406,7 +1474,14 @@ vitisApp.on('appMainDrtvLoaded', function () {
             "appHeaderSearchForm": false,
             "appHeaderOptionBar": false,
             "appLoadGridData": true,
-            "aFilter": ["map_id=" + envSrvc["sId"]], // Id de la carte.
+            "oFilter": {
+                "relation": "AND",
+                "operators": [{
+                        "column": "map_id",
+                        "compare_operator": "=",
+                        "value": envSrvc["sId"]
+                    }]
+            },
             "appGridTitle": "TITLE_GRID_MAP_LAYERS_VMAP_MAP_MAP_LAYERS",
             "appFooter": false,
             "appShowPagination": false,
@@ -1420,7 +1495,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
                 "sort_order": "DESC"
             }
         };
-        envSrvc["oGridOptionsCopy"][envSrvc["oSelectedObject"]["name"]]["oUrlParams"] = angular.copy(scope["gridOptions"]["oUrlParams"]);
+        //envSrvc["oGridOptionsCopy"][envSrvc["sSelectedGridOptionsName"]]["oUrlParams"] = angular.copy(scope["gridOptions"]["oUrlParams"]);
 
         // Pas de chargement de données.
         scope["bLoadFormValues"] = false;
@@ -1478,7 +1553,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
                 //var sGridFooterId = envSrvc["oSelectedObject"]["name"] + "_grid_footer";
                 //document.getElementById(sGridFooterId).className += " workspacelist-grid-footer-map";
                 //workspacelist-grid-data
-                var oGridData = document.querySelector("#" + envSrvc["oSelectedObject"]["name"] + "_grid .workspacelist-grid-data");
+                var oGridData = document.querySelector("#" + envSrvc["oSelectedObject"]["name"] + "_" + envSrvc["sSelectedSectionName"] + "_grid .workspacelist-grid-data");
                 // arrow-up / chevron-up / triangle-top
                 var sLayerUpId = scope["sSelectedObjectName"] + "_layer_up_btn";
                 var sLayerDownId = scope["sSelectedObjectName"] + "_layer_down_btn";
@@ -1494,7 +1569,6 @@ vitisApp.on('appMainDrtvLoaded', function () {
                 // Restaure le tri par défaut de l'onglet "Cartes".
                 envSrvc["oSelectedObject"]["sorted_by"] = sSortedBy;
                 envSrvc["oSelectedObject"]["sorted_dir"] = sSortedDir;
-                envSrvc["oGridOptionsCopy"][envSrvc["oSelectedObject"]["name"]]["oUrlParams"] = angular.copy(oSaveUrlParams);
             });
         }
     };
@@ -1505,15 +1579,11 @@ vitisApp.on('appMainDrtvLoaded', function () {
      **/
     angular.element(vitisApp.appMainDrtv).scope()['showAddLayersToMapModalWindow'] = function () {
         // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
         var $compile = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["$compile"]);
         var $templateRequest = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["$templateRequest"]);
         var $translate = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["$translate"]);
-        var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
-        var formSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["formSrvc"]);
         var uiGridConstants = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["uiGridConstants"]);
-        var modesSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["modesSrvc"]);
-        var propertiesSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["propertiesSrvc"]);
+
         //
         $log.info("showAddLayersToMapModalWindow");
         var scope = this.$new();
@@ -1523,6 +1593,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
         //var oSaveSelectedObject = angular.copy(envSrvc["oSelectedObject"]);
         var oSaveSelectedObject = modesSrvc["getObject"](envSrvc["oSelectedObject"]["name"], modesSrvc["getMode"](envSrvc["oSelectedMode"]["mode_id"]));
         var sSaveMode = envSrvc["sMode"];
+        var sSaveSelectedGridOptionsName = envSrvc["sSelectedGridOptionsName"];
         // Paramètres de l'onglet.
         envSrvc["oSelectedObject"] = {
             "actions": [],
@@ -1531,7 +1602,9 @@ vitisApp.on('appMainDrtvLoaded', function () {
             "name": oSaveSelectedObject["name"] + "_available_layers",
             "ressource_id": "vmap/layers",
             "sections": "",
-            "template_name": ""
+            "template_name": "",
+            "order_by": "name",
+            "sort_order": "ASC"
         };
         envSrvc["sMode"] = "search";
         scope['sSelectedObjectName'] = envSrvc["oSelectedObject"]["name"];
@@ -1557,7 +1630,11 @@ vitisApp.on('appMainDrtvLoaded', function () {
             "appResizeGrid": true,
             "appFooter": true,
             "appShowPagination": true,
-            "appActions": []
+            "appActions": [],
+            "oUrlParams": {
+                "order_by": "name",
+                "sort_order": "ASC"
+            }
         };
         // Id de traduction des libellés des colonnes de la liste.
         var aTranslationsId = ["FORM_MAP_ID_VMAP_MAP_MAP",
@@ -1593,13 +1670,22 @@ vitisApp.on('appMainDrtvLoaded', function () {
         // Calques à exclure (ceux associées à la carte).
         var aRows = envSrvc["oGridOptions"][oSaveSelectedObject["name"]]["data"];
         if (aRows.length > 0) {
-            var i = 0, aLayersId = [];
-            while (i < aRows.length) {
-                aLayersId.push(aRows[i]["layer_id"]);
-                i++;
+            var aLayersId = [];
+            for (var i = 0; i < aRows.length; i++) {
+                if (goog.isDefAndNotNull(aRows[i]["layer_id"])) {
+                    aLayersId.push(aRows[i]["layer_id"]);
+                }
             }
-            //scope["gridOptions"]["aFilter"] = ["layer_id NOT IN(" + aLayersId.join(",") + ")"];
-            envSrvc["oSelectedObject"]["filter"] = ["layer_id NOT IN(" + aLayersId.join(",") + ")"];
+            if (aLayersId.length > 0) {
+                envSrvc["oSelectedObject"]["filter"] = {
+                    "relation": "AND",
+                    "operators": [{
+                            "column": "layer_id",
+                            "compare_operator": "NOT IN",
+                            "value": aLayersId
+                        }]
+                };
+            }
         }
 
         // Affichage de la fenêtre modale.
@@ -1626,8 +1712,9 @@ vitisApp.on('appMainDrtvLoaded', function () {
                 // Restaure l'ancien onglet sauvé.
                 envSrvc["oSelectedObject"] = oSaveSelectedObject;
                 envSrvc["sMode"] = sSaveMode;
+                envSrvc["sSelectedGridOptionsName"] = sSaveSelectedGridOptionsName;
                 // Recharge la liste des calques associés à la carte.
-                scope.$root["refreshGrid"](scope.$root["gridApi"][envSrvc["oSelectedObject"]["name"]]["grid"]["appScope"], envSrvc["oGridOptions"][envSrvc["oSelectedObject"]["name"]]);
+                scope.$root["refreshGrid"](scope.$root["gridApi"][envSrvc["sSelectedGridOptionsName"]]["grid"]["appScope"], envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]);
             });
         });
     };
@@ -1638,23 +1725,14 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * @param {boolean} bVisibility Visibilité du calque (T/F).
      **/
     angular.element(vitisApp.appMainDrtv).scope()['setMapLayerVisibility'] = function (bVisibility) {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
-        var $translate = angular.element(vitisApp.appMainDrtv).injector().get(["$translate"]);
-        var Restangular = angular.element(vitisApp.appMainDrtv).injector().get(["Restangular"]);
-        var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
-        var sessionSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["sessionSrvc"]);
-        var propertiesSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["propertiesSrvc"]);
-        //
         $log.info("setMapLayerVisibility");
         var scope = this;
         var oParams = {
-            "token": sessionSrvc["token"],
             "visibility": "" + bVisibility,
             "map_id": envSrvc["sId"]
         };
         // Liste des calques sélectionnés.
-        var aSelectedRows = scope.$root["gridApi"][envSrvc["oSelectedObject"]["name"]]["selection"]["getSelectedRows"]();
+        var aSelectedRows = scope.$root["gridApi"][envSrvc["sSelectedGridOptionsName"]]["selection"]["getSelectedRows"]();
         if (aSelectedRows.length > 0) {
             var i = 0, aLayersId = [];
             while (i < aSelectedRows.length) {
@@ -1663,23 +1741,28 @@ vitisApp.on('appMainDrtvLoaded', function () {
             }
             oParams["map_layers"] = aLayersId.join("|");
             //
-            var oWebServiceBase = Restangular["one"](propertiesSrvc["services_alias"] + "/vmap", "maplayers");
-            oWebServiceBase["customPUT"](oParams, envSrvc["sId"] + "/visibility", {"token": sessionSrvc["token"]}).then(function (data) {
-                if (data["status"] == 0) {
-                    var oOptions = {
-                        "className": "modal-danger",
-                        "message": data["errorMessage"]
-                    };
-                    scope["modalWindow"]("dialog", "ERROR_MAP_LAYER_VISIBILITY_VMAP_MAP_MAP_LAYERS", oOptions);
-                } else {
-                    // Efface la sélection.
-                    scope.$root["gridApi"][envSrvc["oSelectedObject"]["name"]]["selection"]["clearSelectedRows"]();
-                    // Recharge la liste.
-                    scope["refreshGrid"](scope, scope["gridOptions"]);
-                    // Affichage du message de succés.
-                    $translate("SUCCESSFUL_OPERATION").then(function (sTranslation) {
-                        $.notify(sTranslation, "success");
-                    });
+            ajaxRequest({
+                "method": "PUT",
+                "url": propertiesSrvc["web_server_name"] + "/" + propertiesSrvc["services_alias"] + "/vmap/maplayers/" + envSrvc["sId"] + "/visibility",
+                "data": oParams,
+                "scope": scope,
+                "success": function (response) {
+                    if (response["data"]["status"] == 0) {
+                        var oOptions = {
+                            "className": "modal-danger",
+                            "message": response["data"]["errorMessage"]
+                        };
+                        scope["modalWindow"]("dialog", "ERROR_MAP_LAYER_VISIBILITY_VMAP_MAP_MAP_LAYERS", oOptions);
+                    } else {
+                        // Efface la sélection.
+                        scope.$root["gridApi"][envSrvc["sSelectedGridOptionsName"]]["selection"]["clearSelectedRows"]();
+                        // Recharge la liste.
+                        scope["refreshGrid"](scope, scope["gridOptions"]);
+                        // Affichage du message de succés.
+                        $translate("SUCCESSFUL_OPERATION").then(function (sTranslation) {
+                            $.notify(sTranslation, "success");
+                        });
+                    }
                 }
             });
         }
@@ -1690,22 +1773,13 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * Association d'une liste de calques à une carte.
      **/
     angular.element(vitisApp.appMainDrtv).scope()['addLayersToMap'] = function () {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
-        var $translate = angular.element(vitisApp.appMainDrtv).injector().get(["$translate"]);
-        var Restangular = angular.element(vitisApp.appMainDrtv).injector().get(["Restangular"]);
-        var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
-        var sessionSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["sessionSrvc"]);
-        var propertiesSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["propertiesSrvc"]);
-        //
         $log.info("addLayersToMap");
         var scope = this;
         var oParams = {
-            "token": sessionSrvc["token"],
             "map_id": envSrvc["sId"]
         };
         // Liste des calques sélectionnés.
-        var aSelectedRows = scope.$root["gridApi"][envSrvc["oSelectedObject"]["name"]]["selection"]["getSelectedRows"]();
+        var aSelectedRows = scope.$root["gridApi"][envSrvc["sSelectedGridOptionsName"]]["selection"]["getSelectedRows"]();
         if (aSelectedRows.length > 0) {
             var i = 0, aLayersId = [];
             while (i < aSelectedRows.length) {
@@ -1714,25 +1788,30 @@ vitisApp.on('appMainDrtvLoaded', function () {
             }
             oParams["map_layers"] = aLayersId.join("|");
             //
-            var oWebServiceBase = Restangular["one"](propertiesSrvc["services_alias"] + "/vmap", "maplayers");
-            oWebServiceBase["customPUT"](oParams, envSrvc["sId"], {"token": sessionSrvc["token"]}).then(function (data) {
-                if (data["status"] == 0) {
-                    var oOptions = {
-                        "className": "modal-danger",
-                        "message": data["errorMessage"]
-                    };
-                    scope["modalWindow"]("dialog", "ERROR_ADD_MAP_LAYERS_VMAP_MAP_MAP_LAYERS", oOptions);
-                } else {
-                    // Efface la sélection.
-                    //scope.$root["gridApi"][envSrvc["oSelectedObject"]["name"]]["selection"]["clearSelectedRows"]();
-                    // Recharge la liste.
-                    //scope["refreshGrid"](scope, scope["gridOptions"]);
-                    //
-                    bootbox["hideAll"]();
-                    // Affichage du message de succés.
-                    $translate("SUCCESSFUL_OPERATION").then(function (sTranslation) {
-                        $.notify(sTranslation, "success");
-                    });
+            ajaxRequest({
+                "method": "PUT",
+                "url": propertiesSrvc["web_server_name"] + "/" + propertiesSrvc["services_alias"] + "/vmap/maplayers/" + envSrvc["sId"],
+                "data": oParams,
+                "scope": scope,
+                "success": function (response) {
+                    if (response["data"]["status"] == 0) {
+                        var oOptions = {
+                            "className": "modal-danger",
+                            "message": response["data"]["errorMessage"]
+                        };
+                        scope["modalWindow"]("dialog", "ERROR_ADD_MAP_LAYERS_VMAP_MAP_MAP_LAYERS", oOptions);
+                    } else {
+                        // Efface la sélection.
+                        //scope.$root["gridApi"][envSrvc["sSelectedGridOptionsName"]]["selection"]["clearSelectedRows"]();
+                        // Recharge la liste.
+                        //scope["refreshGrid"](scope, scope["gridOptions"]);
+                        //
+                        bootbox["hideAll"]();
+                        // Affichage du message de succés.
+                        $translate("SUCCESSFUL_OPERATION").then(function (sTranslation) {
+                            $.notify(sTranslation, "success");
+                        });
+                    }
                 }
             });
         }
@@ -1743,22 +1822,13 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * Suppression des calques associés à la carte.
      **/
     angular.element(vitisApp.appMainDrtv).scope()['deleteMapLayers'] = function () {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
-        var $translate = angular.element(vitisApp.appMainDrtv).injector().get(["$translate"]);
-        var Restangular = angular.element(vitisApp.appMainDrtv).injector().get(["Restangular"]);
-        var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
-        var sessionSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["sessionSrvc"]);
-        var propertiesSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["propertiesSrvc"]);
-        //
         $log.info("deleteMapLayers");
         var scope = this;
         var oParams = {
-            "token": sessionSrvc["token"],
             "map_id": envSrvc["sId"]
         };
         // Liste des calques sélectionnés.
-        var aSelectedRows = scope.$root["gridApi"][envSrvc["oSelectedObject"]["name"]]["selection"]["getSelectedRows"]();
+        var aSelectedRows = scope.$root["gridApi"][envSrvc["sSelectedGridOptionsName"]]["selection"]["getSelectedRows"]();
         if (aSelectedRows.length > 0) {
             var i = 0, aLayersId = [];
             while (i < aSelectedRows.length) {
@@ -1767,23 +1837,28 @@ vitisApp.on('appMainDrtvLoaded', function () {
             }
             oParams["idList"] = aLayersId.join("|");
             // Suppression.
-            var oWebServiceBase = Restangular["one"](propertiesSrvc["services_alias"] + "/vmap", "maplayers");
-            oWebServiceBase["customDELETE"](envSrvc["sId"], oParams).then(function (data) {
-                if (data["status"] == 0) {
-                    var oOptions = {
-                        "className": "modal-danger",
-                        "message": data["errorMessage"]
-                    };
-                    scope["modalWindow"]("dialog", "ERROR_DELETE_MAP_LAYER_VMAP_MAP_MAP_LAYERS", oOptions);
-                } else {
-                    // Efface la sélection.
-                    scope.$root["gridApi"][envSrvc["oSelectedObject"]["name"]]["selection"]["clearSelectedRows"]();
-                    // Recharge la liste.
-                    scope["refreshGrid"](scope, scope["gridOptions"]);
-                    // Affichage du message de succés.
-                    $translate("SUCCESSFUL_OPERATION").then(function (sTranslation) {
-                        $.notify(sTranslation, "success");
-                    });
+            ajaxRequest({
+                "method": "DELETE",
+                "url": propertiesSrvc["web_server_name"] + "/" + propertiesSrvc["services_alias"] + "/vmap/maplayers/" + envSrvc["sId"],
+                "params": oParams,
+                "scope": scope,
+                "success": function (response) {
+                    if (response["data"]["status"] == 0) {
+                        var oOptions = {
+                            "className": "modal-danger",
+                            "message": response["data"]["errorMessage"]
+                        };
+                        scope["modalWindow"]("dialog", "ERROR_DELETE_MAP_LAYER_VMAP_MAP_MAP_LAYERS", oOptions);
+                    } else {
+                        // Efface la sélection.
+                        scope.$root["gridApi"][envSrvc["sSelectedGridOptionsName"]]["selection"]["clearSelectedRows"]();
+                        // Recharge la liste.
+                        scope["refreshGrid"](scope, scope["gridOptions"]);
+                        // Affichage du message de succés.
+                        $translate("SUCCESSFUL_OPERATION").then(function (sTranslation) {
+                            $.notify(sTranslation, "success");
+                        });
+                    }
                 }
             });
         }
@@ -1795,23 +1870,11 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * @param {string} sDirection Sens de déplacement des calques sélectionnés ("up"/"down").
      **/
     angular.element(vitisApp.appMainDrtv).scope()['changeMapLayerSorting'] = function (sDirection) {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
-        var $translate = angular.element(vitisApp.appMainDrtv).injector().get(["$translate"]);
-        var Restangular = angular.element(vitisApp.appMainDrtv).injector().get(["Restangular"]);
-        var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
-        var sessionSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["sessionSrvc"]);
-        var propertiesSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["propertiesSrvc"]);
-        //
         $log.info("changeMapLayerSorting");
         var scope = this;
-        var oParams = {
-            "token": sessionSrvc["token"],
-            "map_id": envSrvc["sId"]
-        };
         // Liste des calques sélectionnés.
-        var oGridApi = scope.$root["gridApi"][envSrvc["oSelectedObject"]["name"]];
-        var oGridOptions = envSrvc["oGridOptions"][envSrvc["oSelectedObject"]["name"]];
+        var oGridApi = scope.$root["gridApi"][envSrvc["sSelectedGridOptionsName"]];
+        var oGridOptions = envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]];
         var aSelectedRows = oGridApi["selection"]["getSelectedRows"]();
         if (aSelectedRows.length > 0) {
             var bUpdateMapLayersIndex = false;
@@ -1853,8 +1916,6 @@ vitisApp.on('appMainDrtvLoaded', function () {
                 aLayersId.push(oGridOptions["data"][i]["layer_id"]);
                 i++;
             }
-            oParams["map_layers"] = aLayersId.join("|");
-
             // Mise à jour de l'index des calques de la carte dans la base.
             if (bUpdateMapLayersIndex)
                 scope.$root["updateMapLayerSorting"]();
@@ -1866,21 +1927,13 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * Change l'ordre des calques sélectionnés d'une carte.
      **/
     angular.element(vitisApp.appMainDrtv).scope()['updateMapLayerSorting'] = function () {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
-        var Restangular = angular.element(vitisApp.appMainDrtv).injector().get(["Restangular"]);
-        var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
-        var sessionSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["sessionSrvc"]);
-        var propertiesSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["propertiesSrvc"]);
-        //
         $log.info("updateMapLayerSorting");
         var scope = this;
         var oParams = {
-            "token": sessionSrvc["token"],
             "map_id": envSrvc["sId"]
         };
         // Sauve la liste des id des calques.
-        var oGridOptions = envSrvc["oGridOptions"][envSrvc["oSelectedObject"]["name"]];
+        var oGridOptions = envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]];
         var i = 0, aLayersId = [];
         for (var i = oGridOptions["data"].length - 1; i >= 0; i--) {
             aLayersId.push(oGridOptions["data"][i]["layer_id"]);
@@ -1889,15 +1942,19 @@ vitisApp.on('appMainDrtvLoaded', function () {
         oParams["map_layers"] = aLayersId.join("|");
 
         // Mise à jour de l'index des calques de la carte dans la base.
-        var oWebServiceBase = Restangular["one"](propertiesSrvc["services_alias"] + "/vmap", "maplayers");
-        oWebServiceBase["customPUT"](oParams, envSrvc["sId"] + "/sorting", {"token": sessionSrvc["token"]}).then(function (data) {
-            // Erreur ?
-            if (data["status"] == 0) {
-                var oOptions = {
-                    "className": "modal-danger",
-                    "message": data["errorMessage"]
-                };
-                scope["modalWindow"]("dialog", "ERROR_ADD_MAP_LAYERS_VMAP_MAP_MAP_LAYERS", oOptions);
+        ajaxRequest({
+            "method": "PUT",
+            "url": propertiesSrvc["web_server_name"] + "/" + propertiesSrvc["services_alias"] + "/vmap/maplayers/" + envSrvc["sId"] + "/sorting",
+            "data": oParams,
+            "scope": scope,
+            "success": function (response) {
+                if (response["data"]["status"] == 0) {
+                    var oOptions = {
+                        "className": "modal-danger",
+                        "message": response["data"]["errorMessage"]
+                    };
+                    scope["modalWindow"]("dialog", "ERROR_ADD_MAP_LAYERS_VMAP_MAP_MAP_LAYERS", oOptions);
+                }
             }
         });
     };
@@ -2057,10 +2114,6 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * Chargement de la section "Vmap" dans l'onglet "Utilisateurs" (mode "Utilisateurs").
      **/
     angular.element(vitisApp.appMainDrtv).scope()['loadVmapUser'] = function () {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
-        var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
-        //
         $log.info("loadVmapUser");
         // Surcharge l'url du formulaire des utilisateurs de Vmap.
         var scope = this;
@@ -2075,11 +2128,6 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * Chargement de l'onglet "Modèles" (mode "Impressions").
      **/
     angular.element(vitisApp.appMainDrtv).scope()['beforeVmapAdminPrintVmapAdminTemplateEdition'] = function () {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
-        var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
-        var formSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["formSrvc"]);
-        //
         $log.info("beforeVmapAdminPrintVmapAdminTemplateEdition");
         /*
          if (envSrvc["sMode"] != "display") {
@@ -2131,12 +2179,6 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * Traitements avant l'envoi d'un form. de l'onglet "Modèles" (mode "Impressions").
      **/
     angular.element(vitisApp.appMainDrtv).scope()['beforeVmapAdminTemplateSubmit'] = function () {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
-        var $q = angular.element(vitisApp.appMainDrtv).injector().get(["$q"]);
-        var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
-        var formSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["formSrvc"]);
-        //
         $log.info("beforeVmapAdminTemplateSubmit");
         /*
          var formScope = angular.element("form[name='" + envSrvc["oFormDefinition"][envSrvc["sFormDefinitionName"]]["name"] + "']").scope();
@@ -2293,14 +2335,6 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * Mise à jour de l'opacité du calque d'une carte dans la base.
      **/
     angular.element(vitisApp.appMainDrtv).scope()['setMapLayerOpacity'] = function (oEvent) {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
-        var Restangular = angular.element(vitisApp.appMainDrtv).injector().get(["Restangular"]);
-        var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
-        var sessionSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["sessionSrvc"]);
-        var propertiesSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["propertiesSrvc"]);
-        var formSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["formSrvc"]);
-
         $log.info("setMapLayerOpacity");
         var scope = angular.element(vitisApp.appMainDrtv).scope();
         // 0 >= Opacité >= 100
@@ -2312,24 +2346,28 @@ vitisApp.on('appMainDrtvLoaded', function () {
         oEvent["target"].value = iOpacity;
         //
         var oParams = {
-            "token": sessionSrvc["token"],
             "map_id": envSrvc["sId"],
             "layer_id": oEvent["target"].getAttribute("data-layer-id"),
             "layer_opacity": iOpacity
         };
         // Mise à jour de l'opacité du calque de la carte dans la base.
-        var oWebServiceBase = Restangular["one"](propertiesSrvc["services_alias"] + "/vmap", "maplayers");
-        oWebServiceBase["customPUT"](oParams, envSrvc["sId"] + "/opacity", {"token": sessionSrvc["token"]}).then(function (data) {
-            // Erreur ?
-            if (data["status"] == 0) {
-                var oOptions = {
-                    "className": "modal-danger",
-                    "message": data["errorMessage"]
-                };
-                scope["modalWindow"]("dialog", "ERROR_ADD_MAP_LAYERS_VMAP_MAP_MAP_LAYERS", oOptions);
-            } else {
-                // Recharge la liste des calques associés à la carte.
-                scope.$root["refreshGrid"](scope.$root["gridApi"][envSrvc["oSelectedObject"]["name"]]["grid"]["appScope"], envSrvc["oGridOptions"][envSrvc["oSelectedObject"]["name"]]);
+        ajaxRequest({
+            "method": "PUT",
+            "url": propertiesSrvc["web_server_name"] + "/" + propertiesSrvc["services_alias"] + "/vmap/maplayers/" + envSrvc["sId"] + "/opacity",
+            "data": oParams,
+            "scope": scope,
+            "success": function (response) {
+                // Erreur ?
+                if (response["data"]["status"] == 0) {
+                    var oOptions = {
+                        "className": "modal-danger",
+                        "message": response["data"]["errorMessage"]
+                    };
+                    scope["modalWindow"]("dialog", "ERROR_ADD_MAP_LAYERS_VMAP_MAP_MAP_LAYERS", oOptions);
+                } else {
+                    // Recharge la liste des calques associés à la carte.
+                    scope.$root["refreshGrid"](scope.$root["gridApi"][envSrvc["sSelectedGridOptionsName"]]["grid"]["appScope"], envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]);
+                }
             }
         });
     };
@@ -2338,9 +2376,6 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * Init the openlayers field to bind the extent
      */
     angular.element(vitisApp.appMainDrtv).scope()['initOLMapExtent'] = function () {
-
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(['$log']);
-        var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
         $log.info('initOLMapExtent');
 
         setTimeout(function () {
@@ -2352,7 +2387,10 @@ vitisApp.on('appMainDrtvLoaded', function () {
 
             // Re-calcule l'étendue lors de chaque mouvement de la carte
             oMap.on('moveend', function () {
-                angular.element(vitisApp.appMainDrtv).scope()['updateExtent']();
+                // Mise à jour uniquement si la dernière mise à jour manuelle c'est fait il y a plus de 200 ms
+                if (!goog.isDefAndNotNull(oMap.get('lastManualUpdate')) || Date.now() > oMap.get('lastManualUpdate') + 200) {
+                    angular.element(vitisApp.appMainDrtv).scope()['updateExtent']();
+                }
             });
 
             var oCrsSelecteorFormElement = document.querySelector("form[name='" + envSrvc["oFormDefinition"][envSrvc["sFormDefinitionName"]]["name"] + "'] select[name='crs_id']");
@@ -2368,30 +2406,18 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * Mise à jour de l'étendue avec les données du champ openlayers.
      **/
     angular.element(vitisApp.appMainDrtv).scope()['updateExtent'] = function () {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(['$log']);
-        var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(['envSrvc']);
-        var formSrvc = angular.element(vitisApp.appMainDrtv).injector().get(['formSrvc']);
-
         $log.info('updateExtent');
 
-        // Définition de l'élément de la carte openlayers
-        var oMapExtentDefinition = formSrvc['getFormElementDefinition']('map_extent', envSrvc['sFormDefinitionName'], envSrvc['oFormDefinition']);
-        //
         var aExtent = [];
-        var aMapExtent = oMapExtentDefinition['map_options']['center']['extent'];
-
+        var oMap = angular.element($('#vmap_map_map_extent')).scope()['oMap'].MapObject;
+        var aMapExtent = oMap.getView().calculateExtent(oMap.getSize());
 
         // Reprojection de l'étendue
-        var oMap = angular.element($('#vmap_map_map_extent')).scope()['oMap'].MapObject;
-
         var mapProj = oMap.getView().getProjection().getCode();
         var destinationProj = envSrvc['oFormValues'][envSrvc['sFormDefinitionName']]['crs_id']['selectedOption']['value'];
-
         var projectedExtent = ol.proj.transformExtent(aMapExtent, mapProj, destinationProj);
-
         projectedExtent.forEach(function (coord) {
-            aExtent.push(Math.round(coord));
+            aExtent.push(coord.toPrecision(10));
         });
 
         // Met à jour l'étendue dans le champ 'Etendue'.
@@ -2413,12 +2439,6 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * Mise à jour de l'étendue du champ openLayers à partir des données du formulaire
      */
     angular.element(vitisApp.appMainDrtv).scope()['updateOLMapExtent'] = function () {
-
-        // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(['$log']);
-        var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(['envSrvc']);
-        var formSrvc = angular.element(vitisApp.appMainDrtv).injector().get(['formSrvc']);
-
         $log.info('updateOLMapExtent');
 
         if (!goog.isDefAndNotNull(envSrvc['oFormValues'][envSrvc['sFormDefinitionName']]['extent'])) {
@@ -2451,7 +2471,14 @@ vitisApp.on('appMainDrtvLoaded', function () {
         // Étendue reprojetée
         var projectedExtent = ol.proj.transformExtent(aFormExtent, sFormProj, sMapProj);
 
-        oMap.getView().fit(projectedExtent, oMap.getSize(), {nearest: true});
+        // Fixe l'étendue de la carte
+        oMap.getView().fit(projectedExtent, {
+            constrainResolution: false,
+            nearest: true
+        });
+
+        // Sauvegarde l'heure à laquelle c'est fait la dernière mise à jour manuelle
+        oMap.set('lastManualUpdate', Date.now());
     };
 
     /**
@@ -2460,13 +2487,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
      **/
     angular.element(vitisApp.appMainDrtv).scope()['showAddLayersToLayerModalWindow'] = function () {
         // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
         var $translate = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["$translate"]);
-        var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
-        var sessionSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["sessionSrvc"]);
-        var propertiesSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["propertiesSrvc"]);
 
-        //
         $log.info("showAddLayersToLayerModalWindow");
 
         var this_ = this;
@@ -2475,7 +2497,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
 
         $translate(["BTN_ADD_LAYERS_VMAP_MAP_LAYER"]).then(function (oTranslations) {
             var sServiceUrl = envSrvc["oFormValues"][sParentFormDefinitionName]["service_url"];
-            sServiceUrl = sServiceUrl.replace("[token]", sessionSrvc["token"]);
+            sServiceUrl = sServiceUrl.replace("[token]", sha256(sessionSrvc["token"]));
             sServiceUrl = sServiceUrl.replace("[ms_cgi_url]", propertiesSrvc["ms_cgi_url"]);
             this_['showLayerModalWindow']({
                 'service_url': sServiceUrl,
@@ -2498,17 +2520,15 @@ vitisApp.on('appMainDrtvLoaded', function () {
      */
     angular.element(vitisApp.appMainDrtv).scope()['showLayerModalWindow'] = function (opt_options) {
         // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
-        var $http = angular.element(vitisApp.appMainDrtv).injector().get(["$http"]);
         var $compile = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["$compile"]);
         var $templateRequest = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["$templateRequest"]);
         var $translate = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["$translate"]);
-        var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
         var uiGridConstants = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["uiGridConstants"]);
-        var modesSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["modesSrvc"]);
-        var propertiesSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["propertiesSrvc"]);
 
         var sParentFormDefinitionName = envSrvc["sFormDefinitionName"];
+
+        // Set les options du service (login, password etc...)
+        this['setWMSServiceOptions']();
 
         opt_options = goog.isDefAndNotNull(opt_options) ? opt_options : {};
         var sServiceUrl = goog.isDefAndNotNull(opt_options['service_url']) ? opt_options['service_url'] : envSrvc["oFormValues"][sParentFormDefinitionName]["service_url"];
@@ -2535,29 +2555,59 @@ vitisApp.on('appMainDrtvLoaded', function () {
         scope["sFormDefinitionName"] = envSrvc["oSelectedObject"]["name"];
         envSrvc["sFormDefinitionName"] = scope["sFormDefinitionName"];
 
-        // Paramétrage du module ui-grid
-        scope["gridOptions"] = {
-            "enableRowSelection": true,
-            "enableSelectAll": true,
-            "enablePagination": true,
-            "enablePaginationControls": false,
-            "useExternalPagination": true,
-            "paginationPageSize": propertiesSrvc["rows_per_page"],
-            "enableColumnMenus": false,
-            "enableColumnResizing": true,
-            //"enableColumnMoving": true,
-            "paginationPageSizes": [10, 20, 50, 100],
-            "appHeader": true,
-            "appHeaderTitleBar": true,
-            "appHeaderSearchForm": false,
-            "appHeaderOptionBar": false,
-            "appLoadGridData": false,
-            "appGridTitle": "TITLE_GRID_VMAP_MAP_LAYER_WMS_LAYERS",
-            "appResizeGrid": true,
-            "appFooter": false,
-            "appShowPagination": false,
-            "appActions": []
-        };
+        // Paramétrage du module ui-grid      
+        if (envSrvc["oSelectedObject"]["name"] === "vmap_admin_map_vmap_services_wms_layers") {
+            scope["gridOptions"] = {
+                "enableRowSelection": false,
+                "enableSelectAll": false,
+                "enableRowHeaderSelection": false,
+                "enableFullRowSelection": false,
+                "enablePagination": true,
+                "enablePaginationControls": false,
+                "useExternalPagination": true,
+                "paginationPageSize": propertiesSrvc["rows_per_page"],
+                "enableColumnMenus": false,
+                "enableColumnResizing": true,
+                //"enableColumnMoving": true,
+                "paginationPageSizes": [10, 20, 50, 100],
+                "appHeader": true,
+                "appHeaderTitleBar": true,
+                "appHeaderSearchForm": false,
+                "appHeaderOptionBar": false,
+                "appLoadGridData": false,
+                "appGridTitle": "TITLE_GRID_VMAP_MAP_LAYER_WMS_LAYERS",
+                "appResizeGrid": true,
+                "appFooter": false,
+                "appShowPagination": false,
+                "appActions": []
+            };
+        } else {
+            scope["gridOptions"] = {
+                "enableRowSelection": true,
+                "enableSelectAll": true,
+                //"enableRowHeaderSelection": true,
+                //"enableFullRowSelection": true,
+                "enablePagination": true,
+                "enablePaginationControls": false,
+                "useExternalPagination": true,
+                "paginationPageSize": propertiesSrvc["rows_per_page"],
+                "enableColumnMenus": false,
+                "enableColumnResizing": true,
+                //"enableColumnMoving": true,
+                "paginationPageSizes": [10, 20, 50, 100],
+                "appHeader": true,
+                "appHeaderTitleBar": true,
+                "appHeaderSearchForm": false,
+                "appHeaderOptionBar": false,
+                "appLoadGridData": false,
+                "appGridTitle": "TITLE_GRID_VMAP_MAP_LAYER_WMS_LAYERS",
+                "appResizeGrid": true,
+                "appFooter": false,
+                "appShowPagination": false,
+                "appActions": []
+            };
+        }
+
         // Id de traduction des libellés des colonnes de la liste.
         var aTranslationsId = [
             "FORM_NAME_VMAP_MAP_LAYER_WMS_LAYERS",
@@ -2570,7 +2620,9 @@ vitisApp.on('appMainDrtvLoaded', function () {
             scope["gridOptions"]["columnDefs"] = [
                 {"name": aTranslations["FORM_NAME_VMAP_MAP_LAYER_WMS_LAYERS"], "displayName": aTranslations["FORM_NAME_VMAP_MAP_LAYER_WMS_LAYERS"], "field": "name", "width": 250, "enableSorting": true, "type": "string", "enableColumnMoving": true, "enableColumnResizing": true, "headerCellClass": "vmap_map_layers_" + envSrvc["oSelectedObject"]["name"] + "_name", "sort": {"direction": uiGridConstants["ASC"], "ignoreSort": true, "priority": 0}},
                 {"name": aTranslations["FORM_DESCRIPTION_VMAP_MAP_LAYER_WMS_LAYERS"], "displayName": aTranslations["FORM_DESCRIPTION_VMAP_MAP_LAYER_WMS_LAYERS"], "field": "description", "width": 350, "enableSorting": true, "type": "string", "enableColumnMoving": true, "enableColumnResizing": true, "headerCellClass": "vmap_map_layers_" + envSrvc["oSelectedObject"]["name"] + "_crs_list"},
-                {"name": aTranslations["FORM_CRS_VMAP_MAP_LAYER_WMS_LAYERS"], "displayName": aTranslations["FORM_CRS_VMAP_MAP_LAYER_WMS_LAYERS"], "field": "crs_list", "width": 180, "enableSorting": true, "type": "string", "enableColumnMoving": true, "enableColumnResizing": true, "headerCellClass": "vmap_map_layers_" + envSrvc["oSelectedObject"]["name"] + "_crs_list", "cellTemplate": '<div data-app-crs-list-description-column="{{row.entity[col.field]}}"></div>'}
+                {"name": 'Style', "displayName": 'Style', "field": "style", "width": 180, "enableSorting": false, "type": "object", "enableColumnMoving": false, "enableColumnResizing": false, "headerCellClass": "vmap_map_layers_" + envSrvc["oSelectedObject"]["name"] + "_style", "cellTemplate": '<div data-app-style-list-column></div>'},
+                {"name": aTranslations["FORM_CRS_VMAP_MAP_LAYER_WMS_LAYERS"], "displayName": aTranslations["FORM_CRS_VMAP_MAP_LAYER_WMS_LAYERS"], "field": "crs_list", "width": 180, "enableSorting": true, "type": "string", "enableColumnMoving": true, "enableColumnResizing": true, "headerCellClass": "vmap_map_layers_" + envSrvc["oSelectedObject"]["name"] + "_crs_list", "cellTemplate": '<div data-app-crs-list-description-column="{{row.entity[col.field]}}"></div>'},
+                {"name": 'oLayer', "visible": false}
             ];
         });
 
@@ -2620,14 +2672,17 @@ vitisApp.on('appMainDrtvLoaded', function () {
                         aGridData.push({
                             "name": aLayers[i]["Name"],
                             "description": aLayers[i]["Title"],
-                            "crs_list": goog.isDefAndNotNull(aLayers[i]["CRS"]) ? aLayers[i]["CRS"].join(",") : []
+                            "style": aLayers[i]["Style"],
+                            "crs_list": goog.isDefAndNotNull(aLayers[i]["CRS"]) ? aLayers[i]["CRS"].join(",") : [],
+                            "oLayer": aLayers[i]
                         });
                     }
                 }
             }
-            // Réordonne les couches à afficher parnom
-            goog.array.sortByKey(aGridData, function (elem) {
-                return elem['name']
+
+            // Réordonne les couches à afficher par nom
+            aGridData.sort(function (a, b) {
+                return a["name"].localeCompare(b["name"]);
             });
             // Mise à jour de la liste ui-grid.
             scope["gridOptions"]["data"] = aGridData;
@@ -2644,7 +2699,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
                 $(oDialog).on('shown.bs.modal', function (e) {
                     // 
                     var oModalContainer = document.querySelector(".dialog-modal-window-wms_layers > .modal-dialog");
-                    oModalContainer.className = oModalContainer.className + " modal-lg";
+                    oModalContainer.className = oModalContainer.className + " modal-l";
 
                     // Compile le template
                     var sTemplateUrl = 'modules/vmap/template/vitis/serviceLayers.html';
@@ -2676,98 +2731,127 @@ vitisApp.on('appMainDrtvLoaded', function () {
                         var bMapLoaded = false;
                         oServiceLayersScope['showOlMap'] = function () {
                             if (!bMapLoaded) {
-                                $http.get('modules/vmap/forms/vmap_admin_map/vmap_admin_map_vmap_layers_openlayers_test.json').
-                                        success(function (data, status, headers, config) {
-                                            bMapLoaded = true;
+                                ajaxRequest({
+                                    "method": "GET",
+                                    "url": "modules/vmap/forms/vmap_admin_map/vmap_admin_map_vmap_layers_openlayers_test.json",
+                                    "scope": scope,
+                                    "success": function (response) {
+                                        bMapLoaded = true;
 
-                                            var oFormDefinition = data;
-                                            var sFormDefinitionName = 'update';
-                                            var oFormScope = angular.element($("#" + sContainerId).find('#service_layers_layers_ol_formreader').children()).scope();
-                                            var oMap = oFormDefinition['update']['rows'][0]['fields'][0];
+                                        var oFormDefinition = response["data"];
+                                        var sFormDefinitionName = 'update';
+                                        var oFormScope = angular.element($("#" + sContainerId).find('#service_layers_layers_ol_formreader').children()).scope();
+                                        var oMap = oFormDefinition['update']['rows'][0]['fields'][0];
 
-                                            var aProjections = [{
-                                                    'extent': [-1901744.2199433097, 4779520.942381757, 2501744.2199433097, 7220479.057618243],
-                                                    'projection': 'EPSG:3857'
-                                                }, {
-                                                    'extent': [-2648.2345550218597, 6231825.554877603, 7024177.333740164, 7024177.333740164],
-                                                    'projection': 'EPSG:2154'
-                                                }, {
-                                                    'extent': [-4.6307373046875, 42.802734375, 51.0205078125, 51.0205078125],
-                                                    'projection': 'EPSG:4326'
-                                                }];
-                                            var sUsedProjectionIndex = 0;
+                                        var aProjections = [{
+                                                'extent': [-1901744.2199433097, 4779520.942381757, 2501744.2199433097, 7220479.057618243],
+                                                'projection': 'EPSG:3857'
+                                            }, {
+                                                'extent': [-2648.2345550218597, 6231825.554877603, 7024177.333740164, 7024177.333740164],
+                                                'projection': 'EPSG:2154'
+                                            }, {
+                                                'extent': [-4.6307373046875, 42.802734375, 51.0205078125, 51.0205078125],
+                                                'projection': 'EPSG:4326'
+                                            }];
+                                        var sUsedProjectionIndex = 0;
 
-                                            for (var i = 0; i < aProjections.length; i++) {
-                                                var bIsAllowedProj = true;
-                                                for (var ii = 0; ii < aLayers.length; ii++) {
-                                                    var aCrs = goog.isArray(aLayers[ii]['CRS']) ? aLayers[ii]['CRS'] : goog.isArray(aLayers[ii]['SRS']) ? aLayers[ii]['CRS'] : [];
-                                                    if (aCrs.indexOf(aProjections[i]['projection']) === -1) {
-                                                        bIsAllowedProj = false;
+                                        for (var i = 0; i < aProjections.length; i++) {
+                                            var bIsAllowedProj = true;
+                                            for (var ii = 0; ii < aLayers.length; ii++) {
+                                                var aCrs = goog.isArray(aLayers[ii]['CRS']) ? aLayers[ii]['CRS'] : goog.isArray(aLayers[ii]['SRS']) ? aLayers[ii]['CRS'] : [];
+                                                if (aCrs.indexOf(aProjections[i]['projection']) === -1) {
+                                                    bIsAllowedProj = false;
+                                                }
+                                            }
+                                            if (bIsAllowedProj) {
+                                                sUsedProjectionIndex = angular.copy(i);
+                                                break;
+                                            }
+                                        }
+
+                                        oMap['map_options']['proj'] = aProjections[sUsedProjectionIndex]['projection'];
+                                        oMap['map_options']['center'] = {'extent': aProjections[sUsedProjectionIndex]['extent']};
+                                        oMap['map_options']['tree']['children'][0]['view'] = aProjections[sUsedProjectionIndex];
+
+                                        var oChildrenService = {
+                                            'name': 'Service WMS',
+                                            'children': []
+                                        };
+                                        for (var i = 0; i < aLayers.length; i++) {
+                                            var sStyle = '';
+                                            for (var ii = 0; ii < aGridData.length; ii++) {
+                                                if (aGridData[ii]['name'] === aLayers[i]['Name']) {
+                                                    if (goog.isDefAndNotNull(aGridData[ii]['style_selected'])) {
+                                                        if (goog.isDefAndNotNull(aGridData[ii]['style_selected']['Name'])) {
+                                                            sStyle = aGridData[ii]['style_selected']['Name'];
+                                                        }
                                                     }
                                                 }
-                                                if (bIsAllowedProj) {
-                                                    sUsedProjectionIndex = angular.copy(i);
-                                                    break;
-                                                }
                                             }
 
-                                            oMap['map_options']['proj'] = aProjections[sUsedProjectionIndex]['projection'];
-                                            oMap['map_options']['center'] = {'extent': aProjections[sUsedProjectionIndex]['extent']};
-                                            oMap['map_options']['tree']['children'][0]['view'] = aProjections[sUsedProjectionIndex];
-
-                                            var oChildrenService = {
-                                                'name': 'Service WMS',
-                                                'children': []
+                                            // Définition de la couche.
+                                            var oChildrenLayer = {
+                                                'name': aLayers[i]['Name'],
+                                                'layerType': 'imagewms',
+                                                'visible': false,
+                                                //'legend': 'true',
+                                                'select': true,
+                                                'url': sServiceUrl,
+                                                'params': {
+                                                    'LAYERS': aLayers[i]['Name'],
+                                                    'VERSION': '1.3.0',
+                                                    'STYLES': sStyle,
+                                                    'TIMESTAMP': new Date().getTime()
+                                                },
+                                                'service_options': envSrvc["oFormValues"][sParentFormDefinitionName]['service_options'],
+                                                'index': i + 1
                                             };
-                                            for (var i = 0; i < aLayers.length; i++) {
-                                                // Définition de la couche.
-                                                var oChildrenLayer = {
-                                                    'name': aLayers[i]['Name'],
-                                                    'layerType': 'imagewms',
-                                                    'visible': false,
-                                                    //'legend': 'true',
-                                                    'select': true,
-                                                    'url': sServiceUrl,
-                                                    'params': {
-                                                        'LAYERS': aLayers[i]['Name'],
-                                                        'VERSION': '1.3.0',
-                                                        'TIMESTAMP': new Date().getTime()
-                                                    },
-                                                    'index': i + 1
-                                                };
-                                                oChildrenService['children'].push(oChildrenLayer);
-                                            }
-                                            // Ajout du service
-                                            oMap['map_options']['tree']['children'].push(oChildrenService);
+                                            oChildrenService['children'].push(oChildrenLayer);
+                                        }
+                                        // Ajout du service
+                                        oMap['map_options']['tree']['children'].push(oChildrenService);
 
-                                            oMap['style']['height'] = $('#' + sContainerId).find('#service_layers_layers_ol').height() + 'px';
+                                        oMap['style']['height'] = $('#' + sContainerId).find('#service_layers_layers_ol').height() + 'px';
 
-                                            // Affiche le layertree par défaut
-                                            oFormScope['showMapLayerTree'] = function () {
-                                                setTimeout(function () {
-                                                    var oMapScope = angular.element($("#" + sContainerId).find('#service_layers_layers_ol_formreader').find('#layer_test_map')).scope();
-                                                    oMapScope.$applyAsync(function () {
-                                                        oMapScope['oMap']['bLayersTreeOpen'] = true;
-                                                    });
+                                        oFormScope['initOL3TestService'] = function () {
+                                            setTimeout(function () {
+                                                var oMapScope = angular.element($("#" + sContainerId).find('#service_layers_layers_ol_formreader').find('#layer_test_map')).scope();
+
+                                                // Affiche le layertree par défaut
+                                                oMapScope.$applyAsync(function () {
+                                                    oMapScope['oMap']['bLayersTreeOpen'] = true;
                                                 });
-                                            };
-                                            oFormDefinition['update']['initEvent'] = 'showMapLayerTree()';
 
-                                            oFormScope['ctrl']['setDefinitionName'](sFormDefinitionName);
-                                            oFormScope['ctrl']['setFormValues']({
-                                                'display': {},
-                                                'insert': {},
-                                                'update': {}
+                                                // Change le style de la couche sur OL3 quand on change de style dans la liste
+                                                scope.$root.$on('layerStyleChanged', function (event, row) {
+                                                    var aLayers = oMapScope['oMap']['aTree'][1]['layers'];
+                                                    for (var i = 0; i < aLayers.length; i++) {
+                                                        if (aLayers[i]['name'] === row['name']) {
+                                                            aLayers[i]['params']['STYLES'] = row['style_selected']['Name'];
+                                                            var oParams = aLayers[i]['olLayer'].getSource().getParams();
+                                                            oParams['STYLES'] = row['style_selected']['Name'];
+                                                            aLayers[i]['olLayer'].getSource().updateParams(oParams);
+                                                        }
+                                                    }
+                                                });
                                             });
+                                        };
+                                        oFormDefinition['update']['initEvent'] = 'initOL3TestService()';
 
-                                            oFormScope['ctrl']['setFormDefinition'](oFormDefinition);
-                                            oFormScope['ctrl']['loadForm']();
-
+                                        oFormScope['ctrl']['setDefinitionName'](sFormDefinitionName);
+                                        oFormScope['ctrl']['setFormValues']({
+                                            'display': {},
+                                            'insert': {},
+                                            'update': {}
                                         });
+
+                                        oFormScope['ctrl']['setFormDefinition'](oFormDefinition);
+                                        oFormScope['ctrl']['loadForm']();
+                                    }
+                                });
                             }
                         };
                     });
-
                 });
                 // Attends la fermeture de la fenêtre modale.
                 $(oDialog).on('hide.bs.modal', function (e) {
@@ -2806,14 +2890,6 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * @return {object}
      **/
     angular.element(vitisApp.appMainDrtv).scope()['getCapabilities'] = function (sServiceUrl, oOptions) {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
-        var $http = angular.element(vitisApp.appMainDrtv).injector().get(["$http"]);
-        var $q = angular.element(vitisApp.appMainDrtv).injector().get(["$q"]);
-        var propertiesSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["propertiesSrvc"]);
-        var sessionSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["sessionSrvc"]);
-
-        //
         $log.info("getCapabilities");
         var scope = this;
         // Promise pour retourner les données du getCapabilities.
@@ -2836,90 +2912,99 @@ vitisApp.on('appMainDrtvLoaded', function () {
             sServiceUrl += "&";
         sServiceUrl += "service=wms&version=1.3.0&request=GetCapabilities&no_cache=" + new Date().getTime();
 
-        var sUrl = propertiesSrvc['proxy_url'] + '?url=' + encodeURIComponent(sServiceUrl);
+        function rhtmlspecialchars(str) {
+            if (typeof (str) == "string") {
+                str = str.replace(/&gt;/ig, ">");
+                str = str.replace(/&lt;/ig, "<");
+                str = str.replace(/&#039;/g, "'");
+                str = str.replace(/&quot;/ig, '"');
+                str = str.replace(/&amp;/ig, '&'); /* must do &amp; last */
+            }
+            return str;
+        }
 
         var runRequest = function (sServiceUrl) {
-            $http.get(sUrl)
-                    .success(function (data, status, headers, config) {
-                        var oGetCapabilities;
-                        // Si aucun résultat renvoyé : erreur.
-                        if (data == "") {
+            ajaxRequest({
+                "method": "GET",
+                "url": propertiesSrvc['proxy_url'],
+                "params": {"url": sServiceUrl},
+                "scope": scope,
+                "responseType": "text",
+                "success": function (response) {
+                    var oGetCapabilities;
+                    // Si aucun résultat renvoyé : erreur.
+                    if (response["data"] == "") {
+                        if (oOptions["showErrorMessage"]) {
+                            var oWindowOptions = {
+                                "className": "modal-danger",
+                                "message": "ERROR_CONTENT_NO_DATA_VMAP_MAP_LAYER_WMS_LAYERS"
+                            };
+                            scope["modalWindow"]("dialog", "ERROR_TITLE_GET_CAPABILITIES_VMAP_MAP_LAYER_WMS_LAYERS", oWindowOptions);
+                        }
+                    } else {
+                        // Sauve le résultat du GetCapabilities
+                        oGetCapabilities = {
+                            "xml": rhtmlspecialchars(response["data"])
+                        };
+                        // Vérification du résultat.
+                        var parser = new DOMParser();
+                        var xmlDoc = parser.parseFromString(rhtmlspecialchars(response["data"]), "text/xml");
+                        if (xmlDoc.querySelector("WMS_Capabilities") === null) {
+                            oGetCapabilities = null;
+                            if (response["data"]['status'] == 0) {
+                                if (goog.isDefAndNotNull(response["data"]['sMessage'])) {
+                                    var sErrorMessage = '<a href="' + sServiceUrl + '" target="_blank">' + sServiceUrl + '</a><br><br>';
+                                    sErrorMessage += response["data"]['sMessage'];
+                                }
+                            }
+                            if (!goog.isDefAndNotNull(sErrorMessage)) {
+                                if (goog.isDefAndNotNull(xmlDoc.querySelector("BODY"))) {
+                                    if (goog.isDefAndNotNull(xmlDoc.querySelector("BODY").textContent)) {
+                                        var sErrorMessage = xmlDoc.querySelector("BODY").textContent;
+                                    } else {
+                                        var sErrorMessage = $(xmlDoc).find('body').html();
+                                    }
+                                } else {
+                                    var sErrorMessage = $(xmlDoc).find('body').html();
+                                }
+                            }
+
+                            // Affiche l'erreur.
                             if (oOptions["showErrorMessage"]) {
                                 var oWindowOptions = {
                                     "className": "modal-danger",
-                                    "message": "ERROR_CONTENT_NO_DATA_VMAP_MAP_LAYER_WMS_LAYERS"
+                                    "message": sErrorMessage
                                 };
                                 scope["modalWindow"]("dialog", "ERROR_TITLE_GET_CAPABILITIES_VMAP_MAP_LAYER_WMS_LAYERS", oWindowOptions);
                             }
                         } else {
-                            // Sauve le résultat du GetCapabilities
-                            oGetCapabilities = {
-                                "xml": data
-                            };
-                            // Vérification du résultat.
-                            var parser = new DOMParser();
-                            var xmlDoc = parser.parseFromString(data, "text/xml");
-                            if (xmlDoc.querySelector("WMS_Capabilities") === null) {
-                                oGetCapabilities = null;
-                                if (data['status'] == 0) {
-                                    if (goog.isDefAndNotNull(data['sMessage'])) {
-                                        var sErrorMessage = '<a href="' + sServiceUrl + '" target="_blank">' + sServiceUrl + '</a><br><br>';
-                                        sErrorMessage += data['sMessage'];
-                                    }
-                                }
-                                if (!goog.isDefAndNotNull(sErrorMessage)) {
-                                    if (goog.isDefAndNotNull(xmlDoc.querySelector("BODY"))) {
-                                        if (goog.isDefAndNotNull(xmlDoc.querySelector("BODY").textContent)) {
-                                            var sErrorMessage = xmlDoc.querySelector("BODY").textContent;
-                                        } else {
-                                            var sErrorMessage = $(xmlDoc).find('body').html();
-                                        }
-                                    } else {
-                                        var sErrorMessage = $(xmlDoc).find('body').html();
-                                    }
-                                }
-
-                                // Affiche l'erreur.
-                                if (oOptions["showErrorMessage"]) {
-                                    var oWindowOptions = {
-                                        "className": "modal-danger",
-                                        "message": sErrorMessage
-                                    };
-                                    scope["modalWindow"]("dialog", "ERROR_TITLE_GET_CAPABILITIES_VMAP_MAP_LAYER_WMS_LAYERS", oWindowOptions);
-                                }
-                            } else {
-                                // Parse le xml retourné par le getCapabilities du service.
-                                var oParser = new ol.format.WMSCapabilities();
-                                oGetCapabilities["json"] = oParser.read(data);
-                            }
+                            // Parse le xml retourné par le getCapabilities du service.
+                            var oParser = new ol.format.WMSCapabilities();
+                            oGetCapabilities["json"] = oParser.read(rhtmlspecialchars(response["data"]));
                         }
-                        // Retourne les données du getCapabilities.
-                        deferred.resolve(oGetCapabilities);
-                    }).
-                    error(function (data, status, headers, config) {
-                    });
+                    }
+                    // Retourne les données du getCapabilities.
+                    deferred.resolve(oGetCapabilities);
+                }
+            });
         };
 
         // Couche privée
         if (new RegExp(/\[token\]/).test(sServiceUrl)) {
 
             // remplace la token au cas où c'est un flux privé
-            sServiceUrl = sServiceUrl.replace(/\[token\]/, sessionSrvc["token"]);
-
-            $http({
-                method: 'GET',
-                url: propertiesSrvc["web_server_name"] + '/' + propertiesSrvc["services_alias"] + '/vm4ms/wmsservices/private/MapFile',
-                params: {
-                    'token': sessionSrvc["token"],
+            sServiceUrl = sServiceUrl.replace(/\[token\]/, sha256(sessionSrvc["token"]));
+            ajaxRequest({
+                "method": "GET",
+                "url": propertiesSrvc["web_server_name"] + "/" + propertiesSrvc["services_alias"] + "/vm4ms/wmsservices/private/MapFile",
+                "params": {
                     'creation': true,
                     'type': 'prod'
+                },
+                "scope": scope,
+                "success": function (response) {
+                    runRequest(sServiceUrl);
                 }
-            }).then(function successCallback(response) {
-
-                runRequest(sServiceUrl);
-
-            }, function errorCallback(response) {
-
             });
 
         } else {
@@ -2937,15 +3022,11 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * @param {string} sParentFormDefinitionName Nom du formulaire contenant la liste ui-grid à mettre à jour.
      **/
     angular.element(vitisApp.appMainDrtv).scope()['addLayersToLayer'] = function (sParentFormDefinitionName) {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
-        var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
-        //
         $log.info("addLayersToLayer");
         var scope = this;
         var oParentGridOptions = angular.element("form[name='" + envSrvc["oFormDefinition"][sParentFormDefinitionName]["name"] + "'] .ui-grid-form-field-data").scope().$parent["gridOptions"];
         // Liste des calques sélectionnés.
-        var aSelectedRows = scope.$root["gridApi"][envSrvc["oSelectedObject"]["name"]]["selection"]["getSelectedRows"]();
+        var aSelectedRows = scope.$root["gridApi"][envSrvc["sSelectedGridOptionsName"]]["selection"]["getSelectedRows"]();
         if (aSelectedRows.length > 0) {
             var i = 0;
             // Calques déja associés.
@@ -2955,31 +3036,78 @@ vitisApp.on('appMainDrtvLoaded', function () {
             else
                 aLayersName = [];
 
+            // Options des couches
+            var oLayersOptions = envSrvc["oFormValues"][sParentFormDefinitionName]["layer_options"];
+            if (typeof (oLayersOptions) === "string") {
+                oLayersOptions = JSON.parse(oLayersOptions);
+            } else if (typeof (oLayersOptions) !== "object") {
+                oLayersOptions = {};
+            }
+            var oLayersStyles = {};
+            if (goog.isDefAndNotNull(oLayersOptions)) {
+                if (goog.isDefAndNotNull(oLayersOptions['layer_style'])) {
+                    oLayersStyles = oLayersOptions['layer_style'];
+                }
+            }
+
             // Calques sélectionnée à concaténer.          
             for (var i = aSelectedRows.length - 1; i >= 0; i--) {
                 delete aSelectedRows[i]["$$hashKey"];
                 if (aLayersName.indexOf(aSelectedRows[i]["name"]) === -1) {
-                    aLayersName.unshift(aSelectedRows[i]["name"]);
+
+                    // Ajoute la couche
+                    if (goog.isDefAndNotNull(aSelectedRows[i]["name"])) {
+                        aLayersName.unshift(aSelectedRows[i]["name"]);
+                    }
+
+                    // Ajoute son style
+                    oLayersStyles[aSelectedRows[i]["name"]] = aSelectedRows[i]["style_selected"];
+
                 } else {
                     $.notify('Calque déjà présent: ' + aSelectedRows[i]["name"], 'warning');
                     aSelectedRows.splice(i, 1);
                 }
             }
 
+            aLayersName = scope['cleanLayersArray'](aLayersName);
+
+            oLayersOptions['layer_style'] = oLayersStyles;
             // Mise à jour de la liste ui-grid (formulaire parent).
             oParentGridOptions["data"] = oParentGridOptions["data"].concat(aSelectedRows);
             oParentGridOptions["totalItems"] = oParentGridOptions["data"].length;
             // Sauve le champ "layer_list" (liste des calques sélectionnés)
             envSrvc["oFormValues"][sParentFormDefinitionName]["layer_list"] = aLayersName.join(",");
+            envSrvc["oFormValues"][sParentFormDefinitionName]["layer_options"] = JSON.stringify(oLayersOptions);
             // Supprime les lignes sélectionnées.
             var aData = [];
             scope["gridOptions"]["data"].forEach(function (oRowData) {
                 if (aSelectedRows.indexOf(oRowData) == -1)
                     aData.push(oRowData);
             });
-            scope.$root["gridApi"][envSrvc["oSelectedObject"]["name"]]["selection"]["clearSelectedRows"]();
+            scope.$root["gridApi"][envSrvc["sSelectedGridOptionsName"]]["selection"]["clearSelectedRows"]();
             scope["gridOptions"]["data"] = aData;
         }
+        scope.$root.$broadcast('addLayersToLayer');
+    };
+
+    /**
+     * Clean the layers array
+     * @param {array} aLayers
+     */
+    angular.element(vitisApp.appMainDrtv).scope()['cleanLayersArray'] = function (aLayers) {
+        // Supprime les layers vides
+        for (var i = aLayers.length - 1; i >= 0; i--) {
+            if (!goog.isString(aLayers[i])) {
+                aLayers.splice(i, 1);
+                continue;
+            }
+            if (aLayers[i].trim().length === 0) {
+                aLayers.splice(i, 1);
+                continue;
+            }
+        }
+
+        return aLayers;
     };
 
     /**
@@ -2987,10 +3115,6 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * Change l'ordre des calques d'un calque.
      **/
     angular.element(vitisApp.appMainDrtv).scope()['updateLayerLayersSorting'] = function () {
-
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
-        var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
-
         $log.info("updateLayerLayersSorting");
 
         var sParentFormDefinitionName = envSrvc["sFormDefinitionName"];
@@ -3008,6 +3132,9 @@ vitisApp.on('appMainDrtvLoaded', function () {
                     aLayersName.push(aGridData[i]['name']);
                 }
             }
+
+            aLayersName = this['cleanLayersArray'](aLayersName);
+
             // Sauve le champ "layer_list" (liste des calques sélectionnés)
             envSrvc["oFormValues"][sParentFormDefinitionName]["layer_list"] = aLayersName.join(",");
         }
@@ -3018,25 +3145,47 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * Supprime les calques sélectionnés (celles associées à la calque) dans la liste ui-grid (onglet "calques").
      **/
     angular.element(vitisApp.appMainDrtv).scope()['removeLayersOfLayer'] = function () {
-        // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
-        var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
-        //
         $log.info("removeLayersOfLayer");
         var oGridOptions = angular.element("form[name='" + envSrvc["oFormDefinition"][envSrvc["sFormDefinitionName"]]["name"] + "'] .ui-grid-form-field-data").scope().$parent["gridOptions"];
+
+        // Options des couches
+        var oLayersOptions = envSrvc["oFormValues"][envSrvc["sFormDefinitionName"]]["layer_options"];
+        if (typeof (oLayersOptions) === "string") {
+            oLayersOptions = JSON.parse(oLayersOptions);
+        } else if (typeof (oLayersOptions) !== "object") {
+            oLayersOptions = {};
+        } else {
+            oLayersOptions = {};
+        }
+        var oLayersStyles = {};
+        if (goog.isDefAndNotNull(oLayersOptions)) {
+            if (goog.isDefAndNotNull(oLayersOptions['layer_style'])) {
+                oLayersStyles = oLayersOptions['layer_style'];
+            }
+        }
+
         // Liste des calques sélectionnés.
         var aSelectedRows = oGridOptions["gridApi"]["selection"]["getSelectedRows"]();
         if (aSelectedRows.length > 0) {
             var aData = [];
             var aLayersName = [];
             oGridOptions["data"].forEach(function (oRowData) {
-                if (aSelectedRows.indexOf(oRowData) == -1) {
+                if (aSelectedRows.indexOf(oRowData) === -1) {
                     aData.push(oRowData);
                     aLayersName.unshift(oRowData["name"]);
+                } else {
+                    if (goog.isDefAndNotNull(oLayersStyles[oRowData["name"]])) {
+                        delete oLayersStyles[oRowData["name"]];
+                    }
                 }
             });
+            oLayersOptions['layer_style'] = oLayersStyles;
+
+            aLayersName = this['cleanLayersArray'](aLayersName);
+
             // Sauve le champ "layer_list" (liste des calques sélectionnés)
             envSrvc["oFormValues"][envSrvc["sFormDefinitionName"]]["layer_list"] = aLayersName.join(",");
+            envSrvc["oFormValues"][envSrvc["sFormDefinitionName"]]["layer_options"] = JSON.stringify(oLayersOptions);
             // Mise à jour de la liste ui-grid.
             oGridOptions["gridApi"]["selection"]["clearSelectedRows"]();
             oGridOptions["data"] = aData;
@@ -3049,7 +3198,6 @@ vitisApp.on('appMainDrtvLoaded', function () {
      */
     angular.element(vitisApp.appMainDrtv).scope()['loadVmapConfig'] = function () {
         // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
         var envSrvc = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["envSrvc"]);
         var propertiesSrvc = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["propertiesSrvc"]);
         //
@@ -3072,10 +3220,9 @@ vitisApp.on('appMainDrtvLoaded', function () {
      */
     angular.element(vitisApp.appMainDrtv).scope()['loadStudioVmap'] = function (type) {
         // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
         var envSrvc = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["envSrvc"]);
         var propertiesSrvc = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["propertiesSrvc"]);
-        var sessionSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["sessionSrvc"]);
+
         //
         $log.info("loadStudioVmap");
 
@@ -3133,9 +3280,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * Hide the section "Layer form" if the value is_filtered is not true
      */
     angular.element(vitisApp.appMainDrtv).scope()['showStudioIfLayerIsFiltered'] = function () {
-
         // Injection des services.
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
         var envSrvc = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["envSrvc"]);
         var sFormName = 'vmap_admin_map_vmap_layers_general_update_form';
 
@@ -3160,9 +3305,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * Show the import modal
      */
     angular.element(vitisApp.appMainDrtv).scope()['importBusinessObject'] = function () {
-
         var $compile = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["$compile"]);
-        var $translate = angular.element(vitisApp.appMainDrtv).injector().get(["$translate"]);
         var $scope = this;
         var bHavePrivileges = false;
 
@@ -3202,11 +3345,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * Check if the used schema is one of the unrecommended
      */
     angular.element(vitisApp.appMainDrtv).scope()['checkBoSchema'] = function () {
-
         var $q = angular.element(vitisApp.appHtmlFormDrtv).injector().get(["$q"]);
-        var $log = angular.element(vitisApp.appMainDrtv).injector().get(["$log"]);
-        var envSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["envSrvc"]);
-        var $translate = angular.element(vitisApp.appMainDrtv).injector().get(["$translate"]);
 
         $log.info("checkBoSchema");
 
@@ -3243,7 +3382,6 @@ vitisApp.on('appMainDrtvLoaded', function () {
 
         return deferred.promise;
     };
-
 
     /**
      * appBusinessObjectEventDescriptionColumn directive.
@@ -3294,4 +3432,71 @@ vitisApp.on('appMainDrtvLoaded', function () {
         }
     };
     vitisApp["compileProvider"].directive('appBusinessObjectEventDescriptionColumn', vitisApp.appBusinessObjectEventDescriptionColumnDrtv);
+
+    /**
+     * checkVmapLayerWmsLayers function.
+     * Vérification des couches WMS associées à un calque vMap.
+     **/
+    angular.element(vitisApp.appMainDrtv).scope()['checkVmapLayerWmsLayers'] = function () {
+        // Injection des services.
+        var $translate = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["$translate"]);
+        //
+        $log.info("checkVmapLayerWmsLayers");
+        var scope = this;
+        var sServiceUrl = envSrvc["oFormValues"][envSrvc["sFormDefinitionName"]]["service_url"];
+        sServiceUrl = sServiceUrl.replace("[token]", sha256(sessionSrvc["token"]));
+        sServiceUrl = sServiceUrl.replace("[ms_cgi_url]", propertiesSrvc["ms_cgi_url"]);
+        // Calques du service wms.
+        scope.$root["getCapabilities"](sServiceUrl).then(function (oGetCapabilities) {
+            if (goog.isDefAndNotNull(oGetCapabilities)) {
+                if (goog.isDefAndNotNull(oGetCapabilities['xml']) && goog.isDefAndNotNull(oGetCapabilities['json'])) {
+                    var aLayers = [];
+                    /**
+                     * Browse all the <layer> tags to fill aLayers
+                     * @param {object} layer node
+                     */
+                    var searchLayers = function (layer) {
+                        if (layer['Layer'] === undefined)
+                            aLayers.push(layer["Name"]);
+                        else
+                            for (var i = 0; i < layer['Layer'].length; i++) {
+                                searchLayers(layer['Layer'][i]);
+                            }
+                    };
+
+                    if (typeof (oGetCapabilities) != "undefined") {
+                        // Liste des calques.
+                        var aSelectedLayers = [];
+                        var sSelectedLayers = envSrvc["oFormValues"][envSrvc["sFormDefinitionName"]]["layer_list"];
+                        if (sSelectedLayers != null)
+                            aSelectedLayers = sSelectedLayers.split(",");
+                        var aLayersNotFound = [];
+                        searchLayers(oGetCapabilities["json"]['Capability']['Layer']);
+                        for (var i = 0; i < aSelectedLayers.length; i++) {
+                            // Exclusion des calques déja associés à la carte.
+                            if (aLayers.indexOf(aSelectedLayers[i]) == -1) {
+                                aLayersNotFound.push(aSelectedLayers[i]);
+                            }
+                        }
+
+                        // Affichage du message de succés ou d'erreur.
+                        if (aLayersNotFound.length == 0) {
+                            $translate("FORM_BTN_CHECK_LAYERS_SUCCESSFUL_VMAP_MAP_LAYER").then(function (sTranslation) {
+                                $.notify(sTranslation, "success");
+                            });
+                        } else {
+                            $translate("FORM_BTN_CHECK_LAYERS_ERROR_MESSAGE_VMAP_MAP_LAYER").then(function (sTranslation) {
+                                var oOptions = {
+                                    "className": "modal-danger",
+                                    "message": sTranslation + "<br>- " + aLayersNotFound.join("<br>- "),
+                                    "html": true
+                                };
+                                scope.$root["modalWindow"]("dialog", "FORM_BTN_CHECK_LAYERS_ERROR_TITLE_VMAP_MAP_LAYER", oOptions);
+                            });
+                        }
+                    }
+                }
+            }
+        });
+    };
 });

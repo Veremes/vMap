@@ -30,6 +30,7 @@
     "LIST_DELETE_CONFIRM": "Delete the selected items?",
     "LIST_DELETE_ERROR": "Error while deleting the recording(s).",
     "LIST_DELETE_OK": "Items deleted correctly",
+    "LIST_DELETE_NO_SELECTION": "Please select at least one record to delete.",
     "LIST_ADD_OK": "Item added correctly",
     "LIST_EDIT_OK": "Item added correctly",
     "LIST_SEARCH_OK": "Filter applicated correctly",
@@ -62,8 +63,10 @@
     "": "",
     "EXPIRED_TOKEN_ERROR_TITLE": "Session timed out",
     "EXPIRED_TOKEN_ERROR": "Your session has expired. You will be redirected to the login page.",
+    "EXPIRED_TOKEN_NO_DISCONNECT_ERROR": "Your session has expired",
     "INVALID_TOKEN_ERROR_TITLE": "Invalid Session",
     "INVALID_TOKEN_ERROR": "Your session is invalid. You will be redirected to the login page.",
+    "INVALID_TOKEN_NO_DISCONNECT_ERROR": "Your session is invalid.",
     "": "",
     "NON-BREAKING-SPACE": "",
     "": "",
@@ -77,5 +80,9 @@
     "": "",
     "INACCESSIBLE_WEBSOCKET": "Websocket inaccessible",
     "": "",
-    "INSUFFICIENT_PRIVILEGES": "Permission denied: you don't have rights to do this"
+    "INSUFFICIENT_PRIVILEGES": "Permission denied: you don't have rights to do this",
+    "FORM_BODY_EXPORT_FILENAME" : "Filename :",
+    "FORM_BUTTON_EXPORT_FILENAME": "Export ",
+    "FORM_EXPORT_TITLE": "Export ",
+    "FORM-BODY-NB-LINE-EXPORT": "Number of line to export (if 0 export all data):"
 }

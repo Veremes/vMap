@@ -10,7 +10,6 @@ goog.provide('nsVmap.Map');
 
 goog.require('oVmap');
 
-goog.require('nsVmap.olFunctions');
 goog.require('ol.Map');
 goog.require('ol.View');
 goog.require('ol.layer.Tile');
@@ -170,7 +169,7 @@ nsVmap.Map = function () {
      * @private
      */
     this.vmapEvents_ = [];
-    
+
     /**
      * Contient les évènements ajoutés sur la carte par la méthode addDrawInteraction ou setDrawInteraction
      * @type {array}
@@ -826,6 +825,117 @@ nsVmap.Map.prototype.refresh = function () {
     this.oOpenLayersMap_.refreshWithTimestamp();
 };
 
+/**
+ * Locate the passed features
+ * @param {array<ol.Feature>} aFeatures
+ * @param {boolean} removeOldLocation true to remove the features before adding the new one
+ * @param {boolean} zoom
+ * @export
+ */
+nsVmap.Map.prototype.locateFeatures = function (aFeatures, removeOldLocation, zoom) {
+    oVmap.log('nsVmap.Map.prototype.locateFeatures');
+
+    zoom = goog.isDefAndNotNull(zoom) ? zoom : true;
+    removeOldLocation = goog.isDefAndNotNull(removeOldLocation) ? removeOldLocation : true;
+
+    if (aFeatures.length === 0)
+        return 0;
+
+    if (zoom) {
+        this.zoomOnFeatures(aFeatures);
+    }
+
+    // vide les feature si besoin
+    if (removeOldLocation) {
+        oVmap.getMap().getLocationOverlayFeatures().clear();
+    }
+
+    // Ajoute les features et les passe au dessus
+    for (var i = aFeatures.length - 1; i >= 0; i--) {
+        if (goog.array.contains(oVmap.getMap().getLocationOverlay().getSource().getFeatures(), aFeatures[i]))
+            oVmap.getMap().getLocationOverlay().getSource().removeFeature(aFeatures[i]);
+        oVmap.getMap().getLocationOverlay().getSource().addFeature(aFeatures[i]);
+    }
+};
+
+/**
+ * Select the passed features
+ * @param {array<ol.Feature>} aFeatures
+ * @param {boolean} removeOldSelection true to remove the features before adding the new one
+ * @param {boolean} zoom
+ * @export
+ */
+nsVmap.Map.prototype.selectFeatures = function (aFeatures, removeOldSelection, zoom) {
+    oVmap.log('nsVmap.Map.prototype.selectFeatures');
+
+    zoom = goog.isDefAndNotNull(zoom) ? zoom : true;
+    removeOldSelection = goog.isDefAndNotNull(removeOldSelection) ? removeOldSelection : true;
+
+    if (aFeatures.length === 0)
+        return 0;
+
+    if (zoom) {
+        this.zoomOnFeatures(aFeatures);
+    }
+
+    // vide les feature si besoin
+    if (removeOldSelection) {
+        oVmap.getMap().getSelectionOverlayFeatures().clear();
+    }
+
+    // Ajoute les features et les passe au dessus
+    for (var i = aFeatures.length - 1; i >= 0; i--) {
+        if (goog.array.contains(oVmap.getMap().getSelectionOverlay().getSource().getFeatures(), aFeatures[i]))
+            oVmap.getMap().getSelectionOverlay().getSource().removeFeature(aFeatures[i]);
+        oVmap.getMap().getSelectionOverlay().getSource().addFeature(aFeatures[i]);
+    }
+};
+
+/**
+ * Zoom on the passed features
+ * @param {array<ol.Feature>} aFeatures
+ * @export
+ */
+nsVmap.Map.prototype.zoomOnFeatures = function (aFeatures) {
+    oVmap.log('nsVmap.Map.prototype.zoomOnFeatures');
+
+    if (aFeatures.length === 0)
+        return 0;
+
+    var totalExtent = [];
+
+    totalExtent = jQuery.extend(true, [], aFeatures[0].getGeometry().getExtent());
+    for (var i = aFeatures.length - 1; i >= 0; i--) {
+        var featureExtent = aFeatures[i].getGeometry().getExtent();
+        if (featureExtent[0] < totalExtent[0])
+            totalExtent[0] = featureExtent[0];
+        if (featureExtent[1] < totalExtent[1])
+            totalExtent[1] = featureExtent[1];
+        if (featureExtent[2] > totalExtent[2])
+            totalExtent[2] = featureExtent[2];
+        if (featureExtent[3] > totalExtent[3])
+            totalExtent[3] = featureExtent[3];
+        delete featureExtent;
+    }
+
+    // En cas de simple point par exemple
+    if (totalExtent[0] === totalExtent[2]) {
+        totalExtent[0] = totalExtent[0] - totalExtent[0] * 0.0001;
+        totalExtent[2] = totalExtent[2] + totalExtent[2] * 0.0001;
+    }
+    if (totalExtent[1] === totalExtent[3]) {
+        totalExtent[1] = totalExtent[1] - totalExtent[1] * 0.0001;
+        totalExtent[3] = totalExtent[3] + totalExtent[3] * 0.0001;
+    }
+
+    setTimeout(function () {
+        // Zoom sur l'étendue totale
+        var olView = oVmap.getMap().getOLMap().getView();
+        olView.fit(totalExtent, {
+            padding: [50, 50, 50, 50]
+        });
+    });
+};
 
 /************************************************
  ---------- DIRECTIVES AND CONTROLLERS -----------
@@ -860,14 +970,14 @@ nsVmap.Map.prototype.mapDirective = function () {
  * @ngInject
  * @constructor
  */
-nsVmap.Map.prototype.mapController = function ($scope, $window, $element, $http) {
+nsVmap.Map.prototype.mapController = function ($scope, $window, $element) {
     oVmap.log("nsVmap.Map.prototype.mapController");
     var this_ = this;
-
+    
     /**
      * @private
      */
-    this.$http_ = $http;
+    this.$scope_ = $scope;
 
     /**
      * @type {object}
@@ -933,13 +1043,30 @@ nsVmap.Map.prototype.mapController = function ($scope, $window, $element, $http)
         var tmpChangedLayers = angular.copy(iChangedLayers);
         setTimeout(function () {
             if (iChangedLayers === tmpChangedLayers) {
-                oVmap.log('oVmap event: layersChanged');
                 oVmap['scope'].$broadcast('layersChanged');
             }
-        }, 500);
+        }, 200);
+    });
+
+    var bCounter = 0;
+    oVmap['scope'].$on('layersChanged', function () {
+        var changeVisibleFunction = function () {
+            bCounter++;
+            var tempCounter = angular.copy(bCounter);
+            setTimeout(function () {
+                if (bCounter === tempCounter) {
+                    oVmap['scope'].$broadcast('layersChanged');
+                }
+            }, 200);
+        };
+        var aLayers = this_['map'].getLayers().getArray();
+        for (var i = 0; i < aLayers.length; i++) {
+            aLayers[i].on('change:visible', changeVisibleFunction, this_);
+        }
     });
 
     oVmap['scope'].$on('layersChanged', function () {
+        oVmap.log('oVmap event: layersChanged');
         this_.emptyLoadErrorsEvents();
         this_.listenLoadErrors();
     });
@@ -958,7 +1085,8 @@ nsVmap.Map.prototype.mapController.prototype.emptyLoadErrorsEvents = function ()
     oVmap.log('nsVmap.Map.prototype.emptyLoadErrorsEvents');
 
     for (var i = 0; i < this.loadErrorEventsContainer_.length; i++) {
-        this.loadErrorEventsContainer_[i].layer.getSource().unByKey(this.loadErrorEventsContainer_[i].event);
+//        this.loadErrorEventsContainer_[i].layer.getSource().unByKey(this.loadErrorEventsContainer_[i].event);
+        ol.Observable.unByKey(this.loadErrorEventsContainer_[i].event);
     }
 };
 
@@ -1015,24 +1143,25 @@ nsVmap.Map.prototype.mapController.prototype.listenLoadErrors = function () {
 nsVmap.Map.prototype.mapController.prototype.displayLoadErrors = function (sSrc) {
     oVmap.log('nsVmap.Map.prototype.mapController.prototype.displayLoadErrors');
 
-    this.$http_({
-        method: 'GET',
-        url: sSrc
-    }).then(function successCallback(response) {
-
-        var error = jQuery.parseXML(response['data']);
-        if (goog.isDefAndNotNull(error)) {
-            console.error('Layer server error: ', error);
-        } else {
-            if (goog.isDefAndNotNull(response['data']) && response['data'] !== "") {
-                console.error('Layer server error: ', response['data']);
+    ajaxRequest({
+        'method': 'GET',
+        'url': sSrc,
+        'headers': {
+            'Accept': 'application/x-vm-json'
+        },
+        'scope': this.$scope_,
+        'success': function (response) {
+            var error = jQuery.parseXML(response['data']);
+            if (goog.isDefAndNotNull(error)) {
+                console.error('Layer server error: ', error);
             } else {
-                console.error('Layer server error: ', response);
+                if (goog.isDefAndNotNull(response['data']) && response['data'] !== "") {
+                    console.error('Layer server error: ', response['data']);
+                } else {
+                    console.error('Layer server error: ', response);
+                }
             }
         }
-
-    }, function errorCallback(response) {
-        console.error(response);
     });
 };
 

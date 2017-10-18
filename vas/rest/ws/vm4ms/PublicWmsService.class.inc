@@ -90,7 +90,7 @@ class PublicWmsService extends Vmap4MapServer {
         // Récupère l'id du service vMap
         $aVmapGetServiceValues = Array(
             'token' => $this->aValues['token'],
-            'filter' => "name='vm4ms_" . $this->aValues['my_vitis_id'] . "'",
+            'filter' => '{"relation": "AND", "operators": [{"column": "name", "compare_operator": "=", "value": vm4ms_' . $this->aValues['my_vitis_id'] . '}]}',
             'vitis_version' => $this->aValues['vitis_version'],
             'id' => 'services',
             'output' => $this->aValues['output'],
@@ -122,7 +122,7 @@ class PublicWmsService extends Vmap4MapServer {
         // Récupère l'id du service vMap
         $aGetLayersValues = Array(
             'token' => $this->aValues['token'],
-            'filter' => "wmsservice_id='" . $this->aValues['my_vitis_id'] . "'",
+            'filter' => '{"relation": "AND", "operators": [{"column": "wmsservice_id", "compare_operator": "=", "value": ' . $this->aValues['my_vitis_id'] . '}]}',
             'vitis_version' => $this->aValues['vitis_version'],
             'id' => 'publicwmsservicelayers',
             'output' => $this->aValues['output'],

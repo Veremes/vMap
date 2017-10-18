@@ -1,9 +1,10 @@
 goog.provide('ol.VectorTile');
 
+goog.require('ol');
 goog.require('ol.Tile');
 goog.require('ol.TileState');
 goog.require('ol.dom');
-goog.require('ol.proj.Projection');
+goog.require('ol.featureloader');
 
 
 /**
@@ -17,13 +18,13 @@ goog.require('ol.proj.Projection');
  */
 ol.VectorTile = function(tileCoord, state, src, format, tileLoadFunction) {
 
-  goog.base(this, tileCoord, state);
+  ol.Tile.call(this, tileCoord, state);
 
   /**
    * @private
    * @type {CanvasRenderingContext2D}
    */
-  this.context_ = ol.dom.createCanvasContext2D();
+  this.context_ = null;
 
   /**
    * @private
@@ -59,8 +60,7 @@ ol.VectorTile = function(tileCoord, state, src, format, tileLoadFunction) {
     renderedRenderOrder: null,
     renderedRevision: -1,
     renderedTileRevision: -1,
-    replayGroup: null,
-    skippedFeatures: []
+    replayGroup: null
   };
 
   /**
@@ -76,19 +76,22 @@ ol.VectorTile = function(tileCoord, state, src, format, tileLoadFunction) {
   this.url_ = src;
 
 };
-goog.inherits(ol.VectorTile, ol.Tile);
+ol.inherits(ol.VectorTile, ol.Tile);
 
 
 /**
  * @return {CanvasRenderingContext2D} The rendering context.
  */
 ol.VectorTile.prototype.getContext = function() {
+  if (!this.context_) {
+    this.context_ = ol.dom.createCanvasContext2D();
+  }
   return this.context_;
 };
 
 
 /**
- * @inheritDoc
+ * @override
  */
 ol.VectorTile.prototype.getImage = function() {
   return this.replayState_.renderedTileRevision == -1 ?
@@ -139,7 +142,7 @@ ol.VectorTile.prototype.getProjection = function() {
 
 
 /**
- * Load the tile.
+ * @inheritDoc
  */
 ol.VectorTile.prototype.load = function() {
   if (this.state == ol.TileState.IDLE) {
@@ -147,6 +150,25 @@ ol.VectorTile.prototype.load = function() {
     this.tileLoadFunction_(this, this.url_);
     this.loader_(null, NaN, null);
   }
+};
+
+
+/**
+ * Handler for successful tile load.
+ * @param {Array.<ol.Feature>} features The loaded features.
+ * @param {ol.proj.Projection} dataProjection Data projection.
+ */
+ol.VectorTile.prototype.onLoad_ = function(features, dataProjection) {
+  this.setProjection(dataProjection);
+  this.setFeatures(features);
+};
+
+
+/**
+ * Handler for tile load errors.
+ */
+ol.VectorTile.prototype.onError_ = function() {
+  this.setState(ol.TileState.ERROR);
 };
 
 
@@ -186,4 +208,17 @@ ol.VectorTile.prototype.setState = function(tileState) {
  */
 ol.VectorTile.prototype.setLoader = function(loader) {
   this.loader_ = loader;
+};
+
+
+/**
+ * Sets the loader for a tile.
+ * @param {ol.VectorTile} tile Vector tile.
+ * @param {string} url URL.
+ */
+ol.VectorTile.defaultLoadFunction = function(tile, url) {
+  var loader = ol.featureloader.loadFeaturesXhr(
+      url, tile.getFormat(), tile.onLoad_.bind(tile), tile.onError_.bind(tile));
+
+  tile.setLoader(loader);
 };

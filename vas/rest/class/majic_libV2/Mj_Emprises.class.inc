@@ -4,7 +4,7 @@
 * \file Mj_Emprises.class.inc
 * \brief Mj_Emprises.class.inc \n \n Ce fichier contient la classe php Mj_Emprises
 * 
-* Cette classe permet de s�lectionner les attributs n�cessaires afin de traiter la partie parcelle. 
+* Cette classe permet de sélectionner les attributs nécessaires afin de traiter la partie parcelle. 
 *
 * \author Nicolas Chazeau
 * \author Olivier Gayte <olivier.gayte@veremes.com>
@@ -12,9 +12,9 @@
 
 /**
 * \class Mj_Emprises
-* \brief Mj_Emprises Class \n \n Mj_Emprises est une classe PHP qui h�rite de la classe Mj_Parcelle.
+* \brief Mj_Emprises Class \n \n Mj_Emprises est une classe PHP qui hérite de la classe Mj_Parcelle.
 *
-* Cette classe permet de s�lectionner les attributs n�cessaires afin de traiter la partie Emprises. 
+* Cette classe permet de sélectionner les attributs nécessaires afin de traiter la partie Emprises. 
 *
 * \author Nicolas Chazeau
 * \author Olivier Gayte <olivier.gayte@veremes.com>
@@ -26,17 +26,17 @@ require_once ("Mj_Emprise.class.inc");
 class Mj_Emprises extends Mj {
 
 	/**
-	* Cette m�thode m�tier permet de r�cup�rer les informations sur les couches intersect�es par la surface de la parcelle int�rrog�e.
+	* Cette méthode métier permet de récupérer les informations sur les couches intersectées par la surface de la parcelle intérrogée.
 	* \param $oCadastre Objet classe Cadastre.
-	* \param $sIdPar Identifiant de la parcelle s�lectionn�e.
-	* \param $sView Vue Postgis � interroger.
-	* \param $iTolerance Valeur minimum de surface intersect� � partir de laquelle le contenu d'un enregistrement est affich�.
-	* \param $aField Tableau des noms de champs associ�es � la vue utilis�e.
-	* \param $sLayerType Type de g�om�trie contenue dans la couche parcelle de r�f�rence.
-	* \param $sInclude Fichier de rendu (*.vhtml) � afficher en cas d'erreur.
-	* \param $sType (Facultatif) Param�tre signifiant si on veut un tableau HTML (par d�faut) ou aucune mise en forme en sortie (valeurs possibles : HTML, TEXT).
+	* \param $sIdPar Identifiant de la parcelle sélectionnée.
+	* \param $sView Vue Postgis à interroger.
+	* \param $iTolerance Valeur minimum de surface intersecté à partir de laquelle le contenu d'un enregistrement est affiché.
+	* \param $aField Tableau des noms de champs associées à la vue utilisée.
+	* \param $sLayerType Type de géométrie contenue dans la couche parcelle de référence.
+	* \param $sInclude Fichier de rendu (*.vhtml) à afficher en cas d'erreur.
+	* \param $sType (Facultatif) Paramètre signifiant si on veut un tableau HTML (par défaut) ou aucune mise en forme en sortie (valeurs possibles : HTML, TEXT).
 	* \private
-	* \return Un tableau HTML sous la forme d'une cha�ne de caract�res.
+	* \return Un tableau HTML sous la forme d'une chaîne de caractères.
 	*/
 
 	/**
@@ -85,8 +85,8 @@ class Mj_Emprises extends Mj {
 		$this->aObjects=$this->aEmprisesParcellesSuf;
 	}
 	/*
-	* R�cup�re l'emprise totale d'un ensemble d'emprise (bati ou pos ou servitude etc)
-	* \return D�cimal l'emprise totale
+	* Récupére l'emprise totale d'un ensemble d'emprise (bati ou pos ou servitude etc)
+	* \return décimal l'emprise totale
 	*/
 	function getEmpriseTotale() {
 		$dEmpriseTotale = 0;
@@ -105,8 +105,8 @@ class Mj_Emprises extends Mj {
 	}
 
 	/**
-	* Cette m�thode permet de construire un tableau correspondant au relev� de propri�t�.
-	* \return Retourne un tableau associatif correspondant au relev� de propri�t�.
+	* Cette méthode permet de construire un tableau correspondant au relevé de propriété.
+	* \return Retourne un tableau associatif correspondant au relevé de propriété.
 	*/
 	function getExportFields(){
 		$aExportFields=array();

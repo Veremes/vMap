@@ -122,7 +122,7 @@ class DescriptionParcelles extends Cadastre {
      */
     function GET() {
 		$this->aValues['filter'] = str_replace("id_par", "ID_PAR", $this->aValues['filter']);
-        $aReturn = $this->genericGet('public', 'v_non_bati_a10_descr_parcelle', 'ID_PAR');
+        $aReturn = $this->genericGet('public', $this->aProperties['cadastre']['views']['description_parcelle'], 'ID_PAR');
         return $aReturn['sMessage'];
     }
     

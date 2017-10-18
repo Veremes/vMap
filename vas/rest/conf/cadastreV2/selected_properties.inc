@@ -5,6 +5,7 @@ $aAdminFields = Array(
     'schema_majic',
     'cadastre.selection_limit',
     'cadastre.rp.rp_url',
+    'cadastre.selection_buffer',
     'cadastre.database_projection',
     'cadastre.descr_parcel.intersect.*',
     'cadastre.fiche_urb.*',
@@ -14,6 +15,7 @@ $aAdminFields = Array(
 $aUserFields = Array(
     'cadastre.selection_limit',
     'cadastre.rp.rp_url',
+    'cadastre.selection_buffer',
     'cadastre.database_projection',
     'cadastre.descr_parcel.intersect.*',
     'cadastre.fiche_urb.*',

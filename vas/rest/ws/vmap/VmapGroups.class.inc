@@ -112,10 +112,13 @@ class VmapGroups extends Vmap {
         if (!empty($this->aValues['maps'])) {
             $aMaps = explode('|', $this->aValues['maps']);
             foreach ($aMaps as $iMapId) {
-                $sSql = str_replace('[map_id]', $iMapId, $aSql['insertGroupMaps']);
-                $sSql = str_replace('[group_id]', $this->aValues["my_vitis_id"], $sSql);
-                $sSql = str_replace('[sSchemaVmap]', $this->aProperties['schema_vmap'], $sSql);
-                $resultat = $this->oConnection->oBd->execute($sSql);
+                $sSql = $aSql['insertGroupMaps'];
+                $aSQLParams = array(
+                    'sSchemaVmap' => array('value' => $this->aProperties['schema_vmap'], 'type' => 'column_name'),
+                    'group_id' => array('value' => $this->aValues["my_vitis_id"], 'type' => 'number'),
+                    'map_id' => array('value' => $iMapId, 'type' => 'number')
+                );
+                $resultat = $this->oConnection->oBd->executeWithParams($sSql, $aSQLParams);
                 if ($this->oConnection->oBd->enErreur()) {
                     $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                     $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
@@ -129,11 +132,14 @@ class VmapGroups extends Vmap {
         // Modèles d'impression à rattacher au groupe ?
         if (!empty($this->aValues['print_templates'])) {
             $aPrintTemplates = explode('|', $this->aValues['print_templates']);
-            foreach ($aPrintTemplates as $iPrintTemplateId) {
-                $sSql = str_replace('[printtemplate_id]', $iPrintTemplateId, $aSql['insertGroupPrintTemplates']);
-                $sSql = str_replace('[group_id]', $this->aValues["my_vitis_id"], $sSql);
-                $sSql = str_replace('[sSchemaVmap]', $this->aProperties['schema_vmap'], $sSql);
-                $resultat = $this->oConnection->oBd->execute($sSql);
+            foreach ($aPrintTemplates as $iPrintTemplateId) {                
+                $sSql = $aSql['insertGroupPrintTemplates'];
+                $aSQLParams = array(
+                    'sSchemaVmap' => array('value' => $this->aProperties['schema_vmap'], 'type' => 'column_name'),
+                    'group_id' => array('value' => $this->aValues["my_vitis_id"], 'type' => 'number'),
+                    'printtemplate_id' => array('value' => $iPrintTemplateId, 'type' => 'number')
+                );
+                $resultat = $this->oConnection->oBd->executeWithParams($sSql, $aSQLParams);
                 if ($this->oConnection->oBd->enErreur()) {
                     $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                     $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());

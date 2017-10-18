@@ -83,7 +83,7 @@
                         {{::ctrl.text.ManageTabs}}
                     </a>
                 </li>
-                <li ng-show="$parent.jsonOutput[$parent.selected_form_type].wab !== undefined">
+                <li ng-show="wabStates.length > 0">
                     <a title="{{::ctrl.text.ManageWab}}"
                        href="javascript:void(0);"
                        ng-click="$parent.ctrl.showWabManagerModal()">
@@ -219,6 +219,16 @@
                     <h4 class="modal-title">{{::ctrl.text.Form.SuggestedFields}}</h4>
                 </div>
                 <div class="modal-body" style="height:calc(100% - 100px);overflow: auto;">
+                    <!--Sélectionner tous-->
+                    <div class="checkbox checkbox-info margin-2 col-xs-12">
+                        <input id="aSuggestedTableFields_selectAll" 
+                               type="checkbox" 
+                               style="cursor:pointer; position: absolute"
+                               ng-checked="ctrl.suggestColumnsAreAllFieldsSelected()"
+                               ng-click="ctrl.suggestColumnsAreAllFieldsSelected() ? ctrl.suggestColumnsUnselectAllFields() : ctrl.suggestColumnsSelectAllFields()">
+                        <label for="aSuggestedTableFields_selectAll" style="cursor:pointer">{{::ctrl.text.Form.SuggestedFieldsSelectAll}}</label>
+                    </div>
+                    <!--Liste-->
                     <div ng-repeat="node in ctrl.aSuggestedTableFields">
                         <div class="checkbox checkbox-info margin-2 col-xs-6">
                             <input id="aSuggestedTableFields_{{$index}}" 

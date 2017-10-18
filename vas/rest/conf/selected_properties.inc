@@ -20,6 +20,7 @@ $aAdminFields = Array(
     'cookie_lifetime',
     'max_upload_file_size',
     'max_execution_time',
+    'max_request_time',
     'minimum_refresh_period',
     'refresh_period',
     'forbidden_extension',
@@ -57,7 +58,10 @@ $aAdminFields = Array(
     'dir_export',
     'url_export',
     'ws_data_dir',
-    'sevenzip_root_dir');
+    'sevenzip_root_dir',
+    'sign_up',
+    'password_forgotten',
+    'private_captcha_key');
 $aUserFields = Array(
     'websocket_alias',
     'web_server_name',
@@ -65,6 +69,7 @@ $aUserFields = Array(
     'cookie_lifetime',
     'max_upload_file_size',
     'max_execution_time',
+    'max_request_time',
     'minimum_refresh_period',
     'refresh_period',
     'forbidden_extension',
@@ -80,6 +85,9 @@ $aUserFields = Array(
     'page_encoding',
     'convert_utf8',
     'url_export',
+    'sign_up',
+    'password_forgotten',
+    'private_captcha_key'
 );
 $properties['aAdminFields'] = array_merge($properties['aAdminFields'], $aAdminFields);
 $properties['aUserFields'] = array_merge($properties['aUserFields'], $aUserFields);

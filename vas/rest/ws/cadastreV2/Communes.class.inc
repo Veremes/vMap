@@ -1,23 +1,23 @@
 <?php
+
 /**
-* \file Communes.class.inc
-* \class Communes
-*
-* \author Armand Bahi <armand.bahi@veremes.com>.
-*
-* \brief This file contains the Communes php class
-*
-* This class defines Rest Api to Vmap Communes
-* 
-*/
+ * \file Communes.class.inc
+ * \class Communes
+ *
+ * \author Armand Bahi <armand.bahi@veremes.com>.
+ *
+ * \brief This file contains the Communes php class
+ *
+ * This class defines Rest Api to Vmap Communes
+ * 
+ */
 require_once 'Cadastre.class.inc';
 require_once 'Commune.class.inc';
 require_once __DIR__ . '/../../class/vitis_lib/Connection.class.inc';
 require_once __DIR__ . '/../../class/vmlib/BdDataAccess.inc';
 
 class Communes extends Cadastre {
-    
-     /**
+    /**
      * @SWG\Definition(
      *   definition="/communes",
      *   allOf={
@@ -29,6 +29,7 @@ class Communes extends Cadastre {
      *   description="Operations about Communes"
      * )
      */
+
     /**
      * construct
      * @param type $aPath url of the request
@@ -40,9 +41,9 @@ class Communes extends Cadastre {
         $this->aPath = $aPath;
         $this->aProperties = $properties;
         $this->oConnection = new Connection($this->aValues, $this->aProperties);
-		$this->aSelectedFields = Array("id_com", " substring (id_com, 3, 3) as code_com","nom", "geom");
+        $this->aSelectedFields = Array("id_com", " substring (id_com, 3, 3) as code_com", "nom", "geom");
     }
-    
+
     /**
      * @SWG\Get(path="/communes",
      *   tags={"Commune"},
@@ -77,7 +78,7 @@ class Communes extends Cadastre {
      *     description="number of element",
      *     required=false,
      *     type="integer",
-	 *     default="4",
+     *     default="4",
      *     format="int32"
      *   ),
      * @SWG\Parameter(
@@ -116,14 +117,16 @@ class Communes extends Cadastre {
      *     )
      *  )
      */
+
     /**
      * get Communes
      * @return  Communes
      */
     function GET() {
-        $aReturn = $this->genericGet($this->aProperties['schema_cadastre'], 'v_vmap_commune', 'id_com');
+        $aReturn = $this->genericGet($this->aProperties['schema_cadastre'], $this->aProperties['cadastre']['views']['commune'], 'id_com');
         return $aReturn['sMessage'];
     }
-    
+
 }
+
 ?>

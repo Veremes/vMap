@@ -78,8 +78,11 @@ var oApplicationFiles = {
             'javascript/externs/jquery/plugins/bootstrap-colorpicker/bootstrap-colorpicker.min.js',
             'javascript/externs/jquery/plugins/bootstrap-confirmation/bootstrap-confirmation.min.js',
             'javascript/externs/jquery/plugins/bootstrap-datetimepicker/bootstrap-datetimepicker.min.js',
-            'javascript/externs/viewer/viewer.min.js'
+            'javascript/externs/viewer/viewer.min.js',
+            'javascript/externs/alasql/alasql.min.js',
+            'javascript/externs/alasql/xlsx.core.min.js'
+            
         ]
     },
-    'vitisModuleDependencies': ['vmap', 'ui.codemirror', 'ui.tinymce', 'vfb', 'ui.grid.draggable-rows']
+    'vitisModuleDependencies': ['vmap', 'ui.codemirror', 'ui.tinymce', 'vfb', 'ui.grid.draggable-rows' ,'ui.grid.exporter']
 };

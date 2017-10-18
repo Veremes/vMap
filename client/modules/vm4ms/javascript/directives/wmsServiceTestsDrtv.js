@@ -22,6 +22,7 @@ vitisApp.appWmsServiceTestsDrtv = function () {
             var oGetCapabilitiesCmEditor = CodeMirror["fromTextArea"](document.getElementById("wms_service_tests_get_capabilities_textarea"), {
                 "lineNumbers": false,
                 "mode": "xml",
+                "readOnly": "true",
                 "indentUnit": 4
             });
             scope["aWmsServiceTestTabs"]["get_capabilities"]["oCodeMirrorEditor"] = oGetCapabilitiesCmEditor;

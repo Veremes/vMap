@@ -121,7 +121,7 @@ class Sections extends Cadastre {
      * @return  Sections
      */
     function GET() {
-        $aReturn = $this->genericGet('public', 'v_section', 'id_sec');
+        $aReturn = $this->genericGet('public', $this->aProperties['cadastre']['views']['section'], 'id_sec');
         return $aReturn['sMessage'];
     }
     

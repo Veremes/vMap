@@ -222,7 +222,6 @@ nsVmap.nsToolsManager.InfoContainer.prototype.displayTabByCode = function (tabCo
  * @export
  */
 nsVmap.nsToolsManager.InfoContainer.prototype.displayTabByIndex = function (index) {
-    console.log("1");
     oVmap.log('nsVmap.nsToolsManager.InfoContainer.displayTabByIndex');
 
     var scope = angular.element($("#infocontainer-info-container")).scope();
@@ -537,28 +536,12 @@ nsVmap.nsToolsManager.InfoContainer.Tab = function (opt_options) {
             htmlContent.push('<a class="' + className + '" href="javascript:void(0)" title="Zoom sur la géométrie">');
             htmlContent.push('<i class="glyphicon glyphicon-globe padding-sides-5"></i>');
             htmlContent.push('</a>');
-
             actionEvents['click .' + className] = function (e, value, row, index) {
                 if (!goog.isDef(row['feature'])) {
                     console.error('Aucune géométrie renseignée dans la colone "feature"');
                     return 0;
                 }
-                var olView = oVmap.getMap().getOLMap().getView();
-                var size = oVmap.getMap().getOLMap().getSize();
-                var extent = row['feature'].getGeometry().getExtent();
-                var resolution = olView.getResolution();
-                // vide la couche de localisation
-                oVmap.getMap().getLocationOverlayFeatures().clear();
-                // ajoute la géométrie à la couche de localisation
-                oVmap.getMap().getLocationOverlaySource().addFeature(row['feature']);
-                // zoom sur la géométrie
-                olView.fit(extent, size, {
-                    padding: [50, 50, 50, 50]
-                });
-
-                // Si il s'agit d'un point, il faut garder le zoom actuel
-                if (row['feature'].getGeometry().getType() === 'Point' || (row['feature'].getGeometry().getType() === 'MultiPoint' && row['feature'].getGeometry().getPoints().length <= 1))
-                    olView.setResolution(resolution);
+                oVmap.getMap().locateFeatures([row['feature']], true, true);
             };
         }
     }
@@ -636,12 +619,18 @@ nsVmap.nsToolsManager.InfoContainer.prototype.infocontainerDirective = function 
  * @export
  * @constructor
  */
-nsVmap.nsToolsManager.InfoContainer.prototype.infocontainerController = function ($timeout, $scope, $http) {
+nsVmap.nsToolsManager.InfoContainer.prototype.infocontainerController = function ($timeout, $scope) {
     oVmap.log("nsVmap.nsToolsManager.InfoContainer.prototype.infocontainerController");
 
+    /**
+     * @private
+     */
     this.$timeout = $timeout;
 
-    this.$http_ = $http;
+    /**
+     * @private
+     */
+    this.$scope_ = $scope;
 
     /**
      * Infos to display
@@ -687,7 +676,6 @@ nsVmap.nsToolsManager.InfoContainer.prototype.infocontainerController.prototype.
  * @export
  */
 nsVmap.nsToolsManager.InfoContainer.prototype.infocontainerController.prototype.displayTabByIndex = function (tabIndex) {
-    console.log("2");
     oVmap.log('nsVmap.nsToolsManager.InfoContainer.infocontainerController.displayTabByIndex');
     this['selectedTabIndex'] = tabIndex;
 };
@@ -834,7 +822,6 @@ nsVmap.nsToolsManager.InfoContainer.prototype.infocontainerController.prototype.
             return 'ligne déjà existante';
         }
     }
-    ;
 
     // Ajoute les nouvelles colonnes si besoin
     for (var i = 0; i < columns.length; i++) {
@@ -850,10 +837,18 @@ nsVmap.nsToolsManager.InfoContainer.prototype.infocontainerController.prototype.
         if (bColumnExists === false)
             goog.array.insert(tab['tableParams']['columns'], columns[i]);
     }
-    ;
+
+    var aRowData = {};
+    for (var key in row_options.data) {
+        if (goog.isString(row_options.data[key])) {
+            aRowData[key] = row_options.data[key].replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        } else {
+            aRowData[key] = row_options.data[key];
+        }
+    }
 
     // Insertion de la ligne
-    goog.array.insert(tab['tableParams']['data'], row_options.data);
+    goog.array.insert(tab['tableParams']['data'], aRowData);
 
     return true;
 };
@@ -999,8 +994,7 @@ nsVmap.nsToolsManager.InfoContainer.prototype.infocontainerController.prototype.
     if (!goog.isDef(tabCode))
         return 'tabCode not defined';
 
-    var features = [];
-    var totalExtent = [];
+    var aFeatures = [];
     var data = this.getTabByCode(tabCode)['tableParams']['data'];
 
     /**
@@ -1008,53 +1002,10 @@ nsVmap.nsToolsManager.InfoContainer.prototype.infocontainerController.prototype.
      */
     for (var i = data.length - 1; i >= 0; i--) {
         if (goog.isDef(data[i]['feature']))
-            goog.array.insert(features, data[i]['feature']);
+            goog.array.insert(aFeatures, data[i]['feature']);
     }
 
-    if (features.length === 0)
-        return 0;
-
-    totalExtent = jQuery.extend(true, [], features[0].getGeometry().getExtent());
-    for (var i = features.length - 1; i >= 0; i--) {
-        var featureExtent = features[i].getGeometry().getExtent();
-        if (featureExtent[0] < totalExtent[0])
-            totalExtent[0] = featureExtent[0];
-        if (featureExtent[1] < totalExtent[1])
-            totalExtent[1] = featureExtent[1];
-        if (featureExtent[2] > totalExtent[2])
-            totalExtent[2] = featureExtent[2];
-        if (featureExtent[3] > totalExtent[3])
-            totalExtent[3] = featureExtent[3];
-        delete featureExtent;
-    }
-
-    // En cas de simple point par exemple
-    if (totalExtent[0] === totalExtent[2]) {
-        totalExtent[0] = totalExtent[0] - totalExtent[0] * 0.0001;
-        totalExtent[2] = totalExtent[2] + totalExtent[2] * 0.0001;
-    }
-    if (totalExtent[1] === totalExtent[3]) {
-        totalExtent[1] = totalExtent[1] - totalExtent[1] * 0.0001;
-        totalExtent[3] = totalExtent[3] + totalExtent[3] * 0.0001;
-    }
-
-    setTimeout(function () {
-
-        // Zoom sur l'étendue totale
-        var olView = oVmap.getMap().getOLMap().getView();
-        olView.fit(totalExtent, oVmap.getMap().getOLMap().getSize(), {
-            padding: [50, 50, 50, 50]
-        });
-
-        /**
-         * Passe les features au dessus
-         */
-        for (var i = features.length - 1; i >= 0; i--) {
-            if (goog.array.contains(oVmap.getMap().getSelectionOverlay().getSource().getFeatures(), features[i]))
-                oVmap.getMap().getSelectionOverlay().getSource().removeFeature(features[i]);
-            oVmap.getMap().getSelectionOverlay().getSource().addFeature(features[i]);
-        }
-    });
+    oVmap.getMap().selectFeatures(aFeatures, false, true);
 };
 
 /**
@@ -1132,36 +1083,36 @@ nsVmap.nsToolsManager.InfoContainer.prototype.infocontainerController.prototype.
 
     // Recharge les nouvelles valeurs du tableau de rapports
     showAjaxLoader();
-    this.$http_({
-        method: "GET",
-        url: oVmap['properties']['api_url'] + '/vmap/printreports',
-        params: {
-            'token': oVmap['properties']['token'],
+    ajaxRequest({
+        'method': 'GET',
+        'url': oVmap['properties']['api_url'] + '/vmap/printreports',
+        'headers': {
+            'Accept': 'application/x-vm-json'
+        },
+        'params': {
             'attributs': 'name|printreport_id|business_object_id|business_object_id_field|multiobject',
-            'filter': "business_object_id='" + business_object_id + "'"
+//            'filter': "business_object_id='" + business_object_id + "'"
+            'filter': {
+                "column": "business_object_id",
+                "compare_operator": "=",
+                "value": business_object_id
+            }
+        },
+        'scope': this.$scope_,
+        'success': function (response) {
+            if (!goog.isDefAndNotNull(response['data'])) {
+                console.error('response.data undefined: ', response);
+                $('#infocontainer-dropdown-reports').dropdown('toggle');
+                return 0;
+            }
+            if (!goog.isDefAndNotNull(response['data']['data'])) {
+                $.notify('Aucun rapport disponible pour ' + business_object_id, 'warning');
+                $('#infocontainer-dropdown-reports').dropdown('toggle');
+                return 0;
+            }
+            this_['avaliablePrintReports'] = response['data']['data'];
         }
-    }).then(function (response) {
-        hideAjaxLoader();
-
-        if (!goog.isDefAndNotNull(response['data'])) {
-            console.error('response.data undefined: ', response);
-            $('#infocontainer-dropdown-reports').dropdown('toggle');
-            return 0;
-        }
-        if (!goog.isDefAndNotNull(response['data']['data'])) {
-            $.notify('Aucun rapport disponible pour ' + business_object_id, 'warning');
-            $('#infocontainer-dropdown-reports').dropdown('toggle');
-            return 0;
-        }
-
-        this_['avaliablePrintReports'] = response['data']['data'];
-
-    }, function (response) {
-        hideAjaxLoader();
-        $.notify('Impossible de récupèrer les rapports liés à l\'objet métier');
-        console.error(response);
     });
-
 };
 
 /**

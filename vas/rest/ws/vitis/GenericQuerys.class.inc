@@ -40,7 +40,7 @@ class GenericQuerys extends Vitis {
      * @param type $properties properties
      */
     function __construct($aPath, $aValues, $properties) {
-        require_once 'GenericQuerys.class.sql.inc';
+        require 'GenericQuerys.class.sql.inc';
         $this->aSql = $aSql;
         $this->aValues = $aValues;
         $this->aPath = $aPath;
@@ -357,12 +357,62 @@ class GenericQuerys extends Vitis {
      *     )
      *  )
      */
+    /**
+     * @SWG\Get(path="/genericquerys/databases",
+     *   tags={"GenericQuerys"},
+     *   summary="Get Querys",
+     *   description="Get the dtabases list",
+     *   operationId="GET",
+     *   produces={"application/xml", "application/json", "application/x-vm-json"},
+     *   @SWG\Parameter(
+     *     name="token",
+     *     in="query",
+     *     description="user token",
+     *     required=true,
+     *     type="string"
+     *   ),
+     *   @SWG\Response(
+     *         response=200,
+     *         description="Poprerties Response",
+     *         @SWG\Schema(ref="#/definitions/users")
+     *   )
+     * )
+     */
+    /**
+     * @SWG\Get(path="/genericquerys/{database}/schemas",
+     *   tags={"GenericQuerys"},
+     *   summary="Get Querys",
+     *   description="Get the database schemas",
+     *   operationId="GET",
+     *   produces={"application/xml", "application/json", "application/x-vm-json"},
+     *   @SWG\Parameter(
+     *     name="token",
+     *     in="query",
+     *     description="user token",
+     *     required=true,
+     *     type="string"
+     *   ),
+     *   @SWG\Parameter(
+     *     name="database",
+     *     in="path",
+     *     description="database",
+     *     required=true,
+     *     type="string"
+     *   ),
+     *   @SWG\Response(
+     *         response=200,
+     *         description="Poprerties Response",
+     *         @SWG\Schema(ref="#/definitions/users")
+     *   )
+     * )
+     */
 
     /**
      * get Querys
      * @return  Querys
      */
     function GET() {
+        $aDataReturn = array('sStatus' => 0);
         if (empty($this->aValues['encoding'])) {
             $this->aValues['encoding'] = "UTF-8";
         }
@@ -375,7 +425,9 @@ class GenericQuerys extends Vitis {
             if (!empty($this->aValues['table']))
                 $this->aPath[2] = $this->aValues['table'];
 
-            $sLogin = $this->aValues['login'];
+            $sLogin = '';
+            if (!empty($this->aValues['login']))
+                $sLogin = $this->aValues['login'];
             if (empty($this->aValues['login']) || $this->aValues['login'] == 'u_vitis')
                 $this->aValues['login'] = $this->oConnection->oBd->login;
 
@@ -414,15 +466,23 @@ class GenericQuerys extends Vitis {
             $bXMLError = true;
         } else {
             if (isset($this->aPath[2])) {
-                if (!empty($this->aPath[3]) && $this->aPath[3] == "columns") {
-                    $this->getTableColumns($this->aValues['schema'], $this->aPath[2]);
+                if ($this->aPath[2] == "databases") {
+                    $this->getDatabases();
                 } else {
-                    $aDataReturn = $this->getData();
+                    if (!empty($this->aPath[3]) && $this->aPath[3] == "schemas") {
+                        $this->getSchemas($this->aPath[2]);
+                        $aDataReturn = array('sStatus' => 1);
+                    } else if (!empty($this->aPath[3]) && $this->aPath[3] == "columns") {
+                        $this->getTableColumns($this->aValues['schema'], $this->aPath[2]);
+                        $aDataReturn = array('sStatus' => 1);
+                    } else {
+                        $aDataReturn = $this->getData();
+                    }
                 }
             } else {
-                $this->getTables();
+                $this->getTables($this->aValues['schema']);
+                $aDataReturn = array('sStatus' => 1);
             }
-
             $aXmlRacineAttribute['status'] = $aDataReturn['sStatus'];
             if (!empty($aDataReturn['sMessage']))
                 return $aDataReturn['sMessage'];
@@ -432,29 +492,92 @@ class GenericQuerys extends Vitis {
         return $sMessage;
     }
 
-    function getTables() {
-        require_once "Table.class.inc";
-        $sSql = str_replace('[sSchema]', $this->aValues['schema'], $this->aSql[$this->aValues['sgbd']]['getTables']);
-        if (!empty($this->aValues['order_by']))
-            $sSql .= ' ORDER BY ' . $this->aValues['order_by'];
-        $oPDOresult = $this->oBd->execute($sSql);
+    /**
+     * Display the databases 
+     * @param type $sdatabases
+     */
+    function getDatabases() {
+        require_once 'Database.class.inc';
+        $sSql = $this->aSql[$this->aValues['sgbd']]['getDatabases'];
+        $aSQLParams = array();
+        $oPDOresult = $this->oBd->executeWithParams($sSql, $aSQLParams);
         if ($this->oBd->enErreur()) {
             $oError = new VitisError(1, $this->oBd->getBDMessage());
             writeToErrorLog($this->oBd->getBDMessage());
             $aXmlRacineAttribute['status'] = 0;
             $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
         } else {
-            while ($aTable = $this->oBd->ligneSuivante($oPDOresult))
-                array_push($this->aObjects, new Table($aTable));
+            while ($aDatabase = $this->oBd->ligneSuivante($oPDOresult)) {
+                array_push($this->aObjects, new Database($aDatabase));
+            }
         }
-        return $aFields;
     }
 
+    /**
+     * Get the schemas list
+     * @param String $sDatabase
+     */
+    function getSchemas($sDatabase) {
+        require_once 'Schema.class.inc';
+        $this->oBd = new BD($this->aValues['login'], $this->aValues['password'], $sDatabase, $this->aValues['server'], $this->aValues['port'], $this->aValues['sgbd'], $this->aValues['encoding']);
+        $sSql = $this->aSql[$this->aValues['sgbd']]['getSchemas'];
+        $aSQLParams = array();
+        $oPDOresult = $this->oBd->executeWithParams($sSql, $aSQLParams);
+        if ($this->oBd->enErreur()) {
+            $oError = new VitisError(1, $this->oBd->getBDMessage());
+            writeToErrorLog($this->oBd->getBDMessage());
+            $aXmlRacineAttribute['status'] = 0;
+            $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+        } else {
+            while ($aSchema = $this->oBd->ligneSuivante($oPDOresult)) {
+                array_push($this->aObjects, new Schema($aSchema));
+            }
+        }
+    }
+
+    /**
+     * Display the tables contained in the $sSchema param
+     * @param type $sSchema
+     */
+    function getTables($sSchema) {
+        require_once "Table.class.inc";
+
+        $sSql = $this->aSql[$this->aValues['sgbd']]['getTables'];
+        $aSQLParams = array('sSchema' => array('value' => $sSchema, 'type' => 'column_name'));
+
+        if (!empty($this->aValues['order_by'])) {
+            $aSQLParams['order_by'] = array('value' => $this->aValues['order_by'], 'type' => 'column_name');
+            $sSql .= ' ORDER BY "[order_by]"';
+        }
+
+        $oPDOresult = $this->oBd->executeWithParams($sSql, $aSQLParams);
+        if ($this->oBd->enErreur()) {
+            $oError = new VitisError(1, $this->oBd->getBDMessage());
+            writeToErrorLog($this->oBd->getBDMessage());
+            $aXmlRacineAttribute['status'] = 0;
+            $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+        } else {
+            while ($aTable = $this->oBd->ligneSuivante($oPDOresult)) {
+                array_push($this->aObjects, new Table($aTable));
+            }
+        }
+    }
+
+    /**
+     * Display the columns contained in the $sSchema, $sTable param
+     * @param type $sSchema
+     * @param type $sTable
+     */
     function getTableColumns($sSchema, $sTable) {
         require_once "Column.class.inc";
-        $sSql = str_replace('[sSchema]', $sSchema, $this->aSql[$this->aValues['sgbd']]['getTableColumns']);
-        $sSql = str_replace('[sTable]', $sTable, $sSql);
-        $oPDOresult = $this->oBd->execute($sSql);
+
+        $sSql = $this->aSql[$this->aValues['sgbd']]['getTableColumns'];
+        $aSQLParams = array(
+            'sSchema' => array('value' => $sSchema, 'type' => 'column_name'),
+            'sTable' => array('value' => $sTable, 'type' => 'column_name')
+        );
+
+        $oPDOresult = $this->oBd->executeWithParams($sSql, $aSQLParams);
         if ($this->oBd->enErreur()) {
             $oError = new VitisError(1, $this->oBd->getBDMessage());
             $aXmlRacineAttribute['status'] = 0;
@@ -463,17 +586,25 @@ class GenericQuerys extends Vitis {
             while ($aColumn = $this->oBd->ligneSuivante($oPDOresult))
                 array_push($this->aObjects, new Column($aColumn));
         }
-        return $aFields;
     }
 
-    function tableColumns() {
+    /**
+     * Get the table columns with $this->aSelectedFields  and returns an array
+     * @param type $sSchema
+     * @param type $sTable
+     * @return array
+     */
+    function tableColumns($sSchema, $sTable) {
         require_once "Column.class.inc";
         $aColumn = [];
-        $sSql = str_replace('[sSchema]', $this->aValues['schema'], $this->aSql[$this->aValues['sgbd']]['getTableColumns']);
 
-        $sSql = str_replace('[sTable]', $this->aPath[2], $sSql);
-        
-        $oResult = $this->oBd->execute($sSql);
+        $sSql = $this->aSql[$this->aValues['sgbd']]['getTableColumns'];
+        $aSQLParams = array(
+            'sSchema' => array('value' => $sSchema, 'type' => 'column_name'),
+            'sTable' => array('value' => $sTable, 'type' => 'column_name')
+        );
+
+        $oResult = $this->oBd->executeWithParams($sSql, $aSQLParams);
         if (!empty($oResult)) {
             while ($aObject = $this->oBd->ligneSuivante($oResult)) {
                 if ($aObject['data_type'] != 'SDO_GEOMETRY' && $aObject['data_type'] != 'geometry') {
@@ -481,7 +612,6 @@ class GenericQuerys extends Vitis {
                 }
             }
             foreach ($this->aSelectedFields as $fields) {
-
                 if (strpos($fields, "(") != FALSE && strpos($fields, ")") != FALSE && strpos(strtolower($fields), " as ") != FALSE) {
                     array_push($aColumn, $fields);
                 }
@@ -491,16 +621,40 @@ class GenericQuerys extends Vitis {
         return $aColumn;
     }
 
+    /**
+     * Display the result from the requested query
+     * Ne gère pas les données géométriques !
+     * @param type $bOnlyReturnStatus
+     * @return int
+     */
     function getData($bOnlyReturnStatus = false) {
-        //ne gère pas les données géométriques
+
+        $sSchema = $this->aValues['schema'];
+        $sTable = $this->aPath[2];
+
+        $aSQLParams = array(
+            'sSchema' => array('value' => $sSchema, 'type' => 'column_name'),
+            'sTable' => array('value' => $sTable, 'type' => 'column_name')
+        );
+
+        if (isset($this->aValues['limit'])) {
+            $aSQLParams['limit'] = array('value' => $this->aValues['limit'], 'type' => 'number');
+        }
+        if (isset($this->aValues['offset'])) {
+            $aSQLParams['offset'] = array('value' => $this->aValues['offset'], 'type' => 'number');
+        }
+        if (isset($this->aValues['sort_order'])) {
+            $aSQLParams['sort_order'] = array('value' => $this->aValues['sort_order'], 'type' => 'column_name');
+        }
+
+
         $sSql = "SELECT ";
         if ($this->aValues['distinct'] == "true") {
             $sSql .= "DISTINCT ";
         }
-        $aColumn = $this->tableColumns();
-                
+        $aColumn = $this->tableColumns($sSchema, $sTable);
+
         $aFieldInTable = [];
-        //manque la gestion du param attribut
         $aAttribute = explode("|", $this->aValues['attributs']);
         foreach ($aColumn as $value) {
             if (in_array($value, $aAttribute) || empty($this->aValues['attributs'])) {
@@ -508,7 +662,6 @@ class GenericQuerys extends Vitis {
             }
         }
         if (!empty($aFieldInTable)) {
-
             foreach ($aFieldInTable as $fields) {
                 if ($sSql == "SELECT " || $sSql == "SELECT DISTINCT ") {
                     $sSql .= $fields;
@@ -516,15 +669,27 @@ class GenericQuerys extends Vitis {
                     $sSql .= ", " . $fields;
                 }
             }
-        }else{
+        } else {
             $sSql = "SELECT * ";
         }
-        $sSql .= " FROM " . $this->aValues['schema'] . "." . $this->aPath[2];
+        $sSql .= ' FROM "[sSchema]"."[sTable]"';
+
         if (isset($this->aValues['filter'])) {
-            if (strpos($sSql, " WHERE ") == FALSE) {
-                $sSql .= " WHERE " . $this->aValues['filter'];
-            } else {
-                $sSql .= " AND " . $this->aValues['filter'];
+            // filtre
+            $aDecodedFilter = $this->decodeJSONFilter($this->aValues['filter'], $sSchema, $sTable);
+            // Ajout dans la requête
+            $sSecuredFilter = $aDecodedFilter['request'];
+            // Ajout des paramètres
+            foreach ($aDecodedFilter['params'] as $key => $value) {
+                $aSQLParams[$key] = $value;
+            }
+            // Ajout à la requête
+            if (!empty(trim($sSecuredFilter))) {
+                if (strpos($sSql, " WHERE ") == FALSE) {
+                    $sSql .= " WHERE " . $sSecuredFilter;
+                } else {
+                    $sSql .= " AND " . $sSecuredFilter;
+                }
             }
         }
         //order by
@@ -533,93 +698,119 @@ class GenericQuerys extends Vitis {
             case "oci":
                 if (isset($this->aValues['limit']) && isset($this->aValues['offset'])) {
                     $this->aValues['limit'] = $this->aValues['limit'] + $this->aValues['offset'];
-                    /* if (strpos($sSql, " WHERE ") == FALSE) {
-                      $sSql.= " WHERE and (rownum < " . $this->aValues['limit'] . " AND rownum > " . $this->aValues['limit'] . ")";
-                      } else {
-                      $sSql.= " and (rownum < " . $this->aValues['limit'] . " AND rownum > " . $this->aValues['offset'] . ")";
-                      } */
                 }
-                /* if (isset($this->aValues['offset'])) {
-                  if (strpos($sSql, " WHERE ") == FALSE) {
-                  $sSql.= " WHERE and rownum > " . $this->aValues['offset'];
-                  } else {
-                  $sSql.= " AND rownum > " . $this->aValues['offset'];
-                  }
-                  } */
                 if (isset($this->aValues['limit'])) {
                     if (strpos($sSql, " WHERE ") == FALSE) {
-                        $sSql .= " WHERE rownum <= " . $this->aValues['limit'];
+                        $sSql .= " WHERE rownum <= [limit]";
                     } else {
-                        $sSql .= " AND rownum <= " . $this->aValues['limit'];
+                        $sSql .= " AND rownum <= [limit]";
                     }
                 }
 
                 //offset
-
                 if (isset($this->aValues['order_by'])) {
                     $aOrder = explode("|", $this->aValues['order_by']);
                     foreach ($aOrder as $value) {
+
+                        $sOrderKey = 'order_by_' . vitisUniqId();
+                        $aSQLParams[$sOrderKey] = array('value' => $value, 'type' => 'column_name');
+
                         if (strpos($sSql, "ORDER BY") == FALSE) {
-                            $sSql .= " ORDER BY " . str_replace("=", " ", "\"" . $value . "\"");
+                            $sSql .= " ORDER BY " . str_replace("=", " ", "\"[" . $sOrderKey . "]\"");
                         } else {
-                            $sSql .= ", " . str_replace("=", " ", "\"" . $value . "\"");
+                            $sSql .= ", " . str_replace("=", " ", "\"[" . $sOrderKey . "]\"");
                         }
                     }
                     if (isset($this->aValues['sort_order'])) {
-                        $sSql .= " " . $this->aValues['sort_order'];
+                        switch (strtoupper($this->aValues['sort_order'])) {
+                            case 'ASC':
+                                $sSql .= " ASC";
+                                break;
+                            case 'DESC':
+                                $sSql .= " DESC";
+                                break;
+                            default:
+                                break;
+                        }
                     }
                 }
                 break;
             default:
                 if (isset($this->aValues['order_by'])) {
                     $aOrder = explode("|", $this->aValues['order_by']);
+
                     foreach ($aOrder as $value) {
+
+                        $sOrderKey = 'order_by_' . vitisUniqId();
+                        $aSQLParams[$sOrderKey] = array('value' => $value, 'type' => 'column_name');
+
                         if (strpos($sSql, "ORDER BY") == FALSE) {
-                            $sSql .= " ORDER BY " . str_replace("=", " ", "\"" . $value . "\"");
+                            $sSql .= " ORDER BY " . str_replace("=", " ", "\"[" . $sOrderKey . "]\"");
                         } else {
-                            $sSql .= ", " . str_replace("=", " ", "\"" . $value . "\"");
+                            $sSql .= ", " . str_replace("=", " ", "\"[" . $sOrderKey . "]\"");
                         }
                     }
                     if (isset($this->aValues['sort_order'])) {
-                        $sSql .= " " . $this->aValues['sort_order'];
+                        switch (strtoupper($this->aValues['sort_order'])) {
+                            case 'ASC':
+                                $sSql .= " ASC";
+                                break;
+                            case 'DESC':
+                                $sSql .= " DESC";
+                                break;
+                            default:
+                                break;
+                        }
                     }
                 }
                 if (isset($this->aValues['limit'])) {
-                    $sSql .= " LIMIT " . $this->aValues['limit'];
+                    $sSql .= " LIMIT [limit]";
                 }
                 //offset
                 if (isset($this->aValues['offset'])) {
-                    $sSql .= " OFFSET " . $this->aValues['offset'];
+                    $sSql .= " OFFSET [offset]";
                 }
                 break;
         }
-
-        $oPDOresult = $this->oBd->execute($sSql);
+        $oPDOresult = $this->oBd->executeWithParams($sSql, $aSQLParams);
 
         if ($this->oBd->enErreur()) {
             $oError = new VitisError(1, $this->oBd->getBDMessage());
         } else {
             while ($aLigne = $oPDOresult->fetch(PDO::FETCH_ASSOC)) {
-
                 $oObject = new GenericQuery($this->aPath, $this->aValues, $this->aProperties, $this->oConnection);
                 $oObject->aFields = $aLigne;
                 array_push($this->aObjects, $oObject);
             }
             $this->aFields['list_count'] = $this->oBd->nombreLigne($oPDOresult);
-            $sSql = "select count(*) as \"total_row_number\" FROM " . $this->aValues['schema'] . "." . $this->aPath[2];
+
+            $aSQLParams2 = array(
+                'sSchema' => array('value' => $sSchema, 'type' => 'column_name'),
+                'sTable' => array('value' => $sTable, 'type' => 'column_name')
+            );
+
+            $sSql = 'select count(*) as "total_row_number" FROM "[sSchema]"."[sTable]"';
+
             if (isset($this->aValues['filter'])) {
-
-                //$aFilter = explode("|", $this->aValues['filter']);
-
-                if (strpos($sSql, " WHERE ") == FALSE) {
-                    $sSql .= " WHERE " . $this->aValues['filter'];
-                } else {
-                    $sSql .= " AND " . $this->aValues['filter'];
+                // filtre
+                $aDecodedFilter = $this->decodeJSONFilter($this->aValues['filter'], $sSchema, $sTable);
+                // Ajout dans la requête
+                $sSecuredFilter = $aDecodedFilter['request'];
+                // Ajout des paramètres
+                foreach ($aDecodedFilter['params'] as $key => $value) {
+                    $aSQLParams2[$key] = $value;
+                }
+                // Ajout à la requête
+                if (!empty(trim($sSecuredFilter))) {
+                    if (strpos($sSql, " WHERE ") == FALSE) {
+                        $sSql .= " WHERE " . $sSecuredFilter;
+                    } else {
+                        $sSql .= " AND " . $sSecuredFilter;
+                    }
                 }
             }
         }
-
-        $oPDOresult = $this->oBd->execute($sSql);
+        $oPDOresult = $this->oBd->executeWithParams($sSql, $aSQLParams2);
 
         if ($this->oBd->enErreur()) {
             $oError = new VitisError(1, $this->oBd->getBDMessage());

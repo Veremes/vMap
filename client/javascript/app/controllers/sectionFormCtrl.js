@@ -47,18 +47,20 @@ vitisApp.sectionFormCtrl = function ($scope, $compile, $templateRequest, $log, $
     // Nom du formulaire de la section.
     envSrvc["sFormDefinitionName"] = envSrvc["oSelectedObject"]["name"] + "_" + aData["sections"][0]["name"] + "_" + envSrvc["sMode"] + "_form";
     envSrvc["oSelectedObject"]["sFormDefinitionName"] = envSrvc["sFormDefinitionName"];
+    envSrvc["sSelectedSectionName"] = aData["sections"][0]["name"];
     // Attends le rendu des conteneurs des sections et Charge et compile le template de la 1ere section.
     var clearWatch = $rootScope.$watch($rootScope["bLastSectionContainer"], function () {
         $scope["loadObjectSectionTemplate"]();
         // Supprime le "watch";
         clearWatch();
     }, false);
-    
+
     // Chargement de la section sélectionnée.
     $scope["selectSection"] = function (iSectionIndex, oObjectSectionForm) {
         if (envSrvc["sMode"] != "insert") {
             // Sauve l'index de la section sélectionnée.
             envSrvc["oSectionForm"][envSrvc["oSelectedObject"]["name"]]["iSelectedSectionIndex"] = iSectionIndex;
+            envSrvc["sSelectedSectionName"] = envSrvc["oSectionForm"][envSrvc["oSelectedObject"]["name"]]["sections"][iSectionIndex]["name"];
             // Nom du formulaire de la section.
             envSrvc["sFormDefinitionName"] = envSrvc["oSelectedObject"]["name"] + "_" + envSrvc["oSectionForm"][envSrvc["oSelectedObject"]["name"]]["sections"][iSectionIndex]["name"] + "_" + envSrvc["sMode"] + "_form";
             envSrvc["oLastSelectedObjectMode"][envSrvc["oSelectedMode"]["mode_id"]]["sFormDefinitionName"] = envSrvc["sFormDefinitionName"];
@@ -67,8 +69,7 @@ vitisApp.sectionFormCtrl = function ($scope, $compile, $templateRequest, $log, $
             $("#container_section_" + envSrvc["oSelectedObject"]["name"] + "_" + oObjectSectionForm["name"]).show();
             // Chargement du template de la section.
             $scope["loadObjectSectionTemplate"]();
-            //console.log(envSrvc["oSelectedObject"]["name"]);
-            $scope.$root.$broadcast("updateStudio_" + envSrvc["oSelectedObject"]["name"] , {"index": iSectionIndex, "oSectionForm": oObjectSectionForm});
+            $scope.$root.$broadcast("updateStudio_" + envSrvc["oSelectedObject"]["name"], {"index": iSectionIndex, "oSectionForm": oObjectSectionForm});
         }
     };
 
@@ -105,6 +106,13 @@ vitisApp.sectionFormCtrl = function ($scope, $compile, $templateRequest, $log, $
         }
         // Section à ne pas compiler au prochain affichage.
         envSrvc["oSectionForm"][envSrvc["oSelectedObject"]["name"]]["sections"][iSelectedSectionIndex]["bLoaded"] = true;
+        // Affichage de la carte en cas de resize
+        $('.form-map').each(function (key, value) {
+            try {
+                angular.element(value).scope()['oMap']['MapObject'].updateSize();
+            } catch (e) {
+            }
+        });
     };
 };
 vitisApp.module.controller("sectionFormCtrl", vitisApp.sectionFormCtrl);

@@ -425,14 +425,6 @@
 				INSERT INTO s_vitis.vm_translation(translation_id, lang, translation) VALUES ('vmap_55', 'en', 'Id field');
 				INSERT INTO s_vitis.vm_translation(translation_id, lang, translation) VALUES ('vmap_55', 'fr', 'Champ identifiant');
 				INSERT INTO s_vitis.vm_table_field(name, sortable, resizeable, index, width, align, label_id, tab_id, ressource_id) VALUES ('id_field', 'TRUE', 'TRUE', 5, 124, 'left', 'vmap_55', (SELECT tab_id FROM s_vitis.vm_tab WHERE name='vmap_business_object'), 'vmap/businessobjects');
-				INSERT INTO s_vitis.vm_string(string, string_id) VALUES ('Last update', 'vmap_56');
-				INSERT INTO s_vitis.vm_translation(translation_id, lang, translation) VALUES ('vmap_56', 'en', 'Last update');
-				INSERT INTO s_vitis.vm_translation(translation_id, lang, translation) VALUES ('vmap_56', 'fr', 'Dernière MAJ');
-				INSERT INTO s_vitis.vm_table_field(name, sortable, resizeable, index, width, align, label_id, tab_id, ressource_id) VALUES ('last_update_date', 'TRUE', 'TRUE', 6, 180, 'left', 'vmap_56', (SELECT tab_id FROM s_vitis.vm_tab WHERE name='vmap_business_object'), 'vmap/businessobjects');
-				INSERT INTO s_vitis.vm_string(string, string_id) VALUES ('Last author', 'vmap_57');
-				INSERT INTO s_vitis.vm_translation(translation_id, lang, translation) VALUES ('vmap_57', 'en', 'Last author');
-				INSERT INTO s_vitis.vm_translation(translation_id, lang, translation) VALUES ('vmap_57', 'fr', 'Dernier auteur');
-				INSERT INTO s_vitis.vm_table_field(name, sortable, resizeable, index, width, align, label_id, tab_id, ressource_id) VALUES ('last_update_author', 'TRUE', 'TRUE', 7, 124, 'left', 'vmap_57', (SELECT tab_id FROM s_vitis.vm_tab WHERE name='vmap_business_object'), 'vmap/businessobjects');
 				INSERT INTO s_vitis.vm_string(string, string_id) VALUES ('New business object', 'vmap_58');
 				INSERT INTO s_vitis.vm_translation(translation_id, lang, translation) VALUES ('vmap_58', 'fr', 'Ajouter un objet métier');
 				INSERT INTO s_vitis.vm_translation(translation_id, lang, translation) VALUES ('vmap_58', 'en', 'Add business object');
@@ -608,7 +600,7 @@
 				INSERT INTO s_vmap.layertheme (name, description) VALUES ('Géobretagne', 'services regroupant les couches géobretagne');
 				INSERT INTO s_vmap.layertheme (name, description) VALUES ('Open Street Maps', 'services regroupant les couches open street map');
 				INSERT INTO s_vmap.service (service_type_id, name, description, url, key, service_type_version, thumbnail, lang, imagery) VALUES ('tilewms', 'Géobretagne', 'services regroupant les couches géobretagne', 'http://geobretagne.fr/geoserver/audelor/wms?service=wms', '', '1.3.0', NULL, NULL, NULL);
-				INSERT INTO s_vmap.service (service_type_id, name, description, url, key, service_type_version, thumbnail, lang, imagery) VALUES ('osm', 'Open Street Maps', 'services regroupant les couches osm', '', '', '1.3.0', 'images/imagettes/osm.png', NULL, NULL);
+				INSERT INTO s_vmap.service (service_type_id, name, description, url, key, service_type_version, thumbnail, lang, imagery) VALUES ('osm', 'Open Street Maps', 'services regroupant les couches osm', 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png', '', '1.3.0', 'images/imagettes/osm.png', NULL, NULL);
 				INSERT INTO s_vmap.service ( service_type_id, name, description, url, key, service_type_version, thumbnail, lang, imagery) VALUES ( 'osm', 'OpenSeaMap', 'Phares et autres éléments maritimes', 'http://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', NULL, NULL, 'images/imagettes/seamap.png', NULL, NULL);
 				INSERT INTO s_vmap.service (service_type_id, name, description, url, key, service_type_version, thumbnail, lang, imagery) VALUES ('osm', 'OpenCycleMap', 'Used by hundreds of applications and websites from around the globe, OpenCycleMap is an award-winning global map for cycling.', 'http://tile.thunderforest.com/cycle/{z}/{x}/{y}.png', NULL, NULL, 'images/imagettes/opencyclemap.png', NULL, NULL);
 				INSERT INTO s_vmap.service (service_type_id, name, description, url, key, service_type_version, thumbnail, lang, imagery) VALUES ('osm', 'Transport', 'Recently chosen by OpenStreetMap for their front page, this map shows public transportation in great detail.', 'http://tile.thunderforest.com/transport/{z}/{x}/{y}.png', NULL, NULL, 'images/imagettes/transport-294.png', NULL, NULL);
@@ -872,6 +864,119 @@
 				-- Armand le 19/04/2016
 				UPDATE s_vmap.service SET url='https://geobretagne.fr/geoserver/audelor/wms' WHERE url='http://geobretagne.fr/geoserver/audelor/wms?service=wms';
 				UPDATE s_vmap.service SET url='http://[veremap_serveur]/cgi-bin/wmsmap' WHERE url='http://[veremap_serveur]/cgi-bin/wmsmap?service=wms';
+				]]>
+			</code>
+		</query>
+		<query>
+			<type>update</type>
+			<version>2017.02.01</version>
+			<code>
+				<![CDATA[
+					-- Sébastien le 05/05/2017
+					UPDATE s_vmap.maptheme SET maptheme_id = nextval('s_vmap.maptheme_maptheme_id_seq') WHERE name = 'Cadastre';
+					DELETE FROM s_vitis.vm_table_field WHERE "name" = 'crs_list' and ressource_id = 'vmap/layers';
+                    -- Frédéric le 08/06/2017 à 10:14
+                    DELETE FROM s_vitis.vm_table_field WHERE "name" = 'last_update_date' and ressource_id = 'vmap/businessobjects';
+                    DELETE FROM s_vitis.vm_table_field WHERE "name" = 'last_update_author' and ressource_id = 'vmap/businessobjects';
+                    DELETE FROM s_vitis.vm_translation WHERE translation_id IN ('vmap_56', 'vmap_57');
+                    DELETE FROM s_vitis.vm_string WHERE string_id IN ('vmap_56', 'vmap_57');
+                    -- Armand le 22/06/2017 à 16:46
+                    UPDATE s_vmap.layer SET bo_id = NULL WHERE bo_id IS NOT NULL AND NOT EXISTS(SELECT business_object_id FROM s_vmap.business_object WHERE business_object_id = bo_id);
+                    ALTER TABLE s_vmap.layer ADD CONSTRAINT fk_s_vmap_bo_layer FOREIGN KEY (bo_id) REFERENCES s_vmap.business_object (business_object_id);
+				]]>
+			</code>
+		</query>
+		<query>
+			<type>update</type>
+			<version>2017.03.00</version>
+			<code>
+				<![CDATA[
+					DROP VIEW s_vmap.v_template;
+					DROP VIEW s_vmap.v_user_template;
+					DROP VIEW s_vmap.v_printreport;
+					DROP VIEW s_vmap.v_map_layer;
+					DROP VIEW s_vmap.v_layer;
+					ALTER TABLE s_vmap.business_object   ALTER COLUMN "table" TYPE character varying(63);
+					ALTER TABLE s_vmap.business_object   ALTER COLUMN business_object_id TYPE character varying(100);
+					CREATE OR REPLACE VIEW s_vmap.v_layer AS  SELECT layertheme.name AS theme_name,    service.name AS service_name,    service.service_type_id,    service.url AS service_url,    service.key AS service_key,    service.service_type_version,    service.thumbnail AS service_thumbnail,    service.lang AS service_lang,    service.imagery AS service_imagery,    business_object.title AS bo_title,    business_object.id_field AS bo_id_field,    business_object.database AS bo_database,    business_object.schema AS bo_schema,   business_object."table" AS bo_table,    business_object.sql_summary AS bo_sql_summary,    business_object.sql_list AS bo_sql_list,    business_object.sorted_by AS bo_sorted_by,    business_object.geom_column AS bo_geom_column,    business_object.search_field AS bo_search_field,    business_object.result_field AS bo_result_field,  business_object.search_use_strict AS bo_search_use_strict,    layer.layer_id,    layer.layertheme_id,    layer.service_id,    layer.name,    layer.description,    layer.layer_list,    layer.crs_list,    layer.bo_id,    layer.is_dynamic,    layer.is_filtered,    layer.matrix_set,    layer.layer_style,    layer.layer_format,    layer.layer_options,    service.service_type_type,    service.service_options   FROM s_vmap.layer   LEFT JOIN s_vmap.business_object ON layer.bo_id::text = business_object.business_object_id::text   LEFT JOIN s_vmap.layertheme ON layer.layertheme_id = layertheme.layertheme_id   JOIN s_vmap.service ON layer.service_id = service.service_id;
+					ALTER TABLE s_vmap.v_layer  OWNER TO u_vitis;
+					GRANT ALL ON TABLE s_vmap.v_layer TO u_vitis;
+					GRANT ALL ON TABLE s_vmap.v_layer TO vitis_admin;
+					GRANT ALL ON TABLE s_vmap.v_layer TO vmap_admin;
+					GRANT SELECT ON TABLE s_vmap.v_layer TO vitis_user;
+					GRANT SELECT ON TABLE s_vmap.v_layer TO vmap_user;
+					CREATE OR REPLACE VIEW s_vmap.v_map_layer AS  SELECT v_layer.layer_id,    v_layer.name,    v_layer.theme_name,    map_layer.layer_visible,    map_layer.map_id,    map_layer.layer_index,    map_layer.layer_opacity,    v_layer.layertheme_id,    v_layer.service_id   FROM s_vmap.v_layer,    s_vmap.map_layer  WHERE v_layer.layer_id = map_layer.layer_id;
+					ALTER TABLE s_vmap.v_map_layer  OWNER TO u_vitis;
+					GRANT ALL ON TABLE s_vmap.v_map_layer TO u_vitis;
+					GRANT ALL ON TABLE s_vmap.v_map_layer TO vmap_admin;
+					GRANT SELECT ON TABLE s_vmap.v_map_layer TO vmap_user;
+					GRANT ALL ON TABLE s_vmap.v_map_layer TO vitis_admin;
+					GRANT SELECT ON TABLE s_vmap.v_map_layer TO vitis_user;
+					CREATE OR REPLACE VIEW s_vmap.v_printreport AS SELECT printreport.printreport_id,    printreport.name,    printreport.rt_format_id,    printreport.rt_orientation_id,    printreport.outputformats_id,    printreport.business_object_id,    printreport.htmldefinition,    printreport.jsonobjects,    printreport.multiobject,    business_object.title AS business_object_title,    business_object.id_field AS business_object_id_field,    business_object.database AS business_object_database,    business_object.schema AS business_object_schema,    business_object."table" AS business_object_table,    business_object.geom_column AS business_object_geom_column   FROM s_vmap.business_object   JOIN s_vmap.printreport ON business_object.business_object_id::text = printreport.business_object_id::text   JOIN s_vmap.rt_orientation ON printreport.rt_orientation_id::text = rt_orientation.rt_orientation_id::text   JOIN s_vmap.rt_format ON printreport.rt_format_id::text = rt_format.rt_format_id::text   JOIN s_vmap.rt_outputformats ON printreport.outputformats_id::text = rt_outputformats.outputformats_id::text;
+					ALTER TABLE s_vmap.v_printreport  OWNER TO u_vitis;
+					GRANT ALL ON TABLE s_vmap.v_printreport TO u_vitis;
+					GRANT ALL ON TABLE s_vmap.v_printreport TO vmap_admin;
+					GRANT SELECT ON TABLE s_vmap.v_printreport TO vmap_user;
+					CREATE OR REPLACE VIEW s_vmap.v_user_template AS  SELECT DISTINCT printtemplate.printtemplate_id,    printtemplate.name,    printtemplate.rt_format_id,    printtemplate.rt_orientation_id,    printtemplate.definition,    printtemplate.outputformats_id,    printtemplate.sql,    printtemplate.ressource_id,    printtemplate.business_object_id,    business_object.title AS business_object,    printtemplate_group.group_id   FROM s_vmap.printtemplate   LEFT JOIN s_vmap.printtemplate_group ON printtemplate.printtemplate_id = printtemplate_group.printtemplate_id   LEFT JOIN s_vmap.business_object ON printtemplate.business_object_id::text = business_object.business_object_id::text;
+					ALTER TABLE s_vmap.v_user_template  OWNER TO u_vitis;
+					GRANT ALL ON TABLE s_vmap.v_user_template TO u_vitis;
+					GRANT ALL ON TABLE s_vmap.v_user_template TO vmap_admin;
+					GRANT SELECT ON TABLE s_vmap.v_user_template TO vmap_user;
+					CREATE OR REPLACE VIEW s_vmap.v_template AS  SELECT printtemplate.printtemplate_id,    printtemplate.name,    printtemplate.rt_format_id,    printtemplate.rt_orientation_id,    printtemplate.definition,    printtemplate.outputformats_id,    printtemplate.sql,    printtemplate.ressource_id,    printtemplate.business_object_id,    business_object.title AS business_object   FROM s_vmap.printtemplate   LEFT JOIN s_vmap.business_object ON printtemplate.business_object_id::text = business_object.business_object_id::text;
+					ALTER TABLE s_vmap.v_template  OWNER TO u_vitis;
+					GRANT ALL ON TABLE s_vmap.v_template TO u_vitis;
+					GRANT ALL ON TABLE s_vmap.v_template TO vmap_admin;
+					GRANT SELECT ON TABLE s_vmap.v_template TO vmap_user;             
+                    -- Frédéric le 25/07/2017 à 14:43
+                    UPDATE s_vmap.layer SET bo_id = NULL WHERE bo_id IN(SELECT bo_id FROM s_vmap.layer WHERE bo_id NOT IN (SELECT business_object_id FROM s_vmap.business_object));
+                    ALTER TABLE s_vmap.layer DROP CONSTRAINT IF EXISTS fk_layer_business_object;
+                    ALTER TABLE s_vmap.layer ADD CONSTRAINT fk_layer_business_object FOREIGN KEY (bo_id) REFERENCES s_vmap.business_object (business_object_id) MATCH SIMPLE ON UPDATE CASCADE ON DELETE SET NULL;
+                     -- Armand le 31/07/2017 à 17:13: ajout de la colonne selection_buffer
+                    ALTER TABLE s_vmap.business_object ADD COLUMN selection_buffer double precision;
+                    CREATE OR REPLACE VIEW s_vmap.v_layer AS SELECT s_vmap.layertheme.name AS theme_name, s_vmap.service.name AS service_name, s_vmap.service.service_type_id, s_vmap.service.url AS service_url, s_vmap.service."key" AS service_key, s_vmap.service.service_type_version, s_vmap.service.thumbnail AS service_thumbnail, s_vmap.service.lang AS service_lang, s_vmap.service.imagery AS service_imagery, s_vmap.business_object.title AS bo_title, s_vmap.business_object.id_field AS bo_id_field, s_vmap.business_object."database" AS bo_database, s_vmap.business_object."schema" AS bo_schema, s_vmap.business_object."table" AS bo_table, s_vmap.business_object.sql_summary AS bo_sql_summary, s_vmap.business_object.sql_list AS bo_sql_list, s_vmap.business_object.sorted_by AS bo_sorted_by, s_vmap.business_object.geom_column AS bo_geom_column, s_vmap.business_object.search_field AS bo_search_field, s_vmap.business_object.result_field AS bo_result_field, s_vmap.business_object.search_use_strict AS bo_search_use_strict, s_vmap.layer.layer_id, s_vmap.layer.layertheme_id, s_vmap.layer.service_id, s_vmap.layer.name, s_vmap.layer.description, s_vmap.layer.layer_list, s_vmap.layer.crs_list, s_vmap.layer.bo_id, s_vmap.layer.is_dynamic, s_vmap.layer.is_filtered, s_vmap.layer.matrix_set, s_vmap.layer.layer_style, s_vmap.layer.layer_format, s_vmap.layer.layer_options, s_vmap.service.service_type_type, s_vmap.service.service_options, s_vmap.business_object.selection_buffer AS bo_selection_buffer FROM s_vmap.layer LEFT JOIN s_vmap.business_object ON s_vmap.layer.bo_id = s_vmap.business_object.business_object_id LEFT JOIN s_vmap.layertheme ON s_vmap.layer.layertheme_id = s_vmap.layertheme.layertheme_id INNER JOIN s_vmap.service ON s_vmap.layer.service_id = s_vmap.service.service_id;
+					GRANT ALL ON TABLE s_vmap.v_layer TO vmap_admin;
+					GRANT SELECT ON TABLE s_vmap.v_layer TO vmap_user;
+					UPDATE s_vmap.business_object SET selection_buffer=5;
+					-- Armand le 18/08/2017 à 11h34 Associer plusieurs objets métiers à un calque
+					CREATE TABLE s_vmap.layer_businessobject (layer_id int4 NOT NULL, business_object_id varchar(100) NOT NULL, PRIMARY KEY (layer_id, business_object_id));
+					ALTER TABLE s_vmap.layer_businessobject ADD CONSTRAINT fk_business_object_id_layer_businessobject FOREIGN KEY (business_object_id) REFERENCES s_vmap.business_object (business_object_id);
+					ALTER TABLE s_vmap.layer_businessobject ADD CONSTRAINT fk_layer_id_layer_businessobject FOREIGN KEY (layer_id) REFERENCES s_vmap.layer (layer_id);
+					INSERT INTO s_vmap.layer_businessobject (layer_id, business_object_id) SELECT layer_id, bo_id FROM s_vmap.layer WHERE layer.bo_id IS NOT NULL;
+					COMMENT ON COLUMN s_vmap.layer.bo_id IS 'DEPRECATED';
+					ALTER TABLE s_vmap.layer_businessobject  OWNER TO u_vitis;
+					GRANT ALL ON TABLE s_vmap.layer_businessobject TO vmap_admin;
+					GRANT SELECT ON TABLE s_vmap.layer_businessobject TO vmap_user;
+					DROP VIEW s_vmap.v_map_layer;
+					DROP VIEW s_vmap.v_layer;
+					CREATE OR REPLACE VIEW s_vmap.v_layer AS SELECT s_vmap.layer.layer_id, s_vmap.layer.layertheme_id, s_vmap.layer.service_id, s_vmap.layer.name, s_vmap.layer.description, s_vmap.layer.layer_list, s_vmap.layer.crs_list, s_vmap.layer.is_dynamic, s_vmap.layer.is_filtered, s_vmap.layer.matrix_set, s_vmap.layer.layer_style, s_vmap.layer.layer_format, s_vmap.layer.layer_options, s_vmap.layertheme.name AS theme_name, s_vmap.service.name AS service_name, s_vmap.service.service_type_id, s_vmap.service.url AS service_url, s_vmap.service."key" AS service_key, s_vmap.service.service_type_version, s_vmap.service.thumbnail AS service_thumbnail, s_vmap.service.lang AS service_lang, s_vmap.service.imagery AS service_imagery, s_vmap.service.service_type_type, s_vmap.service.service_options, string_agg(layer_businessobject.business_object_id, '|') AS bo_id_list FROM s_vmap.layer LEFT JOIN s_vmap.layer_businessobject ON s_vmap.layer.layer_id = s_vmap.layer_businessobject.layer_id LEFT JOIN s_vmap.business_object ON s_vmap.layer_businessobject.business_object_id = s_vmap.business_object.business_object_id LEFT JOIN s_vmap.layertheme ON s_vmap.layer.layertheme_id = s_vmap.layertheme.layertheme_id INNER JOIN s_vmap.service ON s_vmap.layer.service_id = s_vmap.service.service_id GROUP BY s_vmap.layer.layer_id, s_vmap.layertheme.name, s_vmap.service.name, s_vmap.service.service_type_id, s_vmap.service.url, s_vmap.service."key", s_vmap.service.service_type_version, s_vmap.service.thumbnail, s_vmap.service.lang, s_vmap.service.imagery, s_vmap.service.service_type_type, s_vmap.service.service_options; 
+					ALTER TABLE s_vmap.v_layer  OWNER TO u_vitis;
+					GRANT ALL ON TABLE s_vmap.v_layer TO vmap_admin;
+					GRANT SELECT ON TABLE s_vmap.v_layer TO vmap_user;
+					CREATE OR REPLACE VIEW s_vmap.v_map_layer AS  SELECT v_layer.layer_id,    v_layer.name,    v_layer.theme_name,    map_layer.layer_visible,    map_layer.map_id,    map_layer.layer_index,    map_layer.layer_opacity,    v_layer.layertheme_id,    v_layer.service_id   FROM s_vmap.v_layer,    s_vmap.map_layer  WHERE v_layer.layer_id = map_layer.layer_id;
+					ALTER TABLE s_vmap.v_map_layer  OWNER TO u_vitis;
+					GRANT ALL ON TABLE s_vmap.v_map_layer TO vmap_admin;
+					GRANT SELECT ON TABLE s_vmap.v_map_layer TO vmap_user;
+					ALTER TABLE s_vmap.layer DROP CONSTRAINT IF EXISTS fk_layer_business_object;
+					ALTER TABLE s_vmap.layer DROP CONSTRAINT IF EXISTS fk_s_vmap_bo_layer;
+					-- Admand 23/08/2017: utilisation de plusieurs bo pour un seul calque
+					UPDATE s_vitis.vm_table_field SET name='bo_id_list' where name='bo_id' and ressource_id='vmap/layers';
+					-- Armand 31/08/2017 16h51: Ajout du cadastre light
+					ALTER TABLE s_vmap.module ADD COLUMN rolname_list varchar(255);
+					UPDATE s_vmap.module SET rolname_list='vmap_cadastre_user|vmap_cadastre_light_user' WHERE module_id = 'cadastre';
+					-- Armand 19/09/2017 15:46 Le champ business_object_id de la table s_vmap.printtemplate est trop court 50 au lieu de 100.
+					DROP VIEW s_vmap.v_template;
+					DROP VIEW s_vmap.v_user_template;
+					ALTER TABLE s_vmap.printtemplate ALTER COLUMN business_object_id TYPE character varying(100);
+					CREATE OR REPLACE VIEW s_vmap.v_template AS  SELECT printtemplate.printtemplate_id,    printtemplate.name,    printtemplate.rt_format_id,    printtemplate.rt_orientation_id,    printtemplate.definition,    printtemplate.outputformats_id,    printtemplate.sql,    printtemplate.ressource_id,    printtemplate.business_object_id,    business_object.title AS business_object   FROM s_vmap.printtemplate   LEFT JOIN s_vmap.business_object ON printtemplate.business_object_id::text = business_object.business_object_id::text;
+					ALTER TABLE s_vmap.v_template  OWNER TO u_vitis;
+					GRANT ALL ON TABLE s_vmap.v_template TO u_vitis;
+					GRANT ALL ON TABLE s_vmap.v_template TO vmap_admin;
+					GRANT SELECT ON TABLE s_vmap.v_template TO vmap_user;
+					CREATE OR REPLACE VIEW s_vmap.v_user_template AS  SELECT DISTINCT printtemplate.printtemplate_id,    printtemplate.name,    printtemplate.rt_format_id,    printtemplate.rt_orientation_id,    printtemplate.definition,    printtemplate.outputformats_id,    printtemplate.sql,    printtemplate.ressource_id,    printtemplate.business_object_id,    business_object.title AS business_object,    printtemplate_group.group_id   FROM s_vmap.printtemplate   LEFT JOIN s_vmap.printtemplate_group ON printtemplate.printtemplate_id = printtemplate_group.printtemplate_id   LEFT JOIN s_vmap.business_object ON printtemplate.business_object_id::text = business_object.business_object_id::text;
+					ALTER TABLE s_vmap.v_user_template  OWNER TO u_vitis;
+					GRANT ALL ON TABLE s_vmap.v_user_template TO u_vitis;
+					GRANT ALL ON TABLE s_vmap.v_user_template TO vmap_admin;
+					GRANT SELECT ON TABLE s_vmap.v_user_template TO vmap_user;
 				]]>
 			</code>
 		</query>

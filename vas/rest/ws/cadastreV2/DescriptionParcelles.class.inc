@@ -1,23 +1,23 @@
 <?php
+
 /**
-* \file DescriptionParcelles.class.inc
-* \class DescriptionParcelles
-*
-* \author Armand Bahi <armand.bahi@veremes.com>.
-*
-* \brief This file contains the DescriptionParcelles php class
-*
-* This class defines Rest Api to Vmap DescriptionParcelles
-* 
-*/
+ * \file DescriptionParcelles.class.inc
+ * \class DescriptionParcelles
+ *
+ * \author Armand Bahi <armand.bahi@veremes.com>.
+ *
+ * \brief This file contains the DescriptionParcelles php class
+ *
+ * This class defines Rest Api to Vmap DescriptionParcelles
+ * 
+ */
 require_once 'Cadastre.class.inc';
 require_once 'DescriptionParcelle.class.inc';
 require_once __DIR__ . '/../../class/vitis_lib/Connection.class.inc';
 require_once __DIR__ . '/../../class/vmlib/BdDataAccess.inc';
 
 class DescriptionParcelles extends Cadastre {
-    
-     /**
+    /**
      * @SWG\Definition(
      *   definition="/descriptionparcelles",
      *   allOf={
@@ -29,6 +29,7 @@ class DescriptionParcelles extends Cadastre {
      *   description="Operations about DescriptionParcelles"
      * )
      */
+
     /**
      * construct
      * @param type $aPath url of the request
@@ -40,9 +41,9 @@ class DescriptionParcelles extends Cadastre {
         $this->aPath = $aPath;
         $this->aProperties = $properties;
         $this->oConnection = new Connection($this->aValues, $this->aProperties);
-		$this->aSelectedFields = Array('id_par', 'id_com as ID_COM', 'id_par as ID_PAR', 'ccodep as CCODEP', 'ccodir as CCODIR', 'ccocom as CCOCOM', 'ccopre as CCOPRE', 'ccosec as CCOSEC', 'dnupla as DNUPLA', 'cenr as CENR', 'dcntpa as DCNTPA', 'dsrpar as DSRPAR', ' dnupro as DNUPRO', 'jdata as JDATAT', 'dreflf as DREFLF', 'gpdl as GPDL', 'cprsecr as CPRSECR', 'ccosecr as CCOSECR', 'dnuplar as DNUPLAR', 'dnupdl as DNUPDL', 'gurbpa as GURBPA', 'dparpi as DPARPI', 'ccoarp as CCOARP', 'gparnf as GPARNF', 'gparbat as  GPARBAT', 'ccovoi as CCOVOI', 'ccoriv as CCORIV', 'ccocif as CCOCIF', 'id_voie as ID_RIVOLI', 'id_dnupro as ID_DNUPRO', 'dnvoiri as DNVOIRI', 'dindic as DINDIC', 'l_nature_voie as L_NATURE_VOIE', 'dvoilib as DVOILIB');
+        $this->aSelectedFields = Array('id_par', 'id_com as ID_COM', 'id_par as ID_PAR', 'ccodep as CCODEP', 'ccodir as CCODIR', 'ccocom as CCOCOM', 'ccopre as CCOPRE', 'ccosec as CCOSEC', 'dnupla as DNUPLA', 'cenr as CENR', 'dcntpa as DCNTPA', 'dsrpar as DSRPAR', ' dnupro as DNUPRO', 'jdata as JDATAT', 'dreflf as DREFLF', 'gpdl as GPDL', 'cprsecr as CPRSECR', 'ccosecr as CCOSECR', 'dnuplar as DNUPLAR', 'dnupdl as DNUPDL', 'gurbpa as GURBPA', 'dparpi as DPARPI', 'ccoarp as CCOARP', 'gparnf as GPARNF', 'gparbat as  GPARBAT', 'ccovoi as CCOVOI', 'ccoriv as CCORIV', 'ccocif as CCOCIF', 'id_voie as ID_RIVOLI', 'id_dnupro as ID_DNUPRO', 'dnvoiri as DNVOIRI', 'dindic as DINDIC', 'l_nature_voie as L_NATURE_VOIE', 'dvoilib as DVOILIB');
     }
-    
+
     /**
      * @SWG\Get(path="/descriptionparcelles",
      *   tags={"Parcelle"},
@@ -77,7 +78,7 @@ class DescriptionParcelles extends Cadastre {
      *     description="number of element",
      *     required=false,
      *     type="integer",
-	 *     default="4",
+     *     default="4",
      *     format="int32"
      *   ),
      * @SWG\Parameter(
@@ -116,14 +117,16 @@ class DescriptionParcelles extends Cadastre {
      *     )
      *  )
      */
+
     /**
      * get DescriptionParcelles
      * @return  DescriptionParcelles
      */
     function GET() {
-        $aReturn = $this->genericGet($this->aProperties['schema_majic'], 'v_vmap_nb_10_parcelle', 'ID_PAR');
+        $aReturn = $this->genericGet($this->aProperties['schema_majic'], $this->aProperties['cadastre']['views']['description_parcelle'], 'ID_PAR');
         return $aReturn['sMessage'];
     }
-    
+
 }
+
 ?>

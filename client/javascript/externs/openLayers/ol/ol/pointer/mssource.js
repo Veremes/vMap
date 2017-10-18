@@ -30,6 +30,7 @@
 
 goog.provide('ol.pointer.MsSource');
 
+goog.require('ol');
 goog.require('ol.pointer.EventSource');
 
 
@@ -49,7 +50,7 @@ ol.pointer.MsSource = function(dispatcher) {
     'MSGotPointerCapture': this.msGotPointerCapture,
     'MSLostPointerCapture': this.msLostPointerCapture
   };
-  goog.base(this, dispatcher, mapping);
+  ol.pointer.EventSource.call(this, dispatcher, mapping);
 
   /**
    * @const
@@ -69,7 +70,7 @@ ol.pointer.MsSource = function(dispatcher) {
     'mouse'
   ];
 };
-goog.inherits(ol.pointer.MsSource, ol.pointer.EventSource);
+ol.inherits(ol.pointer.MsSource, ol.pointer.EventSource);
 
 
 /**
@@ -82,7 +83,7 @@ goog.inherits(ol.pointer.MsSource, ol.pointer.EventSource);
  */
 ol.pointer.MsSource.prototype.prepareEvent_ = function(inEvent) {
   var e = inEvent;
-  if (goog.isNumber(inEvent.pointerType)) {
+  if (typeof inEvent.pointerType === 'number') {
     e = this.dispatcher.cloneEvent(inEvent, inEvent);
     e.pointerType = this.POINTER_TYPES[inEvent.pointerType];
   }

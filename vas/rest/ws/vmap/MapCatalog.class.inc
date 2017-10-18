@@ -71,10 +71,10 @@ class MapCatalog extends Vmap {
         $oConnection = $this->oConnection;
 
         // Récupère les groupes correspondants
-        $sGroup_id = $this->oConnection->sesGroup;
+        $sGroups = $this->oConnection->sesGroup;
 
         // Récupère les cartes correspondante      
-        $aMaps = $this->getMaps($sGroup_id);
+        $aMaps = $this->getMaps($sGroups);
 
         // Récupère les services correspondants
         $aServices = $this->getServices();
@@ -128,43 +128,17 @@ class MapCatalog extends Vmap {
     }
 
     /**
-     * Return the list of the group_id for the current user (ex: 12,16)
-     * @param string $aValues
-     * @return string group_id
-     */
-    /* function getGroupId($aValues) {
-
-      $user_id = $_SESSION['ses_user_id'];
-
-      // Récupère les groupes liés à l'utilisateur
-      $sGroup_id = '';
-      $sSql = "SELECT * FROM " . $this->aProperties['schema_framework'] . ".user_group WHERE \"user_id\" = '" . $user_id . "'";
-      $oResult = $this->oConnection->oBd->execute($sSql);
-      if (gettype($oResult) == 'object') {
-      while ($aLigne = $this->oConnection->oBd->ligneSuivante($oResult)) {
-      // stocke le layer id dans la chaine de caractères
-      if ($sGroup_id == '')
-      $sGroup_id.=$aLigne['group_id'];
-      else
-      $sGroup_id.=',' . $aLigne['group_id'];
-      }
-      } else {
-      return '';
-      }
-
-      return $sGroup_id;
-      } */
-
-    /**
      * Get the maps for the group_id
-     * @param string $sGroup_id
+     * @param string $sGroups
      * @return array
      */
-    function getMaps($sGroup_id) {
+    function getMaps($sGroups) {
 
-        if (empty($sGroup_id)) {
+        if (empty($sGroups)) {
             return array();
         }
+
+        $sGroups = str_replace(',', '|', $sGroups);
 
         $aValues = $this->aValues;
         $aPath = $this->aPath;
@@ -172,8 +146,13 @@ class MapCatalog extends Vmap {
         $oConnection = $this->oConnection;
         $filterList = '';
 
-        $sSql = "SELECT map_id, group_id FROM " . $this->aProperties['schema_vmap'] . ".map_group WHERE \"group_id\" in (" . $sGroup_id . ")";
-        $oResult = $this->oConnection->oBd->execute($sSql);
+        $aSQLParams = array(
+            'sSchema' => array('value' => $this->aProperties['schema_vmap'], 'type' => 'column_name'),
+            'sGroups' => array('value' => $sGroups, 'type' => 'group')
+        );
+        $sSql = "SELECT map_id, group_id FROM [sSchema].map_group WHERE \"group_id\" in ([sGroups])";
+
+        $oResult = $this->oConnection->oBd->executeWithParams($sSql, $aSQLParams);
         if (gettype($oResult) == 'object') {
             $aLayers_infos = Array();
             while ($aLigne = $this->oConnection->oBd->ligneSuivante($oResult)) {
@@ -188,7 +167,7 @@ class MapCatalog extends Vmap {
         }
 
         unset($aValues['my_vitis_id']);
-        $aValues['filter'] = 'map_id in (' . $filterList . ')';
+        $aValues['filter'] = '{"column":"map_id","compare_operator":"IN","value":[' . $filterList . ']}';
         $aValues['attributs'] = 'name|description|theme_name|theme_description|extent_crs_id|map_id|thumbnail|catalog_index';
         $aValues['order_by'] = 'catalog_index';
 
@@ -198,7 +177,7 @@ class MapCatalog extends Vmap {
         // Transforme $oMaps en tableau de Map
         $aMaps = Array();
         foreach ($oMaps->aObjects as $oMap) {
-            $oMap->aFields['url'] = $properties['web_server_name'] . '/' . $properties['services_alias'] . '/vmap/mapjsons/' . $oMap->aFields['map_id'] . '?token=' . $aValues['token'];
+            $oMap->aFields['url'] = $properties['web_server_name'] . '/' . $properties['services_alias'] . '/vmap/mapjsons/' . $oMap->aFields['map_id'];
             array_push($aMaps, $oMap->aFields);
         }
 
@@ -230,7 +209,7 @@ class MapCatalog extends Vmap {
             switch ($oService->aFields['service_type_id']) {
                 case 'tilewms':
                 case 'imagewms':
-                    $oService->aFields['url'] = str_replace('[token]', $aValues['token'], $oService->aFields['url']);
+                    $oService->aFields['url'] = str_replace('[token]', hash('sha256', $aValues['token']), $oService->aFields['url']);
                     if (isset($this->aProperties['ms_cgi_url'])) {
                         $oService->aFields['url'] = str_replace('[ms_cgi_url]', $this->aProperties['ms_cgi_url'], $oService->aFields['url']);
                     }

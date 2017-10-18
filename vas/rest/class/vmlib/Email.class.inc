@@ -1,11 +1,12 @@
 <?php
 
 require_once ("vmlib/logUtil.inc");
-require_once ("PEAR/Mail.php");
-require_once ("PEAR/Mail/mime.php");
+//require_once ("PEAR/Mail.php");
+//require_once ("PEAR/Mail/mime.php");
 require_once ("vmlib/EmailTemplate.class.inc");
 require_once("gtf_lib/gtf_object/Order.class.inc");
 require_once 'vmlib/error.inc';
+require_once ("PHPMailer/PHPMailerAutoload.php");
 
 class Email {
 
@@ -35,9 +36,9 @@ class Email {
         $this->aProperties = $aProperties;
         $this->aObjects = $aObjects;
         $this->xMailer = array('PHP/' => phpversion());
-        $this->from = $this->aProperties['nickname_sender'] . '<' . $this->aProperties['mail_sender'] . '>';
-        $this->replyTo = '<>';
-        $this->date = date("D, j M Y H:i:s ");
+        //$this->from = $this->aProperties['nickname_sender'] . '<' . $this->aProperties['mail_sender'] . '>';
+        //$this->replyTo = '<>';
+        //$this->date = date("D, j M Y H:i:s ");
 
         // Sauve les attributs du mail
         $this->oEmailTemplate = new EmailTemplateLib($oBd, $iEmailTemplateId, $aProperties, $aObjects);
@@ -63,7 +64,7 @@ class Email {
       /Retour : message
      * **************************************************** */
 
-    function send() {
+    /*function send() {
         $sErrorMessage = '';
         $crlf = ""; // \n
         //	
@@ -120,8 +121,77 @@ class Email {
         }
         //	
         return $sErrorMessage;
-    }
+    }*/
+	function send(){
+        $mail = new PHPMailer;
 
+        $mail->isSMTP();                                                // Set mailer to use SMTP
+        $mail->SMTPDebug = 3;                                         // debugger level (3 all with connection)
+        $mail->Debugoutput = function($str, $level) {error_log("debug level $level; message: $str");};
+        $mail->Host = $this->aProperties["smtp_host"];                  // Specify main and backup SMTP servers
+        $mail->Port = $this->aProperties["smtp_port"];                  // TCP port to connect to
+        $mail->SMTPAuth = $this->aProperties["smtp_authentification"];  // Enable SMTP authentication
+        // if authentication add parameter to connect SMTP
+        if ($this->aProperties["smtp_authentification"] === true){
+            $mail->AuthType = 'LOGIN';
+            $mail->Username = $this->aProperties["smtp_login"];             // SMTP username
+            $mail->Password = $this->aProperties["smtp_password"];          // SMTP password
+            $mail->SMTPSecure = 'tls';                                      // Enable TLS encryption, `ssl` also accepted (deprecated)
+        } 
+
+        $mail->SetFrom($this->aProperties['mail_sender'], $this->aProperties['nickname_sender']);
+        // add recipients
+        $aTo = explode(",", $this->to);
+        if (is_array($aTo) && !empty($aTo)) {
+            foreach ($aTo as $sTo) {
+                error_log($sTo);
+                    $mail->AddAddress($sTo);
+            }
+        }
+        // add copy recipient
+        $aCC = explode(",", $this->cc);
+        if (is_array($aCC) && !empty($aCC)) {
+            foreach ($aCC as $sCC) {
+                    $mail->AddCC($sCC);
+            }
+        }
+
+        // add CCI recipient
+        $aCCI = explode(",", $this->cci);
+        if (is_array($aCCI) && !empty($aCCI)) {
+            foreach ($aCCI as $sCCI) {
+                    $mail->AddBCC($sCCI);
+            }
+        }
+
+        $mail->AddReplyTo($this->aProperties["mail_sender"], $this->aProperties["nickname_sender"]);
+
+        $mail->IsHTML(true);                                            // Set email format to HTML
+        $mail->CharSet = 'UTF-8';
+
+        $mail->Subject = $this->subject;
+        $mail->Body = /*utf8_decode*/('<html><body>' . $this->body . '</body></html>');
+
+        // Pièce jointe ?   
+        if (is_array($this->aAttachments) && !empty($this->aAttachments)) {
+            foreach ($this->aAttachments as $sAttachment) {
+                if (file_exists($sAttachment))
+                    //$mail->addAttachment($path, $name, $encoding = 'base64', $type = 'application/octet-stream');
+                    $mail->addAttachment($sAttachment);
+            }
+        }
+
+        if (!$mail->send()) {
+            writeToErrorLog(ERROR_0023 . $this->to . '.');
+            writeToErrorLog("Error message : " . $mail->ErrorInfo);
+            writeToLog("Failed sending email to the following address : " . $this->to . ' et ' . $this->cc, $this->aProperties['mail_log_file']);
+                //$sErrorMessage = $sMail->getMessage();
+        } else {
+            writeToLog("|INFORM|PHP| An email has been sent to the following address : $sDestinataire", $this->aProperties['mail_log_file']);
+        }
+
+        return $sErrorMessage;
+	}
 }
 
 ?>

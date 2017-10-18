@@ -68,7 +68,7 @@ class Voie extends Cadastre {
 	 */
 	function GET() {
 		require __DIR__ . "/../vitis/" . $this->sRessourcesFile;
-		$this->aFields = $this->getFields('public', 'v_maj_fv', 'ID_RIVOLI');
+		$this->aFields = $this->getFields('public', $this->aProperties['cadastre']['views']['voie'], 'ID_RIVOLI');
 	}
 
 }

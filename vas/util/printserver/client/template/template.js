@@ -24,7 +24,7 @@ PrintTemplate = function (opt_options) {
     var $scope = angular.element($('#print_template')).scope();
 
     // Ajoute les attributs de opt_options.scope dans $scope
-    for (var option in opt_options.scope) {        
+    for (var option in opt_options.scope) {
         $scope[option] = opt_options.scope[option];
     }
 
@@ -62,22 +62,22 @@ PrintTemplate.prototype.getTemplateDefinition = function (templateId) {
     var templateDefinition;
 
     http.get({
-        url: apiUrl + '/vmap/printtemplates/' + templateId + '?token=' + token,
+        url: apiUrl + '/vmap/userprinttemplates/' + templateId + '?token=' + token,
         async: false,
         successCallback: function (response) {
             if (!isDef(response)) {
                 callError("getTemplateDefinition: Can't get the response");
             }
-            if (!isDef(response['printtemplates'])) {
-                callError("getTemplateDefinition: Can't get the response.printtemplates");
+            if (!isDef(response['userprinttemplates'])) {
+                callError("getTemplateDefinition: Can't get the response.userprinttemplates");
             }
-            if (!isDef(response['printtemplates'][0])) {
-                callError("getTemplateDefinition: Can't get the response.printtemplates[0]");
+            if (!isDef(response['userprinttemplates'][0])) {
+                callError("getTemplateDefinition: Can't get the response.userprinttemplates[0]");
             }
-            if (!isDef(response['printtemplates'][0]['definition'])) {
-                callError("getTemplateDefinition: Can't get the response.printtemplates[0].definition");
+            if (!isDef(response['userprinttemplates'][0]['definition'])) {
+                callError("getTemplateDefinition: Can't get the response.userprinttemplates[0].definition");
             }
-            templateDefinition = response['printtemplates'][0]['definition'];
+            templateDefinition = response['userprinttemplates'][0]['definition'];
         }
     });
 
@@ -110,7 +110,7 @@ PrintTemplate.prototype.addTemplateIncludes = function (aIncludes) {
                 oIncludeDef['html'] = decodeURIComponent(oIncludeDef['html']);
                 oIncludeDef['html'] = oIncludeDef['html'].replace(/\n/g, '');
                 oIncludeDef['html'] = oIncludeDef['html'].replace(/\\"/g, '"');
-                                
+
                 $(oIncludeDef['target']).append(oIncludeDef['html']);
             }
         }

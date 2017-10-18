@@ -1,11 +1,10 @@
 goog.provide('ol.ImageTile');
 
-goog.require('goog.asserts');
+goog.require('ol');
 goog.require('ol.Tile');
 goog.require('ol.TileState');
 goog.require('ol.events');
 goog.require('ol.events.EventType');
-goog.require('ol.object');
 
 
 /**
@@ -19,7 +18,7 @@ goog.require('ol.object');
  */
 ol.ImageTile = function(tileCoord, state, src, crossOrigin, tileLoadFunction) {
 
-  goog.base(this, tileCoord, state);
+  ol.Tile.call(this, tileCoord, state);
 
   /**
    * Image URI
@@ -40,13 +39,7 @@ ol.ImageTile = function(tileCoord, state, src, crossOrigin, tileLoadFunction) {
 
   /**
    * @private
-   * @type {Object.<number, Image>}
-   */
-  this.imageByContext_ = {};
-
-  /**
-   * @private
-   * @type {Array.<ol.events.Key>}
+   * @type {Array.<ol.EventsKey>}
    */
   this.imageListenerKeys_ = null;
 
@@ -57,7 +50,7 @@ ol.ImageTile = function(tileCoord, state, src, crossOrigin, tileLoadFunction) {
   this.tileLoadFunction_ = tileLoadFunction;
 
 };
-goog.inherits(ol.ImageTile, ol.Tile);
+ol.inherits(ol.ImageTile, ol.Tile);
 
 
 /**
@@ -72,7 +65,7 @@ ol.ImageTile.prototype.disposeInternal = function() {
   }
   this.state = ol.TileState.ABORT;
   this.changed();
-  goog.base(this, 'disposeInternal');
+  ol.Tile.prototype.disposeInternal.call(this);
 };
 
 
@@ -81,22 +74,8 @@ ol.ImageTile.prototype.disposeInternal = function() {
  * @inheritDoc
  * @api
  */
-ol.ImageTile.prototype.getImage = function(opt_context) {
-  if (opt_context !== undefined) {
-    var image;
-    var key = goog.getUid(opt_context);
-    if (key in this.imageByContext_) {
-      return this.imageByContext_[key];
-    } else if (ol.object.isEmpty(this.imageByContext_)) {
-      image = this.image_;
-    } else {
-      image = /** @type {Image} */ (this.image_.cloneNode(false));
-    }
-    this.imageByContext_[key] = image;
-    return image;
-  } else {
-    return this.image_;
-  }
+ol.ImageTile.prototype.getImage = function() {
+  return this.image_;
 };
 
 
@@ -137,14 +116,13 @@ ol.ImageTile.prototype.handleImageLoad_ = function() {
 
 
 /**
- * Load not yet loaded URI.
+ * @inheritDoc
+ * @api
  */
 ol.ImageTile.prototype.load = function() {
-  if (this.state == ol.TileState.IDLE) {
+  if (this.state == ol.TileState.IDLE || this.state == ol.TileState.ERROR) {
     this.state = ol.TileState.LOADING;
     this.changed();
-    goog.asserts.assert(!this.imageListenerKeys_,
-        'this.imageListenerKeys_ should be null');
     this.imageListenerKeys_ = [
       ol.events.listenOnce(this.image_, ol.events.EventType.ERROR,
           this.handleImageError_, this),
@@ -162,8 +140,6 @@ ol.ImageTile.prototype.load = function() {
  * @private
  */
 ol.ImageTile.prototype.unlistenImage_ = function() {
-  goog.asserts.assert(this.imageListenerKeys_,
-      'this.imageListenerKeys_ should not be null');
   this.imageListenerKeys_.forEach(ol.events.unlistenByKey);
   this.imageListenerKeys_ = null;
 };

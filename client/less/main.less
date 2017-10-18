@@ -840,6 +840,9 @@ div[data-app-html-form]>div[app-form-reader]>.modal>.modal-dialog{
 .vitis-nav-top>li>a {
     color: @application-color-theme !important;
 }
+.vitis-background-app-nav-top>li>a {
+    color: #FFFFFF !important;
+}
 
 .stepwizard-step p {
     margin-top: 10px;
@@ -880,3 +883,72 @@ div[data-app-html-form]>div[app-form-reader]>.modal>.modal-dialog{
     line-height: 1.428571429;
     border-radius: 15px;
 }
+
+.btn-outline {
+    background-color: transparent;
+    color: inherit;
+    transition: all .5s;
+}
+
+.btn-primary.btn-outline {
+    color: #428bca;
+}
+
+.btn-success.btn-outline {
+    color: #5cb85c;
+}
+
+.btn-info.btn-outline {
+    color: #5bc0de;
+}
+
+.btn-warning.btn-outline {
+    color: #f0ad4e;
+}
+
+.btn-danger.btn-outline {
+    color: #d9534f;
+}
+
+.btn-primary.btn-outline:hover,
+.btn-success.btn-outline:hover,
+.btn-info.btn-outline:hover,
+.btn-warning.btn-outline:hover,
+.btn-danger.btn-outline:hover {
+    color: #fff;
+}
+
+.forgotten-password-align{
+    text-align: -webkit-center;
+    text-align: -moz-center;
+}
+
+.btn-ouline-login{
+    padding: 0px !important;
+}
+
+.g-recaptcha{
+    text-align: -webkit-center;
+    text-align: -moz-center;
+}
+
+.map_workbench_symbol{
+    margin-right: 4px !important;
+    margin-left: 4px !important;
+}
+.map_workbench_symbol:hover{
+    cursor: pointer;
+}
+
+
+@supports (-ms-ime-align:auto) { /*only for edge*/
+    .g-recaptcha { margin-left: 22% !important; } 
+}
+
+@media all and (-ms-high-contrast: none), (-ms-high-contrast: active) { /*IE10+*/
+    .g-recaptcha { margin-left: 22% !important; }
+}
+
+/*@supports (-ms-accelerator:true) and (not (color:unset)) {
+  .selector { property:value; } 
+}*/

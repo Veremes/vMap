@@ -185,7 +185,7 @@ class PublicWmsServices extends Vmap4MapServer {
         //$sFilename = $this->aProperties["map_dir"] . '/wms_public/' . $this->aValues['wmsservice_id'] . ".map";
         $aVmapGetServiceValues = Array(
             'token' => $this->aValues['token'],
-            'filter' => "name='vm4ms_" . $this->aValues['my_vitis_id'] . "'",
+            'filter' => '{"relation": "AND", "operators": [{"column": "name", "compare_operator": "=", "value": vm4ms_' . $this->aValues['my_vitis_id'] . '}]}',
             'vitis_version' => $this->aValues['vitis_version'],
             'id' => 'services',
             'output' => $this->aValues['output'],
@@ -220,10 +220,19 @@ class PublicWmsServices extends Vmap4MapServer {
      */
     function PUT() {
         $aReturn = $this->genericPut($this->aProperties['schema_vm4ms'], 'wmsservice', 'wmsservice_id');
-        // Création du fichier .map du flux WMS (et celui de test pour MapServer).
-        $oVm4msMetadataAccess = new Vm4msMetadataAccess($this->oConnection->oBd, '', '', session_id(), $this->aProperties);
-        $oVm4msMetadataAccess->saveWmsServiceMapFile($this->aValues['my_vitis_id']);
-        return $aReturn['sMessage'];
+        $sMessage = $aReturn['sMessage'];
+        $oBd = new BD($this->aProperties["owner_login"], $this->aProperties["owner_pass"], $this->aProperties["database"], $this->aProperties["server"], $this->aProperties["port"], $this->aProperties["sgbd"], $this->aProperties["page_encoding"]);
+        if ($oBd->erreurRencontree) {
+            $oError = new VitisError(1, $oBd->sMessage);
+            $aXmlRacineAttribute['status'] = 0;
+            $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+            $bXMLError = true;
+        } else {
+            // Création du fichier .map du flux WMS.
+            $oVm4msMetadataAccess = new Vm4msMetadataAccess($this->oConnection->oBd, '', '', session_id(), $this->aProperties);
+            $oVm4msMetadataAccess->saveWmsServiceMapFile($this->aValues['my_vitis_id']);
+        }
+        return $sMessage;
     }
 
     /**

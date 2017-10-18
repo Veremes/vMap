@@ -43,7 +43,7 @@ class Layers extends Vmap4MapServer {
         $this->aPath = $aPath;
         $this->aProperties = $properties;
         $this->oConnection = new Connection($this->aValues, $this->aProperties);
-        $this->aSelectedFields = Array("ms_layer_id", "name", "title", "coordsys_id", "coordsys_label", "source_id", "connection_id", "tableschema", "tablename", "tableidfield", "definition", "opacity", "active", "ms_layertype_id", "private_connection", "connection_label", "source_label", "definitiontmp");
+        $this->aSelectedFields = Array("ms_layer_id", "name", "title", "coordsys_id", "coordsys_label", "source_id", "connection_id", "tableschema", "tablename", "tableidfield", "definition", "opacity", "active", "ms_layertype_id", "private_connection", "connection_label", "source_label", "definitiontmp", "metadata_id");
     }
 
     /**
@@ -182,8 +182,10 @@ class Layers extends Vmap4MapServer {
      * @return  Layers
      */
     function GET() {
-        $aReturn = $this->genericGet($this->aProperties['schema_vm4ms'], 'v_ms_layer', 'ms_layer_id');
-        $sMessage = $aReturn['sMessage'];
+        if (in_array('vm4ms_admin', $this->oConnection->aPrivileges)) {
+            $aReturn = $this->genericGet($this->aProperties['schema_vm4ms'], 'v_ms_layer', 'ms_layer_id');
+            $sMessage = $aReturn['sMessage'];
+        }
         if (!empty($this->aPath[3])) {
             if ($this->aPath[3] == "MapFile")
                 $sMessage = $this->getMapFile();
@@ -198,30 +200,39 @@ class Layers extends Vmap4MapServer {
      */
     function createMapFile() {
         require $this->sRessourcesFile;
-        $oBd = $this->oConnection->oBd;
-        // Login et mdp.
-        $sLogin = '';
-        $sPassword = '';
-        if (!empty($this->aValues['user_login']) && !empty($this->aValues['user_password'])) {
-            $sLogin = $this->aValues['user_login'];
-            $sPassword = $this->aValues['user_password'];
+        //$oBd = $this->oConnection->oBd;
+        $oBd = new BD($this->aProperties["owner_login"], $this->aProperties["owner_pass"], $this->aProperties["database"], $this->aProperties["server"], $this->aProperties["port"], $this->aProperties["sgbd"], $this->aProperties["page_encoding"]);
+        if ($oBd->erreurRencontree) {
+            $oError = new VitisError(1, $oBd->sMessage);
+            $aXmlRacineAttribute['status'] = 0;
+            $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+            $bXMLError = true;
+            writeToErrorLog('Error: ' . $oBd->sMessage . ' -> ' . __FUNCTION__ . '(' . $this->aProperties["test_wms_service"] . ')' . ' in ' . __FILE__ . ' on line ' . __LINE__);
+        } else {
+            // Login et mdp.
+            $sLogin = '';
+            $sPassword = '';
+            if (!empty($this->aValues['user_login']) && !empty($this->aValues['user_password'])) {
+                $sLogin = $this->aValues['user_login'];
+                $sPassword = $this->aValues['user_password'];
+            }
+            // Création du fichier ".map".
+            $oVm4msMetadataAccess = new Vm4msMetadataAccess($oBd, $sLogin, $sPassword, hash('sha256', session_id()), $this->aProperties);
+            $sMapFile = $oVm4msMetadataAccess->saveLayerTestMapFile($this->aProperties["test_wms_service"], $this->aValues['my_vitis_id']);
+            $this->aObjects[0]->aFields['map_file'] = $sMapFile;
+            // Source des couches du flux de test.
+            $aParams['sSchemaVm4ms'] = array('value' => $this->aProperties['schema_vm4ms'], 'type' => 'schema_name');
+            $aParams['wmsservice_id'] = array('value' => $this->aProperties["test_wms_service"], 'type' => 'string');
+            $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['getWmsServiceLayersSource'], $aParams);
+            if (!$this->oConnection->oBd->erreurRencontree) {
+                $aLayersSource = array($this->aObjects[0]->aFields['name'] => $this->aObjects[0]->aFields['source_label']);
+                while ($aLayer = $this->oConnection->oBd->ligneSuivante($oPDOresult))
+                    $aLayersSource[$aLayer['name']] = $aLayer['source'];
+                $this->aObjects[0]->aFields['layers_sources'] = $aLayersSource;
+            }
+            $aXmlRacineAttribute['status'] = 1;
+            $sMessage = $this->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
         }
-        // Création du fichier ".map".
-        $oVm4msMetadataAccess = new Vm4msMetadataAccess($oBd, $sLogin, $sPassword, session_id(), $this->aProperties);
-        $sMapFile = $oVm4msMetadataAccess->saveLayerTestMapFile($this->aProperties["test_wms_service"], $this->aValues['my_vitis_id']);
-        $this->aObjects[0]->aFields['map_file'] = $sMapFile;
-        // Source des couches du flux de test.
-        $sSql = str_replace('[wmsservice_id]', $this->aProperties["test_wms_service"], $aSql['getWmsServiceLayersSource']);
-        $sSql = str_replace('[sSchemaVm4ms]', $this->aProperties['schema_vm4ms'], $sSql);
-        $oPDOresult = $this->oConnection->oBd->execute($sSql);
-        if (!$this->oConnection->oBd->erreurRencontree) {
-            $aLayersSource = array($this->aObjects[0]->aFields['name'] => $this->aObjects[0]->aFields['source_label']);
-            while ($aLayer = $this->oConnection->oBd->ligneSuivante($oPDOresult))
-                $aLayersSource[$aLayer['name']] = $aLayer['source'];
-            $this->aObjects[0]->aFields['layers_sources'] = $aLayersSource;
-        }
-        $aXmlRacineAttribute['status'] = 1;
-        $sMessage = $this->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
         return $sMessage;
     }
 
@@ -231,14 +242,16 @@ class Layers extends Vmap4MapServer {
     function getMapFile() {
         require $this->sRessourcesFile;
         // Nom du fichier ".map".
-        $this->aObjects[0]->aFields['map_file'] = $this->aProperties["map_dir"] . '/wms_test/' . $this->aValues['token'] . '_' . $this->aObjects[0]->aFields['name'] . '.map';
+        $sMapFileHash = hash('sha256', $this->aValues['token']);
+        $this->aObjects[0]->aFields['map_file'] = $this->aProperties["map_dir"] . '/wms_test/' . $sMapFileHash . '_' . $this->aObjects[0]->aFields['name'] . '.map';
+        $this->aObjects[0]->aFields['map_file_hash'] = $sMapFileHash;
         // Contenu du fichier ".map".
         if (file_exists($this->aObjects[0]->aFields['map_file']))
             $this->aObjects[0]->aFields['map_file_content'] = file_get_contents($this->aObjects[0]->aFields['map_file']);
         // Source des couches du flux de test.
-        $sSql = str_replace('[wmsservice_id]', $this->aProperties["test_wms_service"], $aSql['getWmsServiceLayersSource']);
-        $sSql = str_replace('[sSchemaVm4ms]', $this->aProperties['schema_vm4ms'], $sSql);
-        $oPDOresult = $this->oConnection->oBd->execute($sSql);
+        $aParams['sSchemaVm4ms'] = array('value' => $this->aProperties['schema_vm4ms'], 'type' => 'schema_name');
+        $aParams['wmsservice_id'] = array('value' => $this->aProperties["test_wms_service"], 'type' => 'string');
+        $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['getWmsServiceLayersSource'], $aParams);
         if (!$this->oConnection->oBd->erreurRencontree) {
             $aLayersSource = array($this->aObjects[0]->aFields['name'] => $this->aObjects[0]->aFields['source_label']);
             while ($aLayer = $this->oConnection->oBd->ligneSuivante($oPDOresult))
@@ -255,7 +268,7 @@ class Layers extends Vmap4MapServer {
      */
     function getMapServerLog() {
         // Nom du flux de test utilisé.
-        $sMsLogFile = $this->aProperties['ms_log_dir'] . '/test/' . session_id() . '_' . $this->aObjects[0]->aFields['name'] . '.log';
+        $sMsLogFile = $this->aProperties['ms_log_dir'] . '/test/' . hash('sha256', session_id()) . '_' . $this->aObjects[0]->aFields['name'] . '.log';
         if (file_exists($sMsLogFile))
             $this->aObjects[0]->aFields['log_file_content'] = utf8_encode(file_get_contents($sMsLogFile));
         $aXmlRacineAttribute['status'] = 1;
@@ -428,8 +441,11 @@ class Layers extends Vmap4MapServer {
         if (!empty($this->aPath[2])) {
             if ($this->aPath[2] == "MapFile") {
                 $this->aValues['my_vitis_id'] = $this->aValues['ms_layer_id'];
-                $aReturn = $this->genericGet($this->aProperties['schema_vm4ms'], 'v_ms_layer', 'ms_layer_id');
-                $sMessage = $aReturn['sMessage'];
+                $aReturn['sStatus'] = 1;
+                if (in_array('vm4ms_admin', $this->oConnection->aPrivileges)) {
+                    $aReturn = $this->genericGet($this->aProperties['schema_vm4ms'], 'v_ms_layer', 'ms_layer_id');
+                    $sMessage = $aReturn['sMessage'];
+                }
                 if ($aReturn['sStatus'] == 1) {
                     $this->createMapFile();
                     $sMessage = $this->getMapFile();
@@ -455,10 +471,10 @@ class Layers extends Vmap4MapServer {
                     require $this->sRessourcesFile;
                     $aWmsServices = explode('|', $sWmsServices);
                     foreach ($aWmsServices as $sWmsService) {
-                        $sSql = str_replace('[wmsservice_id]', $sWmsService, $aSql['insertLayerWmsServices']);
-                        $sSql = str_replace('[ms_layer_id]', $this->aValues["my_vitis_id"], $sSql);
-                        $sSql = str_replace('[sSchemaVm4ms]', $this->aProperties['schema_vm4ms'], $sSql);
-                        $resultat = $this->oConnection->oBd->execute($sSql);
+                        $aParams['sSchemaVm4ms'] = array('value' => $this->aProperties['schema_vm4ms'], 'type' => 'schema_name');
+                        $aParams['ms_layer_id'] = array('value' => $this->aValues['my_vitis_id'], 'type' => 'number');
+                        $aParams['wmsservice_id'] = array('value' => $sWmsService, 'type' => 'string');
+                        $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['insertLayerWmsServices'], $aParams);
                         if ($this->oConnection->oBd->enErreur()) {
                             $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                             $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
@@ -599,53 +615,159 @@ class Layers extends Vmap4MapServer {
      * 
      *  )
      */
+
+    /**
+     * @SWG\Put(path="/layers/activate",
+     *   tags={"Layers"},
+     *   summary="Activate layers",
+     *   description="Request to activate layers",
+     *   operationId="PUT",
+     *   produces={"application/xml", "application/json", "application/x-vm-json"},
+     *   @SWG\Parameter(
+     *     name="token",
+     *     in="query",
+     *     description="user token",
+     *     required=true,
+     *     type="string"
+     *   ),
+     *   @SWG\Parameter(
+     *     name="idList",
+     *     in="query",
+     *     description="List of layers id",
+     *     required=true,
+     *     type="string",
+     *   ),
+     *   @SWG\Response(
+     *         response=200,
+     *         description="Poprerties Response",
+     *         @SWG\Schema(ref="#/definitions/layers")
+     *     )
+     *  )
+     */
+
+    /**
+     * @SWG\Put(path="/layers/desactivate",
+     *   tags={"Layers"},
+     *   summary="Desactivate layers",
+     *   description="Request to desactivate layers",
+     *   operationId="PUT",
+     *   produces={"application/xml", "application/json", "application/x-vm-json"},
+     *   @SWG\Parameter(
+     *     name="token",
+     *     in="query",
+     *     description="user token",
+     *     required=true,
+     *     type="string"
+     *   ),
+     *   @SWG\Parameter(
+     *     name="idList",
+     *     in="query",
+     *     description="List of layers id",
+     *     required=true,
+     *     type="string",
+     *   ),
+     *   @SWG\Response(
+     *         response=200,
+     *         description="Poprerties Response",
+     *         @SWG\Schema(ref="#/definitions/layers")
+     *     )
+     *  )
+     */
     
     /**
      * modify layer
      * @return array containing the status and the message
      */
     function PUT() {
-        require $this->sRessourcesFile;
-        // Création du fichier .map des flux WMS associés à la couche.
-        $bCreateWsMapFile = true;
-        if ($this->aValues["create_ws_map_file"] == "false")
-            $bCreateWsMapFile = false;
-        unset($this->aValues["create_ws_map_file"]);
-        // Sauvegarde la définition dans le champ "definitiontmp".
-        if ($this->aValues['test_layer'] == 'true') {
-            $this->aValues['definitiontmp'] = $this->aValues['definition'];
-            unset($this->aValues['definition']);
-        }
-        else
-            $this->aValues['definitiontmp'] = '';
-        // Vide le schéma, la table et la colonne si aucune connexion est sélectionnée.
-        if (empty($this->aValues['connection_id'])) {
-            $this->aValues['tableschema'] = null;
-            $this->aValues['tablename'] = null;
-            $this->aValues['tableidfield'] = null;
-            $this->aValues['connection_id'] = null;
-        }
-        // 
-        $aReturn = $this->genericPut($this->aProperties['schema_vm4ms'], 'ms_layer', 'ms_layer_id');
-        if ($aReturn['sStatus'] == 0) {
+        if ($this->aPath[2] == "activate")
+            $sMessage = $this->activateLayer();
+        else if ($this->aPath[2] == "desactivate")
+            $sMessage = $this->desactivateLayer();
+        else {
+            require $this->sRessourcesFile;
+            // Création du fichier .map des flux WMS associés à la couche.
+            $bCreateWsMapFile = true;
+            if ($this->aValues["create_ws_map_file"] == "false")
+                $bCreateWsMapFile = false;
+            unset($this->aValues["create_ws_map_file"]);
+            // Sauvegarde la définition dans le champ "definitiontmp".
+            if ($this->aValues['test_layer'] == 'true') {
+                $this->aValues['definitiontmp'] = $this->aValues['definition'];
+                unset($this->aValues['definition']);
+            }
+            else
+                $this->aValues['definitiontmp'] = '';
+            // Vide le schéma, la table et la colonne si aucune connexion est sélectionnée.
+            if (empty($this->aValues['connection_id'])) {
+                $this->aValues['tableschema'] = null;
+                $this->aValues['tablename'] = null;
+                $this->aValues['tableidfield'] = null;
+                $this->aValues['connection_id'] = null;
+            }
+            // 
+            $aReturn = $this->genericPut($this->aProperties['schema_vm4ms'], 'ms_layer', 'ms_layer_id');
+            if ($aReturn['sStatus'] == 0) {
+                $sMessage = $aReturn['sMessage'];
+                return $sMessage;
+            }
+            // Suppression de l'association de la couche aux flux WMS si la connexion est privée.
+            if (!empty($this->aValues['connection_id'])) {
+                $aParams['sSchemaVm4ms'] = array('value' => $this->aProperties['schema_vm4ms'], 'type' => 'schema_name');
+                $aParams['connection_id'] = array('value' => $this->aValues["connection_id"], 'type' => 'number');
+                $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['getConnectionType'], $aParams);
+                $aConnection = $this->oConnection->oBd->ligneSuivante($oPDOresult);
+                if ($aConnection['private'] === true)
+                    $this->oConnection->oBd->delete($this->aProperties['schema_vm4ms'], 'wmsservice_ms_layer', 'ms_layer_id', $this->aValues["my_vitis_id"]);
+            }
             $sMessage = $aReturn['sMessage'];
-            return $sMessage;
+            // Création du fichier .map de tous les flux WMS associés à la couche.
+            if ($aReturn["sStatus"] == 1 && $bCreateWsMapFile) {
+                $oLayer = new Layer($this->aPath, $this->aValues, $this->aProperties, $this->oConnection);
+                $oLayer->GET();
+                $oLayer->createLayerWmsServicesMapFile($oLayer->aFields['private_connection']);
+            }
         }
-        // Suppression de l'association de la couche aux flux WMS si la connexion est privée.
-        if (!empty($this->aValues['connection_id'])) {
-            $sSql = str_replace('[connection_id]', $this->aValues["connection_id"], $aSql['getConnectionType']);
-            $sSql = str_replace('[sSchemaVm4ms]', $this->aProperties['schema_vm4ms'], $sSql);
-            $oPDOresult = $this->oConnection->oBd->execute($sSql);
-            $aConnection = $this->oConnection->oBd->ligneSuivante($oPDOresult);
-            if ($aConnection['private'] === true)
-                $this->oConnection->oBd->delete($this->aProperties['schema_vm4ms'], 'wmsservice_ms_layer', 'ms_layer_id', $this->aValues["my_vitis_id"]);
+        return $sMessage;
+    }
+
+    /**
+     * activateLayer
+     */
+    function activateLayer() {
+        require $this->sRessourcesFile;
+        $aReturn = array('sStatus' => 1, 'sMessage' => '');
+        $aParams['sSchemaVm4ms'] = array('value' => $this->aProperties['schema_vm4ms'], 'type' => 'schema_name');
+        $aParams['idList'] = array('value' => $this->aValues['idList'], 'type' => 'group');
+        $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['activateLayers'], $aParams);
+        if ($this->oConnection->oBd->enErreur())
+            $aReturn = array('sStatus' => 0, 'message' => $this->oConnection->oBd->getBDMessage(), 'error_code' => 1);
+        $aXmlRacineAttribute['sStatus'] = $aReturn['sStatus'];
+        if ($aReturn['sStatus'] == 1)
+            $sMessage = $this->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+        else {
+            $oError = new VitisError($aReturn['error_code'], $aReturn['message']);
+            $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
         }
-        $sMessage = $aReturn['sMessage'];
-        // Création du fichier .map de tous les flux WMS associés à la couche.
-        if ($aReturn["sStatus"] == 1 && $bCreateWsMapFile) {
-            $oLayer = new Layer($this->aPath, $this->aValues, $this->aProperties, $this->oConnection);
-            $oLayer->GET();
-            $oLayer->createLayerWmsServicesMapFile($oLayer->aFields['private_connection']);
+        return $sMessage;
+    }
+
+    /**
+     * desactivateLayer
+     */
+    function desactivateLayer() {
+        require $this->sRessourcesFile;
+        $aReturn = array('sStatus' => 1, 'sMessage' => '');
+        $aParams['sSchemaVm4ms'] = array('value' => $this->aProperties['schema_vm4ms'], 'type' => 'schema_name');
+        $aParams['idList'] = array('value' => $this->aValues['idList'], 'type' => 'group');
+        $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['desactivateLayers'], $aParams);
+        if ($this->oConnection->oBd->enErreur())
+            $aReturn = array('sStatus' => 0, 'message' => $this->oConnection->oBd->getBDMessage(), 'error_code' => 1);
+        $aXmlRacineAttribute['sStatus'] = $aReturn['sStatus'];
+        if ($aReturn['sStatus'] == 1)
+            $sMessage = $this->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+        else {
+            $oError = new VitisError($aReturn['error_code'], $aReturn['message']);
+            $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
         }
         return $sMessage;
     }

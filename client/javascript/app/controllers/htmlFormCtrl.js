@@ -1,4 +1,5 @@
 /* global goog */
+'use strict';
 
 // Google closure
 goog.provide("vitis.controllers.htmlForm");
@@ -7,18 +8,16 @@ goog.provide("vitis.controllers.htmlForm");
  * htmlForm Controller.
  * Chargement des données et de la structure d'un formulaire.
  * @param {angular.$scope} $scope Angular scope.
- * @param {angular.$http} $http Angular http service.
  * @param {angular.$log} $log Angular log service.
  * @param {service} $q Angular q service.
  * @param {angular.$timeout} $timeout Angular timeout service.
- * @param {service} Restangular Service Restangular.
  * @param {service} envSrvc Paramètres d'environnement.
  * @param {service} propertiesSrvc Paramètres des properties.
  * @param {service} sessionSrvc Service de gestion des sessions.
  * @param {service} externFunctionSrvc Fonctions externes à Angular.
  * @ngInject
  **/
-vitisApp.htmlFormCtrl = function ($scope, $http, $log, $q, $timeout, Restangular, envSrvc, propertiesSrvc, sessionSrvc, externFunctionSrvc) {
+vitisApp.htmlFormCtrl = function ($scope, $log, $q, $timeout, envSrvc, propertiesSrvc, sessionSrvc, externFunctionSrvc) {
     $log.info("initHtmlForm");
     $scope["oFormScope"] = $scope;
     $scope["oProperties"] = propertiesSrvc;
@@ -58,35 +57,37 @@ vitisApp.htmlFormCtrl = function ($scope, $http, $log, $q, $timeout, Restangular
     if (sResourceId != null && (envSrvc["sMode"] == "update" || envSrvc["sMode"] == "display") && $scope["bLoadFormValues"] === true) {
         $log.info("initHtmlForm : Form. values");
         var aResourceId = envSrvc["explodeWebServiceResourceId"](sResourceId);
-        // Nom du service web (vitis, gtf...)
-        var oWebServiceBase = Restangular["one"](propertiesSrvc["services_alias"] + "/" + aResourceId[0], aResourceId[1]);
         // Charge les données du formulaire.
-        oWebServiceBase["customGET"](envSrvc["sId"], {"token": sessionSrvc["token"]})
-                .then(function (data) {
-                    if (data["status"] == 1) {
-                        envSrvc["oFormValues"][$scope["sFormDefinitionName"]] = {};
-                        // Extraction des données.
-                        envSrvc["oFormValues"][$scope["sFormDefinitionName"]] = envSrvc["extractWebServiceData"](aResourceId[1], data)[0];
-                        // Sauvegarde (valeurs par défaut).
-                        envSrvc["oFormDefaultValues"][$scope["sFormDefinitionName"]] = angular.copy(envSrvc["oFormValues"][$scope["sFormDefinitionName"]]);
-                        // Affichage du formulaire.
-                        deferred.resolve("load form. def.");
-                    } else {
-                        // Message d'erreur.
-                        var oOptions = {
-                            "className": "modal-danger",
-                            "buttons": {
-                                "ok": {
-                                    label: "OK",
-                                    className: "btn-default"
-                                }
+        ajaxRequest({
+            "method": "GET",
+            "url": propertiesSrvc["web_server_name"] + "/" + propertiesSrvc["services_alias"] + "/" + aResourceId[0] + "/" + aResourceId[1] + "/" + envSrvc["sId"],
+            "scope": $scope,
+            "success": function(response) {
+                if (response["data"]["status"] == 1) {
+                    envSrvc["oFormValues"][$scope["sFormDefinitionName"]] = {};
+                    // Extraction des données.
+                    envSrvc["oFormValues"][$scope["sFormDefinitionName"]] = envSrvc["extractWebServiceData"](aResourceId[1], response["data"])[0];
+                    // Sauvegarde (valeurs par défaut).
+                    envSrvc["oFormDefaultValues"][$scope["sFormDefinitionName"]] = angular.copy(envSrvc["oFormValues"][$scope["sFormDefinitionName"]]);
+                    // Affichage du formulaire.
+                    deferred.resolve("load form. def.");
+                } else {
+                    // Message d'erreur.
+                    var oOptions = {
+                        "className": "modal-danger",
+                        "buttons": {
+                            "ok": {
+                                label: "OK",
+                                className: "btn-default"
                             }
-                        };
-                        if (data["errorMessage"] != null)
-                            oOptions["message"] = data["errorMessage"];
-                        externFunctionSrvc["modalWindow"]("alert", "FORM_VALUES_LOADING_ERROR", oOptions);
-                    }
-                });
+                        }
+                    };
+                    if (response["data"]["errorMessage"] != null)
+                        oOptions["message"] = response["data"]["errorMessage"];
+                    externFunctionSrvc["modalWindow"]("alert", "FORM_VALUES_LOADING_ERROR", oOptions);
+                }
+            }
+        });
     } else {
         // Si mode "insert" : suppression des données d'un ancien formulaire.
         if (envSrvc["sMode"] == "insert") {
@@ -120,93 +121,100 @@ vitisApp.htmlFormCtrl = function ($scope, $http, $log, $q, $timeout, Restangular
         // Chargement de la structure du formulaire.
         $log.info("initHtmlForm : Form. def. : " + oFormRequestParams["sUrl"]);
         promise.then(function () {            
-            $http.get(oFormRequestParams["sUrl"], oRequestConfig).
-                    success(function (data, status, headers, config) {                        
-                        if (data.status != 0) {
-                            // Attend que les données du form. soient chargées.
-                            envSrvc["oFormDefinition"][$scope["sFormDefinitionName"]] = {};
-                            var sJs = "";
-                            var sCss = "";
-                            var k = "";
-                            for (var key in data) {
-                                if (Array.isArray(data[key])) {
-                                    sJs = data[key][0]["json_form"][1];
-                                    sCss = data[key][0]["json_form"][2];
-                                    k = key;
-                                }
-                            }                            
-                            //if(goog.isDef)
-                            //data[k][0] = data[k][0]["json_form"];
-                            // Fonction à appeler pour extraire la structure du form. ?
-                            if (typeof (oFormRequestParams["sExtractData"]) != "undefined") {
-                                oFormRequestParams["oData"] = data;
-                                //console.warn(angular.copy(data), 3);
-                                //console.warn(angular.copy(oFormRequestParams), 3);
-                                data = $scope.$eval(oFormRequestParams["sExtractData"]);
+            ajaxRequest({
+                "method": "GET",
+                "url": oFormRequestParams["sUrl"],
+                "params": oRequestConfig["params"],
+                "headers": oRequestConfig["headers"],
+                "scope": $scope,
+                "success": function(response) {
+                    if (response["data"].status != 0) {
+                        // Attend que les données du form. soient chargées.
+                        envSrvc["oFormDefinition"][$scope["sFormDefinitionName"]] = {};
+                        var sJs = "";
+                        var sCss = "";
+                        var k = "";
+                        for (var key in response["data"]) {
+                            if (Array.isArray(response["data"][key])) {
+                                sJs = response["data"][key][0]["json_form"][1];
+                                sCss = response["data"][key][0]["json_form"][2];
+                                k = key;
                             }
-                            
-                            // Structure de formulaire non vide ?
-                            if (data != null) {
-                                if (goog.isDef(data['datasources']))
-                                    var datasources = angular.copy(data['datasources']);
-
-                                data = data[envSrvc["sMode"]];
-
-                                // Maj de la sctructure.
-                                envSrvc["oFormDefinition"][$scope["sFormDefinitionName"]] = data;
-                                envSrvc["oFormDefinition"][$scope["sFormDefinitionName"]]["JS_url"] = sJs;
-                                envSrvc["oFormDefinition"][$scope["sFormDefinitionName"]]["CSS_url"] = sCss;
-
-                                // Ajout/remplacement des datasources
-                                if (goog.isDefAndNotNull(datasources))
-                                    envSrvc['oFormDefinition']['datasources'] = datasources;
-
-                                // Emission d'un évènement de chargement des données et de la définition du formulaire.
-                                $scope.$root.$emit("formDefinitionLoaded", $scope["sFormDefinitionName"]);
-                                if (data["javascript"] === true) {
-                                    var sUrl = "";
-                                    if (oFormRequestParams["sUrl"].indexOf(".json") === -1) {
-                                        //var prop = $scope["oProperties"];
-                                        //var id = $scope["oFormValues"]["my_work_user_order_insert_form"]["workspace_id"]["selectedOption"]["value"];
-                                        sUrl = sJs;
-                                    } else {
-                                        sUrl = oFormRequestParams["sUrl"].replace(/.json/g, ".js");
-                                    }
-                                    $log.info("initHtmlForm : javascript assoc. to : " + oFormRequestParams["sUrl"]);
-                                    loadExternalJs([sUrl], {
-                                        "callback": function () {
-                                            angular.element(vitisApp.appHtmlFormDrtv).ready();
-                                            constructor_form($scope, sUrl);
-                                        },
-                                        "async": true,
-                                        "scriptInBody": true
-                                    });
-                                }
-                            }
-                            $scope["oFormRequestParams"] = null;
-
-                        } else {
-                            envSrvc["oFormDefinition"][$scope["sFormDefinitionName"]] = {};
-                            envSrvc["oFormValues"][$scope["sFormDefinitionName"]] = {};
-                            envSrvc["oFormDefaultValues"][$scope["sFormDefinitionName"]] = {};
-                            // Message d'erreur.
-                            var oOptions = {
-                                "className": "modal-danger",
-                                "buttons": {
-                                    "ok": {
-                                        label: "OK",
-                                        className: "btn-default"
-                                    }
-                                }
-                            };
-                            if (data["errorMessage"] != null)
-                                oOptions["message"] = data["errorMessage"];
-                            externFunctionSrvc["modalWindow"]("alert", "FORM_DEFINITION_LOADING_ERROR", oOptions);
-                            //$scope.$root.$emit("formDefinitionLoaded", "empty");
+                        }                            
+                        //if(goog.isDef)
+                        //response["data"][k][0] = response["data"][k][0]["json_form"];
+                        // Fonction à appeler pour extraire la structure du form. ?
+                        if (typeof (oFormRequestParams["sExtractData"]) != "undefined") {
+                            oFormRequestParams["oData"] = response["data"];
+                            //console.warn(angular.copy(response["data"]), 3);
+                            //console.warn(angular.copy(oFormRequestParams), 3);
+                            response["data"] = $scope.$eval(oFormRequestParams["sExtractData"]);
                         }
-                    }).
-                    error(function (data, status, headers, config) {
-                    });
+
+                        // Structure de formulaire non vide ?
+                        if (response["data"] != null) {
+                            if (goog.isDef(response["data"]['datasources']))
+                                var datasources = angular.copy(response["data"]['datasources']);
+
+                            response["data"] = response["data"][envSrvc["sMode"]];
+
+                            // Maj de la sctructure.
+                            envSrvc["oFormDefinition"][$scope["sFormDefinitionName"]] = response["data"];
+                            envSrvc["oFormDefinition"][$scope["sFormDefinitionName"]]["JS_url"] = sJs;
+                            envSrvc["oFormDefinition"][$scope["sFormDefinitionName"]]["CSS_url"] = sCss;
+                            // Charge le fichier js associé au formulaire.
+                            if (sJs != "" && response["data"]["javascript"] !== false)
+                                response["data"]["javascript"] = true;
+                            // Ajout/remplacement des datasources
+                            if (goog.isDefAndNotNull(datasources))
+                                envSrvc['oFormDefinition']['datasources'] = datasources;
+
+                            // Emission d'un évènement de chargement des données et de la définition du formulaire.
+                            $scope.$root.$emit("formDefinitionLoaded", $scope["sFormDefinitionName"]);
+                            if (response["data"]["javascript"] === true) {
+                                var sUrl = "";
+                                if (oFormRequestParams["sUrl"].indexOf(".json") === -1) {
+                                    //var prop = $scope["oProperties"];
+                                    //var id = $scope["oFormValues"]["my_work_user_order_insert_form"]["workspace_id"]["selectedOption"]["value"];
+                                    sUrl = sJs;
+                                } else {
+                                    sUrl = oFormRequestParams["sUrl"].replace(/.json/g, ".js");
+                                }
+                                $log.info("initHtmlForm : javascript assoc. to : " + oFormRequestParams["sUrl"]);
+                                loadExternalJs([sUrl], {
+                                    "callback": function () {
+                                        angular.element(vitisApp.appHtmlFormDrtv).ready();
+                                        if (typeof(constructor_form) == "function")
+                                            constructor_form($scope, sUrl);
+                                    },
+                                    "async": true,
+                                    "scriptInBody": true
+                                });
+                            }
+                        }
+                        $scope["oFormRequestParams"] = null;
+
+                    } else {
+                        envSrvc["oFormDefinition"][$scope["sFormDefinitionName"]] = {};
+                        envSrvc["oFormValues"][$scope["sFormDefinitionName"]] = {};
+                        envSrvc["oFormDefaultValues"][$scope["sFormDefinitionName"]] = {};
+                        // Message d'erreur.
+                        var oOptions = {
+                            "className": "modal-danger",
+                            "buttons": {
+                                "ok": {
+                                    label: "OK",
+                                    className: "btn-default"
+                                }
+                            }
+                        };
+                        if (response["data"]["errorMessage"] != null)
+                            oOptions["message"] = response["data"]["errorMessage"];
+                        externFunctionSrvc["modalWindow"]("alert", "FORM_DEFINITION_LOADING_ERROR", oOptions);
+                        //$scope.$root.$emit("formDefinitionLoaded", "empty");
+                    }
+                }
+            });
         });
     }
 };

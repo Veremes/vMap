@@ -121,7 +121,7 @@ class LieuDits extends Cadastre {
      * @return  LieuDits
      */
     function GET() {
-        $aReturn = $this->genericGet('public', 'v_lieu_dit', 'oid');
+        $aReturn = $this->genericGet('public', $this->aProperties['cadastre']['views']['lieu_dit'], 'oid');
         return $aReturn['sMessage'];
     }
     

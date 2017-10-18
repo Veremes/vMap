@@ -1,10 +1,10 @@
 @font-face {
   font-family: 'veremes';
-  src:  url('fonts/veremes.eot?j3jpsx');
-  src:  url('fonts/veremes.eot?j3jpsx#iefix') format('embedded-opentype'),
-    url('fonts/veremes.ttf?j3jpsx') format('truetype'),
-    url('fonts/veremes.woff?j3jpsx') format('woff'),
-    url('fonts/veremes.svg?j3jpsx#veremes') format('svg');
+  src:  url('fonts/veremes.eot?j7r63m');
+  src:  url('fonts/veremes.eot?j7r63m#iefix') format('embedded-opentype'),
+    url('fonts/veremes.ttf?j7r63m') format('truetype'),
+    url('fonts/veremes.woff?j7r63m') format('woff'),
+    url('fonts/veremes.svg?j7r63m#veremes') format('svg');
   font-weight: normal;
   font-style: normal;
 }
@@ -18,12 +18,34 @@
   font-variant: normal;
   text-transform: none;
   line-height: 1;
+  
+  /* Enable Ligatures ================ */
+  letter-spacing: 0;
+  -webkit-font-feature-settings: "liga";
+  -moz-font-feature-settings: "liga=1";
+  -moz-font-feature-settings: "liga";
+  -ms-font-feature-settings: "liga" 1;
+  font-feature-settings: "liga";
+  -webkit-font-variant-ligatures: discretionary-ligatures;
+  font-variant-ligatures: discretionary-ligatures;
 
   /* Better Font Rendering =========== */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+.icon-hand-pointer:before {
+  content: "\f25a";
+}
+.icon-mouse-pointer:before {
+  content: "\f245";
+}
+.icon-anc_saisie:before {
+  content: "\43";
+}
+.icon-extraction2:before {
+  content: "\43";
+}
 .icon-file-o2:before {
   content: "\f016";
 }
@@ -84,6 +106,15 @@
 .icon-sliders:before {
   content: "\f1de";
 }
+.icon-extraction_ref:before {
+  content: "\f1de";
+}
+.icon-anc_parametrage:before {
+  content: "\f1de";
+}
+.icon-calimap_ref:before {
+  content: "\f1de";
+}
 .icon-user-secret:before {
   content: "\f21b";
 }
@@ -102,13 +133,40 @@
 .icon-file-o:before {
   content: "\f017";
 }
+.icon-office:before {
+  content: "\e906";
+}
+.icon-logo_dtnet:before {
+  content: "\46";
+}
+.icon-stopwatch:before {
+  content: "\e952";
+}
+.icon-user-tie:before {
+  content: "\e976";
+}
+.icon-supervision_dtnet:before {
+  content: "\e976";
+}
+.icon-binoculars:before {
+  content: "\e985";
+}
+.icon-supervision:before {
+  content: "\e985";
+}
 .icon-vm4ms:before {
   content: "\45";
 }
 .icon-vmap_admin_map:before {
   content: "\e905";
 }
-.icon-envelop;-automatisation:before {
+.icon-envelop:before {
+  content: "\e945";
+}
+.icon-message:before {
+  content: "\e945";
+}
+.icon-demande:before {
   content: "\e945";
 }
 .icon-logo_sigrando:before {
@@ -123,10 +181,10 @@
 .icon-add-rectangle:before {
   content: "\e610";
 }
-.icon-binoculars:before {
+.icon-binoculars2:before {
   content: "\e635";
 }
-.icon-supervision:before {
+.icon-supervision2:before {
   content: "\e635";
 }
 .icon-block:before {
@@ -282,6 +340,9 @@
 .icon-input:before {
   content: "\e2a4";
 }
+.icon-calimap_plan:before {
+  content: "\e2a4";
+}
 .icon-key:before {
   content: "\e625";
 }
@@ -315,6 +376,9 @@
 .icon-link-external:before {
   content: "\f07f";
 }
+.icon-extraction:before {
+  content: "\f07f";
+}
 .icon-location:before {
   content: "\e632";
 }
@@ -336,6 +400,9 @@
 .icon-logo_qualigeo:before {
   content: "\e910";
 }
+.icon-logo_store:before {
+  content: "\e910";
+}
 .icon-logo_vmap:before {
   content: "\e91b";
 }
@@ -349,6 +416,9 @@
   content: "\e629";
 }
 .icon-map:before {
+  content: "\e61a";
+}
+.icon-vmap_admin_map2:before {
   content: "\e61a";
 }
 .icon-map-signs:before {
@@ -450,6 +520,9 @@
 .icon-shopping_basket:before {
   content: "\e902";
 }
+.icon-store:before {
+  content: "\e902";
+}
 .icon-show-infos:before {
   content: "\e618";
 }
@@ -507,6 +580,9 @@
 .icon-tree2:before {
   content: "\e62a";
 }
+.icon-exploitant:before {
+  content: "\e62a";
+}
 .icon-unlocked:before {
   content: "\e628";
 }
@@ -528,4 +604,21 @@
 .icon-zoom-out:before {
   content: "\e638";
 }
-
+.icon-star-empty2:before {
+  content: "\e9d7";
+}
+.icon-star-half2:before {
+  content: "\e9d8";
+}
+.icon-star-full2:before {
+  content: "\e9d9";
+}
+.icon-star-empty:before {
+  content: "\e9da";
+}
+.icon-star-half:before {
+  content: "\e9db";
+}
+.icon-star-full:before {
+  content: "\e9dc";
+}
