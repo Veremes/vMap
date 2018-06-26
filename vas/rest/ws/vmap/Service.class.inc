@@ -23,14 +23,12 @@ class Service extends Vmap {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
      * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties, $oConnection) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = $oConnection;
-        $this->aSelectedFields = Array("service_id", "name", "service_type_id", "description", "url", "key", "thumbnail", "lang", "imagery", "service_type_version", "service_type_type", "service_options", "service_vm4ms");
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
+        $this->aSelectedFields = Array("service_id", "name", "service_type_id", "description", "url", "key", "thumbnail", "lang", "imagery", "service_type_version", "service_type_type", "service_options", "service_vm4ms", "service_login", "service_password");
     }
 
     /**

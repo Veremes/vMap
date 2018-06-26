@@ -166,6 +166,10 @@ vitisApp.envSrvc = function ($rootScope, $injector, $templateRequest, $compile, 
         "oWorkspaceList": {},
         "oWorkspaceListRefreshTimer": {},
         "sSelectedSectionName": "",
+        "sLoginTemplate": "templates/loginTpl.html",
+        "sLoginForm": "forms/login.json",
+        "sForgottenPasswordForm": "forms/forgotten_password.json",
+        "sSignUpForm": "forms/sign_up.json",
         /**
          * setMode function.
          * Change le mode d'action (update, display, search).
@@ -446,14 +450,14 @@ vitisApp.envSrvc = function ($rootScope, $injector, $templateRequest, $compile, 
          * @param {string} sMode Mode d'action (insert, update, display).
          * @param {string} sId Id de l'enregistrement.
          **/
-        "setModalSectionForm": function (sMode, sId , oSaveTabParametersParam) {
+        "setModalSectionForm": function (sMode, sId, oSaveTabParametersParam) {
             var envSrvc = this;
             var modesSrvc = $injector.get(["modesSrvc"]);
             var sModalContainerId = "form_modal_" + envSrvc["oSelectedObject"]["name"];
             // Nouveau scope.
             var modalScope = $rootScope.$new();
             modesSrvc["addScopeToObject"](envSrvc["oSelectedObject"]["name"], envSrvc["oSelectedMode"]["mode_id"], modalScope);
-            
+
             var oSaveTabParameters = {};
             if (goog.isDefAndNotNull(oSaveTabParametersParam)) {
                 oSaveTabParameters = oSaveTabParametersParam
@@ -518,16 +522,16 @@ vitisApp.envSrvc = function ($rootScope, $injector, $templateRequest, $compile, 
                     envSrvc["sSelectedTemplate"] = oSaveTabParameters["sSelectedTemplate"];
                     envSrvc["sId"] = oSaveTabParameters["sId"];
                     envSrvc["sMode"] = oSaveTabParameters["sMode"];
-                    if (goog.isDefAndNotNull(oSaveTabParameters["sFormDefinitionName"])){
-                        
+                    if (goog.isDefAndNotNull(oSaveTabParameters["sFormDefinitionName"])) {
+
                         $scope["sFormDefinitionName"] = oSaveTabParameters["sFormDefinitionName"];
                         envSrvc["sFormDefinitionName"] = oSaveTabParameters["sFormDefinitionName"];
                     }
-                    if (goog.isDefAndNotNull(oSaveTabParameters["ressource_id"])){
+                    if (goog.isDefAndNotNull(oSaveTabParameters["ressource_id"])) {
                         envSrvc["oSelectedObject"]["ressource_id"] = oSaveTabParameters["ressource_id"];
                     }
-                    if (goog.isDefAndNotNull(oSaveTabParameters["resetTemplateUrl"])){
-                        if(oSaveTabParameters["resetTemplateUrl"] == true){
+                    if (goog.isDefAndNotNull(oSaveTabParameters["resetTemplateUrl"])) {
+                        if (oSaveTabParameters["resetTemplateUrl"] == true) {
                             $scope["oFormRequestParams"] = null;
                         }
                     }
@@ -610,12 +614,20 @@ vitisApp.modesSrvc = function ($translate, $translatePartialLoader, $q, $rootSco
             var modesSrvc = this;
             // Vérifie sur un formulaire a été modifié mais pas enregistré.
             var deferred = $q.defer();
-
-            if (typeof(oVFB) != "undefined" && oVFB.Update == true) {
-                var promise = formSrvc["checkStudioFormModifications"](envSrvc["sSelectedObjectName"]);
-            } else {
-                var promise = formSrvc["checkFormModifications"](envSrvc["sFormDefinitionName"]);
+            var promise;
+            try {
+                if (oVFB.Update == true) {
+                    promise = formSrvc["checkStudioFormModifications"](envSrvc["sSelectedObjectName"]);
+                    oVFB.Update = false;
+                } else {
+                    promise = formSrvc["checkFormModifications"](envSrvc["sFormDefinitionName"]);
+                }
+            } catch (e) {
+                console.warn("this application doesn't need the studio");
+                console.warn(e);
+                promise = formSrvc["checkFormModifications"](envSrvc["sFormDefinitionName"]);
             }
+
             promise.then(function () {
                 var bFirstModeObject;
                 // Paramètre "reload" du précédent mode.
@@ -685,7 +697,7 @@ vitisApp.modesSrvc = function ($translate, $translatePartialLoader, $q, $rootSco
                 deferred.resolve();
             });
             var promise = deferred.promise;
-            if (typeof(oVFB) != "undefined")
+            if (typeof (oVFB) != "undefined")
                 oVFB.Update = false;
             return promise;
         },
@@ -700,7 +712,7 @@ vitisApp.modesSrvc = function ($translate, $translatePartialLoader, $q, $rootSco
         "selectObject": function ($scope, sSelectedObjectName, sObjectMode, oEvent) {
             var modesSrvc = this;
 
-            if (typeof(oVFB) != "undefined" && oVFB.Update == true) {
+            if (typeof (oVFB) != "undefined" && oVFB.Update == true) {
                 var promise = formSrvc["checkStudioFormModifications"](envSrvc["sSelectedObjectName"]);
             } else {
                 var promise = formSrvc["checkFormModifications"](envSrvc["sFormDefinitionName"]);
@@ -732,7 +744,7 @@ vitisApp.modesSrvc = function ($translate, $translatePartialLoader, $q, $rootSco
                     $rootScope.$broadcast($rootScope["sSelectedObjectName"], {});
                 }, 1);
             });
-            if (typeof(oVFB) != "undefined")
+            if (typeof (oVFB) != "undefined")
                 oVFB.Update = false;
         },
         /**
@@ -912,17 +924,10 @@ vitisApp.externFunctionSrvc = function ($rootScope, $translate, $q, $log, $timeo
             }
             document.getElementById("works_line").style.height = iWorksLineHeight + "px";
 
-            // Largeur de l'élément "data_column" (contenu html des objets).
-            // var iDataColumnWidth = document.getElementById("container").offsetWidth;
-            // if (document.getElementById("mode_column") != null)
-            // iDataColumnWidth -= document.getElementById("mode_column").offsetWidth;
-            // document.getElementById("data_column").style.width = iDataColumnWidth + "px";
-
             // Hauteur des listes ui-grid (liste - header - footer).
-            //var oWorkspaceGrid = $("#data_column .workspacelist-grid");
-            var oWorkspaceGrid = $(".workspacelist-grid");
-            var i = 0;
             setTimeout(function () {
+                var oWorkspaceGrid = $(".workspacelist-grid");
+                var i = 0;
                 while (i < oWorkspaceGrid.length) {
 
                     var iMainGridHeight = oWorkspaceGrid[i].offsetHeight;
@@ -937,8 +942,18 @@ vitisApp.externFunctionSrvc = function ($rootScope, $translate, $q, $log, $timeo
                     document.getElementById(oWorkspaceGrid[i].id + "_data").style.height = (iMainGridHeight - 2) + "px";
                     document.getElementById(oWorkspaceGrid[i].id + "_data").style.width = (iMainGridWidth - 2) + "px";
 
-                    oWorkspaceGrid.find('.ui-grid-render-container-left .ui-grid-viewport').height(oWorkspaceGrid.find(".ui-grid-render-container-body .ui-grid-viewport").height() - 17);
+                    $(oWorkspaceGrid[i]).find('.ui-grid-viewport').height($(oWorkspaceGrid[i]).find(".ui-grid-render-container-body").height() - 17);
                     i++;
+                }
+                var $scope = angular.element(".workspacelist-grid").scope();
+                if (goog.isDefAndNotNull($scope)) {
+                    var gridApi = $rootScope["gridApi"][$scope["sSelectedGridOptionsName"]];
+                    if (goog.isDefAndNotNull(gridApi)) {
+                        if (goog.isDefAndNotNull(gridApi["core"])) {
+                            gridApi["core"]["handleWindowResize"]();
+                            gridApi["core"]["refreshRows"]();
+                        }
+                    }
                 }
             }, 300);
         },
@@ -996,8 +1011,12 @@ vitisApp.externFunctionSrvc = function ($rootScope, $translate, $q, $log, $timeo
                 aStringsToTranslate.push(oOptions["message"]);
             else
                 oOptions["message"] = "&nbsp;"
+            // Données pour la traduction.
+            var oTranslationData = {};
+            if (typeof(oOptions["translationData"]) != "undefined")
+                oTranslationData = oOptions["translationData"];
             // Traduction et affichage de la fenêtre modale.
-            $translate(aStringsToTranslate).then(function (aTranslations) {
+            $translate(aStringsToTranslate, oTranslationData).then(function (aTranslations) {
                 var sGlyphicon, bCloseButton = false;
                 if (oOptions["message"] != "&nbsp;")
                     oOptions["message"] = aTranslations[oOptions["message"]];

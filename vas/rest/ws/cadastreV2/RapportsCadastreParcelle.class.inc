@@ -35,13 +35,11 @@ class RapportsCadastreParcelle extends Cadastre {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
      * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = new Connection($this->aValues, $this->aProperties);
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
     }
 
     /**
@@ -128,12 +126,12 @@ class RapportsCadastreParcelle extends Cadastre {
 
         // Récupère l'année
         $sYear = $this->vmapGet($this->aProperties['schema_majic'], 'v_vmap_annee', array('annee'), array(), array('limit' => 1))[0]['annee'];
-        
+
         // Patch pour décoder les properties UTF-8 parce que les rapports sont générés en ISO
         if (is_array($properties["cadastre"]["fiche_urb"]["intersect"]["views"])) {
             $properties["cadastre"]["fiche_urb"]["intersect"]["views"] = $this->decodeUtf8Array($properties["cadastre"]["fiche_urb"]["intersect"]["views"]);
         }
-        
+
         // Charge les données
         if ($rapportType != 'Locaux' && $rapportType != 'ProprietaireLocaux') {
             require_once(__DIR__ . "/../../class/majic_libV2/Mj_Compte_Communal_Parcelles.class.inc");
@@ -161,14 +159,7 @@ class RapportsCadastreParcelle extends Cadastre {
             return json_encode($aReturn);
         } else {
             // Création du fichier XML.
-            $sFile = "";
-
-            foreach ($aParcelles as $parcelle) {
-                $sFile .= $parcelle;
-            }
-            if (count($aParcelles) > 2) {
-                $sFile = UniqFileName();
-            }
+            $sFile = hash('sha256', UniqFileName());
 
             $sXmlFileName = $properties["cadastre"]["rp"]["rp_dir"] . "/" . $sYear . "/Rapport_Parcelle_" . $rapportType . "/" . $sFile . ".xml";
 

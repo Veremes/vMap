@@ -27,7 +27,7 @@
     </header>
     <section id="works_line" class="row works_line">
         <!-- menu des modes -->
-        <div id="mode_column_layout" class="col-xs-1">
+        <div id="mode_column_layout" ng-class="{'col-xs-1':!$root.is_mobile, 'hidden':$root.is_mobile}">
             <button type="button" class="row btn button_mode button_mode_top" ng-show="showModeScrollBoutton()" ng-click="scrollMode(-50)"><i class="icon icon-keyboard_arrow_up"></i></button>
             <nav id="mode_column" class="row mode_column no_bs_padding">
                 <ul class="list-unstyled">
@@ -39,14 +39,15 @@
             <button type="button" class="row btn button_mode button_mode_down" ng-show="showModeScrollBoutton()" ng-click="scrollMode(50)"><i class="icon icon-keyboard_arrow_down"></i></button>
         </div>
         <!-- Container des object de l'application -->
-        <section id="data_column" class="col-xs-11 data_column no_bs_padding no_overflow">
+        <section id="data_column" class="data_column no_bs_padding no_overflow" ng-class="{'col-xs-11':!$root.is_mobile, 'col-xs$root is_mobile':$root.is_mobile}">
             <!-- Objests de l'application -->
             <div ng-repeat="mode in ::modes track by $index" id="container_mode_{{::mode.mode_id}}" class="container-mode"></div>
         </section>
     </section>
-    <footer id="footer_line" class="row footer_line">
+    <footer id="footer_line" class="row footer_line" ng-class="{'hidden':$root.is_mobile}">
         <div id="footer-credits_column" class="col-xs-6 footer-credits_column">
             <a href="#" ng-click="showCredits()" data-translate="CREDITS"></a>
+            <a href="#" ng-if="oProperties.documentation" ng-click="showDocumentation()" data-translate="DOCUMENTATION" style="margin-left:20px"></a>
         </div>
         <div class="col-xs-6 text-right footer-logo_column">
             <img src="images/logo-veremes.png">

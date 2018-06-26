@@ -99,51 +99,52 @@
 
         <!--Actions fichier-->
         <div class="element-margin text-center">
-            <div class="btn-group btn-group-sm" role="group">
-                <button type="button" 
-                        class="btn btn-default" 
+            <div class="btn-group btn-group-xl" role="group">
+                <button type="button"
+                        class="btn btn-default"
                         title="{{::ctrl.text.InfoBulle.Default.Publish}}"
                         ng-show="FormSelected === 'Default'"
                         ng-click="ctrl.publish()">
                     <span class="glyphicon glyphicon-copy" aria-hidden="true"></span>
                 </button>
-                <button type="button" 
-                        class="btn btn-default" 
+                <button type="button"
+                        class="btn btn-default"
                         title="{{::ctrl.text.InfoBulle.Default.Reset}}"
                         ng-show="FormSelected === 'Default'"
                         ng-click="ctrl.reset()">
                     <span class="fa fa-recycle" aria-hidden="true"></span>
                 </button>
-                <button type="button" 
-                        class="btn btn-default" 
+                <button type="button"
+                        class="btn btn-default"
                         title="{{::ctrl.text.InfoBulle.Perso.Save}}"
                         ng-show="FormSelected === 'Perso'"
                         ng-click="ctrl.save()">
                     <span class="glyphicon glyphicon-floppy-disk fa-x1" aria-hidden="true"></span>
                 </button>
-                <button type="button" 
-                        class="btn btn-default" 
+                <button type="button"
+                        class="btn btn-default"
                         title="{{::ctrl.text.InfoBulle.Perso.Reload}}"
                         ng-show="FormSelected === 'Perso'"
                         ng-click="ctrl.loadWithEdit(false, 'Perso', 'load_Perso_button')">
                     <span class="glyphicon glyphicon-refresh fa-x1" aria-hidden="true"></span>
                 </button>
                 <button type="button"
-                        class="btn btn-default" 
+                        class="btn btn-success"
                         title="{{::ctrl.text.InfoBulle.Perso.Publish}}"
                         ng-show="FormSelected === 'Perso' && !ctrl.buttonHide"
                         ng-click="ctrl.publish()">
                     <span class="glyphicon glyphicon-copy" aria-hidden="true"></span>
                 </button>
-                <button type="button" 
-                        class="btn btn-default" 
+                <button type="button"
+                        class="btn btn-default"
+                        style="line-height: 1.5"
                         title="{{::ctrl.text.InfoBulle.Perso.Reset}}"
                         ng-show="FormSelected === 'Perso' && !ctrl.buttonHide"
                         ng-click="ctrl.reset()">
                     <span class="fa icon-recycle" aria-hidden="true"></span>
                 </button>
-                <button type="button" 
-                        class="btn btn-default" 
+                <button type="button"
+                        class="btn btn-default"
                         title="{{::ctrl.text.InfoBulle.Perso.ResetWab}}"
                         ng-show="FormSelected === 'Perso' && ctrl.buttonHide"
                         ng-click="ctrl.suggestColumnsToGenerateForm()">
@@ -155,27 +156,27 @@
         <!--Choix du formulaire-->
         <div ng-hide="ctrl.buttonHide" class="element-margin text-center">
             <div class="btn-group btn-group-sm" id="json_loader_Mode_groupButton" role="group">
-                <button type="button" 
-                        id="load_Default_button" 
-                        class="btn btn-primary" 
-                        ng-click="ctrl.load('Default', 'load_Default_button')" 
+                <button type="button"
+                        id="load_Default_button"
+                        class="btn btn-primary"
+                        ng-click="ctrl.load('Default', 'load_Default_button')"
                         ng-class="{'active':FormSelected === 'Default'}"
                         title="{{::ctrl.applicationName === 'gtf' ? ctrl.text.InfoBulle.Default.Button_gtf : ctrl.text.InfoBulle.Default.Button}}">
                     {{::ctrl.text.SelectForm.Default}}
                 </button>
-                <button type="button" 
-                        id="load_Publish_button" 
-                        class="btn btn-primary" 
-                        ng-click="ctrl.load('Published', 'load_Publish_button')" 
-                        ng-class="{'active':FormSelected === 'Published'}" 
+                <button type="button"
+                        id="load_Publish_button"
+                        class="btn btn-primary"
+                        ng-click="ctrl.load('Published', 'load_Publish_button')"
+                        ng-class="{'active':FormSelected === 'Published'}"
                         title="{{::ctrl.applicationName === 'gtf' ? ctrl.text.InfoBulle.Published.Button_gtf : ctrl.text.InfoBulle.Published.Button}}">
                     {{::ctrl.text.SelectForm.Published}}
                 </button>
-                <button type="button" 
-                        id="load_Perso_button" 
-                        class="btn btn-primary" 
-                        ng-click="ctrl.load('Perso', 'load_Perso_button')" 
-                        ng-class="{'active':FormSelected === 'Perso'}" 
+                <button type="button"
+                        id="load_Perso_button"
+                        class="btn btn-primary"
+                        ng-click="ctrl.load('Perso', 'load_Perso_button')"
+                        ng-class="{'active':FormSelected === 'Perso'}"
                         title="{{::ctrl.text.InfoBulle.Perso.Button}}">
                     {{::ctrl.text.SelectForm.Perso}}
                 </button>
@@ -185,10 +186,10 @@
         <div class="element-margin text-center"
              ng-if="json_forms.length > 1">
             <div class="btn-group btn-group-sm" id="json_loader_Mode_groupButton" role="group">
-                <button type="button" 
-                        class="btn btn-primary" 
+                <button type="button"
+                        class="btn btn-primary"
                         ng-repeat="form_type in json_forms"
-                        ng-click="$root.selected_form_type = form_type" 
+                        ng-click="$root.selected_form_type = form_type"
                         ng-class="{'active':$root.selected_form_type === form_type}">
                     {{form_type}}
                 </button>
@@ -221,8 +222,8 @@
                 <div class="modal-body" style="height:calc(100% - 100px);overflow: auto;">
                     <!--Sélectionner tous-->
                     <div class="checkbox checkbox-info margin-2 col-xs-12">
-                        <input id="aSuggestedTableFields_selectAll" 
-                               type="checkbox" 
+                        <input id="aSuggestedTableFields_selectAll"
+                               type="checkbox"
                                style="cursor:pointer; position: absolute"
                                ng-checked="ctrl.suggestColumnsAreAllFieldsSelected()"
                                ng-click="ctrl.suggestColumnsAreAllFieldsSelected() ? ctrl.suggestColumnsUnselectAllFields() : ctrl.suggestColumnsSelectAllFields()">
@@ -231,8 +232,8 @@
                     <!--Liste-->
                     <div ng-repeat="node in ctrl.aSuggestedTableFields">
                         <div class="checkbox checkbox-info margin-2 col-xs-6">
-                            <input id="aSuggestedTableFields_{{$index}}" 
-                                   type="checkbox" 
+                            <input id="aSuggestedTableFields_{{$index}}"
+                                   type="checkbox"
                                    style="cursor:pointer; position: absolute"
                                    ng-model="node.fields[0].bUseForGenerate">
                             <label for="aSuggestedTableFields_{{$index}}" style="cursor:pointer">{{node.fields[0].name}} ({{node.fields[0].type}})</label>

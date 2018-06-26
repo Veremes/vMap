@@ -93,7 +93,7 @@
             {
                 "fields":[
                     {
-                        "type":"label",
+                        "type":"tinymce",
                         "name":"description",
                         "label":"Description",
                         "disabled":false,

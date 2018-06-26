@@ -9,6 +9,10 @@ class Vmap extends Vitis {
     //Chemin du fichier de ressources contenant les requêtes SQL
     var $sRessourcesFile = "ws/vmap/Vmap.class.sql.inc";
 
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
+    }
+    
     /**
      * 
      * @param string $sSchema
@@ -55,7 +59,7 @@ class Vmap extends Vitis {
 
         // SQL Request building
         $aSqlParams = array(
-            'sShema' => array('value' => $sSchema, 'type' => 'column_name'),
+            'sSchema' => array('value' => $sSchema, 'type' => 'column_name'),
             'sTable' => array('value' => $sTable, 'type' => 'column_name')
         );
 
@@ -82,7 +86,7 @@ class Vmap extends Vitis {
                 }
             }
         }
-        $sSql .= $sAttributs . " FROM [sShema].[sTable]";
+        $sSql .= $sAttributs . " FROM [sSchema].[sTable]";
 
         if (!empty($sFilter)) {
             // filtre
@@ -141,30 +145,45 @@ class Vmap extends Vitis {
      * @param array $aAttributs
      * @return type
      */
-    function vmapIntersectGet($sSchema, $sTable, $geom, $aAttributs, $iTolerance = 0) {
+    function vmapIntersectGet($sSchema, $sTable, $geom, $aAttributs, $iTolerance = 0, $sGeomColumn = 'geom', $sGeomType = 'POLYGON') {
 
         $sGeomKey = 'geom_key_' . vitisUniqId();
         $aOptionalParams = array(
-            $sGeomKey => array('value' => $geom, 'type' => 'geometry')
+            $sGeomKey => array('value' => $geom, 'type' => 'geometry'),
+            $sGeomColumn => array('value' => $sGeomColumn, 'type' => 'column_name')
         );
 
-        $sIntersectPercentage = "round(";
-        $sIntersectPercentage .= "ST_Area(";
-        $sIntersectPercentage .= "ST_Intersection(";
-        $sIntersectPercentage .= "ST_Transform(";
-        $sIntersectPercentage .= "ST_GeomFromEWKT([" . $sGeomKey . "]),";
-        $sIntersectPercentage .= "ST_SRID(geom)";
-        $sIntersectPercentage .= "), ";
-        $sIntersectPercentage .= "geom)";
-        $sIntersectPercentage .= ")/ST_Area(";
-        $sIntersectPercentage .= "ST_Transform(";
-        $sIntersectPercentage .= "ST_GeomFromEWKT([" . $sGeomKey . "]),";
-        $sIntersectPercentage .= "ST_SRID(geom)";
-        $sIntersectPercentage .= ")";
-        $sIntersectPercentage .= ") * 100) as intersect";
+        if ($sGeomType === 'POLYGON' || $sGeomType === 'MULTIPOLYGON') {
+            $sIntersectPercentage = "round(";
+            $sIntersectPercentage .= "ST_Area(";
+            $sIntersectPercentage .= "ST_Intersection(";
+            $sIntersectPercentage .= "ST_Transform(";
+            $sIntersectPercentage .= "ST_GeomFromEWKT([" . $sGeomKey . "]),";
+            $sIntersectPercentage .= "ST_SRID([" . $sGeomColumn . "])";
+            $sIntersectPercentage .= "), ";
+            $sIntersectPercentage .= "[" . $sGeomColumn . "])";
+            $sIntersectPercentage .= ")/ST_Area(";
+            $sIntersectPercentage .= "ST_Transform(";
+            $sIntersectPercentage .= "ST_GeomFromEWKT([" . $sGeomKey . "]),";
+            $sIntersectPercentage .= "ST_SRID([" . $sGeomColumn . "])";
+            $sIntersectPercentage .= ")";
+            $sIntersectPercentage .= ") * 100) as intersect";
+        } else if ($sGeomType === 'LINE' || $sGeomType === 'LINESTRING' || $sGeomType === 'MULTILINESTRING') {
+            $sIntersectPercentage = "round(";
+            $sIntersectPercentage .= "ST_Length(";
+            $sIntersectPercentage .= "ST_Intersection(";
+            $sIntersectPercentage .= "ST_Transform(";
+            $sIntersectPercentage .= "ST_GeomFromEWKT([" . $sGeomKey . "]),";
+            $sIntersectPercentage .= "ST_SRID([" . $sGeomColumn . "])";
+            $sIntersectPercentage .= "), ";
+            $sIntersectPercentage .= "[" . $sGeomColumn . "])";
+            $sIntersectPercentage .= ")) as intersect";
+        } else {
+            $sIntersectPercentage = "100 as intersect";
+        }
 
         array_push($aAttributs, $sIntersectPercentage);
-        $sFilter = '{"column":"geom","compare_operator":"intersect","value":"' . $geom . '"}';
+        $sFilter = '{"column":"' . $sGeomColumn . '","compare_operator":"intersect","value":"' . $geom . '"}';
 
         $aRecords = $this->vmapGet($sSchema, $sTable, $aAttributs, $sFilter, array(), $aOptionalParams);
         $aTolerancedRecords = array();
@@ -175,7 +194,13 @@ class Vmap extends Vitis {
             }
         }
         for ($i = 0; $i < count($aTolerancedRecords); $i++) {
-            $aTolerancedRecords[$i]['intersect'] = $aTolerancedRecords[$i]['intersect'] . '%';
+            if ($sGeomType === 'POLYGON' || $sGeomType === 'MULTIPOLYGON') {
+                $aTolerancedRecords[$i]['intersect'] = $aTolerancedRecords[$i]['intersect'] . '%';
+            } else if ($sGeomType === 'LINE' || $sGeomType === 'LINESTRING' || $sGeomType === 'MULTILINESTRING') {
+                $aTolerancedRecords[$i]['intersect'] = $aTolerancedRecords[$i]['intersect'] . 'm';
+            } else {
+                $aTolerancedRecords[$i]['intersect'] = true;
+            }
         }
 
         return $aTolerancedRecords;
@@ -185,7 +210,7 @@ class Vmap extends Vitis {
      * Ajoute la chaîne de caractère au fichier des log vMap.
      * \param $sString Chaîne de caractères.
      */
-    function writeMapToVMapLog($sMapId, $sMapName) {        
+    function writeMapToVMapLog($sMapId, $sMapName) {
         $sMapName = "\"" . $sMapName . "\"";
         $sLog = $sMapId . $this->aProperties["log_delim"] . $sMapName;
         if (isSet($this->aProperties["log_mode"])) {

@@ -23,13 +23,11 @@ class CoordinateSystem extends Vmap4MapServer {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
      * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties, $oConnection) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = $oConnection;
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
         $this->aSelectedFields = Array("coordsys_id", "epsg", "definition", "label", "epsg_definition");
     }
 
@@ -83,7 +81,7 @@ class CoordinateSystem extends Vmap4MapServer {
             $this->oError = new VitisError(1, 'ERROR_LAYER_ASSOCIATED');
             $this->oConnection->oError = new VitisError(1, 'ERROR_LAYER_ASSOCIATED');
         }
-        
+
         if (!$bLayersExist) {
             $this->oConnection->oBd->delete($this->aProperties['schema_vm4ms'], 'coordsys', 'coordsys_id', $this->aValues['my_vitis_id'], 'string');
             if ($this->oConnection->oBd->enErreur()) {

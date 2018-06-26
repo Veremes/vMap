@@ -179,3 +179,10 @@ var sha512 = function (input) {
     hash = goog.crypt.byteArrayToHex(hash);
     return hash;
 };
+
+/**
+ * Object.foreach polyfill
+ */
+if (!NodeList.prototype.forEach) {
+    NodeList.prototype.forEach = Array.prototype.forEach;
+}

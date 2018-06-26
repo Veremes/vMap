@@ -1,10 +1,10 @@
 @font-face {
   font-family: 'veremes';
-  src:  url('fonts/veremes.eot?j7r63m');
-  src:  url('fonts/veremes.eot?j7r63m#iefix') format('embedded-opentype'),
-    url('fonts/veremes.ttf?j7r63m') format('truetype'),
-    url('fonts/veremes.woff?j7r63m') format('woff'),
-    url('fonts/veremes.svg?j7r63m#veremes') format('svg');
+  src:  url('fonts/veremes.eot?vqglvm');
+  src:  url('fonts/veremes.eot?vqglvm#iefix') format('embedded-opentype'),
+    url('fonts/veremes.ttf?vqglvm') format('truetype'),
+    url('fonts/veremes.woff?vqglvm') format('woff'),
+    url('fonts/veremes.svg?vqglvm#veremes') format('svg');
   font-weight: normal;
   font-style: normal;
 }
@@ -18,159 +18,211 @@
   font-variant: normal;
   text-transform: none;
   line-height: 1;
-  
-  /* Enable Ligatures ================ */
-  letter-spacing: 0;
-  -webkit-font-feature-settings: "liga";
-  -moz-font-feature-settings: "liga=1";
-  -moz-font-feature-settings: "liga";
-  -ms-font-feature-settings: "liga" 1;
-  font-feature-settings: "liga";
-  -webkit-font-variant-ligatures: discretionary-ligatures;
-  font-variant-ligatures: discretionary-ligatures;
 
   /* Better Font Rendering =========== */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-.icon-hand-pointer:before {
-  content: "\f25a";
+.icon-play3:before {
+  content: "\ea1c";
 }
-.icon-mouse-pointer:before {
-  content: "\f245";
+.icon-youtube:before {
+  content: "\ea9d";
 }
-.icon-anc_saisie:before {
-  content: "\43";
+.icon-arrow-down:before {
+  content: "\ea36";
 }
-.icon-extraction2:before {
-  content: "\43";
+.icon-warning:before {
+  content: "\ea07";
 }
-.icon-file-o2:before {
-  content: "\f016";
+.icon-logo_myrecepisse:before {
+  content: "\e94d";
 }
-.icon-copy:before {
-  content: "\f0c5";
+.icon-FDS_01:before {
+  content: "\e909";
 }
-.icon-files-o:before {
-  content: "\f0c5";
+.icon-FDS_02:before {
+  content: "\e90a";
 }
-.icon-sigrando_securite:before {
-  content: "\f06d";
+.icon-FDS_04:before {
+  content: "\e90c";
 }
-.icon-at:before {
-  content: "\f1fa";
+.icon-FDS_05:before {
+  content: "\e90d";
 }
-.icon-calculator:before {
-  content: "\f1ec";
+.icon-FDS_06:before {
+  content: "\e90e";
 }
-.icon-calendar-check-o:before {
-  content: "\f274";
+.icon-FDS_07:before {
+  content: "\e90f";
 }
-.icon-check-square:before {
-  content: "\f046";
+.icon-FME:before {
+  content: "\e910";
 }
-.icon-chrome:before {
-  content: "\f268";
+.icon-FMWT_01:before {
+  content: "\e917";
 }
-.icon-dot-circle-o:before {
-  content: "\f192";
+.icon-FMWT_02:before {
+  content: "\e918";
 }
-.icon-file:before {
-  content: "\f15b";
+.icon-FMWT_03:before {
+  content: "\e919";
 }
-.icon-filter:before {
-  content: "\f0b0";
+.icon-FMWT_05:before {
+  content: "\e91b";
 }
-.icon-font:before {
-  content: "\f032";
+.icon-FMWT_06:before {
+  content: "\e91c";
 }
-.icon-minus:before {
-  content: "\f068";
+.icon-FMW_01:before {
+  content: "\e911";
 }
-.icon-paragraph:before {
-  content: "\f1dd";
+.icon-FMW_02:before {
+  content: "\e912";
 }
-.icon-plus:before {
-  content: "\f067";
+.icon-FMW_03:before {
+  content: "\e913";
 }
-.icon-recycle:before {
-  content: "\f1b8";
+.icon-FMW_04:before {
+  content: "\e914";
 }
-.icon-sigrando_documents_juridiques:before {
-  content: "\e900";
+.icon-FMW_05:before {
+  content: "\e915";
 }
-.icon-sigrando_equipement:before {
-  content: "\f1b9";
+.icon-FMX_01:before {
+  content: "\e91d";
 }
-.icon-sliders:before {
-  content: "\f1de";
+.icon-FMX_02:before {
+  content: "\e91e";
 }
-.icon-extraction_ref:before {
-  content: "\f1de";
+.icon-FMX_04:before {
+  content: "\e920";
 }
-.icon-anc_parametrage:before {
-  content: "\f1de";
+.icon-FMX_05:before {
+  content: "\e921";
 }
-.icon-calimap_ref:before {
-  content: "\f1de";
+.icon-FMX_06:before {
+  content: "\e922";
 }
-.icon-user-secret:before {
-  content: "\f21b";
+.icon-FMX_07:before {
+  content: "\e923";
 }
-.icon-caret-down:before {
-  content: "\f0d7";
+.icon-GEX_01:before {
+  content: "\e924";
 }
-.icon-caret-up:before {
-  content: "\f0d8";
+.icon-GEX_02:before {
+  content: "\e925";
 }
-.icon-caret-left:before {
-  content: "\f0d9";
+.icon-GEX_04:before {
+  content: "\e927";
 }
-.icon-caret-right:before {
-  content: "\f0da";
+.icon-GEX_05:before {
+  content: "\e928";
 }
-.icon-file-o:before {
-  content: "\f017";
+.icon-GEX_06:before {
+  content: "\e929";
 }
-.icon-office:before {
-  content: "\e906";
+.icon-MAP_JSON_02:before {
+  content: "\e92f";
 }
-.icon-logo_dtnet:before {
-  content: "\46";
+.icon-MAP_JSON_03:before {
+  content: "\e930";
 }
-.icon-stopwatch:before {
-  content: "\e952";
+.icon-MAP_JSON_04:before {
+  content: "\e935";
 }
-.icon-user-tie:before {
-  content: "\e976";
+.icon-MAP_JSON_05:before {
+  content: "\e936";
 }
-.icon-supervision_dtnet:before {
-  content: "\e976";
+.icon-MAP_JSON_06:before {
+  content: "\e937";
 }
-.icon-binoculars:before {
-  content: "\e985";
+.icon-PDF_01:before {
+  content: "\e938";
 }
-.icon-supervision:before {
-  content: "\e985";
+.icon-PDF_02:before {
+  content: "\e939";
 }
-.icon-vm4ms:before {
-  content: "\45";
+.icon-PDF_04:before {
+  content: "\e93b";
 }
-.icon-vmap_admin_map:before {
+.icon-PDF_05:before {
+  content: "\e93c";
+}
+.icon-QSX_02:before {
+  content: "\e93e";
+}
+.icon-QSX_03:before {
+  content: "\e93f";
+}
+.icon-QSX_04:before {
+  content: "\e940";
+}
+.icon-V2_FMWT_02:before {
+  content: "\e904";
+}
+.icon-V2_FMWT_03:before {
   content: "\e905";
 }
-.icon-envelop:before {
+.icon-V2_FMX:before {
+  content: "\e906";
+}
+.icon-VEX_01:before {
+  content: "\e941";
+}
+.icon-VEX_02:before {
+  content: "\e942";
+}
+.icon-VEX_03:before {
+  content: "\e943";
+}
+.icon-VEX_05:before {
   content: "\e945";
 }
-.icon-message:before {
-  content: "\e945";
+.icon-ZIP_01:before {
+  content: "\e947";
 }
-.icon-demande:before {
-  content: "\e945";
+.icon-ZIP_03 .path1:before {
+  content: "\e948";
+  color: rgb(0, 0, 0);
+  opacity: 0.99;
 }
-.icon-logo_sigrando:before {
-  content: "\48";
+.icon-ZIP_03 .path2:before {
+  content: "\e95d";
+  margin-left: -1em;
+  color: rgb(0, 0, 0);
+}
+.icon-ZIP_03 .path3:before {
+  content: "\e95e";
+  margin-left: -1em;
+  color: rgb(0, 0, 0);
+}
+.icon-ZIP_03 .path4:before {
+  content: "\e95f";
+  margin-left: -1em;
+  color: rgb(0, 0, 0);
+}
+.icon-ZIP_03 .path5:before {
+  content: "\e960";
+  margin-left: -1em;
+  color: rgb(0, 0, 0);
+}
+.icon-ZIP_03 .path6:before {
+  content: "\e961";
+  margin-left: -1em;
+  color: rgb(0, 0, 0);
+}
+.icon-ZIP_03 .path7:before {
+  content: "\e962";
+  margin-left: -1em;
+  color: rgb(0, 0, 0);
+}
+.icon-ZIP_04:before {
+  content: "\e949";
+}
+.icon-ZIP_05:before {
+  content: "\e94a";
 }
 .icon-add-feature:before {
   content: "\e60a";
@@ -178,8 +230,26 @@
 .icon-publication:before {
   content: "\e60a";
 }
+.icon-publication_author:before {
+  content: "\e60a";
+}
 .icon-add-rectangle:before {
   content: "\e610";
+}
+.icon-anc_saisie:before {
+  content: "\43";
+}
+.icon-extraction2:before {
+  content: "\43";
+}
+.icon-at:before {
+  content: "\f1fa";
+}
+.icon-binoculars:before {
+  content: "\e985";
+}
+.icon-supervision:before {
+  content: "\e985";
 }
 .icon-binoculars2:before {
   content: "\e635";
@@ -196,8 +266,41 @@
 .icon-cadastre:before {
   content: "\e61d";
 }
+.icon-calculator:before {
+  content: "\f1ec";
+}
+.icon-calendar-check-o:before {
+  content: "\f274";
+}
+.icon-calimap_plan:before {
+  content: "\63";
+}
+.icon-calimap_ref:before {
+  content: "\68";
+}
 .icon-cancel:before {
   content: "\e205";
+}
+.icon-caret-down:before {
+  content: "\f0d7";
+}
+.icon-caret-left:before {
+  content: "\f0d9";
+}
+.icon-caret-right:before {
+  content: "\f0da";
+}
+.icon-caret-up:before {
+  content: "\f0d8";
+}
+.icon-check-square:before {
+  content: "\f046";
+}
+.icon-checkmark:before {
+  content: "\ea11";
+}
+.icon-chrome:before {
+  content: "\f268";
 }
 .icon-circle:before {
   content: "\e61c";
@@ -238,8 +341,17 @@
 .icon-coordinates:before {
   content: "\e611";
 }
+.icon-copy:before {
+  content: "\f0c5";
+}
+.icon-files-o:before {
+  content: "\f0c5";
+}
 .icon-crop:before {
   content: "\e153";
+}
+.icon-cross2:before {
+  content: "\ea10";
 }
 .icon-cycling:before {
   content: "\e602";
@@ -249,6 +361,9 @@
 }
 .icon-database2:before {
   content: "\e603";
+}
+.icon-dot-circle-o:before {
+  content: "\f192";
 }
 .icon-draw:before {
   content: "\e61b";
@@ -265,6 +380,15 @@
 .icon-enlarge2:before {
   content: "\e63b";
 }
+.icon-envelop:before {
+  content: "\e950";
+}
+.icon-message:before {
+  content: "\e950";
+}
+.icon-demande:before {
+  content: "\e950";
+}
 .icon-eraser:before {
   content: "\f12d";
 }
@@ -280,6 +404,15 @@
 .icon-eye-plus:before {
   content: "\e62c";
 }
+.icon-fds_03:before {
+  content: "\e90b";
+}
+.icon-fds_store:before {
+  content: "\e901";
+}
+.icon-file:before {
+  content: "\f15b";
+}
 .icon-file-binary:before {
   content: "\f094";
 }
@@ -288,6 +421,12 @@
 }
 .icon-generateur:before {
   content: "\f010";
+}
+.icon-file-o:before {
+  content: "\f017";
+}
+.icon-file-o2:before {
+  content: "\f016";
 }
 .icon-file-text:before {
   content: "\f15c";
@@ -298,23 +437,56 @@
 .icon-file-text2:before {
   content: "\f011";
 }
+.icon-filter:before {
+  content: "\f0b0";
+}
+.icon-fmw_06:before {
+  content: "\e916";
+}
+.icon-fmw_store:before {
+  content: "\e902";
+}
+.icon-fmwt_04:before {
+  content: "\e91a";
+}
+.icon-fmwt_store:before {
+  content: "\e903";
+}
+.icon-fmx_store:before {
+  content: "\e91f";
+}
 .icon-fold:before {
   content: "\f0cc";
+}
+.icon-font:before {
+  content: "\f032";
 }
 .icon-format_list_bulleted:before {
   content: "\e0db";
 }
+.icon-gex_03:before {
+  content: "\e926";
+}
+.icon-gex_store:before {
+  content: "\e907";
+}
 .icon-globe:before {
-  content: "\e92a";
+  content: "\e951";
 }
 .icon-vmap:before {
-  content: "\e92a";
+  content: "\e951";
 }
 .icon-gps_fixed:before {
   content: "\e0a3";
 }
 .icon-gps_off:before {
   content: "\e0a5";
+}
+.icon-gracethd_plan:before {
+  content: "\64";
+}
+.icon-gracethd_ref:before {
+  content: "\42";
 }
 .icon-graph:before {
   content: "\f043";
@@ -325,8 +497,11 @@
 .icon-users:before {
   content: "\f0c1";
 }
+.icon-hand-pointer:before {
+  content: "\f25a";
+}
 .icon-help:before {
-  content: "\e929";
+  content: "\e953";
 }
 .icon-home:before {
   content: "\f015";
@@ -338,9 +513,6 @@
   content: "\e608";
 }
 .icon-input:before {
-  content: "\e2a4";
-}
-.icon-calimap_plan:before {
   content: "\e2a4";
 }
 .icon-key:before {
@@ -391,26 +563,41 @@
 .icon-lock:before {
   content: "\e627";
 }
+.icon-logo_calimap:before {
+  content: "\e94b";
+}
+.icon-logo_dtnet:before {
+  content: "\46";
+}
+.icon-logo_fme:before {
+  content: "\41";
+}
 .icon-logo_gtf:before {
-  content: "\e901";
+  content: "\e954";
 }
 .icon-logo_majic:before {
-  content: "\e908";
+  content: "\e955";
 }
 .icon-logo_qualigeo:before {
-  content: "\e910";
+  content: "\e956";
 }
 .icon-logo_store:before {
-  content: "\e910";
+  content: "\e956";
+}
+.icon-logo_risdict:before {
+  content: "\e94c";
+}
+.icon-logo_sigrando:before {
+  content: "\48";
 }
 .icon-logo_vmap:before {
-  content: "\e91b";
+  content: "\e957";
 }
 .icon-logo_sigrando2:before {
-  content: "\e91b";
+  content: "\e957";
 }
 .icon-logo_wab:before {
-  content: "\e922";
+  content: "\e958";
 }
 .icon-magic-wand:before {
   content: "\e629";
@@ -433,20 +620,35 @@
 .icon-map3:before {
   content: "\e633";
 }
+.icon-mapjson_store:before {
+  content: "\e92b";
+}
 .icon-measure:before {
   content: "\e609";
 }
 .icon-milestone:before {
   content: "\f075";
 }
+.icon-minus:before {
+  content: "\f068";
+}
 .icon-mirror:before {
   content: "\f024";
+}
+.icon-mouse-pointer:before {
+  content: "\f245";
+}
+.icon-multipoint:before {
+  content: "\e963";
 }
 .icon-object-group:before {
   content: "\f247";
 }
 .icon-object-ungroup:before {
   content: "\f248";
+}
+.icon-office:before {
+  content: "\e94e";
 }
 .icon-options:before {
   content: "\e617";
@@ -457,8 +659,17 @@
 .icon-paint:before {
   content: "\e604";
 }
+.icon-paragraph:before {
+  content: "\f1dd";
+}
+.icon-pdf_store:before {
+  content: "\e93a";
+}
 .icon-pin_drop:before {
   content: "\e1f6";
+}
+.icon-plus:before {
+  content: "\f067";
 }
 .icon-point:before {
   content: "\f111";
@@ -487,8 +698,17 @@
 .icon-vmap_admin_module:before {
   content: "\f0c0";
 }
+.icon-qsx_01:before {
+  content: "\e93d";
+}
+.icon-qsx_store:before {
+  content: "\e900";
+}
+.icon-recycle:before {
+  content: "\f1b8";
+}
 .icon-refresh:before {
-  content: "\e904";
+  content: "\e959";
 }
 .icon-remove_circle:before {
   content: "\e080";
@@ -497,7 +717,7 @@
   content: "\e081";
 }
 .icon-repeat:before {
-  content: "\e903";
+  content: "\e95a";
 }
 .icon-rotate_90_degrees_ccw:before {
   content: "\e1a9";
@@ -518,10 +738,10 @@
   content: "\e612";
 }
 .icon-shopping_basket:before {
-  content: "\e902";
+  content: "\e95b";
 }
 .icon-store:before {
-  content: "\e902";
+  content: "\e95b";
 }
 .icon-show-infos:before {
   content: "\e618";
@@ -532,17 +752,83 @@
 .icon-shrink2:before {
   content: "\e63c";
 }
+.icon-sigrando_documents_juridiques:before {
+  content: "\e95c";
+}
+.icon-sigrando_equipement:before {
+  content: "\f1b9";
+}
 .icon-sigrando_esi:before {
   content: "\e601";
 }
+.icon-sigrando_securite:before {
+  content: "\f06d";
+}
+.icon-sliders:before {
+  content: "\f1de";
+}
+.icon-extraction_ref:before {
+  content: "\f1de";
+}
+.icon-calimap_ref2:before {
+  content: "\f1de";
+}
+.icon-anc_parametrage:before {
+  content: "\f1de";
+}
 .icon-stackoverflow:before {
   content: "\e644";
+}
+.icon-star-empty:before {
+  content: "\e9da";
+}
+.icon-star-empty2:before {
+  content: "\e9d7";
+}
+.icon-star-full:before {
+  content: "\e9dc";
+}
+.icon-star-full2:before {
+  content: "\e9d9";
+}
+.icon-star-half:before {
+  content: "\e9db";
+}
+.icon-star-half2:before {
+  content: "\e9d8";
 }
 .icon-stats-dots:before {
   content: "\e643";
 }
 .icon-statistics:before {
   content: "\e643";
+}
+.icon-stopwatch:before {
+  content: "\e952";
+}
+.icon-store-fme:before {
+  content: "\e92a";
+}
+.icon-store-fme-inv:before {
+  content: "\e92c";
+}
+.icon-store-gtf:before {
+  content: "\e92d";
+}
+.icon-store-gtf-inv:before {
+  content: "\e92e";
+}
+.icon-store-qualigeo:before {
+  content: "\e931";
+}
+.icon-store-qualigeo-inv:before {
+  content: "\e932";
+}
+.icon-store-vmap:before {
+  content: "\e933";
+}
+.icon-store-vmap-inv:before {
+  content: "\e934";
 }
 .icon-street-view:before {
   content: "\f21d";
@@ -589,8 +875,29 @@
 .icon-user:before {
   content: "\f007";
 }
+.icon-user-secret:before {
+  content: "\f21b";
+}
+.icon-user-tie:before {
+  content: "\e976";
+}
+.icon-supervision_dtnet:before {
+  content: "\e976";
+}
+.icon-v2_GEX_02:before {
+  content: "\e908";
+}
 .icon-versions:before {
   content: "\f064";
+}
+.icon-vex_store:before {
+  content: "\e944";
+}
+.icon-vm4ms:before {
+  content: "\45";
+}
+.icon-vmap_admin_map:before {
+  content: "\e94f";
 }
 .icon-vpn_lock:before {
   content: "\e233";
@@ -598,27 +905,12 @@
 .icon-walking:before {
   content: "\e613";
 }
+.icon-zip_store:before {
+  content: "\e946";
+}
 .icon-zoom-in:before {
   content: "\e637";
 }
 .icon-zoom-out:before {
   content: "\e638";
-}
-.icon-star-empty2:before {
-  content: "\e9d7";
-}
-.icon-star-half2:before {
-  content: "\e9d8";
-}
-.icon-star-full2:before {
-  content: "\e9d9";
-}
-.icon-star-empty:before {
-  content: "\e9da";
-}
-.icon-star-half:before {
-  content: "\e9db";
-}
-.icon-star-full:before {
-  content: "\e9dc";
 }

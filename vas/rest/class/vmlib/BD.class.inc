@@ -112,7 +112,7 @@ class BD {
      */
     function __construct($login, $motDePasse, $base, $serveur, $port, $sgbd, $sPageEncoding = "ISO-8859-1", $lang = "fr") {
         $this->login = $login;
-        $this->mdp = utf8_decode($motDePasse);
+        $this->mdp = $motDePasse;
         $this->base = $base;
         $this->serveur = $serveur;
         $this->sgbd = $sgbd;
@@ -122,40 +122,23 @@ class BD {
         loadLang($this->sFolderLib, $this->lang);
         if ($this->sgbd != "") {
             try {
-                switch ($this->sgbd) {
-                    case "sqlite":
-                        $this->connexion = new PDO($this->sgbd . ':' . $this->serveur . '/' . $this->base);
-                        break;
-                    case "mysql" :
-                        $this->sDsn = $this->sgbd . ':host=' . $this->serveur . ';dbname=' . $this->base;
-                        $this->connexion = new PDO($this->sDsn, $this->login, $this->mdp);
-                        break;
-                    case "pgsql" :
-                        $this->connexion = new PDO($this->sgbd . ':host=\'' . $this->serveur . '\' port=' . $this->port . ' dbname=\'' . $this->base . '\' user=\'' . $this->login . '\' password=\'' . $this->mdp . '\'');
-                        $oPDOresult = $this->connexion->query("SET CLIENT_ENCODING TO '" . $this->sPageEncoding . "'");
-                        break;
-                    case "oci" :
-                        if ($this->serveur != "") {
-                            // $this->sDsn= $this->sgbd.':dbname=//'.$this->serveur.':'.$this->port.'/'.$this->base.';charset='.$this->sPageEncoding;
-                            $this->sDsn = $this->sgbd . ':dbname=//' . $this->serveur . ':' . $this->port . '/' . $this->base;
-                        } else {
-                            //Pour oracle, la variable $this->sPageEncoding est "AL32UTF8" et non "UTF8"
-                            $this->sDsn = $this->sgbd . ':dbname=' . $this->base . ';charset=' . $this->sPageEncoding;
-                        }
-
-                        $this->connexion = new PDO($this->sDsn, $this->login, $this->mdp);
-                        break;
-                    default:
-                        $this->erreurRencontree = 1;
-                        $this->setStringMessage(ERROR_INCORRECT_SGBD);
-                        writeToErrorLog($this->stringMessageEncode(ERROR_INCORRECT_SGBD));
-                        break;
-                }
+                $this->connectSGBD();
             } catch (PDOException $e) {
-                $this->erreurRencontree = 1;
-                writeToErrorLog($this->stringMessageEncode(ERROR_ACCESS_SERVER . $this->base . ", " . $this->serveur . " , " . $this->login . " , ip: " . $_SERVER['REMOTE_ADDR'] . " ** " . $e->getMessage()));
-                $this->setStringMessage(ERROR_CONNECT_SERVER);
-                $this->setStringMessage($e->getMessage());
+                /**
+                 * En cas d'utilisation de l'AD, le mot de passe doit respecter
+                 * certaines règles de codage, le code situé ci-dessous
+                 * correspond à ce type de cas
+                 */
+                // $this->mdp = utf8_decode($motDePasse);
+                $this->mdp = iconv("UTF-8", "CP1252", $motDePasse);
+                try {
+                    $this->connectSGBD();
+                } catch (PDOException $e) {
+                    $this->erreurRencontree = 1;
+                    writeToErrorLog($this->stringMessageEncode(ERROR_ACCESS_SERVER . $this->base . ", " . $this->serveur . " , " . $this->login . " , ip: " . $_SERVER['REMOTE_ADDR'] . " ** " . $e->getMessage()));
+                    $this->setStringMessage(ERROR_CONNECT_SERVER);
+                    $this->setStringMessage($e->getMessage());
+                }
             }
         } else {
             $this->erreurRencontree = 1;
@@ -165,6 +148,41 @@ class BD {
     }
 
     // ---- Partie privée : les méthodes
+
+    /**
+     * Connexion à PDO
+     */
+    function connectSGBD() {
+        switch ($this->sgbd) {
+            case "sqlite":
+                $this->connexion = new PDO($this->sgbd . ':' . $this->serveur . '/' . $this->base);
+                break;
+            case "mysql" :
+                $this->sDsn = $this->sgbd . ':host=' . $this->serveur . ';dbname=' . $this->base;
+                $this->connexion = new PDO($this->sDsn, $this->login, $this->mdp);
+                break;
+            case "pgsql" :
+                $this->connexion = new PDO($this->sgbd . ':host=\'' . $this->serveur . '\' port=' . $this->port . ' dbname=\'' . $this->base . '\'', $this->login, $this->mdp);
+                $oPDOresult = $this->connexion->query("SET CLIENT_ENCODING TO '" . $this->sPageEncoding . "'");
+                break;
+            case "oci" :
+                if ($this->serveur != "") {
+                    // $this->sDsn= $this->sgbd.':dbname=//'.$this->serveur.':'.$this->port.'/'.$this->base.';charset='.$this->sPageEncoding;
+                    $this->sDsn = $this->sgbd . ':dbname=//' . $this->serveur . ':' . $this->port . '/' . $this->base . ';charset='.$this->sPageEncoding;
+                } else {
+                    //Pour oracle, la variable $this->sPageEncoding est "AL32UTF8" et non "UTF8"
+                    $this->sDsn = $this->sgbd . ':dbname=' . $this->base . ';charset=' . $this->sPageEncoding;
+                }
+
+                $this->connexion = new PDO($this->sDsn, $this->login, $this->mdp);
+                break;
+            default:
+                $this->erreurRencontree = 1;
+                $this->setStringMessage(ERROR_INCORRECT_SGBD);
+                writeToErrorLog($this->stringMessageEncode(ERROR_INCORRECT_SGBD));
+                break;
+        }
+    }
 
     /**
      * Méthodes getSourceEncoding
@@ -347,6 +365,13 @@ class BD {
 
         $this->connexion->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_WARNING);
 
+        // Supprime les paramètres non présents dans la requête
+        foreach ($aParams as $key => $value) {
+            if (strpos($sRequete, $key) === false) {
+                unset($aParams[$key]);
+            }
+        }
+        
         $aSqlParams = array();
         $aParamsCpy = $aParams;
         $sRequeteToLog2 = $sRequete . ' | ' . json_encode($aParams, true);
@@ -428,7 +453,7 @@ class BD {
                     }
                     break;
                 case 'double_quote':
-                    $aParams[$key]['value'] = '"' . $aParams[$key]['value'] . '"';
+                    $aParams[$key]['value'] = '"' . $this->protegeSpecialChar($aParams[$key]['value']) . '"';
                     $sRequete = str_replace('[' . $key . ']', $aParams[$key]['value'], $sRequete);
                     break;
                 default:
@@ -484,7 +509,9 @@ class BD {
             }
 
             $oPDOresult->execute();
-            writeToDebugLog($sRequeteToLog2 . ' | ' . $sRequeteToLog1);
+            if ($bLogSQL) {
+                writeToDebugLog($sRequeteToLog2 . ' | ' . $sRequeteToLog1);
+            }
 
             if ($oPDOresult->errorCode() === "00000") {
                 $this->erreurRencontree = 0;
@@ -631,6 +658,16 @@ class BD {
      */
     function protegeChaine($chaine) {
         return $this->connexion->quote($chaine);
+    }
+
+    /**
+     * Merthode permettant de remplacer les caractères critiques.
+     * Ces caractères sont les guillemets simples ('), guillemets doubles ("), antislash (\) et NULLE (le caractère NULL).
+     * @param string $chaine
+     * @return string
+     */
+    function protegeSpecialChar($chaine) {
+        return addslashes($chaine);
     }
 
     /**
@@ -1662,11 +1699,12 @@ class BD {
 
         switch ($this->sgbd) {
             case "pgsql" :
-                if (($sType === "geometry") && ($sValue !== "")) {
-                    $iTableDimension = $this->getTableDimension($sTable, $sSchema);
+                if (($sType === "geometry") && ($sValue !== "")) {                    
+                    $iColumnDimension = $this->getColumnDimension($sSchema, $sTable, $sField);
                     $sForce3DDebut = "";
                     $sForce3DFin = "";
-                    if ($iTableDimension == 3) {
+                    $sSRID = $this->getColumnSRID($sSchema, $sTable, $sField);
+                    if ($iColumnDimension == 3) {
                         $sForce3DDebut = "st_force_3d(";
                         $sForce3DFin = ")";
                     }
@@ -1678,10 +1716,10 @@ class BD {
                             $sSchema = $sOriginSchema;
                     }
                     // Si il s'agit de format EWKT, alors on connait la projection de la géométrie. On peut alors procéder à une reprojection automatique des données
-                    if ($this->isEWKTFormat($sValue)) {
-                        $sField = $sForce3DDebut . "ST_transform(ST_GeomFromEWKT([" . $sFieldKey . "]), " . $this->getTableSRID($sTable, $sSchema) . ")" . $sForce3DFin;
+                    if ($this->isEWKTFormat($sValue) && $sSRID != "0") {
+                        $sField = $sForce3DDebut . "ST_transform(ST_GeomFromEWKT([" . $sFieldKey . "]), " . $sSRID . ")" . $sForce3DFin;
                     } else {
-                        $sField = $sForce3DDebut . "st_geometryFromText([" . $sFieldKey . "]," . $this->getTableSRID($sTable, $sSchema) . ") " . $sForce3DFin;
+                        $sField = $sForce3DDebut . "st_geometryFromText([" . $sFieldKey . "]," . $sSRID . ") " . $sForce3DFin;
                     }
                 } else {
                     $sField = '[' . $sFieldKey . ']';

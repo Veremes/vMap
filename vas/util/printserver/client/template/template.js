@@ -14,9 +14,11 @@ PrintTemplate = function (opt_options) {
 
     this.templateId = opt_options.templateId;
 
+    this.styleId = opt_options.styleId;
+
     this.includes = opt_options.includes;
 
-    this.templateDefinition = this.getTemplateDefinition(this.templateId);
+    this.templateDefinition = this.getTemplateDefinition(this.templateId, this.styleId);
 
     var template = document.createElement("div");
     template.innerHTML = this.templateDefinition;
@@ -40,9 +42,10 @@ PrintTemplate = function (opt_options) {
 /**
  * Get SYNCHRONELY the template definition from API URL
  * @param {string} templateId
+ * @param {string} styleId
  * @returns {Array|Object}
  */
-PrintTemplate.prototype.getTemplateDefinition = function (templateId) {
+PrintTemplate.prototype.getTemplateDefinition = function (templateId, styleId) {
 
     var apiUrl = this.apiUrl;
 
@@ -59,7 +62,7 @@ PrintTemplate.prototype.getTemplateDefinition = function (templateId) {
     }
 
     var http = new nsUtils.Http();
-    var templateDefinition;
+    var templateDefinition, aPrintStyles;
 
     http.get({
         url: apiUrl + '/vmap/userprinttemplates/' + templateId + '?token=' + token,
@@ -77,7 +80,27 @@ PrintTemplate.prototype.getTemplateDefinition = function (templateId) {
             if (!isDef(response['userprinttemplates'][0]['definition'])) {
                 callError("getTemplateDefinition: Can't get the response.userprinttemplates[0].definition");
             }
+
+            // Template 
             templateDefinition = response['userprinttemplates'][0]['definition'];
+
+            // Style
+            callLog('styleId: ' + styleId);
+            if (isDef(styleId)) {
+                aPrintStyles = response['userprinttemplates'][0]['printstyles'];
+                if (Array.isArray(aPrintStyles)) {
+                    for (var i = 0; i < aPrintStyles.length; i++) {
+                        if (isDef(aPrintStyles[i]['printstyle_id'])) {
+                            if (aPrintStyles[i]['printstyle_id'] == styleId) {
+                                callLog('printstyle: ' + JSON.stringify(aPrintStyles[i]));
+                                if (isDef(aPrintStyles[i]['definition'])) {
+                                    templateDefinition = aPrintStyles[i]['definition'] + templateDefinition;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     });
 
@@ -122,7 +145,7 @@ PrintTemplate.prototype.addTemplateIncludes = function (aIncludes) {
 /**
  * Print template App
  */
-ngPrintTemplate = angular.module("ngPrintTemplate", []);
+ngPrintTemplate = angular.module("ngPrintTemplate", ["ngSanitize"]);
 
 /**
  * Print template controller

@@ -1,23 +1,23 @@
 <?php
+
 /**
-* \file LayerConnections.class.inc
-* \class LayerConnections
-*
-* \author Armand Bahi <armand.bahi@veremes.com>.
-*
-* \brief This file contains the LayerConnections php class
-*
-* This class defines Rest Api to Vmap4MapServer Connections
-* 
-*/
+ * \file LayerConnections.class.inc
+ * \class LayerConnections
+ *
+ * \author Armand Bahi <armand.bahi@veremes.com>.
+ *
+ * \brief This file contains the LayerConnections php class
+ *
+ * This class defines Rest Api to Vmap4MapServer Connections
+ * 
+ */
 require_once 'Vmap4MapServer.class.inc';
 require_once 'LayerConnection.class.inc';
 require_once __DIR__ . '/../../class/vitis_lib/Connection.class.inc';
 require_once __DIR__ . '/../../class/vmlib/BdDataAccess.inc';
 
 class LayerConnections extends Vmap4MapServer {
-    
-     /**
+    /**
      * @SWG\Definition(
      *   definition="/layerconnections",
      *   allOf={
@@ -29,19 +29,20 @@ class LayerConnections extends Vmap4MapServer {
      *   description=""
      * )
      */
+
     /**
      * construct
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
+     * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = new Connection($this->aValues, $this->aProperties);
-		$this->aSelectedFields = Array("connection_id", "name", "private", "server", "port", "database", "user", "password");
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
+        $this->aSelectedFields = Array("connection_id", "name", "private", "server", "port", "database", "user", "password");
     }
+
     /**
      * @SWG\Get(path="/layerconnections",
      *   tags={"LayerConnections"},
@@ -114,6 +115,7 @@ class LayerConnections extends Vmap4MapServer {
      *     )
      *  )
      */
+
     /**
      * get LayerConnections
      * @return  LayerConnections
@@ -122,7 +124,7 @@ class LayerConnections extends Vmap4MapServer {
         $aReturn = $this->genericGet($this->aProperties['schema_vm4ms'], 'connection', 'connection_id');
         return $aReturn['sMessage'];
     }
-    
+
     /**
      * @SWG\Post(path="/layerconnections",
      *   tags={"LayerConnections"},
@@ -207,18 +209,18 @@ class LayerConnections extends Vmap4MapServer {
             $this->aValues['user'] = '';
             $this->aValues['password'] = '';
         }
-        $aReturn = $this->genericPost($this->aProperties['schema_vm4ms'], 'connection', $this->aProperties['schema_vm4ms'].'.seq_common', 'connection_id');
-        if ($aReturn['sStatus'] == 1){
+        $aReturn = $this->genericPost($this->aProperties['schema_vm4ms'], 'connection', $this->aProperties['schema_vm4ms'] . '.seq_common', 'connection_id');
+        if ($aReturn['sStatus'] == 1) {
             $aXmlRacineAttribute['status'] = 1;
             $sMessage = $this->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
             $oLayerConnection = new LayerConnection($this->aPath, $this->aValues, $this->aProperties, $this->oConnection);
             $oLayerConnection->GET();
-        }else{
+        } else {
             $sMessage = $aReturn['sMessage'];
         }
         return $sMessage;
     }
-    
+
     /**
      * @SWG\Put(path="/layerconnections/{connection_id}",
      *   tags={"LayerConnections"},
@@ -316,7 +318,6 @@ class LayerConnections extends Vmap4MapServer {
         return $aReturn['sMessage'];
     }
 
-    
     /**
      * @SWG\Delete(path="/layerconnections/",
      *   tags={"LayerConnections"},
@@ -374,7 +375,7 @@ class LayerConnections extends Vmap4MapServer {
      *     )
      *  )
      */
-    
+
     /**
      * delete connection
      * @return id of connection deleted or error object if a connection is not deleted
@@ -383,5 +384,7 @@ class LayerConnections extends Vmap4MapServer {
         $aReturn = $this->genericDelete($this->aProperties['schema_vm4ms'], 'connection', 'connection_id');
         return $aReturn['sMessage'];
     }
+
 }
+
 ?>

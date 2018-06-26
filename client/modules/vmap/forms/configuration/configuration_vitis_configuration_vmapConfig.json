@@ -32,7 +32,7 @@
                     {
                         "type": "title",
                         "label": "TITLE_PROPERTIES_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
-                        "name":"title_properties",
+                        "name": "title_properties",
                         "nb_cols": 12
                     }
                 ]
@@ -86,7 +86,7 @@
                     {
                         "type": "title",
                         "label": "TITLE_DISPLAY_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
-                        "name":"title_properties_display",
+                        "name": "title_properties_display",
                         "nb_cols": 12
                     }
                 ]
@@ -108,24 +108,24 @@
                 ]
             },
             {
-                "fields":[
+                "fields": [
                     {
-                        "type":"codemirror",
-                        "name":"popup.style",
-                        "label":"FORM_POPUP_STYLE_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
-                        "nb_cols":12,
-                        "required":false,
-                        "codemirrorOptions":{
+                        "type": "codemirror",
+                        "name": "popup.style",
+                        "label": "FORM_POPUP_STYLE_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
+                        "nb_cols": 12,
+                        "required": false,
+                        "codemirrorOptions": {
                             "lineSeparator": "<return>",
-                            "runnable":true,
-                            "lineNumbers":true,
-                            "matchBrackets":true,
-                            "mode":"css",
-                            "indentUnit":4,
-                            "indentWithTabs":true,
-                            "enterMode":"keep",
-                            "tabMode":"shift",
-                            "appHeight":"20%"
+                            "runnable": true,
+                            "lineNumbers": true,
+                            "matchBrackets": true,
+                            "mode": "css",
+                            "indentUnit": 4,
+                            "indentWithTabs": true,
+                            "enterMode": "keep",
+                            "tabMode": "shift",
+                            "appHeight": "20%"
                         }
                     }
                 ]
@@ -243,7 +243,7 @@
                     {
                         "type": "title",
                         "label": "TITLE_TOOLS_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
-                        "name":"title_properties_tools",
+                        "name": "title_properties_tools",
                         "nb_cols": 12
                     }
                 ]
@@ -273,7 +273,7 @@
                     {
                         "type": "title",
                         "label": "TITLE_SELECTION_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
-                        "name":"title_properties_section",
+                        "name": "title_properties_section",
                         "nb_cols": 12
                     }
                 ]
@@ -299,6 +299,82 @@
                         "required": true,
                         "default_value": 50,
                         "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "title",
+                        "label": "TITLE_SNAPPING_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
+                        "name": "title_properties_section",
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "snapping.defaut_limit",
+                        "label": "FORM_SNAPPING_DEFAUT_LIMIT_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
+                        "required": true,
+                        "default_value": 2000,
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "snapping.defaut_tolerance",
+                        "label": "FORM_SNAPPING_DEFAUT_TOLERANCE_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
+                        "required": true,
+                        "default_value": 15,
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "select",
+                        "name": "snapping.defaut_snapp_mode",
+                        "label": "FORM_SNAPPING_DEFAUT_TYPE_ACC_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
+                        "options": [
+                            "FORM_SNAPPING_METHOD_SEN_CONFIGURATION_CONFIGURATION_VMAP_CONFIG|segment_edge_node",
+                            "FORM_SNAPPING_METHOD_EN_CONFIGURATION_CONFIGURATION_VMAP_CONFIG|edge_node",
+                            "FORM_SNAPPING_METHOD_N_CONFIGURATION_CONFIGURATION_VMAP_CONFIG|node"
+                        ],
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "class": "form-field-inline radio-list",
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "snapping_defaut_visibility_label",
+                        "label": "FORM_SNAPPING_DEFAUT_VISIBILITY_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
+                        "nb_cols": 8
+                    },
+                    {
+                        "type": "radio",
+                        "name": "snapping.defaut_visibility",
+                        "options": {
+                            "choices": [{
+                                    "label": "FORM_RADIO_TRUE_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
+                                    "value": true
+                                },
+                                {
+                                    "label": "FORM_RADIO_FALSE_CONFIGURATION_CONFIGURATION_VMAP_CONFIG",
+                                    "value": false
+                                }]
+                        },
+                        "default_value": false,
+                        "nb_cols": 4
                     }
                 ]
             },

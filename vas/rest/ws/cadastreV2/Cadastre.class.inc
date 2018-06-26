@@ -8,6 +8,10 @@ class Cadastre extends Vmap {
     //Chemin du fichier de ressources contenant les requêtes SQL
     var $sRessourcesFile = 'Vitis.class.sql.inc';
 
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
+    }
+
     /**
      * Return true if the user have raghts on the "commune" else return false
      * @param string $id_com

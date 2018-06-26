@@ -4,6 +4,7 @@ goog.require('ol');
 goog.require('ol.dom');
 goog.require('ol.events');
 goog.require('ol.events.EventType');
+goog.require('ol.ext.rbush');
 goog.require('ol.extent');
 goog.require('ol.render.canvas.ReplayGroup');
 goog.require('ol.renderer.vector');
@@ -13,7 +14,11 @@ goog.require('ol.transform');
 
 
 /**
+ * @deprecated
  * @classdesc
+ * **Deprecated**. Use an `ol.layer.Vector` with `renderMode: 'image'` and an
+ * `ol.source.Vector` instead.
+ *
  * An image source whose images are canvas elements into which vector features
  * read from a vector source (`ol.source.Vector`) are drawn. An
  * `ol.source.ImageVector` object is to be used as the `source` of an image
@@ -54,6 +59,12 @@ ol.source.ImageVector = function(options) {
    * @type {ol.Size}
    */
   this.canvasSize_ = [0, 0];
+
+  /**
+   * Declutter tree.
+   * @private
+   */
+  this.declutterTree_ = ol.ext.rbush(9);
 
   /**
    * @private
@@ -113,7 +124,7 @@ ol.source.ImageVector.prototype.canvasFunctionInternal_ = function(extent, resol
 
   var replayGroup = new ol.render.canvas.ReplayGroup(
       ol.renderer.vector.getTolerance(resolution, pixelRatio), extent,
-      resolution, this.source_.getOverlaps(), this.renderBuffer_);
+      resolution, pixelRatio, this.source_.getOverlaps(), this.declutterTree_, this.renderBuffer_);
 
   this.source_.loadFeatures(extent, resolution, projection);
 
@@ -141,9 +152,11 @@ ol.source.ImageVector.prototype.canvasFunctionInternal_ = function(extent, resol
     this.canvasContext_.clearRect(0, 0, size[0], size[1]);
   }
 
+  this.declutterTree_.clear();
+
   var transform = this.getTransform_(ol.extent.getCenter(extent),
       resolution, pixelRatio, size);
-  replayGroup.replay(this.canvasContext_, pixelRatio, transform, 0, {});
+  replayGroup.replay(this.canvasContext_, transform, 0, {});
 
   this.replayGroup_ = replayGroup;
 
@@ -161,7 +174,7 @@ ol.source.ImageVector.prototype.forEachFeatureAtCoordinate = function(
   } else {
     /** @type {Object.<string, boolean>} */
     var features = {};
-    return this.replayGroup_.forEachFeatureAtCoordinate(
+    var result = this.replayGroup_.forEachFeatureAtCoordinate(
         coordinate, resolution, 0, hitTolerance, skippedFeatureUids,
         /**
          * @param {ol.Feature|ol.render.Feature} feature Feature.
@@ -173,7 +186,8 @@ ol.source.ImageVector.prototype.forEachFeatureAtCoordinate = function(
             features[key] = true;
             return callback(feature);
           }
-        });
+        }, null);
+    return result;
   }
 };
 
@@ -297,6 +311,6 @@ ol.source.ImageVector.prototype.renderFeature_ = function(feature, resolution, p
 ol.source.ImageVector.prototype.setStyle = function(style) {
   this.style_ = style !== undefined ? style : ol.style.Style.defaultFunction;
   this.styleFunction_ = !style ?
-      undefined : ol.style.Style.createFunction(this.style_);
+    undefined : ol.style.Style.createFunction(this.style_);
   this.changed();
 };

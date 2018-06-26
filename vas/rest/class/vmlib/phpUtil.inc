@@ -152,10 +152,11 @@ function uploadFile($sNomObjet, $sFileType, $sServerPath, $sMaxSize) {
             }
             //Lance l'upload.
             if ($bAllowUpload) {
-                if (!move_uploaded_file($sTmpFile, $sServerPath)) {
+                if (!copy($sTmpFile, $sServerPath)) {
                     writeToErrorLog(ERROR_COPYING_FILE . $_FILES[$sNomObjet]['name'] . ON_SERVER_PHPUTIL . ', ' . $sTmpFile . ', ' . $sServerPath);
                     $sErrorMsg = ERROR_COPYING_FILE . $_FILES[$sNomObjet]['name'] . ON_SERVER_PHPUTIL . '.';
                 }
+                unlink($sTmpFile);
                 //chmod($sServerPath,755);
             }
         } else {

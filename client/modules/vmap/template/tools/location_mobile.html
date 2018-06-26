@@ -1,0 +1,96 @@
+<!--location search-->
+<div id="location-search-tool" class="height-100 overflow_y">
+    <!--Formulaire-->
+    <form ng-submit="ctrl.searchLocation()" id="location-search-form">
+        <div class="col-xs-6">
+            <input id="location-search-input" class="form-control input-sm right margin-sides-10 margin-5" type="text" placeholder="Rechercher.." ng-model="ctrl.locationSearch" ng-click="ctrl.searchLocation()">
+        </div>
+        <div class="col-xs-6">
+            <select id="location-search-api-select"
+                    class="form-control minus left margin-5 margin-sides-10"
+                    ng-if="sizeOf(ctrl.oBusinessObjects) > 0"
+                    ng-model="ctrl.sSelectedLocationService"
+                    ng-change="ctrl.searchLocation()">            
+                <!--Géocodeurs-->
+                <option ng-repeat="(key, value) in ctrl.locationServices"
+                        value="{{key}}">{{value.title}}</option>
+                <!--Objets métier-->
+                <option ng-repeat="(key, value) in ctrl.oBusinessObjects"
+                        ng-if="value.bo_search_field && value.bo_result_field"
+                        value="{{key}}">{{value.bo_title}}</option>
+            </select>
+        </div>
+    </form>
+    <!--GIF chargement-->
+    <div style="text-align: center" class="margin-10">
+        <img class="hidden" src="images/ajax-load-big.gif" height="42" width="42" ng-class="{'block': ctrl.searching === true}">
+        <span ng-class="{'hidden': ctrl.noResults === ''}">{{ctrl.noResults}}</span>
+    </div>
+    <!--Résultats-->
+    <div id="vmap_menu_location_results">
+        <div class="panel list-group">
+            <!--Objet métier--> 
+            <div ng-if="locationServiceType === 'business_object'" ng-repeat="node in ctrl.locationResults">
+                <a href="#" class="list-group-item" data-toggle="collapse" data-target="#vmap_menu_location_results_{{$index}}" data-parent="#vmap_menu_location_results" onclick="$('#vmap_menu_location_results .in').collapse('hide');">
+                    <span ng-bind-html="node['bo_summary'][ctrl.oBusinessObjects[ctrl.sSelectedLocationService].bo_result_field]"></span>
+                </a>
+                <div id="vmap_menu_location_results_{{$index}}" class="sublinks collapse">
+                    <div style="padding-bottom: 10px">
+                        <ul style="margin: 10px 0px 40px 0px;">
+                            <li ng-repeat="key in node['bo_summary_attributs']"
+                                ng-bind-html="key + ': '+node['bo_summary'][key]">
+                            </li>
+                            <div style="margin: 10px;">
+                                <button type="button" name="button" class="btn btn-primary btn-sm pull-right" ng-click="ctrl.addToSelection(node, ctrl.oBusinessObjects[ctrl.sSelectedLocationService])">Voir sur la carte</button>
+                            </div>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <!--Géocodeur--> 
+            <div ng-if="locationServiceType === 'geocoder'" ng-repeat="node in ctrl.locationResults">
+                <a href="#" class="list-group-item" data-toggle="collapse" data-target="#vmap_menu_location_results_{{$index}}" data-parent="#vmap_menu_location_results" onclick="$('#vmap_menu_location_results .in').collapse('hide');">
+                    {{node.title}}
+                </a>
+                <div id="vmap_menu_location_results_{{$index}}" class="sublinks collapse">
+                    <div style="padding-bottom: 10px">
+                        <ul style="margin: 10px 0px 40px 0px;">
+                            <li ng-repeat="oSummaryElement in node.summary">{{oSummaryElement.label}}: {{oSummaryElement.value}}</li>
+                            <div style="margin: 10px;">
+                                <button type="button" name="button" class="btn btn-primary btn-sm pull-right" ng-click="ctrl.locatePlace(node)">Voir sur la carte</button>
+                            </div>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal -->
+<div id="scale-modal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <form ng-submit="ctrl.addScale()">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Nouvelle échelle</h4>
+                </div>
+                <div class="modal-body">
+                    <i>Saisissez une nouvelle échelle puis cliquez sur "ajouter"</i>
+                    <div class="input-group">
+                        <span class="input-group-addon" id="new-scale-describer">1:</span>
+                        <input type="number" class="form-control" id="new-scale-input" aria-describedby="new-scale-describer" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Ajouter</button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>

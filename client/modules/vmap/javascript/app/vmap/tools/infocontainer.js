@@ -841,7 +841,15 @@ nsVmap.nsToolsManager.InfoContainer.prototype.infocontainerController.prototype.
     var aRowData = {};
     for (var key in row_options.data) {
         if (goog.isString(row_options.data[key])) {
-            aRowData[key] = row_options.data[key].replace(/</g, "&lt;").replace(/>/g, "&gt;");
+//            aRowData[key] = row_options.data[key].replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+            // Recherche les liens
+            if (oVmap.isLink(row_options.data[key], 'bo_link')) {
+                row_options.data[key] = oVmap.parseLink(row_options.data[key], 'bo_link');
+            }
+
+            // Prévention d'injections XSS
+            aRowData[key] = oVmap['$sanitize'](row_options.data[key]);
         } else {
             aRowData[key] = row_options.data[key];
         }
@@ -964,12 +972,81 @@ nsVmap.nsToolsManager.InfoContainer.prototype.infocontainerController.prototype.
 };
 
 /**
+ * Remove/close the tab
+ * @param {type} oTab
+ * @export
+ */
+nsVmap.nsToolsManager.InfoContainer.prototype.infocontainerController.prototype.removeTab = function (oTab) {
+    oVmap.log('nsVmap.nsToolsManager.InfoContainer.infocontainerController.removeTab');
+
+    var this_ = this;
+    var tabDisplayed = false;
+    var removedTabDisplayed = false;
+    var iRemovedTabPosition = 0;
+    var iFutureTabPosition = 0;
+    var selectedTabIndex;
+
+    // Récupère la position de l'onglet à supprimer
+    for (var i = 0; i < this['infos'].length; i++) {
+        if (this['infos'][i]['index'] === oTab['index']) {
+            iRemovedTabPosition = angular.copy(i);
+        }
+    }
+
+    // Récupère l'identifiant de l'onglet sélectionné
+    if (goog.isDefAndNotNull(this['selectedTabIndex'])) {
+        if (goog.isDefAndNotNull(this['infos'][this['selectedTabIndex']])) {
+            tabDisplayed = true;
+            selectedTabIndex = angular.copy(this['infos'][this['selectedTabIndex']]['index']);
+        }
+    }
+
+    // Supprime l'onglet
+    this.removeTabByCode(oTab['tabCode']);
+    setTimeout(function () {
+
+        // Re-selectionne l'onglet précédemment selectionné si besoin
+        if (tabDisplayed) {
+            for (var i = 0; i < this_['infos'].length; i++) {
+                if (this_['infos'][i]['index'] === selectedTabIndex) {
+                    iFutureTabPosition = angular.copy(i);
+                    console.log("tab already displayed !");
+                }
+            }
+        }
+
+        // Vérifie si l'onglet qui vient d'être supprimé était celui sélectionné
+        if (goog.isDefAndNotNull(this_['selectedTabIndex'])) {
+            if (goog.isDefAndNotNull(iRemovedTabPosition)) {
+                if (this_['selectedTabIndex'] === iRemovedTabPosition) {
+                    removedTabDisplayed = true;
+                }
+            }
+        }
+
+        // Décide de la future position à selectionner
+        if (removedTabDisplayed) {
+            if (goog.isDefAndNotNull(this_['infos'][iRemovedTabPosition])) {
+                iFutureTabPosition = iRemovedTabPosition;
+            } else if (goog.isDefAndNotNull(this_['infos'][iRemovedTabPosition - 1])) {
+                iFutureTabPosition = iRemovedTabPosition - 1;
+            }
+        }
+
+        // Affiche l'onglet voulu
+        this_.$scope_.$applyAsync(function () {
+            this_.displayTabByIndex(iFutureTabPosition);
+        });
+    });
+};
+
+/**
  * Delete a tab by tabCode. Warning: this function will not remove the possible features binded on the rows
  * @param {string} tabCode code of the tab
  * @export
  */
 nsVmap.nsToolsManager.InfoContainer.prototype.infocontainerController.prototype.removeTabByCode = function (tabCode) {
-    oVmap.log('nsVmap.nsToolsManager.InfoContainer.infocontainerController.removeTabByNam');
+    oVmap.log('nsVmap.nsToolsManager.InfoContainer.infocontainerController.removeTabByCode');
 
     var aInfos = this['infos'];
 
@@ -1082,7 +1159,6 @@ nsVmap.nsToolsManager.InfoContainer.prototype.infocontainerController.prototype.
     }
 
     // Recharge les nouvelles valeurs du tableau de rapports
-    showAjaxLoader();
     ajaxRequest({
         'method': 'GET',
         'url': oVmap['properties']['api_url'] + '/vmap/printreports',
@@ -1154,6 +1230,21 @@ nsVmap.nsToolsManager.InfoContainer.prototype.infocontainerController.prototype.
     oVmap.generatePrintReport({
         'printReportId': printreport['printreport_id'],
         'ids': aIds
+    });
+};
+
+/**
+ * Export a table into a file
+ * @param {indeger} tabIndex index from the table
+ * @param {string} sFormat (json, xml, csv, txt, sql, excel)
+ * @export
+ */
+nsVmap.nsToolsManager.InfoContainer.prototype.infocontainerController.prototype.exportTable = function (tabIndex, sFormat) {
+    oVmap.log('nsVmap.nsToolsManager.InfoContainer.infocontainerController.exportTable');
+
+    $('#infocontainer-table-' + tabIndex)['tableExport']({
+        'type': sFormat,
+        'escape': false
     });
 };
 

@@ -4,6 +4,7 @@
         "Edit": "Edit",
         "ManageTabs": "Manage tabs",
         "ManageWab": "Manage Wab",
+        "ManageWabMethod": "Generation method's button (Wab)",
         "Tab": "Tab",
         "WabGroup": "Group",
         "WabState": "State",
@@ -343,6 +344,7 @@
                 "Name_PH": "Field name",
                 "Projection": "Proj.",
                 "Select_center": "Map center mode :",
+                "Output_format": "Output format :",
                 "Extent": "Extent",
                 "CZ": "Center and zoom",
                 "Center_Label": "Map center coords. :",
@@ -414,7 +416,8 @@
                 }
             }
         },
-        "SameNameWarning": "Two elements can't have the same name"
+        "SameNameWarning": "Two elements can't have the same name",
+        "EmptyNameWarning": "Element name cannot be empty"
     },
     "Visualizer": {
         "FormMode": "Preview",
@@ -456,6 +459,9 @@
             "AddElement": "Add a published parameter",
             "Delete": "Delete an element or an empty line",
             "Copy": "Copy the tree",
+            "MethodCreator": "Create button's method from database",
+            "CopyClipboard": "Copy Json into clipboard",
+            "PasteClipboard": "Paste Json from clipboard",
             "Paste": "Paste the copied tree",
             "Labelize": "Change all the fields in label",
             "Row": "Enable/Disable the Lines"

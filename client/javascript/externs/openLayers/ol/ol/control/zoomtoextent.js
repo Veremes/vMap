@@ -22,21 +22,21 @@ ol.control.ZoomToExtent = function(opt_options) {
 
   /**
    * @type {ol.Extent}
-   * @private
+   * @protected
    */
-  this.extent_ = options.extent ? options.extent : null;
+  this.extent = options.extent ? options.extent : null;
 
   var className = options.className !== undefined ? options.className :
-      'ol-zoom-extent';
+    'ol-zoom-extent';
 
   var label = options.label !== undefined ? options.label : 'E';
   var tipLabel = options.tipLabel !== undefined ?
-      options.tipLabel : 'Fit to extent';
+    options.tipLabel : 'Fit to extent';
   var button = document.createElement('button');
   button.setAttribute('type', 'button');
   button.title = tipLabel;
   button.appendChild(
-    typeof label === 'string' ? document.createTextNode(label) : label
+      typeof label === 'string' ? document.createTextNode(label) : label
   );
 
   ol.events.listen(button, ol.events.EventType.CLICK,
@@ -62,16 +62,16 @@ ol.inherits(ol.control.ZoomToExtent, ol.control.Control);
  */
 ol.control.ZoomToExtent.prototype.handleClick_ = function(event) {
   event.preventDefault();
-  this.handleZoomToExtent_();
+  this.handleZoomToExtent();
 };
 
 
 /**
- * @private
+ * @protected
  */
-ol.control.ZoomToExtent.prototype.handleZoomToExtent_ = function() {
+ol.control.ZoomToExtent.prototype.handleZoomToExtent = function() {
   var map = this.getMap();
   var view = map.getView();
-  var extent = !this.extent_ ? view.getProjection().getExtent() : this.extent_;
+  var extent = !this.extent ? view.getProjection().getExtent() : this.extent;
   view.fit(extent);
 };

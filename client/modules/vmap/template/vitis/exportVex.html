@@ -1,0 +1,97 @@
+<div class="modal-body-with-footer">
+    <div class="stepwizard">
+        <div class="stepwizard-row setup-panel">
+            <div ng-repeat="step in steps" class="stepwizard-step" ng-style="{'width': (100 / steps.length) + '%'}">
+                <a href="#" 
+                   type="button" 
+                   class="btn btn-default btn-circle" 
+                   ng-class="{'btn-primary' : displayedStep === step, 'btn-inverse': selectedSteps[step] === false}" 
+                   disabled>{{$index + 1}}</a>
+                <p data-translate="CTRL_EXPORT_VEX_STEP_{{step}}"></p>
+            </div>
+        </div>
+    </div>
+    <!--select_vmap_objects-->
+    <div ng-show="displayedStep === 'select_vmap_objects'">
+        <div class="">
+            <div class="col-md-12">
+                <div class="text-center">
+                    <h3 data-translate="CTRL_EXPORT_VEX_SELECT_VMAP_OBJETS"></h3>
+                </div>
+                <br>
+                <div class="">
+                    <div class="treeview-container">
+                        <div id="export-vex-vmap-objects-treeview"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--select_web_services-->
+    <div ng-show="displayedStep === 'select_web_services'">
+        <div class="">
+            <div class="col-md-12">
+                <div class="text-center">
+                    <h3 data-translate="CTRL_EXPORT_VEX_SELECT_WEB_SERVICES"></h3>
+                </div>
+                <br>
+                <div class="">
+                    <div class="treeview-container">
+                        <div id="export-vex-web-services-treeview"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--select_sql_objects-->
+    <div ng-show="displayedStep === 'select_sql_objects'">
+        <div class="">
+            <div class="col-md-12">
+                <div class="text-center">
+                    <h3 data-translate="CTRL_EXPORT_VEX_SELECT_SQL"></h3>
+                </div>
+                <br>
+                <div class="">
+                    <div class="form-group">
+                        <label class="control-label" data-translate="CTRL_EXPORT_VEX_SELECT_DB"></label>
+                        <select class="form-control" 
+                                ng-model="sSelectedDatabase" 
+                                ng-options="database for database in aAvaliableDatabases">
+                            <option value=""></option>
+                        </select>
+                    </div>
+                    <div class="treeview-container">
+                        <div id="export-vex-sql-objects-treeview"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--execute_export-->
+    <div ng-show="displayedStep === 'execute_export'" class="export-vex-execute-step">
+        <div class="col-md-12 height-100">
+            <div class="text-center">
+                <h3 data-translate="CTRL_EXPORT_VEX_EXPORT_EXECUTION"></h3>
+            </div>
+            <br>
+            <div class="export-vex-execute-step-button-container col-xs-6 col-xs-offset-3">
+                <div class="export-vex-execute-step-button">
+                    <button class="btn btn-primary btn-block btn-lg" data-translate="CTRL_EXPORT_VEX_GENERATE_VEX" ng-click="ctrl.executeExport()"></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+    <!--Bouton terminer-->
+    <a class="btn btn-primary btn pull-right margin-left-10" type="button" 
+       ng-click="ctrl.closeExportModal()" 
+       ng-show="displayedStep === 'execute_export' && bExportOk === true" data-translate="CTRL_EXPORT_VEX_FINISH"></a>
+    <!--Bouton suivant-->
+    <a class="btn btn-primary btn pull-right margin-left-10" type="button" 
+       ng-click="ctrl.submitStep(displayedStep)" 
+       ng-show="displayedStep !== 'execute_export'" data-translate="CTRL_EXPORT_VEX_NEXT"></a>
+    <!--Bouton précédent-->
+    <a class="btn btn-default btn pull-right margin-left-10" type="button" 
+       ng-click="ctrl.prevStep()" data-translate="CTRL_EXPORT_VEX_PREVIOUS"></a>
+</div>

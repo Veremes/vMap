@@ -6,7 +6,7 @@ require_once 'Vitis.class.inc';
  * \file Query.class.inc
  * \class Query
  *
- * \author Yoann Perollet <armand.bahi@veremes.com>.
+ * \author Armand Bahi <armand.bahi@veremes.com>.
  *
  * 	\brief This file contains the Query php class
  *
@@ -22,21 +22,19 @@ class GenericQuery extends Vitis {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
      * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties, $oConnection) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
         $this->aSelectedFields = Array();
-        $this->oConnection = $oConnection;
     }
 
     /**
      * get informations about query
      */
     function GET() {
-
+        
     }
 
 }

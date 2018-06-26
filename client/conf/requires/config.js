@@ -39,6 +39,12 @@ var oApplicationFiles = {
         'css/lib/jquery/plugins/bootstrap-colorpicker/css/bootstrap-colorpicker.min.css',
         'css/lib/viewer/viewer.min.css'
     ],
+    'css_mobile': [
+        // Vitis
+        'less/mobile.less',
+        // App
+        'modules/vmap/css/mobile.less'
+    ],
     'js': {
         'externs': [
             // vMap

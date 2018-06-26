@@ -16,14 +16,18 @@ require_once __DIR__ . '/../../class/vitis_lib/Connection.class.inc';
  */
 class Proprietaire extends Cadastre {
 
-	/**
-	 * construct
-	 * @param type $aPath url of the request
-	 * @param type $aValues parameters of the request
-	 * @param type $properties properties
-	 * @param type $oConnection connection object
-	 */
-	function __construct($aPath, $aValues, $properties, $oConnection) {}
+    /**
+     * construct
+     * @param type $aPath url of the request
+     * @param type $aValues parameters of the request
+     * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
+     * @param type $oConnection connection object
+     */
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        
+    }
+
 }
 
 ?>

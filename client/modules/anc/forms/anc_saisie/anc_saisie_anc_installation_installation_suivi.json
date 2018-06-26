@@ -66,7 +66,7 @@
             {
                 "fields":[
                     {
-                        "type":"label",
+                        "type":"tinymce",
                         "name":"observations",
                         "label":"Observations",
                         "nb_cols":12,
@@ -89,6 +89,7 @@
                         "map_options":{
                             "proj":"EPSG:2154",
                             "type":"OSM",
+                            "output_format": "ewkt",
                             "center":{
                                 "extent":[
                                     211050.84969634877,
@@ -313,6 +314,7 @@
                         "map_options":{
                             "proj":"EPSG:2154",
                             "type":"OSM",
+                            "output_format": "ewkt",
                             "center":{
                                 "extent":[
                                     210662.44233551028,

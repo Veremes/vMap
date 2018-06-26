@@ -1,0 +1,153 @@
+<div class="map-basic-tools" id="map-basic-tools">
+    <div id="map-basic-tools-row" class="map-basic-tools-row">
+        <div>
+            <ul class="nav nav-pills basic-tools-nav" ng-show="!bMobileMenuOpen">
+
+                <!-- Bouton recherche -->
+                <div class="vmap_mobile_tool vmap_mobile_tool_search left" ng-click="ctrl.displayLocationMobileMenu()">
+                    <span class="icon-search"></span>
+                </div>
+                <!-- Sélecteur objet métier -->
+                <div app-select app-lang="ctrl.lang" app-map="ctrl.map" app-action="ctrl.currentAction" class="left basic-tools-nav"></div>
+                <!-- Bouton Menu -->
+                <div class="vmap_mobile_tool right" ng-click="ctrl.displayAdvancedMobileMenu()">
+                    <span class="icon-format_list_bulleted"></span>
+                </div>
+                <!-- Bouton Couches -->
+                <div class="vmap_mobile_tool right" ng-click="ctrl.displayLayersMobileMenu()">
+                    <span class="icon-layers2"></span>
+                </div>
+                <!-- Bouton localisation immédiate -->
+                <div class="vmap_mobile_tool right" ng-click="ctrl.locationGeolocateMe()">
+                    <span class="icon-location"></span>
+                </div>
+
+            </ul>
+
+            <ul class="nav nav-pills basic-tools-nav" ng-show="bMobileMenuOpen">
+
+                <!-- Bouton retour -->
+                <div class="btn btn-default vmap_return_tool right" ng-click="ctrl.hideMobileMenu()">
+                    <span class="icon-caret-left"></span> Retour à la carte
+                </div>
+
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="mobile-menu" ng-show="bMobileMenuOpen">
+    <!--Outil de localisation-->
+    <div ng-show="bMobileLocationMenuOpen">
+        <div app-location app-lang="ctrl.lang" app-map="ctrl.map"></div>
+    </div>
+    <!--Outil couches et cartes-->
+    <div ng-show="bMobileLayersMenuOpen" class="height-100">
+        <ul class="nav nav-tabs navbar-default">
+            <li class="right"><a data-toggle="tab" href="#vmap_menu_map_legend">Légende</a></li>
+            <li class="right"><a data-toggle="tab" href="#vmap_menu_map_layers">Couches</a></li>
+            <li class="right active"><a data-toggle="tab" href="#vmap_menu_map_maps">Cartes</a></li>
+        </ul>
+        <div class="tab-content" style="height: calc(100% - 42px)">
+            <!-- Cartes -->
+            <div id="vmap_menu_map_maps" class="tab-pane height-100 fade in active">
+                <app-maplistlitle app-lang="ctrl.lang" app-maplistlitle-map="ctrl.map"></app-maplistlitle>
+            </div>
+            <!-- Couches -->
+            <div id="vmap_menu_map_layers" class="tab-pane height-100 overflow_y fade">
+                <div app-layertree app-map="ctrl.map" app-proj="ctrl.proj" app-lang="ctrl.lang" id="app-layertree"></div>
+            </div>
+            <!-- Légende -->
+            <div id="vmap_menu_map_legend" class="tab-pane height-100 overflow_y fade">
+                <div app-maplegend app-map="vmapCtrl.map" app-proj="vmapCtrl.proj" app-lang="vmapCtrl.lang" id="app-maplegend"></div>
+            </div>
+        </div>
+    </div>
+
+    <!--Outils Avancés-->
+    <div ng-show="bMobileAdvancedMenuOpen" class="height-100">
+        <div id="vmap_menu_mobile_menu">
+            <div class="panel list-group">
+                <a id="vmap_menu_mobile_menu_user_button" href="#" class="list-group-item" data-toggle="collapse" data-target="#vmap_menu_mobile_menu_user" data-parent="#vmap_menu_mobile_menu">
+                    <span class="icon-user mobile_menu_logo"></span>
+                    Utilisateur
+                </a>
+                <div id="vmap_menu_mobile_menu_user" app-vmap-user app-lang="ctrl.lang" app-map="ctrl.map" class="sublinks collapse"></div>
+                <a id="vmap_menu_mobile_menu_location_button" href="#" class="list-group-item" data-toggle="collapse" data-target="#vmap_menu_mobile_menu_location" data-parent="#vmap_menu_mobile_menu">
+                    <span class="icon-map mobile_menu_logo"></span>
+                    Localisation
+                </a>
+                <div id="vmap_menu_mobile_menu_location" class="sublinks collapse">
+                    <a class="list-group-item sublist-group-item" ng-click="ctrl.locationGoHome()"><span class="icon-home mobile_menu_logo"></span> Position initialie</a>
+                    <a class="list-group-item sublist-group-item" ng-click="ctrl.locationGeolocateMe()"><span class="icon-location mobile_menu_logo"></span> Ma position</a>
+                    <a class="list-group-item sublist-group-item" ng-click="ctrl.locationMaxExtent()"><span class="icon-language mobile_menu_logo"></span> Étendue max</a>
+                    <a class="list-group-item sublist-group-item" ng-click="ctrl.locationGoCoordinates()"><span class="icon-coordinates mobile_menu_logo"></span> Coordonnées</a>
+                </div>
+                <a id="vmap_menu_mobile_menu_measure_button" href="#" class="list-group-item" data-toggle="collapse" data-target="#vmap_menu_mobile_menu_measure" data-parent="#vmap_menu_mobile_menu">
+                    <span class="icon-measure mobile_menu_logo"></span>
+                    Mesurer
+                </a>
+                <div id="vmap_menu_mobile_menu_measure" app-measure app-lang="ctrl.lang" app-map="ctrl.map" class="sublinks collapse"></div>
+                <a id="vmap_menu_mobile_menu_requeteur_button" href="#" class="list-group-item" data-parent="#vmap_menu_mobile_menu" ng-click="ctrl.displayRequeteur()">
+                    <span class="icon-table mobile_menu_logo"></span>
+                    Requêteur
+                </a>
+                <a id="vmap_menu_mobile_menu_insert_button" href="#" class="list-group-item" data-toggle="collapse" data-target="#vmap_menu_mobile_menu_insert" data-parent="#vmap_menu_mobile_menu">
+                    <span class="icon-add-feature mobile_menu_logo"></span>
+                    Insertion
+                </a>
+                <div id="vmap_menu_mobile_menu_insert" class="sublinks collapse">
+                    <div app-insert app-lang="ctrl.lang" app-map="ctrl.map"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!--Requêteur-->
+    <div ng-show="bMobileRequeteurOpen" class="height-100">
+        <div app-advancedselect app-lang="ctrl.lang" app-map="ctrl.map" class="height-100"></div>
+    </div>
+</div>
+
+<!-- Contrôles -->
+<div class="hidden">
+    <div app-controls app-lang="ctrl.lang" app-map="ctrl.map" app-action="ctrl.currentAction"
+         id="basic-tools-dropdown-controls-content"
+         class="dropdown-menu basic-tools-dropdown-element basic-tools-dropdown-controls-content">
+    </div>
+</div>
+
+<!--Modale pour la localisation sur coordonnées-->
+<div id="location-goto-modal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content" style="max-height: 100%">
+            <div class="modal-header">
+                <!-- Bouton retour -->
+                <div class="btn btn-default vmap_mobile_return_modal right" data-dismiss="modal">
+                    <span class="icon-caret-left"></span> Retour
+                </div>
+                <h4 class="modal-title">Rejoindre les coordonnées</h4>
+            </div>
+            <div class="modal-body modal-body-big-with-footer">
+                <b>Projection:</b>
+                <select class="form-control" ng-model="locationGoToProjection">
+                    <option value="EPSG:4326">{{locationProjections['EPSG:4326']}}</option>
+                    <option value="EPSG:3857">{{locationProjections['EPSG:3857']}}</option>
+                    <option value="EPSG:2154">{{locationProjections['EPSG:2154']}}</option>
+                </select>
+                <br>
+                <b>Coordonnées:</b>
+                <div class="input-group-sm">
+                    <input type="number" class="form-control" placeholder="X" ng-model="locationGoToX">
+                </div>
+                <div class="input-group-sm">
+                    <input type="number" class="form-control" placeholder="Y" ng-model="locationGoToY">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" ng-click="ctrl.locationGoTo(locationGoToX, locationGoToY, locationGoToProjection)">Valider</button>
+            </div>
+        </div>
+    </div>
+</div>

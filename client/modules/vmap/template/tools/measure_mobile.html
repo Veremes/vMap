@@ -1,0 +1,14 @@
+<a class="list-group-item sublist-group-item" ng-click="ctrl.mobileMeasurePoint()"><span class="icon-point mobile_menu_logo"></span> Point</a>
+<a class="list-group-item sublist-group-item" ng-click="ctrl.mobileMeasureLine()"><span class="icon-line mobile_menu_logo"></span> Ligne</a>
+<a class="list-group-item sublist-group-item" ng-click="ctrl.mobileMeasurePolygon()"><span class="icon-polygon mobile_menu_logo"></span> Polygone</a>
+<a class="list-group-item sublist-group-item" ng-click="ctrl.mobileMeasureCircle()"><span class="icon-circle mobile_menu_logo"></span> Cercle</a>
+<a class="list-group-item sublist-group-item" ng-click="ctrl.mobileDeleteAllFeatures()"><span class="icon-trash mobile_menu_logo"></span> Vider</a>
+
+<div style="display: none">
+    <input id="geodesic" type="checkbox" style="cursor:pointer" checked>use geodesic measures
+</div>
+<div style="display: none" class="checkbox checkbox-success">
+    <input id="measure-anotations" type="checkbox" style="cursor:pointer" ng-click="ctrl.showHideAnotations()" checked>
+    <label for="measure-anotations" style="cursor:pointer">Afficher / Cacher les annotations</label>
+</div>
+

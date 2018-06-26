@@ -1,23 +1,23 @@
 <?php
+
 /**
-* \file Sections.class.inc
-* \class Sections
-*
-* \author Armand Bahi <armand.bahi@veremes.com>.
-*
-* \brief This file contains the Sections php class
-*
-* This class defines Rest Api to Vmap Sections
-* 
-*/
+ * \file Sections.class.inc
+ * \class Sections
+ *
+ * \author Armand Bahi <armand.bahi@veremes.com>.
+ *
+ * \brief This file contains the Sections php class
+ *
+ * This class defines Rest Api to Vmap Sections
+ * 
+ */
 require_once 'Cadastre.class.inc';
 require_once 'Section.class.inc';
 require_once __DIR__ . '/../../class/vitis_lib/Connection.class.inc';
 require_once __DIR__ . '/../../class/vmlib/BdDataAccess.inc';
 
 class Sections extends Cadastre {
-    
-     /**
+    /**
      * @SWG\Definition(
      *   definition="/sections",
      *   allOf={
@@ -29,19 +29,20 @@ class Sections extends Cadastre {
      *   description="Operations about sections"
      * )
      */
+
     /**
      * construct
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
+     * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = new Connection($this->aValues, $this->aProperties);
-		$this->aSelectedFields = Array("id_com", "id_sec", "code_com", "commune", "replace(pre, '000', '')||replace(section, '0', '') as section", "pre", "idu", "tex", "texte", "geom");
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
+        $this->aSelectedFields = Array("id_com", "id_sec", "code_com", "commune", "replace(pre, '000', '')||replace(section, '0', '') as section", "pre", "idu", "tex", "texte", "geom");
     }
+
     //(pre, '000', '')||replace(section, '0', '') as section
     /**
      * @SWG\Get(path="/sections",
@@ -77,7 +78,7 @@ class Sections extends Cadastre {
      *     description="number of element",
      *     required=false,
      *     type="integer",
-	 *     default="4",
+     *     default="4",
      *     format="int32"
      *   ),
      * @SWG\Parameter(
@@ -116,6 +117,7 @@ class Sections extends Cadastre {
      *     )
      *  )
      */
+
     /**
      * get Sections
      * @return  Sections
@@ -124,6 +126,7 @@ class Sections extends Cadastre {
         $aReturn = $this->genericGet('public', $this->aProperties['cadastre']['views']['section'], 'id_sec');
         return $aReturn['sMessage'];
     }
-    
+
 }
+
 ?>

@@ -42,21 +42,21 @@ ol.style.Icon = function(opt_options) {
    * @type {ol.style.IconOrigin}
    */
   this.anchorOrigin_ = options.anchorOrigin !== undefined ?
-      options.anchorOrigin : ol.style.IconOrigin.TOP_LEFT;
+    options.anchorOrigin : ol.style.IconOrigin.TOP_LEFT;
 
   /**
    * @private
    * @type {ol.style.IconAnchorUnits}
    */
   this.anchorXUnits_ = options.anchorXUnits !== undefined ?
-      options.anchorXUnits : ol.style.IconAnchorUnits.FRACTION;
+    options.anchorXUnits : ol.style.IconAnchorUnits.FRACTION;
 
   /**
    * @private
    * @type {ol.style.IconAnchorUnits}
    */
   this.anchorYUnits_ = options.anchorYUnits !== undefined ?
-      options.anchorYUnits : ol.style.IconAnchorUnits.FRACTION;
+    options.anchorYUnits : ol.style.IconAnchorUnits.FRACTION;
 
   /**
    * @private
@@ -95,14 +95,14 @@ ol.style.Icon = function(opt_options) {
    * @type {ol.ImageState}
    */
   var imageState = options.src !== undefined ?
-      ol.ImageState.IDLE : ol.ImageState.LOADED;
+    ol.ImageState.IDLE : ol.ImageState.LOADED;
 
   /**
    * @private
    * @type {ol.Color}
    */
   this.color_ = options.color !== undefined ? ol.color.asArray(options.color) :
-      null;
+    null;
 
   /**
    * @private
@@ -122,7 +122,7 @@ ol.style.Icon = function(opt_options) {
    * @type {ol.style.IconOrigin}
    */
   this.offsetOrigin_ = options.offsetOrigin !== undefined ?
-      options.offsetOrigin : ol.style.IconOrigin.TOP_LEFT;
+    options.offsetOrigin : ol.style.IconOrigin.TOP_LEFT;
 
   /**
    * @private
@@ -145,7 +145,7 @@ ol.style.Icon = function(opt_options) {
    * @type {boolean}
    */
   var rotateWithView = options.rotateWithView !== undefined ?
-      options.rotateWithView : false;
+    options.rotateWithView : false;
 
   /**
    * @type {number}
@@ -161,7 +161,7 @@ ol.style.Icon = function(opt_options) {
    * @type {boolean}
    */
   var snapToPixel = options.snapToPixel !== undefined ?
-      options.snapToPixel : true;
+    options.snapToPixel : true;
 
   ol.style.Image.call(this, {
     opacity: opacity,
@@ -176,24 +176,11 @@ ol.inherits(ol.style.Icon, ol.style.Image);
 
 
 /**
- * Clones the style.
+ * Clones the style. The underlying Image/HTMLCanvasElement is not cloned.
  * @return {ol.style.Icon} The cloned style.
  * @api
  */
 ol.style.Icon.prototype.clone = function() {
-  var oldImage = this.getImage(1);
-  var newImage;
-  if (this.iconImage_.getImageState() === ol.ImageState.LOADED) {
-    if (oldImage.tagName.toUpperCase() === 'IMG') {
-      newImage = /** @type {Image} */ (oldImage.cloneNode(true));
-    } else {
-      newImage = /** @type {HTMLCanvasElement} */ (document.createElement('canvas'));
-      var context = newImage.getContext('2d');
-      newImage.width = oldImage.width;
-      newImage.height = oldImage.height;
-      context.drawImage(oldImage, 0, 0);
-    }
-  }
   return new ol.style.Icon({
     anchor: this.anchor_.slice(),
     anchorOrigin: this.anchorOrigin_,
@@ -201,9 +188,7 @@ ol.style.Icon.prototype.clone = function() {
     anchorYUnits: this.anchorYUnits_,
     crossOrigin: this.crossOrigin_,
     color: (this.color_ && this.color_.slice) ? this.color_.slice() : this.color_ || undefined,
-    img: newImage ? newImage : undefined,
-    imgSize: newImage ? this.iconImage_.getSize().slice() : undefined,
-    src: newImage ? undefined : this.getSrc(),
+    src: this.getSrc(),
     offset: this.offset_.slice(),
     offsetOrigin: this.offsetOrigin_,
     size: this.size_ !== null ? this.size_.slice() : undefined,

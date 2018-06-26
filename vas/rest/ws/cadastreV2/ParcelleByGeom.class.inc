@@ -35,13 +35,11 @@ class ParcelleByGeom extends Cadastre {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
      * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = new Connection($this->aValues, $this->aProperties);
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
         $this->sSchema = $this->aProperties['schema_cadastre'];
         $this->sTable = $this->aProperties['cadastre']['views']['parcelle'];
         $this->aAttributs = Array("id_com", "code_com", "parcelle", "section", "pre", "coar", "codm", "indp", "idu", "ID_PAR", "sup_fiscale", "numero", "feuille", "geom");

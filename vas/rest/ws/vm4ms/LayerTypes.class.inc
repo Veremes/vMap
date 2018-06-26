@@ -1,23 +1,23 @@
 <?php
+
 /**
-* \file LayerTypes.class.inc
-* \class LayerTypes
-*
-* \author Armand Bahi <armand.bahi@veremes.com>.
-*
-* \brief This file contains the LayerTypes php class
-*
-* This class defines Rest Api to Vmap4MapServer LayerTypes
-* 
-*/
+ * \file LayerTypes.class.inc
+ * \class LayerTypes
+ *
+ * \author Armand Bahi <armand.bahi@veremes.com>.
+ *
+ * \brief This file contains the LayerTypes php class
+ *
+ * This class defines Rest Api to Vmap4MapServer LayerTypes
+ * 
+ */
 require_once 'Vmap4MapServer.class.inc';
 require_once 'LayerType.class.inc';
 require_once __DIR__ . '/../../class/vitis_lib/Connection.class.inc';
 require_once __DIR__ . '/../../class/vmlib/BdDataAccess.inc';
 
 class LayerTypes extends Vmap4MapServer {
-    
-     /**
+    /**
      * @SWG\Definition(
      *   definition="/layertypes",
      *   allOf={
@@ -29,19 +29,20 @@ class LayerTypes extends Vmap4MapServer {
      *   description=""
      * )
      */
+
     /**
      * construct
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
+     * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = new Connection($this->aValues, $this->aProperties);
-		$this->aSelectedFields = Array("ms_layertype_id");
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
+        $this->aSelectedFields = Array("ms_layertype_id");
     }
+
     /**
      * @SWG\Get(path="/layertypes",
      *   tags={"LayerTypes"},
@@ -114,6 +115,7 @@ class LayerTypes extends Vmap4MapServer {
      *     )
      *  )
      */
+
     /**
      * get LayerTypes
      * @return  LayerTypes
@@ -122,5 +124,7 @@ class LayerTypes extends Vmap4MapServer {
         $aReturn = $this->genericGet($this->aProperties['schema_vm4ms'], 'ms_layertype', 'ms_layertype_id');
         return $aReturn['sMessage'];
     }
+
 }
+
 ?>

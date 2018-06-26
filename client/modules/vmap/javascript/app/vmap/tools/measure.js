@@ -57,7 +57,7 @@ nsVmap.nsToolsManager.Measure.prototype.measureDirective = function () {
         controller: 'AppmeasureController',
         controllerAs: 'ctrl',
         bindToController: true,
-        templateUrl: oVmap['properties']['vmap_folder'] + '/' + 'template/tools/measure.html'
+        templateUrl: oVmap['properties']['vmap_folder'] + '/' + 'template/tools/' + (oVmap['properties']['is_mobile'] ? 'measure_mobile.html' : 'measure.html')
     };
 };
 
@@ -229,7 +229,7 @@ nsVmap.nsToolsManager.Measure.prototype.measureController = function () {
      * @private
      */
     this['oProjections'] = oVmap['oProjections'];
-    
+
     this['transform'] = ol.proj.transform;
 
     this['map'].on('change:view', function () {
@@ -360,29 +360,9 @@ nsVmap.nsToolsManager.Measure.prototype.measureController.prototype.addInteracti
     }, this);
     this.draw_.on('drawend',
             function (evt) {
-                this.createMeasureTooltip(evt.feature);
-                this.setInfosToFeature(evt.feature);
-                this.measureTooltipElement_.innerHTML = this_.measureTooltipElementTemp_.innerHTML;
-                this.measureTooltipElementTemp_.style.display = 'none';
-                this.measureTooltipElement_.className = 'measure-tooltip measure-tooltip-static';
-                this.measureTooltip_.setOffset([0.8, -13]);
-                this.measureTooltip_.setPosition(this.getTooltipPosition(evt.feature.getGeometry()));
-                // unset this.sketch_
-                this.sketch_ = null;
-                // unset measure-tooltip so that a new one can be created
-                this.measureTooltipElement_ = null;
-                this.showHideAnotations();
-                this.updateTooltip(evt.feature);
 
-                if (this.measureTooltipElement_) {
-                    this.measureTooltipElement_.className = 'measure-tooltip measure-tooltip-static';
-                    this.measureTooltipElement_.remove();
-                    this.measureTooltip_.setOffset([0, -7]);
-                    // unset this.sketch_
-                    this.sketch_ = null;
-                    // unset measure-tooltip so that a new one can be created
-                    this.measureTooltipElement_ = null;
-                }
+                // Affiche la mesure avec la tooltip etc..
+                this.createMeasure(evt.feature);
 
                 // Fonctions appelées après modification de la feature
                 evt.feature.on('change', function () {
@@ -392,6 +372,61 @@ nsVmap.nsToolsManager.Measure.prototype.measureController.prototype.addInteracti
                 ol.Observable.unByKey(this_.listener);
 
             }, this);
+};
+
+/**
+ * Create the tooltip etc..
+ * @param {type} olFeature
+ * @returns {undefined}
+ */
+nsVmap.nsToolsManager.Measure.prototype.measureController.prototype.createMeasure = function (olFeature) {
+    oVmap.log('nsVmap.nsToolsManager.Measure.prototype.measureController.prototype.createMeasure');
+
+    this.createMeasureTooltip(olFeature);
+    this.setInfosToFeature(olFeature);
+
+    if (goog.isDefAndNotNull(this.measureTooltipElementTemp_)) {
+        
+        this.measureTooltipElement_.innerHTML = this.measureTooltipElementTemp_.innerHTML;
+        this.measureTooltipElementTemp_.style.display = 'none';
+        
+    } else {
+        this.measureTooltipElement_.innerHTML = '';
+
+        var output;
+        var geom = olFeature.getGeom;
+
+        if (geom instanceof ol.geom.Polygon) {
+            output = this.formatArea(geom);
+            tooltipCoord = geom.getInteriorPoint().getCoordinates();
+        } else if (geom instanceof ol.geom.LineString) {
+            output = this.formatLength(geom);
+            tooltipCoord = geom.getLastCoordinate();
+        } else if (geom instanceof ol.geom.Circle) {
+            output = this.formatRadius(geom);
+            tooltipCoord = geom.getLastCoordinate();
+        }
+    }
+
+    this.measureTooltipElement_.className = 'measure-tooltip measure-tooltip-static';
+    this.measureTooltip_.setOffset([0.8, -13]);
+    this.measureTooltip_.setPosition(this.getTooltipPosition(olFeature.getGeometry()));
+    // unset this.sketch_
+    this.sketch_ = null;
+    // unset measure-tooltip so that a new one can be created
+    this.measureTooltipElement_ = null;
+    this.showHideAnotations();
+    this.updateTooltip(olFeature);
+
+    if (this.measureTooltipElement_) {
+        this.measureTooltipElement_.className = 'measure-tooltip measure-tooltip-static';
+        this.measureTooltipElement_.remove();
+        this.measureTooltip_.setOffset([0, -7]);
+        // unset this.sketch_
+        this.sketch_ = null;
+        // unset measure-tooltip so that a new one can be created
+        this.measureTooltipElement_ = null;
+    }
 };
 
 /**
@@ -419,13 +454,13 @@ nsVmap.nsToolsManager.Measure.prototype.measureController.prototype.updateToolti
             } else if (olFeature.get('Type') === 'Polygone') {
                 aOverlays.getArray()[i].getElement().innerHTML = olFeature.get('Superficie');
             } else if (olFeature.get('Type') === 'Cercle') {
-                aOverlays.getArray()[i].getElement().innerHTML = olFeature.get('Perimètre');
+                aOverlays.getArray()[i].getElement().innerHTML = "Périmètre: " + olFeature.get('Perimètre');
             } else if (olFeature.get('Type') === 'Point') {
 
                 var coords = ol.proj.transform(olFeature.get('Coordonnées'), this['projection'], olFeature.get('Projection'));
                 var option;
                 var htmlSelect = document.createElement('select');
-                
+
                 for (var code in this['oProjections']) {
                     option = document.createElement('option');
                     option.value = code;
@@ -1004,6 +1039,91 @@ nsVmap.nsToolsManager.Measure.prototype.measureController.prototype.getPointsInf
     }
 
     return aPoints;
+};
+
+
+
+/********************************************
+ *           INTERFACE MOBILE
+ *******************************************/
+
+/**
+ * Runs the point measure procedure
+ * @export
+ */
+nsVmap.nsToolsManager.Measure.prototype.measureController.prototype.mobileMeasurePoint = function () {
+    oVmap.log("nsVmap.nsToolsManager.Measure.prototype.measureController.mobileMeasurePoint");
+
+    var this_ = this;
+    oVmap.getToolsManager().getBasicTools().hideMobileMenu();
+    oVmap.getMap().startMobileDraw('POINT', function (olFeature) {
+        // Ajoute la feature
+        this_.oOpenLayersMeasureOverlay_.getSource().addFeature(olFeature);
+        // Affiche la mesure avec la tooltip etc..
+        this_.createMeasure(olFeature);
+    });
+};
+
+/**
+ * Runs the line measure procedure
+ * @export
+ */
+nsVmap.nsToolsManager.Measure.prototype.measureController.prototype.mobileMeasureLine = function () {
+    oVmap.log("nsVmap.nsToolsManager.Measure.prototype.measureController.mobileMeasureLine");
+
+    var this_ = this;
+    oVmap.getToolsManager().getBasicTools().hideMobileMenu();
+    oVmap.getMap().startMobileDraw('LINESTRING', function (olFeature) {
+        // Ajoute la feature
+        this_.oOpenLayersMeasureOverlay_.getSource().addFeature(olFeature);
+        // Affiche la mesure avec la tooltip etc..
+        this_.createMeasure(olFeature);
+    });
+};
+
+/**
+ * Runs the polygon measure procedure
+ * @export
+ */
+nsVmap.nsToolsManager.Measure.prototype.measureController.prototype.mobileMeasurePolygon = function () {
+    oVmap.log("nsVmap.nsToolsManager.Measure.prototype.measureController.mobileMeasurePolygon");
+
+    var this_ = this;
+    oVmap.getToolsManager().getBasicTools().hideMobileMenu();
+    oVmap.getMap().startMobileDraw('POLYGON', function (olFeature) {
+        // Ajoute la feature
+        this_.oOpenLayersMeasureOverlay_.getSource().addFeature(olFeature);
+        // Affiche la mesure avec la tooltip etc..
+        this_.createMeasure(olFeature);
+    });
+};
+
+/**
+ * Runs the circle measure procedure
+ * @export
+ */
+nsVmap.nsToolsManager.Measure.prototype.measureController.prototype.mobileMeasureCircle = function () {
+    oVmap.log("nsVmap.nsToolsManager.Measure.prototype.measureController.mobileMeasureCircle");
+
+    var this_ = this;
+    oVmap.getToolsManager().getBasicTools().hideMobileMenu();
+    oVmap.getMap().startMobileDraw('CIRCLE', function (olFeature) {
+        // Ajoute la feature
+        this_.oOpenLayersMeasureOverlay_.getSource().addFeature(olFeature);
+        // Affiche la mesure avec la tooltip etc..
+        this_.createMeasure(olFeature);
+    });
+};
+
+/**
+ * Delete the drawed features
+ * @export
+ */
+nsVmap.nsToolsManager.Measure.prototype.measureController.prototype.mobileDeleteAllFeatures = function () {
+    oVmap.log("nsVmap.nsToolsManager.Measure.prototype.measureController.mobileDeleteAllFeatures");
+
+    oVmap.getToolsManager().getBasicTools().hideMobileMenu();
+    this.deleteAllFeatures();
 };
 
 // Définit la directive et le controller

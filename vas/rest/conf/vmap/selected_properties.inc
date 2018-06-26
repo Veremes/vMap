@@ -12,10 +12,13 @@ $aAdminFields = Array(
     'popup.*',
     'controls.*',
     'selection.*',
+    'snapping.*',
     'print.*',
     'cadastre.api',
     'vmap_geocoders',
-    'vmap_default_geocoders'
+    'vmap_default_geocoders',
+    'use_proxy_for_tiles',
+    'vmap_export.*'
 );
 $aUserFields = Array(
     'phantomjs_root_path',
@@ -27,10 +30,13 @@ $aUserFields = Array(
     'popup.*',
     'controls.*',
     'selection.*',
+    'snapping.*',
     'print.*',
     'cadastre.api',
     'vmap_geocoders',
-    'vmap_default_geocoders'
+    'vmap_default_geocoders',
+    'use_proxy_for_tiles',
+    'vmap_export.*'
 );
 
 $properties['aAdminFields'] = array_merge($properties['aAdminFields'], $aAdminFields);

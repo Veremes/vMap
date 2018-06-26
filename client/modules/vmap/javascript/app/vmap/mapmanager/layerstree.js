@@ -70,7 +70,7 @@ nsVmap.nsMapManager.LayersTree.prototype.layerOpacitySliderDirective = function 
     oVmap.log("nsVmap.nsMapManager.LayersTree.prototype.layerOpacitySliderDirective");
     return {
         restrict: 'A',
-        link: function (scope, element, attrs) {            
+        link: function (scope, element, attrs) {
             setTimeout(function () {
                 var oOpacitySlider = new Slider(element[0], {
                     'value': scope['layer']['olLayer'].getOpacity() * 100,
@@ -82,7 +82,7 @@ nsVmap.nsMapManager.LayersTree.prototype.layerOpacitySliderDirective = function 
                     }
                 });
                 oOpacitySlider.on('change', function () {
-                    var value = oOpacitySlider['getValue']();                    
+                    var value = oOpacitySlider['getValue']();
                     scope['layer']['olLayer'].setOpacity(value / 100);
                 });
             });
@@ -99,7 +99,7 @@ oVmap.module.directive('appLayerOpacitySlider', nsVmap.nsMapManager.LayersTree.p
  * @export
  * @returns {undefined}
  */
-nsVmap.nsMapManager.LayersTree.prototype.LayertreeController = function ($scope) {
+nsVmap.nsMapManager.LayersTree.prototype.LayertreeController = function ($scope, $element) {
     oVmap.log("nsVmap.nsMapManager.LayersTree.prototype.LayertreeController");
 
     var this_ = this;
@@ -177,6 +177,14 @@ nsVmap.nsMapManager.LayersTree.prototype.LayertreeController = function ($scope)
             this_.closeLayersMenus();
         });
     });
+
+    // Affiche les modales en plein écran pour la version mobile
+    if (oVmap['properties']['is_mobile']) {
+        $element.find('.modal').on('shown.bs.modal', function () {
+            $('.modal-backdrop.fade.in').hide();
+            $('.modal.fade.in').find('.modal-dialog').addClass('mobile-full-modal');
+        });
+    }
 };
 oVmap.module.controller('AppLayertreeController', nsVmap.nsMapManager.LayersTree.prototype.LayertreeController);
 
@@ -508,6 +516,7 @@ nsVmap.nsMapManager.LayersTree.prototype.LayertreeController.prototype.displayFi
 
     var oFormDefinition = olLayer.get('filter_form');
     var oFormValues = olLayer.get('filter_values');
+    var sLayerEmbedJs = olLayer.get('filter_form_embedjs');
 
     // Supprime les valeurs qui sont égales à -1000000
 
@@ -550,6 +559,21 @@ nsVmap.nsMapManager.LayersTree.prototype.LayertreeController.prototype.displayFi
         filterFormReaderScope['ctrl']['setFormDefinition'](oFormDefinition);
         filterFormReaderScope['ctrl']['loadForm']();
 
+        // eval du js + call constructor form
+
+        if (typeof destructor_form === "function") {
+            destructor_form();
+        }
+        // Suppression de la fonction "constructor_form" (sinon s'éxècute à chaque ouverture de formulaire).
+        if (typeof constructor_form === "function"){
+            constructor_form = undefined;
+        }
+
+        if(goog.isDefAndNotNull(sLayerEmbedJs)){
+            eval(sLayerEmbedJs);
+            constructor_form(filterFormReaderScope, null);
+        }
+
         $('#layerstree-filter-modal').modal('show');
     });
 };
@@ -559,7 +583,7 @@ nsVmap.nsMapManager.LayersTree.prototype.LayertreeController.prototype.displayFi
  * @param {ol.Layer} oLayer
  * @export
  */
-nsVmap.nsMapManager.LayersTree.prototype.LayertreeController.prototype.toggleLayerMenu = function (oLayer) {
+nsVmap.nsMapManager.LayersTree.prototype.LayertreeController.prototype.toggleLayerMenu = function (oLayer, $event) {
     oVmap.log('nsVmap.nsMapManager.LayersTree.LayertreeController.toggleLayerMenu');
 
     if (oLayer['displayedMenu'] === true) {
@@ -568,6 +592,14 @@ nsVmap.nsMapManager.LayersTree.prototype.LayertreeController.prototype.toggleLay
         this.closeLayersMenus();
         oLayer['displayedMenu'] = true;
     }
+
+    // Resize la fenêtre
+    setTimeout(function () {
+        var iMenuTop = $($event.target).closest('.layers-tree-ul').find('.layer-menu').position()['top'];
+        var iBodyHeight = $('body').height();
+        var iMaxHeight = iBodyHeight - iMenuTop - 40;
+        $($event.target).closest('.layers-tree-ul').find('.layer-menu').css('max-height', iMaxHeight + 'px');
+    });
 };
 
 /**
@@ -575,7 +607,7 @@ nsVmap.nsMapManager.LayersTree.prototype.LayertreeController.prototype.toggleLay
  * @export
  */
 nsVmap.nsMapManager.LayersTree.prototype.LayertreeController.prototype.closeLayersMenus = function () {
-    oVmap.log('nsVmap.nsMapManager.LayersTree.LayertreeController.closeLayersMenus');
+//    oVmap.log('nsVmap.nsMapManager.LayersTree.LayertreeController.closeLayersMenus');
 
     for (var i = 0; i < this.scope_['tree']['children'].length; i++) {
         if (goog.isDefAndNotNull(this.scope_['tree']['children'][i]['children'])) {
@@ -586,4 +618,161 @@ nsVmap.nsMapManager.LayersTree.prototype.LayertreeController.prototype.closeLaye
             }
         }
     }
+};
+
+/**
+ * Toggle the sublayer sSublayer in the olLayer
+ * @param {ol.Layer} olLayer
+ * @param {string} sSublayer
+ * @param {string} sCheckboxId
+ * @export
+ */
+nsVmap.nsMapManager.LayersTree.prototype.LayertreeController.prototype.toggleSubLayer = function (olLayer, sSublayer, sCheckboxId) {
+    oVmap.log('nsVmap.nsMapManager.LayersTree.LayertreeController.toggleSubLayer');
+
+    // Vérifie que la sous-couche soit bien disponibles
+    var aAvaliableSublayers = olLayer.get('sublayers');
+    if (aAvaliableSublayers.indexOf(sSublayer) === -1) {
+        console.error('Sublayer not avaliable');
+        return null;
+    }
+
+    // Vérifie que les paramètres soient bien disponibles
+    var oParams = olLayer.getSource().getParams();
+    if (!goog.isDefAndNotNull(oParams)) {
+        console.error('Params not avaliable');
+        return null;
+    }
+    if (!goog.isString(oParams['LAYERS'])) {
+        console.error('Params[LAYERS] not avaliable');
+        return null;
+    }
+
+    var isSublayerActive = this.isSublayerActive(olLayer, sSublayer);
+    if (isSublayerActive === true) {
+        this.unactiveSublayer(olLayer, sSublayer, sCheckboxId);
+    } else if (isSublayerActive === false) {
+        this.activeSublayer(olLayer, sSublayer);
+    }
+};
+
+/**
+ * Return true if the sublayer sSublayer is active on olLayer
+ * @param {ol.Layer} olLayer
+ * @param {string} sSublayer
+ * @returns {boolean}
+ * @export
+ */
+nsVmap.nsMapManager.LayersTree.prototype.LayertreeController.prototype.isSublayerActive = function (olLayer, sSublayer) {
+
+    // Vérifie que la sous-couche soit bien disponibles
+    var aActiveSublayers = olLayer.get('activeSublayers');
+    if (!goog.isDefAndNotNull(aActiveSublayers)) {
+        console.error('aActiveSublayers undefined');
+        return false;
+    }
+
+    if (aActiveSublayers.indexOf(sSublayer) !== -1) {
+        return true;
+    } else {
+        return false;
+    }
+};
+
+/**
+ * Active the sublayer sSublayer in olLayer
+ * @param {ol.Layer} olLayer
+ * @param {string} sSublayer
+ * @export
+ */
+nsVmap.nsMapManager.LayersTree.prototype.LayertreeController.prototype.activeSublayer = function (olLayer, sSublayer) {
+    oVmap.log('nsVmap.nsMapManager.LayersTree.LayertreeController.activeSublayer');
+
+    // Vérifie que la sous-couche soit bien disponibles
+    var aAvaliableSublayers = olLayer.get('sublayers');
+    var aActiveSublayers = olLayer.get('activeSublayers');
+    if (aAvaliableSublayers.indexOf(sSublayer) === -1) {
+        console.error('Sublayer not avaliable');
+        return null;
+    }
+
+    // Vérifie que les paramètres soient bien disponibles
+    var oParams = olLayer.getSource().getParams();
+    if (!goog.isDefAndNotNull(oParams)) {
+        console.error('Params not avaliable');
+        return null;
+    }
+    if (!goog.isString(oParams['LAYERS'])) {
+        console.error('Params[LAYERS] not avaliable');
+        return null;
+    }
+    if (aActiveSublayers.indexOf(sSublayer) !== -1) {
+        console.error('sublayer already active in layer');
+        return null;
+    }
+
+    // Ajoute la sous-couche
+    var tmpActiveSublayers = [];
+    for (var i = 0; i < aAvaliableSublayers.length; i++) {
+        if (aAvaliableSublayers[i] == sSublayer ||
+                aActiveSublayers.indexOf(aAvaliableSublayers[i]) !== -1) {
+            tmpActiveSublayers.push(aAvaliableSublayers[i]);
+        }
+    }
+
+    // Enregistre le résultat
+    olLayer.set('activeSublayers', tmpActiveSublayers);
+    oParams['LAYERS'] = tmpActiveSublayers.join(',');
+    olLayer.getSource().updateParams(oParams);
+};
+
+/**
+ * Unactive the sublayer sSublayer in olLayer
+ * @param {ol.Layer} olLayer
+ * @param {string} sSublayer
+ * @param {string} sCheckboxId
+ * @export
+ */
+nsVmap.nsMapManager.LayersTree.prototype.LayertreeController.prototype.unactiveSublayer = function (olLayer, sSublayer, sCheckboxId) {
+    oVmap.log('nsVmap.nsMapManager.LayersTree.LayertreeController.unactiveSublayer');
+
+    // Vérifie que la sous-couche soit bien disponibles
+    var aAvaliableSublayers = olLayer.get('sublayers');
+    if (aAvaliableSublayers.indexOf(sSublayer) === -1) {
+        console.error('Sublayer not avaliable');
+        return null;
+    }
+
+    // Vérifie que les paramètres soient bien disponibles
+    var oParams = olLayer.getSource().getParams();
+    if (!goog.isDefAndNotNull(oParams)) {
+        console.error('Params not avaliable');
+        return null;
+    }
+    if (!goog.isString(oParams['LAYERS'])) {
+        console.error('Params[LAYERS] not avaliable');
+        return null;
+    }
+
+    var aSublayers = oParams['LAYERS'].split(',');
+
+    // Vérification que au moins une couche est définie
+    if (aSublayers.length <= 1) {
+        $.notify('Au moins une couche doit être présente par calque', 'error');
+        $(sCheckboxId.replace(':', '\\:')).prop('checked', true);
+        return null;
+    }
+
+    // Vide la sous-couche
+    if (aSublayers.indexOf(sSublayer) !== -1) {
+        aSublayers.splice(aSublayers.indexOf(sSublayer), 1);
+    } else {
+        console.error('sublayer not defined in layer');
+        return null;
+    }
+
+    // Enregistre le résultat
+    olLayer.set('activeSublayers', aSublayers);
+    oParams['LAYERS'] = aSublayers.join(',');
+    olLayer.getSource().updateParams(oParams);
 };

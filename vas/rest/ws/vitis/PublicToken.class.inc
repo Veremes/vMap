@@ -32,8 +32,10 @@ class PublicToken extends Vitis {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
+     * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
@@ -53,6 +55,7 @@ class PublicToken extends Vitis {
      *     )
      *  )
      */
+
     /**
      * Method get to get a public token
      * @return user array

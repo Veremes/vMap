@@ -20,7 +20,7 @@
                    ng-click="ctrl.displayTabByIndex(this['$index'])">
                     <span class="infocontainer-nav-title">{{tab.tabName}}</span>
                     <span class="infocontainer-btn-close-tab pointer"
-                          ng-click="ctrl.removeTabByCode(tab.tabCode)">
+                          ng-click="ctrl.removeTab(tab)">
                         <span class="glyphicon glyphicon-remove"></span>
                     </span>
                 </a>
@@ -34,6 +34,25 @@
                         onclick="oVmap.getMap().getLocationOverlayFeatures().clear()">
                     <span class="glyphicon glyphicon-remove"></span> Localisation
                 </button>
+            </div>
+            <div class="btn-group dropup infocontainer-btn-export">
+                <button id="infocontainer-dropdown-reports"
+                        class="btn btn-default btn-xs dropdown-toggle" 
+                        type="button" 
+                        data-toggle="dropdown" 
+                        aria-haspopup="true" 
+                        aria-expanded="false">
+                    <i class="glyphicon glyphicon-export icon-share"></i> Exporter <span class="caret"></span>
+                </button>                    
+                </ul>
+                <ul class="dropdown-menu pull-right">
+                    <li role="menuitem" data-type="json" ng-click="ctrl.exportTable(ctrl.selectedTabIndex, 'json')"><a href="javascript:void(0)">JSON</a></li>
+                    <li role="menuitem" data-type="xml" ng-click="ctrl.exportTable(ctrl.selectedTabIndex, 'xml')"><a href="javascript:void(0)">XML</a></li>
+                    <li role="menuitem" data-type="csv" ng-click="ctrl.exportTable(ctrl.selectedTabIndex, 'csv')"><a href="javascript:void(0)">CSV</a></li>
+                    <li role="menuitem" data-type="txt" ng-click="ctrl.exportTable(ctrl.selectedTabIndex, 'txt')"><a href="javascript:void(0)">TXT</a></li>
+                    <!--<li role="menuitem" data-type="sql" ng-click="ctrl.exportTable(ctrl.selectedTabIndex, 'sql')"><a href="javascript:void(0)">SQL</a></li>-->
+                    <li role="menuitem" data-type="excel" ng-click="ctrl.exportTable(ctrl.selectedTabIndex, 'excel')"><a href="javascript:void(0)">MS-Excel</a></li>
+                </ul>
             </div>
             <div class="btn-group dropup infocontainer-btn-reports">
                 <button id="infocontainer-dropdown-reports"

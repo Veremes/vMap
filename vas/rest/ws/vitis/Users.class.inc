@@ -35,12 +35,11 @@ class Users extends Vitis {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
+     * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = new Connection($this->aValues, $this->aProperties);
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
         $this->aSelectedFields = Array("user_id", "login", "email", "name", "company", "department", "ip_constraint", "domain", "domain_id", "restriction", "last_connection", "groups", "privileges", "role", "restriction", "name || ' (' || login || ')' as user_string");
     }
 
@@ -285,7 +284,7 @@ class Users extends Vitis {
                             if ($this->aValues['privileges'] == NULL) {
                                 $this->aValues['privileges'] = 'vitis_user';
                             }
-                            
+
                             $sMessage = $this->setPrivileges($iId);
                         }
                     }
@@ -411,7 +410,7 @@ class Users extends Vitis {
      * @return id of the user if ok error object if ko
      */
     function PUT() {
-        if ($this->aValues['login'] == $_SESSION['ses_Login'] || in_array("vitis_admin", $this->oConnection->aPrivileges)){
+        if ($this->aValues['login'] == $_SESSION['ses_Login'] || in_array("vitis_admin", $this->oConnection->aPrivileges)) {
             $sLogin = mb_strtolower($this->aValues["login"], 'UTF-8');
             $sLogin = str_replace(array('à', 'â', 'ä', 'á', 'ã', 'å', 'î', 'ï', 'ì', 'í', 'ô', 'ö', 'ò', 'ó', 'õ', 'ø', 'ù', 'û', 'ü', 'ú', 'é', 'è', 'ê', 'ë', 'ç', 'ÿ', 'ñ'), array('a', 'a', 'a', 'a', 'a', 'a', 'i', 'i', 'i', 'i', 'o', 'o', 'o', 'o', 'o', 'o', 'u', 'u', 'u', 'u', 'e', 'e', 'e', 'e', 'c', 'y', 'n',), $sLogin);
             unset($this->aValues['login']);
@@ -430,14 +429,14 @@ class Users extends Vitis {
                 }
             }
             // Attribution des privilèges.
-            if (in_array("vitis_admin", $this->oConnection->aPrivileges)){
+            if (in_array("vitis_admin", $this->oConnection->aPrivileges)) {
                 $sMessage = $this->setPrivileges($this->aValues['my_vitis_id'], $bIsFrameWork);
             }
-        }else{
-            http_response_code(403); 
-            $aXmlRacineAttribute['status']=0;
+        } else {
+            http_response_code(403);
+            $aXmlRacineAttribute['status'] = 0;
             $this->aFields['error'] = "ERROR : invalid token";
-            $sMessage = $this->asDocument('','vitis',$this->aValues['sEncoding'],True,$aXmlRacineAttribute,$this->aValues['sSourceEncoding'],$this->aValues['output']);
+            $sMessage = $this->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
         }
 
         return $sMessage;
@@ -461,7 +460,7 @@ class Users extends Vitis {
                 $aXmlRacineAttribute['status'] = 0;
                 $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
                 return $sMessage;
-            } 
+            }
         }
 
         // Groupes à rattacher à l'utilisateur ?
@@ -546,7 +545,7 @@ class Users extends Vitis {
                         $aXmlRacineAttribute['status'] = 0;
                         $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
                         return $sMessage;
-                    } 
+                    }
                 }
             }
 
@@ -637,12 +636,12 @@ class Users extends Vitis {
      * @return id of user deleted or error object if an user is not deleted
      */
     function DELETE() {
-         if ($this->oConnection->oError == null && in_array("vitis_admin", $this->oConnection->aPrivileges)) {
+        if ($this->oConnection->oError == null && in_array("vitis_admin", $this->oConnection->aPrivileges)) {
             $aReturn = $this->genericDelete($this->aProperties['schema_framework'], 'v_user', 'user_id');
-        }else{
-                $oError = new Error(1, "Invalid token");
-                $aXmlRacineAttribute['status'] = 0;
-                $aReturn['sMessage'] = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+        } else {
+            $oError = new Error(1, "Invalid token");
+            $aXmlRacineAttribute['status'] = 0;
+            $aReturn['sMessage'] = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
         }
 
         return $aReturn['sMessage'];

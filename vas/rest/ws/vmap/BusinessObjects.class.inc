@@ -9,7 +9,7 @@
  * 	\brief This file contains the BusinessObjects php class
  *
  * This class defines Rest Api to Vitis businessobjects
- * 
+ *
  */
 require_once 'Vmap.class.inc';
 require_once 'BusinessObject.class.inc';
@@ -37,13 +37,12 @@ class BusinessObjects extends Vmap {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
+     * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = new Connection($this->aValues, $this->aProperties);
-        $this->aSelectedFields = Array("business_object_id", "title", "id_field", "database", "schema", "table", "sql_summary", "sql_list", "sorted_by", "geom_column", "search_field", "result_field", "search_use_strict", "event_id", "index", "add_form_size", "edit_form_size", "display_form_size", "selection_buffer", "user_rights");
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
+        $this->aSelectedFields = Array("business_object_id", "title", "formtitle", "summarytitle", "id_field", "database", "schema", "table", "sql_summary", "sql_list", "sorted_by", "geom_column", "search_field", "result_field", "search_use_strict", "event_id", "index", "add_form_size", "edit_form_size", "display_form_size", "selection_buffer", "user_rights", "max_edition_scale", "min_edition_scale");
     }
 
     /**
@@ -117,7 +116,7 @@ class BusinessObjects extends Vmap {
      *  )
      */
     /**
-     * @SWG\Get(path="/businessobjects/{business_object_id}/fields", 
+     * @SWG\Get(path="/businessobjects/{business_object_id}/fields",
      *   tags={"BusinessObjects"},
      *   summary="BusinessObject table fields",
      *   description="Request to get the business object table fields",
@@ -145,7 +144,7 @@ class BusinessObjects extends Vmap {
      *  )
      */
     /**
-     * @SWG\Get(path="/businessobjects/{business_object_id}/form/{form}", 
+     * @SWG\Get(path="/businessobjects/{business_object_id}/form/{form}",
      *   tags={"BusinessObjects"},
      *   summary="Query BusinessObject",
      *   description="Request to query the business object",
@@ -521,6 +520,12 @@ class BusinessObjects extends Vmap {
                 // Importe le modèle de données de l'objet métier
                 return $this->postDataModel();
             } else {
+                if ($this->aValues['min_edition_scale'] == "") {
+                    $this->aValues['min_edition_scale'] = null;
+                }
+                if ($this->aValues['max_edition_scale'] == "") {
+                    $this->aValues['max_edition_scale'] = null;
+                }
                 $aReturn = $this->genericPost($this->aProperties['schema_vmap'], 'business_object', '', 'business_object_id');
                 return $aReturn['sMessage'];
             }
@@ -743,7 +748,7 @@ class BusinessObjects extends Vmap {
 
         $bError = false;
         $oPDOresult = $this->oConnection->oBd->executeBlock($sFileRequests);
-        
+
         if ($this->oConnection->oBd->enErreur()) {
             $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
             $bError = true;
@@ -784,7 +789,7 @@ class BusinessObjects extends Vmap {
         $oForm = new Form($this->aProperties, $this->oConnection);
         $aTableColumns = $oForm->getTableColumns($bo_schema, $bo_table);
 
-        // Supprime de la liste des champs générés ceux qui ne sont pas présents dans $aFields        
+        // Supprime de la liste des champs générés ceux qui ne sont pas présents dans $aFields
         $aColumnsToUse = array();
         for ($i = 0; $i < count($aTableColumns); $i++) {
             if (in_array($aTableColumns[$i]['column_name'], $aFields)) {
@@ -983,7 +988,7 @@ class BusinessObjects extends Vmap {
     }
 
     /**
-     * 
+     *
      * @param string $string
      * @return boolean
      */
@@ -1141,7 +1146,7 @@ class BusinessObjects extends Vmap {
      *         description="Poprerties Response",
      *         @SWG\Schema(ref="#/definitions/businessobjects")
      *     ),
-     * 
+     *
      *  )
      */
     /**
@@ -1207,7 +1212,7 @@ class BusinessObjects extends Vmap {
      *         description="Poprerties Response",
      *         @SWG\Schema(ref="#/definitions/businessobjects")
      *     ),
-     * 
+     *
      *  )
      */
 
@@ -1236,6 +1241,12 @@ class BusinessObjects extends Vmap {
             $sMessage = $this->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
             return $sMessage;
         } else {
+            if ($this->aValues['min_edition_scale'] == "") {
+                $this->aValues['min_edition_scale'] = null;
+            }
+            if ($this->aValues['max_edition_scale'] == "") {
+                $this->aValues['max_edition_scale'] = null;
+            }
             $aReturn = $this->genericPut($this->aProperties['schema_vmap'], 'business_object', 'business_object_id');
             return $aReturn['sMessage'];
         }

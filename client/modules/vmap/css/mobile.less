@@ -1,0 +1,278 @@
+/**
+ *
+ *  Fichier utilisé pour surcharger les définitions
+ *  pour les périphériques mobiles
+ *
+ */
+
+@top-bar-height: 40px;
+@location-search-form-height: 30px;
+@winheight:`$(window).height()`;
+@mobile-vh-correction: calc(100vh ~"-" ~"@{winheight}px");
+
+#opener-sidebar {
+    display: none;
+}
+
+#tool-sidebar {
+    display: none;
+}
+
+app-map > div {
+    position: initial !important;
+}
+
+.ol-zoom {
+    top: 2em;
+    left: .5em;
+}
+
+.ol-map-name {
+    top: 8px;
+    position: absolute;
+    left: 0;
+    right: 0;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    background-color: transparent;
+}
+
+.vmap_return_tool{
+    background-color: #dfdfdf;
+    margin: 3px 3px;
+}
+.vmap_mobile_return_modal{
+    background-color: #dfdfdf;
+    margin: -5px -6px;
+}
+
+.map-basic-tools{
+    height: @top-bar-height !important;
+}
+.map-basic-tools-row {
+    margin: 0px;
+}
+.vmap_mobile_tool{
+    color: #dfdfdf;
+    padding: 9px 13px;
+    font-size: 20px;
+}
+.vmap_mobile_tool.active{
+    color: #126673;
+    background-color: white;
+}
+.vmap_mobile_tool_search{
+    padding: 9px 25px;
+}
+.mobile-menu {
+    height: calc(100% ~"-" @top-bar-height);
+    width: 100%;
+    background-color: white;
+    position: fixed;
+    z-index: 9;
+}
+
+#basic-tools-bar {
+    font-size: 14px;
+}
+
+#location-search-input{
+    border: 1px solid #ccc;
+    width: 100%;
+    padding-left: 7px;
+}
+#location-search-input:focus{
+    outline: transparent;
+}
+
+#select-bo-select{
+    height: 25px;
+}
+#location-search-api-select {
+    height: 30px;
+    padding: 2px !important;
+    font-size: 12px;
+    border: 1px solid #ccc;
+    color: #555;
+}
+#location-search-api-select:hover{
+    color: #555;
+}
+#location-search-api-select:focus{
+    outline: transparent;
+}
+.location-search-dropdown-content{
+    width: 100%;
+}
+.list-group-item{
+    padding: 10px 15px;
+    height: auto;
+    border: 1px solid #ddd;
+}
+
+#location-search-form{
+    width: 100%;
+    height: @location-search-form-height;
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+#vmap_menu_location_results{
+    height: calc(100vh ~"-" @top-bar-height ~"-" @location-search-form-height);
+}
+
+#mobile-popup-bar{
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background-color: white;
+    opacity: 0.9;
+    padding: 15px 15px;
+    z-index: 9;
+    font-size: 13px;
+    height: auto;
+}
+#mobile-popup-bar [class^="ol-popup-"]{
+    font-size: 22px;
+    margin: 10px 0px;
+}
+#mobile-popup-bar .dropdown-menu{
+    font-size: 22px;
+}
+.ol-popup-buttons-container{
+    height: 18px;
+}
+.ol-popup-closer {
+    top: 4px;
+    right: 17px;
+}
+.ol-popup-list{
+    top: 6px;
+    right: 55px;
+}
+.ol-popup-edit{
+    top: 6px;
+    left: 66px;
+}
+.ol-popup-card{
+    top: 6px;
+    left: 23px;
+}
+.popup-content{
+    overflow: auto;
+}
+
+.map-list-litle-panel-list{
+    max-height: calc(100% ~"-" 40px);
+}
+
+#layertree > ul.tree > div {
+    margin-bottom: 16px;
+}
+
+.layer-menu{
+    margin-left: 83px;
+}
+
+.mobile-full-modal{
+    height: calc(100vh ~"-" @mobile-vh-correction) !important;
+    width: 100vw !important;
+    margin: 0px !important;
+}
+.mobile-full-modal > .modal-content{
+    height: calc(100vh ~"-" @mobile-vh-correction) !important;
+    max-height: calc(100vh ~"-" @mobile-vh-correction) !important;
+    border-radius: 0px !important;
+}
+
+.mobile_menu_logo{
+    margin-right: 10px;
+}
+
+.icon-measure.mobile_menu_logo{
+    font-size: 14px;
+}
+
+.list-group-item.sublist-group-item {
+    font-size: 85%;
+    background-color: #ddd;
+    margin-left: 7px;
+    border-color: white;
+}
+
+
+.ol_draw_menu {
+    height: 100%;
+}
+.ol_draw_menu_horizontal_bar,
+.ol_geom_edit_menu_horizontal_bar{
+    height: 2px;
+    width: 100%;
+    background-color: black;
+    position: fixed;
+    top: 50%;
+}
+.ol_draw_menu_vertical_bar,
+.ol_geom_edit_menu_vertical_bar{
+    height: 100%;
+    width: 2px;
+    background-color: black;
+    position: fixed;
+    left: 50%;
+    top: 0px;
+}
+.ol_draw_menu_top_buttons_container{
+    background-color: black;
+    height: 43px;
+    width: 100%;
+    top: 0px;
+    z-index: 9999;
+    position: fixed;
+}
+.ol_draw_menu_bottom_buttons_container{
+    background-color: black;
+    height: 56px;
+    width: 100%;
+    bottom: 0px;
+    position: fixed;
+}
+.ol_draw_menu button {
+    width: 100%;
+    margin-top: 5px;
+}
+
+.icon-th:before {
+    content: "Colonnes" !important;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size: 14px;
+    line-height: 1.42857143;
+    color: #333;
+}
+
+.insert_menu_logo{
+    margin-right: 10px;
+}
+
+.modal-body-big-3 {
+    max-height: calc(100vh ~"-" 58px ~"-" @mobile-vh-correction);
+    height: calc(100vh ~"-" 58px ~"-" @mobile-vh-correction);
+}
+.modal-body-big-with-footer-3 {
+    max-height: calc(100vh ~"-" 104px ~"-" @mobile-vh-correction);
+    height: calc(100vh ~"-" 104px ~"-" @mobile-vh-correction);
+}
+
+.advanced-select-mobile-accordion{
+    height: calc(100% ~"-" 45px);
+}
+.advanced-select-mobile-accordion-table{
+    height: calc(100% ~"-" 92px);
+}
+
+.notifyjs-bootstrap-base{
+    white-space: normal !important;
+}
+
+#select-bo-select{
+    max-width: 23vw;
+}

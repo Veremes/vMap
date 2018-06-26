@@ -1,0 +1,2 @@
+Remarque : Il faut faire attention que dans les sources on est deux schémas, 'anc' et 'cadastre' et dans la destination un schéma 's_anc' 
+sinon le programme ne fonctionne pas.

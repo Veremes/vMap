@@ -60,6 +60,7 @@ vitisApp.workspaceListCtrl = function ($scope, $log, envSrvc, propertiesSrvc, mo
             "appDragAndDropEvent": {}, // Evènements pour le drag'n drop.
             "appActions": [], // Boutons d'actions.
             "appShowActions": true, // Affichage des boutons d'actions.
+            "appEnableCsvExport": true, // Activation ou désactivation de l'exportation csv.
             "exporterCsvFilename": new String(envSrvc["oSelectedObject"]['label'])
         };
     }
@@ -72,7 +73,7 @@ vitisApp.workspaceListCtrl = function ($scope, $log, envSrvc, propertiesSrvc, mo
         envSrvc["sSelectedGridOptionsName"] += "_" + envSrvc["sSelectedSectionName"];
     $scope["sSelectedGridOptionsName"] = envSrvc["sSelectedGridOptionsName"];
     envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]] = $scope["gridOptions"];
-    
+
     // Sauve la définition originale de la liste.
     if (typeof (envSrvc["oDefaultGridOptions"][envSrvc["sSelectedGridOptionsName"]]) === "undefined")
         envSrvc["oDefaultGridOptions"][envSrvc["sSelectedGridOptionsName"]] = angular.copy($scope["gridOptions"]);
@@ -161,6 +162,8 @@ vitisApp.workspaceListCtrl = function ($scope, $log, envSrvc, propertiesSrvc, mo
                             }
                             // Emission d'un évènement de fin d'ajout des boutons d'actions pour post traitement (utilisé dans WAB)
                             $scope.$root.$emit("workspaceListHeaderActionsAdded", $scope["gridOptions"]);
+                            // Emission d'un évèvement permettant de savoir que la liste des colonnes a été chargée
+                            $scope.$root.$emit("workspaceListColumnsAdded", $scope["gridOptions"]);
                         }
                     }
                 }
@@ -178,28 +181,40 @@ vitisApp.workspaceListCtrl = function ($scope, $log, envSrvc, propertiesSrvc, mo
                 $scope["gridOptions"]["appActions"] = envSrvc["oSelectedObject"]["sections"][iSelectedSectionIndex]["actions"].slice(0);
             // Emission d'un évènement de fin d'ajout des boutons d'actions pour post traitement (utilisé dans WAB)
             $scope.$root.$emit("workspaceListHeaderActionsAdded", $scope["gridOptions"]);
+            // Emission d'un évèvement permettant de savoir que la liste des colonnes a été chargée
+            setTimeout(function () {
+                $scope.$root.$emit("workspaceListColumnsAdded", $scope["gridOptions"]);
+            });
         }
+    } else {
+        // Emission d'un évèvement permettant de savoir que la liste des colonnes a été chargée
+        setTimeout(function () {
+            $scope.$root.$emit("workspaceListColumnsAdded", $scope["gridOptions"]);
+        });
     }
 
     $scope['showExportModal'] = function () {
         $log.info("showExportModal");
         $('#ExportModal').modal('show');
+        // Paramètres par défaut.
         envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["oUrlParams"]['limit'] = 10000;
+        envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["exporterCsvFilename"] = envSrvc["oSelectedObject"]['label'];
+        document.getElementById("ExportModal").querySelector("#SelectValue").options.selectedIndex = 0;
     };
-    
+
     $scope['exportCSVFormat'] = function () {
         $log.info("ExportCSVFormat");
 
         var sResourceId = envSrvc["getSectionWebServiceResourceId"]();
         var aResourceId = envSrvc["explodeWebServiceResourceId"](sResourceId);
-        
+
         var oUrlParams = envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["oUrlParams"];
-        
+
         var e = document.getElementById("SelectValue");
         var testSelect = e.options[e.selectedIndex].text;
         var FilenameXLSX = $scope['gridOptions']['exporterCsvFilename'] + '.xlsx';
         var FilenameCSV = $scope['gridOptions']['exporterCsvFilename'] + '.csv';
-        
+
         var aExportColumnHeaders = [];
         var aExportData = [];
         for (i = 0; i < envSrvc["oSelectedObject"]["sections"][0]["columns"].length; i++) {
@@ -207,36 +222,39 @@ vitisApp.workspaceListCtrl = function ($scope, $log, envSrvc, propertiesSrvc, mo
                 aExportColumnHeaders.push(envSrvc["oSelectedObject"]["sections"][0]["columns"][i]);
             }
         }
-        
+
         ajaxRequest({
             "method": "GET",
             "url": propertiesSrvc["web_server_name"] + "/" + propertiesSrvc["services_alias"] + "/" + aResourceId[0] + "/" + aResourceId[1],
             "params": angular.copy(oUrlParams),
             "scope": $scope,
             "success": function (response) {
-                
+
                 if (response["data"]["status"] === 1) {
-                    
+
                     var aData = response["data"][aResourceId[1]];
                     for (i = 0; i < aData.length; i++) {
                         var values = [];
                         var value = {};
                         angular.forEach(aExportColumnHeaders, function (column) {
                             if (response["data"][aResourceId[1]][i][column['field']] !== null) {
-                                
+
                                 value = response["data"][aResourceId[1]][i][column['field']];
-                                
+
                             } else {
                                 value = "null";
-                                
+
                             }
                             if (response["data"][aResourceId[1]][i][column['field']] === "") {
-                                value= "null";
+                                value = "null";
                             }
-                            values[column['field']] = value ;
+                            values[column['displayName']] = value;
                         });
                         aExportData.push(values);
-                    };
+                    }
+                    ;
+                    
+                    console.log("aExportData: ", aExportData);
 
                     if (testSelect === ".XLSX") {
                         alasql("SELECT * INTO XLSX(" + "'" + FilenameXLSX + "'" + " ,{headers:true}) FROM ? ", [aExportData]);

@@ -61,6 +61,8 @@ $aAdminFields = Array(
     'sevenzip_root_dir',
     'sign_up',
     'password_forgotten',
+    'unsubscribe',
+    'geolocation_enabled',
     'private_captcha_key');
 $aUserFields = Array(
     'websocket_alias',
@@ -87,6 +89,8 @@ $aUserFields = Array(
     'url_export',
     'sign_up',
     'password_forgotten',
+    'unsubscribe',
+    'geolocation_enabled',
     'private_captcha_key'
 );
 $properties['aAdminFields'] = array_merge($properties['aAdminFields'], $aAdminFields);

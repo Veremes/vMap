@@ -1,23 +1,23 @@
 <?php
+
 /**
-* \file PrivateWmsServiceLayers.class.inc
-* \class PrivateWmsServiceLayers
-*
-* \author Armand Bahi <armand.bahi@veremes.com>.
-*
-* \brief This file contains the PrivateWmsServiceLayers php class
-*
-* This class defines Rest Api to Vmap PrivateWmsServiceLayers
-* 
-*/
+ * \file PrivateWmsServiceLayers.class.inc
+ * \class PrivateWmsServiceLayers
+ *
+ * \author Armand Bahi <armand.bahi@veremes.com>.
+ *
+ * \brief This file contains the PrivateWmsServiceLayers php class
+ *
+ * This class defines Rest Api to Vmap PrivateWmsServiceLayers
+ * 
+ */
 require_once 'Vmap4MapServer.class.inc';
 require_once 'PrivateWmsServiceLayer.class.inc';
 require_once __DIR__ . '/../../class/vitis_lib/Connection.class.inc';
 require_once __DIR__ . '/../../class/vmlib/BdDataAccess.inc';
 
 class PrivateWmsServiceLayers extends Vmap4MapServer {
-    
-     /**
+    /**
      * @SWG\Definition(
      *   definition="/privatewmsservicelayers",
      *   allOf={
@@ -29,20 +29,20 @@ class PrivateWmsServiceLayers extends Vmap4MapServer {
      *   description=""
      * )
      */
+
     /**
      * construct
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
+     * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = new Connection($this->aValues, $this->aProperties);
-		$this->aSelectedFields = Array("ms_layer_id", "name", "title", "active", "opacity");
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
+        $this->aSelectedFields = Array("ms_layer_id", "name", "title", "active", "opacity");
     }
-    
+
     /**
      * @SWG\Get(path="/privatewmsservicelayers",
      *   tags={"WmsServiceLayers"},
@@ -115,7 +115,7 @@ class PrivateWmsServiceLayers extends Vmap4MapServer {
      *     )
      *  )
      */
-    
+
     /**
      * get private wms service layers
      * @return PrivateWmsServiceLayers
@@ -124,19 +124,23 @@ class PrivateWmsServiceLayers extends Vmap4MapServer {
         $aReturn = $this->genericGet($this->aProperties['schema_vm4ms'], 'v_private_ms_layer', 'ms_layer_id');
         return $aReturn['sMessage'];
     }
-    
+
     /**
      * modify layers of wms service
      * @return array containing the status and the message
      */
     function PUT() {
+        
     }
-    
+
     /**
      * delete wms service layers
      * @return id of wms service layer deleted or error object if a wms service layer is not deleted
      */
     function DELETE() {
+        
     }
+
 }
+
 ?>

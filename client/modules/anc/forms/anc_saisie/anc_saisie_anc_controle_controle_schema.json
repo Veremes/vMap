@@ -216,6 +216,30 @@
                                         {
                                             "fields": [
                                                 {
+                                                    "type": "number",
+                                                    "label": "Taille",
+                                                    "name": "size",
+                                                    "required": false,
+                                                    "default_value": 50,
+                                                    "nb_cols": 12
+                                                }
+                                            ]
+                                        }, 
+                                        {
+                                            "fields": [
+                                                {
+                                                    "type": "text",
+                                                    "label": "Angle",
+                                                    "name": "rotation",
+                                                    "required": false,
+                                                    "default_value": 0,
+                                                    "nb_cols": 12
+                                                }
+                                            ]
+                                        }, 
+                                        {
+                                            "fields": [
+                                                {
                                                     "type": "text",
                                                     "label": "Observations",
                                                     "name": "observations",
@@ -274,7 +298,6 @@
                 ]
             }
         ],
-        "event": "sendSimpleForm()",
-        "afterEvent": "setMode(\"search\")"
+        "event": "sendSimpleForm()"
     }
 }

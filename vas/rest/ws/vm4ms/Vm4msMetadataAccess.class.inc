@@ -51,7 +51,7 @@ class Vm4msMetadataAccess {
      */
     var $sConnectionDefinition = '
     CONNECTIONTYPE postgis
-    CONNECTION "user={CONNECTION_LOGIN} password={CONNECTION_PASSWORD} dbname={CONNECTION_DATABASE} host={CONNECTION_SERVER} port={CONNECTION_PORT}"
+    CONNECTION "user=\'{CONNECTION_LOGIN}\' password=\'{CONNECTION_PASSWORD}\' dbname=\'{CONNECTION_DATABASE}\' host=\'{CONNECTION_SERVER}\' port=\'{CONNECTION_PORT}\'"
     ';
 
     /**
@@ -102,7 +102,7 @@ class Vm4msMetadataAccess {
         $sWmsServiceId = htmlentities($sWmsServiceId, ENT_NOQUOTES, 'UTF-8');
         $sWmsServiceId = preg_replace('#&([A-za-z])(?:acute|cedil|caron|circ|grave|orn|ring|slash|th|tilde|uml);#', '\1', $sWmsServiceId);
         $sWmsServiceId = preg_replace('#&([A-za-z]{2})(?:lig);#', '\1', $sWmsServiceId); // pour les ligatures e.g. '&oelig;'
-        $sWmsServiceId = preg_replace('#&[^;]+;#', '', $sWmsServiceId); // supprime les autres caractères        
+        $sWmsServiceId = preg_replace('#&[^;]+;#', '', $sWmsServiceId); // supprime les autres caractères
         $sWmsServiceId = str_replace(' ', '_', $sWmsServiceId); // Remplace les espaces.
         // Nom du fichier ".map".
         $sToken = hash('sha256', $this->sSID);
@@ -145,7 +145,7 @@ class Vm4msMetadataAccess {
         $sWmsServiceId = htmlentities($sWmsServiceId, ENT_NOQUOTES, 'UTF-8');
         $sWmsServiceId = preg_replace('#&([A-za-z])(?:acute|cedil|caron|circ|grave|orn|ring|slash|th|tilde|uml);#', '\1', $sWmsServiceId);
         $sWmsServiceId = preg_replace('#&([A-za-z]{2})(?:lig);#', '\1', $sWmsServiceId); // pour les ligatures e.g. '&oelig;'
-        $sWmsServiceId = preg_replace('#&[^;]+;#', '', $sWmsServiceId); // supprime les autres caractères        
+        $sWmsServiceId = preg_replace('#&[^;]+;#', '', $sWmsServiceId); // supprime les autres caractères
         $sWmsServiceId = str_replace(' ', '_', $sWmsServiceId); // Remplace les espaces.
         // Nom du fichier ".map".
         $sMapServerProjDir = $this->aProperties["map_dir"] . '/proj';
@@ -253,6 +253,13 @@ class Vm4msMetadataAccess {
                     $sResult = str_replace("{TMP_URL}", $this->aProperties["map_url"] . '/tmp/', $sResult);
                     $sResult = str_replace("{MS_CGI_URL}", $this->aProperties["ms_cgi_url"] . '/', $sResult);
                     $sResult = str_replace("{WMSSERVICE_ID}", $this->sWmsServiceId, $sResult);
+                    // Permet de ne pas cocher les boites à cocher "ignorer l'agresse GetMap" sur QGIS et FME
+                    if ($this->sWmsServiceId == $this->aProperties['private_wms_service']) {
+                        $sToken = hash('sha256', $this->sSID);
+                        $sResult = str_replace("{WMSSERVICE_URL}", $this->aProperties["ms_cgi_url"] . '/private/' . $sToken, $sResult);
+                    }else{
+                        $sResult = str_replace("{WMSSERVICE_URL}", $this->aProperties["ms_cgi_url"] . '/public/' . $this->sWmsServiceId, $sResult);
+                    }
                 }
                 $oPDOresult = $oBd->fermeResultat();
             }
@@ -336,6 +343,7 @@ class Vm4msMetadataAccess {
     function saveLayerTestMapFile($sWmsServiceId, $iLayerToTest) {
         $oBd = $this->oBd;
         $this->bTestMode = true;
+        $aProperties = $this->aProperties;
         $this->sWmsServiceId = $sWmsServiceId;
         // Infos de la couche (si elle n'est pas déja associée au flux wms de test).
         $aParams['iLayerToTest'] = array('value' => $iLayerToTest, 'type' => 'number');
@@ -432,8 +440,19 @@ class Vm4msMetadataAccess {
                     $sPassword = decodepass($_SESSION["ses_Password"]);
                 }
             }
-            $sDefinition = str_replace("{CONNECTION_LOGIN}", $sLogin, $sDefinition);
-            $sDefinition = str_replace("{CONNECTION_PASSWORD}", $sPassword, $sDefinition);
+
+            // Ici il faudra encrypter le password
+            if ($this->aProperties['use_msencrypt']) {
+                $aCommand = array();
+                $sCommand = $this->aProperties['msencrypt_path'] . ' -key ' . $this->aProperties['msencrypt_key_path'] . ' "' . $sPassword . '"';
+                exec($sCommand, $aCommand);
+                if (!empty($aCommand[0])) {
+                    $sPassword = '{' . $aCommand[0] . '}';
+                }
+            }
+
+            $sDefinition = str_replace("{CONNECTION_LOGIN}", str_replace("'", "\'", str_replace('\\', '\\\\\\', $sLogin)), $sDefinition);
+            $sDefinition = str_replace("{CONNECTION_PASSWORD}", str_replace("'", "\'", str_replace('\\', '\\\\\\', $sPassword)), $sDefinition);
             // Serveur.
             if (!empty($aLigne['server']))
                 $sServer = $aLigne['server'];
@@ -453,6 +472,7 @@ class Vm4msMetadataAccess {
                 $sDatabase = $this->aProperties['database'];
             $sDefinition = str_replace("{CONNECTION_DATABASE}", $sDatabase, $sDefinition);
         }
+
         return $sDefinition;
     }
 

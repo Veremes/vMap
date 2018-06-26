@@ -35,13 +35,11 @@ class FicheDescriptiveParcelle extends Cadastre {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
      * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = new Connection($this->aValues, $this->aProperties);
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
     }
 
     /**
@@ -145,8 +143,8 @@ class FicheDescriptiveParcelle extends Cadastre {
 
 
         // Infos complémentaires (paramétrées par l'administrateur)
-        $aIntersectionViews = $this->aProperties['cadastre']['descr_parcel']['intersect']['views'];
         $iTolerance = $this->aProperties["cadastre"]["descr_parcel"]["intersect"]["tolerance"];
+        $aIntersectionViews = $this->aProperties['cadastre']['descr_parcel']['intersect']['views'];
 
         // Récupère la géométrie de la parcelle
         $sSchema = $this->aProperties['schema_cadastre'];
@@ -161,7 +159,6 @@ class FicheDescriptiveParcelle extends Cadastre {
 
         // Récupère les intersections
         $oParcelleInfos['data']['aIntersections'] = array();
-        
 
         foreach ($aIntersectionViews as $key => $value) {
 
@@ -176,14 +173,26 @@ class FicheDescriptiveParcelle extends Cadastre {
             $aAttributs = Array();
 
             foreach ($value as $key2 => $value2) {
-                if ($key2 != 'title' && $key2 != 'type' && $key2 != 'intersect') {
+                if ($key2 != 'title' && $key2 != 'type' && $key2 != 'intersect' && $key2 != 'geom_column') {
                     array_push($aAttributs, $key2);
                 }
             }
 
-            $oIntersect = $this->vmapIntersectGet($sSchema, $sTable, $parcelleGeom, $aAttributs, $iTolerance);
+            if (!empty($value['geom_column'])) {
+                $sGeomColumn = $value['geom_column'];
+            } else {
+                $sGeomColumn = 'geom';
+            }
 
-            $value['data'] = $oIntersect;
+            if (!empty($value['type'])) {
+                $sGeomType = $value['type'];
+            } else {
+                $sGeomType = 'POLYGON';
+            }
+
+            $aIntersect = $this->vmapIntersectGet($sSchema, $sTable, $parcelleGeom, $aAttributs, $iTolerance, $sGeomColumn, $sGeomType);
+
+            $value['data'] = $aIntersect;
             if (isset($value['data'][0]) && !empty($value['data'][0])) {
                 $value['aFields'] = array_keys($value['data'][0]);
             } else {

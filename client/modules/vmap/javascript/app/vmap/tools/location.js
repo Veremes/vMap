@@ -40,7 +40,7 @@ nsVmap.nsToolsManager.Location.prototype.locationDirective = function () {
         controller: 'ApplocationController',
         controllerAs: 'ctrl',
         bindToController: true,
-        templateUrl: oVmap['properties']['vmap_folder'] + '/' + 'template/tools/location.html'
+        templateUrl: oVmap['properties']['vmap_folder'] + '/' + 'template/tools/' + (oVmap['properties']['is_mobile'] ? 'location_mobile.html' : 'location.html')
     };
 };
 
@@ -132,6 +132,10 @@ nsVmap.nsToolsManager.Location.prototype.locationController = function ($scope, 
      */
     this['scale'] = Math.round(oVmap.getMap().getScale());
 
+    $scope['goToX'] = '';
+    $scope['goToY'] = '';
+    $scope['goToProj'] = 'EPSG:4326';
+
     // Récupère les properties de locatisation de l'API
     this.setBusinessObjectsList();
 
@@ -160,8 +164,6 @@ nsVmap.nsToolsManager.Location.prototype.locationController = function ($scope, 
             setTimeout(function () {
                 this_.$scope_.$applyAsync(function () {
                     this_['sSelectedLocationService'] = this_.getDefaultlocationService_();
-
-                    console.log("this_['sSelectedLocationService']: ", this_['sSelectedLocationService']);
                 });
             });
         });
@@ -311,17 +313,15 @@ nsVmap.nsToolsManager.Location.prototype.locationController.prototype.goHome = f
 
 /**
  * Localise the map on the entry position
- * @param {string} Xid html id to the X value
- * @param {string} Yid html id to the Y value
+ * @param {string} CoordX html id to the X value
+ * @param {string} CoordY html id to the Y value
  * @param {string} projectionId html id to the projection value
  * @export
  */
-nsVmap.nsToolsManager.Location.prototype.locationController.prototype.goTo = function (Xid, Yid, projectionId) {
+nsVmap.nsToolsManager.Location.prototype.locationController.prototype.goTo = function (CoordX, CoordY, projection) {
     oVmap.log("nsVmap.nsToolsManager.Location.prototype.locationController.goTo");
 
-    var coordinates = [parseFloat($('#' + Xid).val()), parseFloat($('#' + Yid).val())];
-    var projection = $('#' + projectionId).val();
-
+    var coordinates = [parseFloat(CoordX), parseFloat(CoordY)];
     var currentProjeciton = oVmap.getMap().getOLMap().getView().getProjection();
     var projectedCoordinates = ol.proj.transform(coordinates, projection, currentProjeciton);
 
@@ -351,29 +351,16 @@ nsVmap.nsToolsManager.Location.prototype.locationController.prototype.geolocateM
     oVmap.log("nsVmap.nsToolsManager.Location.prototype.locationController.geolocateMe");
 
     var this_ = this;
-    var geolocation = new ol.Geolocation({
-        projection: 'EPSG:4326'
-    });
-
-    // enable or disable tracking
-    geolocation.setTracking(true);
-    geolocation.on('change:position', function () {
-        var projeciton = oVmap.getMap().getOLMap().getView().getProjection();
-        var coordinates = ol.proj.transform(geolocation.getPosition(), 'EPSG:4326', projeciton);
-
-        // Affcihe un point sur les coordonnées
-        var point = new ol.Feature(new ol.geom.Point(coordinates));
-        this_.locateFeature(point, 'Vous êtes ici');
-
-
-        // disable or disable tracking
-        geolocation.setTracking(false);
-    });
-
-    // handle geolocation error.
-    geolocation.on('error', function () {
-        console.error('error');
-    });
+    if (oVmap['properties']['is_mobile']) {
+        oVmap.getMap().centerGPSPosition();
+    } else {
+        var aGPSPosition = oVmap.getMap().getGPSPosition(oVmap.getMap().getOLMap().getView().getProjection());
+        if (goog.isDefAndNotNull(aGPSPosition)) {
+            // Affcihe un point sur les coordonnées
+            var point = new ol.Feature(new ol.geom.Point(aGPSPosition));
+            this_.locateFeature(point, 'Vous êtes ici');
+        }
+    }
 };
 
 /**
@@ -599,6 +586,10 @@ nsVmap.nsToolsManager.Location.prototype.locationController.prototype.locatePlac
     if (!goog.isDef(place))
         return 'place not defined';
 
+    if (oVmap['properties']['is_mobile']) {
+        oVmap.getToolsManager().getBasicTools().hideMobileMenu();
+    }
+
     var geojson = place['geojson'];
     var currentProjeciton = this['map'].getView().getProjection();
 
@@ -630,12 +621,15 @@ nsVmap.nsToolsManager.Location.prototype.locationController.prototype.locatePlac
 nsVmap.nsToolsManager.Location.prototype.locationController.prototype.addToSelection = function (selection, service) {
     oVmap.log('nsVmap.nsToolsManager.Location.prototype.locationController.prototype.addSelection');
 
+    if (oVmap['properties']['is_mobile']) {
+        oVmap.getToolsManager().getBasicTools().hideMobileMenu();
+    }
+
     var this_ = this;
     var url = oVmap['properties']['api_url'] + '/vmap/querys/' + selection['bo_type'] + '/summary';
 //    var filter = '"' + selection['bo_id_field'].replace(/\./g, '"."') + '"=\'' + selection['bo_id_value'] + '\'';
     var proj = this['map'].getView().getProjection().getCode().substring(5);
 
-    showAjaxLoader();
     ajaxRequest({
         'method': 'GET',
         'url': url,
@@ -763,7 +757,7 @@ nsVmap.nsToolsManager.Location.prototype.locationController.prototype.locateGeom
 /**
  * Locate a feature and display a popup
  * @param {olFeature} feature
- * @param {string} message
+ * @param {string|undefined|null} message
  * @returns {undefined}
  */
 nsVmap.nsToolsManager.Location.prototype.locationController.prototype.locateFeature = function (feature, message) {
@@ -786,8 +780,10 @@ nsVmap.nsToolsManager.Location.prototype.locationController.prototype.locateFeat
         this.locationPopup.remove();
     }
 
-    this.locationPopup = new nsVmap.Map.MapPopup(feature);
-    this.locationPopup.displayMessage(message);
+    if (goog.isDefAndNotNull(message)) {
+        this.locationPopup = new nsVmap.Map.MapPopup(feature);
+        this.locationPopup.displayMessage(message);
+    }
 };
 
 /**

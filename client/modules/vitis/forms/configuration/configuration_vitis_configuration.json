@@ -1,682 +1,729 @@
 {
-  "search": {},
-  "update": {
-    "name": "configuration_general_update_form",
-    "title": "",
-    "input_size": "xs",
-    "event": "updateProperties('vitis')",
-    "nb_cols": 7,
-    "rows": [
-      {
-        "fields": [
-          {
-            "type": "title",
-            "label": "FORM_GENERAL_SECTION_CONFIGURATION",
-            "name": "title_properties",
-            "nb_cols": 12,
-            "id": "title_properties_1_1"
-          }
-        ]
-      },
-      {
-        "fields": [
-          {
-            "type": "select",
-            "name": "language",
-            "label": "FORM_LANGUAGE_CONFIGURATION",
-            "options": [
-              "Français|fr",
-              "English|en"
-            ],
-            "nb_cols": 12,
-            "id": "language_2_1"
-          }
-        ]
-      },
-      {
-        "fields": [
-          {
-            "type": "number",
-            "name": "cookie_lifetime",
-            "label": "FORM_COOKIE_LIFETIME_CONFIGURATION",
-            "nb_cols": 12,
-            "id": "cookie_lifetime_3_1"
-          }
-        ]
-      },
-      {
-        "fields": [
-          {
-            "type": "number",
-            "name": "max_upload_file_size",
-            "label": "FORM_MAX_UPLOAD_FILE_SIZE_CONFIGURATION",
-            "nb_cols": 12,
-            "id": "max_upload_file_size_4_1"
-          }
-        ]
-      },
-      {
-        "fields": [
-          {
-            "type": "number",
-            "name": "max_execution_time",
-            "label": "FORM_MAX_EXECUTION_TIME_CONFIGURATION",
-            "nb_cols": 12,
-            "id": "max_execution_time_5_1"
-          }
-        ]
-      },
-      {
-        "fields": [
-          {
-            "type": "number",
-            "name": "max_request_time",
-            "label": "FORM_MAX_REQUEST_TIME_CONFIGURATION",
-            "nb_cols": 12,
-            "id": "max_request_time_6_1"
-          }
-        ]
-      },
-      {
-        "fields": [
-          {
-            "type": "number",
-            "name": "minimum_refresh_period",
-            "label": "FORM_MINIMUM_REFRESH_PERIOD_CONFIGURATION",
-            "nb_cols": 12,
-            "id": "minimum_refresh_period_7_1"
-          }
-        ]
-      },
-      {
-        "fields": [
-          {
-            "type": "text",
-            "name": "forbidden_extension",
-            "label": "FORM_FORBIDDEN_EXTENSION_CONFIGURATION",
-            "nb_cols": 12,
-            "id": "forbidden_extension_8_1"
-          }
-        ]
-      },
-      {
-        "fields": [
-          {
-            "type": "select",
-            "name": "rows_per_page",
-            "label": "FORM_ROWS_PER_PAGE_CONFIGURATION",
-            "options": [
-              "10|10",
-              "20|20",
-              "50|50",
-              "100|100",
-              "200|200",
-              "500|500"
-            ],
-            "nb_cols": 12,
-            "id": "rows_per_page_9_1"
-          }
-        ]
-      },
-      {
-        "fields": [
-          {
-            "type": "text",
-            "name": "extract_dir",
-            "label": "FORM_EXTRACT_DIR_CONFIGURATION",
-            "nb_cols": 12,
-            "id": "extract_dir_10_1"
-          }
-        ]
-      },
-      {
-        "fields": [
-          {
-            "type": "select",
-            "name": "date_format",
-            "options": [
-              "jj/mm/aaaa|d/m/Y",
-              "mm/dd/yyyy|m/d/Y"
-            ],
-            "label": "FORM_DATE_FORMAT_CONFIGURATION",
-            "nb_cols": 12,
-            "id": "date_format_11_1"
-          }
-        ]
-      },{
-        "fields": [
-          {
-            "type": "radio",
-            "name": "sign_up",
-            "label": "FORM_SIGN_UP_CONFIGURATION",
-            "nb_cols": 6,
-            "id": "sign_up_33_1",
-            "options": {
-              "choices": [
+    "search": {},
+    "update": {
+        "name": "configuration_general_update_form",
+        "title": "",
+        "input_size": "xs",
+        "event": "updateProperties('vitis')",
+        "nb_cols": 7,
+        "rows": [
+            {
+                "fields": [
+                    {
+                        "type": "title",
+                        "label": "FORM_GENERAL_SECTION_CONFIGURATION",
+                        "name": "title_properties",
+                        "nb_cols": 12,
+                        "id": "title_properties_1_1"
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "select",
+                        "name": "language",
+                        "label": "FORM_LANGUAGE_CONFIGURATION",
+                        "options": [
+                            "Français|fr",
+                            "English|en"
+                        ],
+                        "nb_cols": 12,
+                        "id": "language_2_1"
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "number",
+                        "name": "cookie_lifetime",
+                        "label": "FORM_COOKIE_LIFETIME_CONFIGURATION",
+                        "nb_cols": 12,
+                        "id": "cookie_lifetime_3_1"
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "number",
+                        "name": "max_upload_file_size",
+                        "label": "FORM_MAX_UPLOAD_FILE_SIZE_CONFIGURATION",
+                        "nb_cols": 12,
+                        "id": "max_upload_file_size_4_1"
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "number",
+                        "name": "max_execution_time",
+                        "label": "FORM_MAX_EXECUTION_TIME_CONFIGURATION",
+                        "nb_cols": 12,
+                        "id": "max_execution_time_5_1"
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "number",
+                        "name": "max_request_time",
+                        "label": "FORM_MAX_REQUEST_TIME_CONFIGURATION",
+                        "nb_cols": 12,
+                        "id": "max_request_time_6_1"
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "number",
+                        "name": "minimum_refresh_period",
+                        "label": "FORM_MINIMUM_REFRESH_PERIOD_CONFIGURATION",
+                        "nb_cols": 12,
+                        "id": "minimum_refresh_period_7_1"
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "forbidden_extension",
+                        "label": "FORM_FORBIDDEN_EXTENSION_CONFIGURATION",
+                        "nb_cols": 12,
+                        "id": "forbidden_extension_8_1"
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "select",
+                        "name": "rows_per_page",
+                        "label": "FORM_ROWS_PER_PAGE_CONFIGURATION",
+                        "options": [
+                            "10|10",
+                            "20|20",
+                            "50|50",
+                            "100|100",
+                            "200|200",
+                            "500|500"
+                        ],
+                        "nb_cols": 12,
+                        "id": "rows_per_page_9_1"
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "extract_dir",
+                        "label": "FORM_EXTRACT_DIR_CONFIGURATION",
+                        "nb_cols": 12,
+                        "id": "extract_dir_10_1"
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "select",
+                        "name": "date_format",
+                        "options": [
+                            "jj/mm/aaaa|d/m/Y",
+                            "mm/dd/yyyy|m/d/Y"
+                        ],
+                        "label": "FORM_DATE_FORMAT_CONFIGURATION",
+                        "nb_cols": 12,
+                        "id": "date_format_11_1"
+                    }
+                ]
+            }, 
+            {
+                "fields": [
+                    {
+                        "type": "radio",
+                        "name": "login_remember_me",
+                        "label": "FORM_REMEMBER_ME_CONFIGURATION",
+                        "nb_cols": 6,
+                        "id": "login_remember_me_33_1",
+                        "options": {
+                            "choices": [
+                                {
+                                    "label": "Oui",
+                                    "value": "enabled"
+                                },
+                                {
+                                    "label": "Non",
+                                    "value": "disabled"
+                                }
+                            ]
+                        },
+                        "default_value": "disabled"
+                    },
+                    {
+                        "type": "radio",
+                        "name": "login_remember_me_default",
+                        "label": "FORM_REMEMBER_ME_DEFAULT_CONFIGURATION",
+                        "nb_cols": 6,
+                        "id": "login_remember_me_default_33_2",
+                        "options": {
+                            "choices": [
+                                {
+                                    "label": "Oui",
+                                    "value": true
+                                },
+                                {
+                                    "label": "Non",
+                                    "value": false
+                                }
+                            ]
+                        },
+                        "default_value": "enabled"
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "radio",
+                        "name": "sign_up",
+                        "label": "FORM_SIGN_UP_CONFIGURATION",
+                        "nb_cols": 6,
+                        "id": "sign_up_33_1",
+                        "options": {
+                            "choices": [
+                                {
+                                    "label": "FORM_SIGN_UP_CONFIGURATION_YES",
+                                    "value": "enabled"
+                                },
+                                {
+                                    "label": "FORM_SIGN_UP_CONFIGURATION_NO",
+                                    "value": "disabled"
+                                }
+                            ]
+                        },
+                        "default_value": "disabled"
+                    },
+                    {
+                        "type": "radio",
+                        "name": "password_forgotten",
+                        "label": "FORM_FPWD_CONFIGURATION",
+                        "nb_cols": 6,
+                        "id": "password_forgotten_33_2",
+                        "options": {
+                            "choices": [
+                                {
+                                    "label": "Oui",
+                                    "value": "enabled"
+                                },
+                                {
+                                    "label": "Non",
+                                    "value": "disabled"
+                                }
+                            ]
+                        },
+                        "default_value": "enabled"
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "web_server_name",
+                        "label": "FORM_WEB_SERVER_NAME_CONFIGURATION",
+                        "nb_cols": 12,
+                        "id": "web_server_name_12_1"
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "vas_home",
+                        "label": "FORM_VAS_HOME_CONFIGURATION",
+                        "nb_cols": 12,
+                        "id": "vas_home_13_1"
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "title",
+                        "label": "FORM_LOG_SECTION_CONFIGURATION",
+                        "name": "title_properties_log",
+                        "nb_cols": 12,
+                        "id": "title_properties_log_14_1"
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "radio",
+                        "name": "log_mode",
+                        "id": "log_mode",
+                        "label": "FORM_LOG_MODE_CONFIGURATION",
+                        "options": {
+                            "choices": [
+                                {
+                                    "label": "FORM_LOG_MODE_TRUE_CONFIGURATION",
+                                    "value": true,
+                                    "$$hashKey": "object:1958"
+                                },
+                                {
+                                    "label": "FORM_LOG_MODE_FALSE_CONFIGURATION",
+                                    "value": false,
+                                    "$$hashKey": "object:1959"
+                                }
+                            ]
+                        },
+                        "nb_cols": 6
+                    },
+                    {
+                        "type": "radio",
+                        "name": "debug_mode",
+                        "id": "debug_mode",
+                        "label": "FORM_DEBUG_MODE_CONFIGURATION",
+                        "options": {
+                            "choices": [
+                                {
+                                    "label": "FORM_DEBUG_MODE_TRUE_CONFIGURATION",
+                                    "value": true,
+                                    "$$hashKey": "object:1970"
+                                },
+                                {
+                                    "label": "FORM_DEBUG_MODE_FALSE_CONFIGURATION",
+                                    "value": false,
+                                    "$$hashKey": "object:1971"
+                                }
+                            ]
+                        },
+                        "nb_cols": 6
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "select",
+                        "name": "log_period",
+                        "label": "FORM_LOG_PERIOD_CONFIGURATION",
+                        "options": [
+                            "Jour|Y-m-d",
+                            "Mois|Y-m"
+                        ],
+                        "nb_cols": 12,
+                        "id": "log_period_16_1"
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "number",
+                        "name": "log_size",
+                        "label": "FORM_LOG_SIZE_CONFIGURATION",
+                        "nb_cols": 12,
+                        "id": "log_size_17_1"
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "log_directories.Apache",
+                        "label": "FORM_APACHE_LOG_DIRECTORIE_CONFIGURATION",
+                        "nb_cols": 12,
+                        "id": "log_directories.Apache_18_1"
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "title",
+                        "label": "FORM_HTTP_SERVER_SECTION_CONFIGURATION",
+                        "name": "title_properties_server",
+                        "nb_cols": 12,
+                        "id": "title_properties_server_19_1"
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "shared_dir",
+                        "label": "FORM_SHARED_DIR_CONFIGURATION",
+                        "nb_cols": 12,
+                        "id": "shared_dir_20_1"
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "public_alias",
+                        "label": "FORM_PUBLIC_ALIAS_CONFIGURATION",
+                        "nb_cols": 12,
+                        "id": "public_alias_21_1"
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "services_alias",
+                        "label": "FORM_SERVICES_ALIAS_CONFIGURATION",
+                        "nb_cols": 12,
+                        "id": "services_alias_22_1"
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "doc_alias",
+                        "label": "FORM_DOC_ALIAS_CONFIGURATION",
+                        "nb_cols": 12,
+                        "id": "doc_alias_23_1"
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "ws_data_alias",
+                        "label": "FORM_WS_DATA_ALIAS_CONFIGURATION",
+                        "nb_cols": 12,
+                        "id": "ws_data_alias_24_1"
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "title",
+                        "label": "FORM_SECURITY_SECTION_CONFIGURATION",
+                        "name": "title_properties_security",
+                        "nb_cols": 12,
+                        "id": "title_properties_security_25_1"
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "radio",
+                        "name": "proxy_check_ssl",
+                        "id": "proxy_check_ssl",
+                        "label": "FORM_PROXY_CHECK_SSL_CONFIGURATION",
+                        "options": {
+                            "choices": [
+                                {
+                                    "label": "FORM_PROXY_CHECK_SSL_TRUE_CONFIGURATION",
+                                    "value": true,
+                                    "$$hashKey": "object:2036"
+                                },
+                                {
+                                    "label": "FORM_PROXY_CHECK_SSL_FALSE_CONFIGURATION",
+                                    "value": false,
+                                    "$$hashKey": "object:2037"
+                                }
+                            ]
+                        },
+                        "tooltip": {
+                            "title": "PROXY_CHECK_SSL_TOOLTIP_TITLE_CONFIGURATION",
+                            "content": "PROXY_CHECK_SSL_TOOLTIP_CONTENT_CONFIGURATION",
+                            "container": "body",
+                            "trigger": "hover"
+                        },
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "radio",
+                        "name": "mixed_rights_management",
+                        "id": "mixed_rights_management",
+                        "label": "FORM_MIXED_RIGHTS_MANAGEMENT_CONFIGURATION",
+                        "options": {
+                            "choices": [
+                                {
+                                    "label": "FORM_MIXED_RIGHTS_MANAGEMENT_TRUE_CONFIGURATION",
+                                    "value": true,
+                                    "$$hashKey": "object:2049"
+                                },
+                                {
+                                    "label": "FORM_MIXED_RIGHTS_MANAGEMENT_FALSE_CONFIGURATION",
+                                    "value": false,
+                                    "$$hashKey": "object:2050"
+                                }
+                            ]
+                        },
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "radio",
+                        "name": "allow_public_connection",
+                        "id": "allow_public_connection",
+                        "label": "FORM_ALLOW_PUBLIC_CONNECTION_CONFIGURATION",
+                        "options": {
+                            "choices": [
+                                {
+                                    "label": "FORM_MIXED_RIGHTS_MANAGEMENT_TRUE_CONFIGURATION",
+                                    "value": true,
+                                    "$$hashKey": "object:2062"
+                                },
+                                {
+                                    "label": "FORM_MIXED_RIGHTS_MANAGEMENT_FALSE_CONFIGURATION",
+                                    "value": false,
+                                    "$$hashKey": "object:2063"
+                                }
+                            ]
+                        },
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "select",
+                        "name": "public_login",
+                        "label": "FORM_PUBLIC_LOGIN_CONFIGURATION",
+                        "web_service": {
+                            "ressource_id": "vitis/users",
+                            "id_key": "login",
+                            "label_key": "login",
+                            "parameters": {
+                                "order_by": "login"
+                            }
+                        },
+                        "nb_cols": 5,
+                        "id": "public_login_29_1"
+                    }
+                ]
+            },
+            {
+                "class": "form-field-inline",
+                "fields": [
+                    {
+                        "type": "password",
+                        "name": "public_password",
+                        "label": "FORM_PUBLIC_PASSWORD_CONFIGURATION",
+                        "nb_cols": 5,
+                        "id": "public_password_30_1"
+                    },
+                    {
+                        "type": "button",
+                        "class": "btn-ungroup btn-group-sm",
+                        "nb_cols": 4,
+                        "buttons": [
+                            {
+                                "type": "button",
+                                "name": "test_connection",
+                                "label": "FORM_TEST_CONNECTION_CONFIGURATION",
+                                "class": "btn-primary",
+                                "event": "testPublicConnection()"
+                            }
+                        ],
+                        "id": "undefined_30_2"
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "public_token",
+                        "label": "FORM_PUBLIC_TOKEN_CONFIGURATION",
+                        "pattern": "^[a-zA-Z0-9-,]+$",
+                        "tooltip": {
+                            "title": "Jeton de connexion du compte PUBLIC",
+                            "content": "Les caractères acceptés sont les chiffres et les lettres<br>ainsi que les caractères '-' et ','.",
+                            "container": "body",
+                            "html": true,
+                            "trigger": "hover"
+                        },
+                        "nb_cols": 12,
+                        "id": "public_token_31_1"
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "text",
+                        "name": "private_captcha_key",
+                        "label": "FORM_PRIVATE_CAPTCHA_KEY_CONFIGURATION",
+                        "nb_cols": 12,
+                        "id": "private_captcha_key_32_1"
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "title",
+                        "label": "FORM_DATABASE_TITLE_CONFIGURATION",
+                        "name": "title_properties_database",
+                        "nb_cols": 12,
+                        "id": "title_properties_database_34_1"
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "sgbd",
+                        "label": "FORM_SGBD_CONFIGURATION",
+                        "nb_cols": 12,
+                        "id": "sgbd_35_1"
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "server",
+                        "label": "FORM_SERVER_CONFIGURATION",
+                        "nb_cols": 12,
+                        "id": "server_36_1"
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "port",
+                        "label": "FORM_PORT_CONFIGURATION",
+                        "nb_cols": 12,
+                        "id": "port_37_1"
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "database",
+                        "label": "FORM_DATABASE_TITLE_CONFIGURATION",
+                        "nb_cols": 12,
+                        "id": "database_38_1"
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "schema_framework",
+                        "label": "FORM_SCHEMA_CONFIGURATION",
+                        "nb_cols": 12,
+                        "id": "schema_framework_39_1"
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "button",
+                        "class": "btn-ungroup btn-group-sm",
+                        "nb_cols": 12,
+                        "buttons": [
+                            {
+                                "type": "submit",
+                                "name": "form_submit",
+                                "label": "FORM_UPDATE",
+                                "class": "btn-primary"
+                            }
+                        ],
+                        "id": "undefined_40_1"
+                    }
+                ]
+            }
+        ],
+        "tabs": {
+            "position": "top",
+            "list": [
                 {
-                  "label": "FORM_SIGN_UP_CONFIGURATION_YES",
-                  "value": "enabled"
-                },
-                {
-                  "label": "FORM_SIGN_UP_CONFIGURATION_NO",
-                  "value": "disabled"
+                    "label": "Tab 0",
+                    "elements": [
+                        "title_properties",
+                        "language",
+                        "cookie_lifetime",
+                        "max_upload_file_size",
+                        "max_execution_time",
+                        "max_request_time",
+                        "minimum_refresh_period",
+                        "forbidden_extension",
+                        "rows_per_page",
+                        "extract_dir",
+                        "date_format",
+                        "web_server_name",
+                        "vas_home",
+                        "title_properties_log",
+                        "log_mode",
+                        "debug_mode",
+                        "log_period",
+                        "log_size",
+                        "log_directories.Apache",
+                        "title_properties_server",
+                        "shared_dir",
+                        "public_alias",
+                        "services_alias",
+                        "doc_alias",
+                        "ws_data_alias",
+                        "title_properties_security",
+                        "proxy_check_ssl",
+                        "mixed_rights_management",
+                        "allow_public_connection",
+                        "public_login",
+                        "public_password",
+                        "test_connection",
+                        "public_token",
+                        "private_captcha_key",
+                        "login_remember_me",
+                        "login_remember_me_default",
+                        "sign_up",
+                        "password_forgotten",
+                        "title_properties_database",
+                        "sgbd",
+                        "server",
+                        "port",
+                        "database",
+                        "schema_framework",
+                        "form_submit"
+                    ]
                 }
-              ]
-            },
-            "default_value": "disabled"
-          },
-          {
-            "type": "radio",
-            "name": "password_forgotten",
-            "label": "FORM_FPWD_CONFIGURATION",
-            "nb_cols": 6,
-            "id": "password_forgotten_33_2",
-            "options": {
-              "choices": [
-                {
-                  "label": "Oui",
-                  "value": "enabled"
-                },
-                {
-                  "label": "Non",
-                  "value": "disabled"
-                }
-              ]
-            },
-            "default_value": "enabled"
-          }
-        ]
-      },
-      {
-        "fields": [
-          {
-            "type": "label",
-            "name": "web_server_name",
-            "label": "FORM_WEB_SERVER_NAME_CONFIGURATION",
-            "nb_cols": 12,
-            "id": "web_server_name_12_1"
-          }
-        ]
-      },
-      {
-        "fields": [
-          {
-            "type": "label",
-            "name": "vas_home",
-            "label": "FORM_VAS_HOME_CONFIGURATION",
-            "nb_cols": 12,
-            "id": "vas_home_13_1"
-          }
-        ]
-      },
-      {
-        "fields": [
-          {
-            "type": "title",
-            "label": "FORM_LOG_SECTION_CONFIGURATION",
-            "name": "title_properties_log",
-            "nb_cols": 12,
-            "id": "title_properties_log_14_1"
-          }
-        ]
-      },
-      {
-        "fields": [
-          {
-            "type": "radio",
-            "name": "log_mode",
-            "id": "log_mode",
-            "label": "FORM_LOG_MODE_CONFIGURATION",
-            "options": {
-              "choices": [
-                {
-                  "label": "FORM_LOG_MODE_TRUE_CONFIGURATION",
-                  "value": true,
-                  "$$hashKey": "object:1958"
-                },
-                {
-                  "label": "FORM_LOG_MODE_FALSE_CONFIGURATION",
-                  "value": false,
-                  "$$hashKey": "object:1959"
-                }
-              ]
-            },
-            "nb_cols": 6
-          },
-          {
-            "type": "radio",
-            "name": "debug_mode",
-            "id": "debug_mode",
-            "label": "FORM_DEBUG_MODE_CONFIGURATION",
-            "options": {
-              "choices": [
-                {
-                  "label": "FORM_DEBUG_MODE_TRUE_CONFIGURATION",
-                  "value": true,
-                  "$$hashKey": "object:1970"
-                },
-                {
-                  "label": "FORM_DEBUG_MODE_FALSE_CONFIGURATION",
-                  "value": false,
-                  "$$hashKey": "object:1971"
-                }
-              ]
-            },
-            "nb_cols": 6
-          }
-        ]
-      },
-      {
-        "fields": [
-          {
-            "type": "select",
-            "name": "log_period",
-            "label": "FORM_LOG_PERIOD_CONFIGURATION",
-            "options": [
-              "Jour|Y-m-d",
-              "Mois|Y-m"
-            ],
-            "nb_cols": 12,
-            "id": "log_period_16_1"
-          }
-        ]
-      },
-      {
-        "fields": [
-          {
-            "type": "number",
-            "name": "log_size",
-            "label": "FORM_LOG_SIZE_CONFIGURATION",
-            "nb_cols": 12,
-            "id": "log_size_17_1"
-          }
-        ]
-      },
-      {
-        "fields": [
-          {
-            "type": "label",
-            "name": "log_directories.Apache",
-            "label": "FORM_APACHE_LOG_DIRECTORIE_CONFIGURATION",
-            "nb_cols": 12,
-            "id": "log_directories.Apache_18_1"
-          }
-        ]
-      },
-      {
-        "fields": [
-          {
-            "type": "title",
-            "label": "FORM_HTTP_SERVER_SECTION_CONFIGURATION",
-            "name": "title_properties_server",
-            "nb_cols": 12,
-            "id": "title_properties_server_19_1"
-          }
-        ]
-      },
-      {
-        "fields": [
-          {
-            "type": "text",
-            "name": "shared_dir",
-            "label": "FORM_SHARED_DIR_CONFIGURATION",
-            "nb_cols": 12,
-            "id": "shared_dir_20_1"
-          }
-        ]
-      },
-      {
-        "fields": [
-          {
-            "type": "text",
-            "name": "public_alias",
-            "label": "FORM_PUBLIC_ALIAS_CONFIGURATION",
-            "nb_cols": 12,
-            "id": "public_alias_21_1"
-          }
-        ]
-      },
-      {
-        "fields": [
-          {
-            "type": "text",
-            "name": "services_alias",
-            "label": "FORM_SERVICES_ALIAS_CONFIGURATION",
-            "nb_cols": 12,
-            "id": "services_alias_22_1"
-          }
-        ]
-      },
-      {
-        "fields": [
-          {
-            "type": "text",
-            "name": "doc_alias",
-            "label": "FORM_DOC_ALIAS_CONFIGURATION",
-            "nb_cols": 12,
-            "id": "doc_alias_23_1"
-          }
-        ]
-      },
-      {
-        "fields": [
-          {
-            "type": "text",
-            "name": "ws_data_alias",
-            "label": "FORM_WS_DATA_ALIAS_CONFIGURATION",
-            "nb_cols": 12,
-            "id": "ws_data_alias_24_1"
-          }
-        ]
-      },
-      {
-        "fields": [
-          {
-            "type": "title",
-            "label": "FORM_SECURITY_SECTION_CONFIGURATION",
-            "name": "title_properties_security",
-            "nb_cols": 12,
-            "id": "title_properties_security_25_1"
-          }
-        ]
-      },
-      {
-        "fields": [
-          {
-            "type": "radio",
-            "name": "proxy_check_ssl",
-            "id": "proxy_check_ssl",
-            "label": "FORM_PROXY_CHECK_SSL_CONFIGURATION",
-            "options": {
-              "choices": [
-                {
-                  "label": "FORM_PROXY_CHECK_SSL_TRUE_CONFIGURATION",
-                  "value": true,
-                  "$$hashKey": "object:2036"
-                },
-                {
-                  "label": "FORM_PROXY_CHECK_SSL_FALSE_CONFIGURATION",
-                  "value": false,
-                  "$$hashKey": "object:2037"
-                }
-              ]
-            },
-            "tooltip": {
-              "title": "PROXY_CHECK_SSL_TOOLTIP_TITLE_CONFIGURATION",
-              "content": "PROXY_CHECK_SSL_TOOLTIP_CONTENT_CONFIGURATION",
-              "container": "body",
-              "trigger": "hover"
-            },
-            "nb_cols": 12
-          }
-        ]
-      },
-      {
-        "fields": [
-          {
-            "type": "radio",
-            "name": "mixed_rights_management",
-            "id": "mixed_rights_management",
-            "label": "FORM_MIXED_RIGHTS_MANAGEMENT_CONFIGURATION",
-            "options": {
-              "choices": [
-                {
-                  "label": "FORM_MIXED_RIGHTS_MANAGEMENT_TRUE_CONFIGURATION",
-                  "value": true,
-                  "$$hashKey": "object:2049"
-                },
-                {
-                  "label": "FORM_MIXED_RIGHTS_MANAGEMENT_FALSE_CONFIGURATION",
-                  "value": false,
-                  "$$hashKey": "object:2050"
-                }
-              ]
-            },
-            "nb_cols": 12
-          }
-        ]
-      },
-      {
-        "fields": [
-          {
-            "type": "radio",
-            "name": "allow_public_connection",
-            "id": "allow_public_connection",
-            "label": "FORM_ALLOW_PUBLIC_CONNECTION_CONFIGURATION",
-            "options": {
-              "choices": [
-                {
-                  "label": "FORM_MIXED_RIGHTS_MANAGEMENT_TRUE_CONFIGURATION",
-                  "value": true,
-                  "$$hashKey": "object:2062"
-                },
-                {
-                  "label": "FORM_MIXED_RIGHTS_MANAGEMENT_FALSE_CONFIGURATION",
-                  "value": false,
-                  "$$hashKey": "object:2063"
-                }
-              ]
-            },
-            "nb_cols": 12
-          }
-        ]
-      },
-      {
-        "fields": [
-          {
-            "type": "select",
-            "name": "public_login",
-            "label": "FORM_PUBLIC_LOGIN_CONFIGURATION",
-            "web_service": {
-              "ressource_id": "vitis/users",
-              "id_key": "login",
-              "label_key": "login",
-              "parameters": {
-                "order_by": "login"
-              }
-            },
-            "nb_cols": 5,
-            "id": "public_login_29_1"
-          }
-        ]
-      },
-      {
-        "class": "form-field-inline",
-        "fields": [
-          {
-            "type": "password",
-            "name": "public_password",
-            "label": "FORM_PUBLIC_PASSWORD_CONFIGURATION",
-            "nb_cols": 5,
-            "id": "public_password_30_1"
-          },
-          {
-            "type": "button",
-            "class": "btn-ungroup btn-group-sm",
-            "nb_cols": 4,
-            "buttons": [
-              {
-                "type": "button",
-                "name": "test_connection",
-                "label": "FORM_TEST_CONNECTION_CONFIGURATION",
-                "class": "btn-primary",
-                "event": "testPublicConnection()"
-              }
-            ],
-            "id": "undefined_30_2"
-          }
-        ]
-      },
-      {
-        "fields": [
-          {
-            "type": "text",
-            "name": "public_token",
-            "label": "FORM_PUBLIC_TOKEN_CONFIGURATION",
-            "pattern": "^[a-zA-Z0-9-,]+$",
-            "tooltip": {
-              "title": "Jeton de connexion du compte PUBLIC",
-              "content": "Les caractères acceptés sont les chiffres et les lettres<br>ainsi que les caractères '-' et ','.",
-              "container": "body",
-              "html": true,
-              "trigger": "hover"
-            },
-            "nb_cols": 12,
-            "id": "public_token_31_1"
-          }
-        ]
-      },
-      {
-        "fields": [
-          {
-            "type": "text",
-            "name": "private_captcha_key",
-            "label": "FORM_PRIVATE_CAPTCHA_KEY_CONFIGURATION",
-            "nb_cols": 12,
-            "id": "private_captcha_key_32_1"
-          }
-        ]
-      },
-      {
-        "fields": [
-          {
-            "type": "title",
-            "label": "FORM_DATABASE_TITLE_CONFIGURATION",
-            "name": "title_properties_database",
-            "nb_cols": 12,
-            "id": "title_properties_database_34_1"
-          }
-        ]
-      },
-      {
-        "fields": [
-          {
-            "type": "label",
-            "name": "sgbd",
-            "label": "FORM_SGBD_CONFIGURATION",
-            "nb_cols": 12,
-            "id": "sgbd_35_1"
-          }
-        ]
-      },
-      {
-        "fields": [
-          {
-            "type": "label",
-            "name": "server",
-            "label": "FORM_SERVER_CONFIGURATION",
-            "nb_cols": 12,
-            "id": "server_36_1"
-          }
-        ]
-      },
-      {
-        "fields": [
-          {
-            "type": "label",
-            "name": "port",
-            "label": "FORM_PORT_CONFIGURATION",
-            "nb_cols": 12,
-            "id": "port_37_1"
-          }
-        ]
-      },
-      {
-        "fields": [
-          {
-            "type": "label",
-            "name": "database",
-            "label": "FORM_DATABASE_TITLE_CONFIGURATION",
-            "nb_cols": 12,
-            "id": "database_38_1"
-          }
-        ]
-      },
-      {
-        "fields": [
-          {
-            "type": "label",
-            "name": "schema_framework",
-            "label": "FORM_SCHEMA_CONFIGURATION",
-            "nb_cols": 12,
-            "id": "schema_framework_39_1"
-          }
-        ]
-      },
-      {
-        "fields": [
-          {
-            "type": "button",
-            "class": "btn-ungroup btn-group-sm",
-            "nb_cols": 12,
-            "buttons": [
-              {
-                "type": "submit",
-                "name": "form_submit",
-                "label": "FORM_UPDATE",
-                "class": "btn-primary"
-              }
-            ],
-            "id": "undefined_40_1"
-          }
-        ]
-      }
-    ],
-    "tabs": {
-      "position": "top",
-      "list": [
-        {
-          "label": "Tab 0",
-          "elements": [
-            "title_properties",
-            "language",
-            "cookie_lifetime",
-            "max_upload_file_size",
-            "max_execution_time",
-            "max_request_time",
-            "minimum_refresh_period",
-            "forbidden_extension",
-            "rows_per_page",
-            "extract_dir",
-            "date_format",
-            "web_server_name",
-            "vas_home",
-            "title_properties_log",
-            "log_mode",
-            "debug_mode",
-            "log_period",
-            "log_size",
-            "log_directories.Apache",
-            "title_properties_server",
-            "shared_dir",
-            "public_alias",
-            "services_alias",
-            "doc_alias",
-            "ws_data_alias",
-            "title_properties_security",
-            "proxy_check_ssl",
-            "mixed_rights_management",
-            "allow_public_connection",
-            "public_login",
-            "public_password",
-            "test_connection",
-            "public_token",
-            "private_captcha_key",
-            "sign_up",
-            "password_forgotten",
-            "title_properties_database",
-            "sgbd",
-            "server",
-            "port",
-            "database",
-            "schema_framework",
-            "form_submit"
-          ]
+            ]
         }
-      ]
-    }
-  },
-  "insert": {},
-  "display": {},
-  "datasources": {}
+    },
+    "insert": {},
+    "display": {},
+    "datasources": {}
 }

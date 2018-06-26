@@ -397,6 +397,7 @@
                         "name": "definition",
                         "label": "FORM_DEFINITION_VM4MS_VM4MS_LAYER",
                         "nb_cols": 12,
+                        "required": true,
                         "codemirrorOptions": {
                             "runnable": true,
                             "lineNumbers": true,
@@ -708,6 +709,7 @@
                         "name": "definition",
                         "label": "FORM_DEFINITION_VM4MS_VM4MS_LAYER",
                         "nb_cols": 12,
+                        "required": true,
                         "codemirrorOptions": {
                             "runnable": true,
                             "lineNumbers": true,

@@ -20,20 +20,20 @@ vitisApp.on('appMainDrtvLoaded', function () {
             // Supprime le "listener".
             clearListener();
             // Champs de form. à afficher suivant le type de contrôle et le mode du form.
-            var aFormFieldsToConcat = ["controle_type", envSrvc["sMode"] + "_button"];
+            var aFormFieldsToConcat = ["controle_type", "num_dossier", envSrvc["sMode"] + "_button"];
             var oFormFieldsToDisplay, aFormFieldsToDisplay = [];
             if (envSrvc["sMode"] == "search") {
-                oFormFieldsToDisplay = {
-                    "BON FONCTIONNEMENT": ["controle_ss_type", "des_date_control", "des_refus_visite", "cl_avis", "cl_classe_cbf", "cl_date_avis", "cl_auteur_avis", "cl_date_prochain_controle", "cl_facture"],
+                    oFormFieldsToDisplay = {
+                    "BON FONCTIONNEMENT": ["controle_ss_type", "des_date_control", "des_interval_control", "des_refus_visite", "cl_avis", "cl_classe_cbf", "cl_date_avis", "cl_auteur_avis", "cl_date_prochain_controle", "cl_facture"],
                     "CONCEPTION": ["dep_date_depot", "dep_dossier_complet", "cl_avis", "cl_date_avis", "cl_auteur_avis", "cl_date_prochain_controle", "cl_facture"],
-                    "REALISATION": ["des_date_control", "cl_avis", "cl_date_avis", "cl_auteur_avis", "cl_date_prochain_controle", "cl_facture"]
+                    "REALISATION": ["des_date_control", "des_interval_control", "cl_avis", "cl_date_avis", "cl_auteur_avis", "cl_date_prochain_controle", "cl_facture"]
                 };
                 $rootScope["displayFormFields"](aFormFieldsToConcat);
             } else {
                 oFormFieldsToDisplay = {
-                    "BON FONCTIONNEMENT": ["id_controle", "id_installation", "controle_ss_type", "des_date_control", "des_pers_control", "des_agent_control", "des_refus_visite", "des_date_installation", "des_date_recommande", "des_numero_recommande", "des_reamenage_terrain", "des_reamenage_immeuble", "des_real_trvx", "des_anc_ss_accord", "des_collecte_ep", "des_sep_ep_eu", "des_eu_nb_sortie", "des_eu_tes_regards", "des_eu_pente_ecoul", "des_eu_regars_acces", "des_eu_alteration", "des_eu_ecoulement", "des_eu_depot_regard", "des_commentaire", "Element_0", "Element_4", "Element_5", "Element_7", "Element_8"],
-                    "CONCEPTION": ["id_controle", "id_installation", "dep_date_depot", "dep_liste_piece", "dep_dossier_complet", "dep_date_envoi_incomplet", "des_nature_projet", "des_concepteur", "car_surface_dispo_m2", "car_permea", "car_valeur_permea", "car_hydromorphie", "car_prof_app", "car_nappe_fond", "car_terrain_innondable", "car_roche_sol", "car_dist_hab", "car_dist_lim_par", "car_dist_veget", "car_dist_puit", "des_collecte_ep", "des_sep_ep_eu", "Element_0", "Element_2", "Element_3", "Element_5"],
-                    "REALISATION": ["id_controle", "id_installation", "des_date_control", "des_pers_control", "des_agent_control", "des_date_installation", "des_collecte_ep", "des_sep_ep_eu", "des_eu_nb_sortie", "des_eu_tes_regards", "des_eu_pente_ecoul", "Element_0", "Element_5", "Element_8", "des_installateur", "element_7", "des_commentaire"]
+                    "BON FONCTIONNEMENT": ["id_controle", "id_installation", "controle_ss_type", "des_date_control", "des_interval_control", "des_pers_control", "des_agent_control", "des_refus_visite", "des_date_installation", "des_date_recommande", "des_numero_recommande", "des_reamenage_terrain", "des_reamenage_immeuble", "des_real_trvx", "des_anc_ss_accord", "des_collecte_ep", "des_sep_ep_eu", "des_eu_nb_sortie", "des_eu_tes_regards", "des_eu_pente_ecoul", "des_eu_regars_acces", "des_eu_alteration", "des_eu_ecoulement", "des_eu_depot_regard", "des_commentaire", "Element_0", "Element_4", "Element_5", "Element_7", "Element_8"],
+                    "CONCEPTION": ["id_controle", "id_installation", "dep_date_depot", "des_date_control", "dep_liste_piece", "dep_dossier_complet", "dep_date_envoi_incomplet", "des_nature_projet", "des_concepteur", "car_surface_dispo_m2", "car_permea", "car_valeur_permea", "car_hydromorphie", "car_prof_app", "car_nappe_fond", "car_terrain_innondable", "car_roche_sol", "car_dist_hab", "car_dist_lim_par", "car_dist_veget", "car_dist_puit", "des_collecte_ep", "des_sep_ep_eu", "Element_0", "Element_2", "Element_3", "Element_5"],
+                    "REALISATION": ["id_controle", "id_installation", "des_date_control", "des_interval_control", "des_pers_control", "des_agent_control", "des_date_installation", "des_collecte_ep", "des_sep_ep_eu", "des_eu_nb_sortie", "des_eu_tes_regards", "des_eu_pente_ecoul", "Element_0", "Element_5", "Element_8", "des_installateur", "element_7", "des_commentaire"]
                 };
                 if (envSrvc["sMode"] == "insert") {
                     // Sélection auto. de l'installation de travail.
@@ -43,10 +43,17 @@ vitisApp.on('appMainDrtvLoaded', function () {
                     //
                     $rootScope["displayFormFields"](aFormFieldsToConcat);
                 } else {
-                    if (envSrvc["sMode"] == "update")
-                        aFormFieldsToDisplay = oFormFieldsToDisplay[envSrvc["oFormValues"][envSrvc["sFormDefinitionName"]]["controle_type"]["selectedOption"]["value"]];
-                    else
+                    if (envSrvc["sMode"] == "update") {
+                        var sControleType = envSrvc["oFormValues"][envSrvc["sFormDefinitionName"]]["controle_type"];
+                        if (goog.isDefAndNotNull(envSrvc["oFormValues"][envSrvc["sFormDefinitionName"]]["controle_type"]["selectedOption"])) {
+                            if (goog.isDefAndNotNull(envSrvc["oFormValues"][envSrvc["sFormDefinitionName"]]["controle_type"]["selectedOption"]["value"])) {
+                                sControleType = envSrvc["oFormValues"][envSrvc["sFormDefinitionName"]]["controle_type"]["selectedOption"]["value"];
+                            }
+                        }
+                        aFormFieldsToDisplay = oFormFieldsToDisplay[sControleType];
+                    } else {
                         aFormFieldsToDisplay = oFormFieldsToDisplay[envSrvc["oFormValues"][envSrvc["sFormDefinitionName"]]["controle_type"]];
+                    }
                     $rootScope["displayFormFields"](aFormFieldsToDisplay.concat(aFormFieldsToConcat));
                 }
             }
@@ -100,7 +107,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
             var formScope = angular.element("form[name='" + envSrvc["oFormDefinition"][envSrvc["sFormDefinitionName"]]["name"]).scope();
             formScope.$broadcast('$$rebind::refresh');
             formScope.$applyAsync();
-            // 
+            //
             externFunctionSrvc["resizeWin"]();
         }
     };
@@ -150,8 +157,43 @@ vitisApp.on('appMainDrtvLoaded', function () {
                             }
                             oFormValues["parc_sup"] = oParcelle["sup_fiscale"];
                             oFormValues["parc_adresse"] = oParcelle["DVOILIB"];
-                            oFormValues["code_postal"] = oParcelle["ID_COM"];
-                            oFormValues["parc_commune"] = oParcelle["commune"];
+                            //oFormValues["code_postal"] = oParcelle["ID_COM"];
+                            if (goog.isDefAndNotNull(oParcelle["commune"]) && oParcelle["commune"] != "")
+                                oFormValues["parc_commune"] = oParcelle["commune"];
+                            else
+                                oFormValues["parc_commune"] = oFormValues["id_com"]["selectedOption"]["label"];
+
+                            // Charge le code postal de la commune.
+                            if (goog.isDefAndNotNull(propertiesSrvc["anc"]["code_postal"])) {
+                                var sCodePostalSchema = propertiesSrvc["anc"]["code_postal"]["schema"];
+                                var sCodePostalTable = propertiesSrvc["anc"]["code_postal"]["table"];
+                                var sCodePostalColumn = propertiesSrvc["anc"]["code_postal"]["column"];
+                                if ((goog.isDefAndNotNull(sCodePostalSchema) && sCodePostalSchema != "") && (goog.isDefAndNotNull(sCodePostalTable) && sCodePostalTable != "") && (goog.isDefAndNotNull(sCodePostalColumn) && sCodePostalColumn != "")) {
+                                    var oUrlParams = {
+                                        "schema": sCodePostalSchema,
+                                        "table": sCodePostalTable,
+                                        "filter": {
+                                            "relation": "AND",
+                                            "operators": [{
+                                                    "column": "id_com",
+                                                    "compare_operator": "=",
+                                                    "value": oFormValues["id_com"]["selectedOption"]["value"]
+                                                }]
+                                        },
+                                        "attributs": sCodePostalColumn
+                                    };
+                                    ajaxRequest({
+                                        "method": "GET",
+                                        "url": propertiesSrvc["web_server_name"] + "/" + propertiesSrvc["services_alias"] + "/vitis/genericquerys/" + sCodePostalTable,
+                                        "params": oUrlParams,
+                                        "scope": $rootScope,
+                                        "success": function (response) {
+                                            if (response["data"]["status"] != 0)
+                                                oFormValues["code_postal"] = envSrvc["extractWebServiceData"]("genericquerys", response["data"])[0][sCodePostalColumn];
+                                        }
+                                    });
+                                }
+                            }
 
                             // Charge les données du propriétaire de la parcelle.
                             var oUrlParams = {
@@ -233,9 +275,9 @@ vitisApp.on('appMainDrtvLoaded', function () {
                                              oWebServiceBase["customGET"]("v_vmap_parcelle_proprietaire_bati", oUrlParams).then(function (data) {
                                              if (response["data"]["status"] != 0) {
                                              var oBatiParcelle = envSrvc["extractWebServiceData"]("genericquerys", response["data"])[0];
-                                             
+
                                              oFormValues["bati_date_mutation"] = oBatiParcelle[""];
-                                             
+
                                              //oFormValues["cont_zone_autre"] = oParcelle[""];
                                              //oFormValues["cont_zone_urba"] = oParcelle[""];
                                              //oFormValues["cont_zone_anc"] = oParcelle[""];
@@ -482,9 +524,9 @@ vitisApp.on('appMainDrtvLoaded', function () {
             var aFormFieldsToConcat = [envSrvc["sMode"] + "_button"];
             var oFormFieldsToDisplay;
             oFormFieldsToDisplay = {
-                "BON FONCTIONNEMENT": ["vt_primaire", "vt_secondaire", "vt_prim_loc", "vt_prim_ht", "vt_prim_type_extract", "vt_second_loc", "vt_second_ht", "vt_second_diam", "vt_second_type_extract", "Element_0", "Element_1", "Element_2", "vt_commentaire"],
+                "BON FONCTIONNEMENT": ["vt_primaire", "vt_secondaire", "vt_prim_loc", "vt_prim_ht", "vt_prim_type_extract", "vt_second_loc", "vt_second_ht", "vt_prim_diam", "vt_second_diam", "vt_second_type_extract", "vt_prim_type_materiau", "vt_second_type_materiau", "Element_0", "Element_1", "Element_2", "vt_commentaire"],
                 "CONCEPTION": ["vt_primaire", "emplacement_vt_secondaire"],
-                "REALISATION": ["vt_primaire", "vt_secondaire", "vt_prim_loc", "vt_prim_ht", "vt_prim_type_extract", "vt_second_loc", "vt_second_ht", "vt_second_diam", "vt_second_type_extract", "Element_0", "Element_1", "Element_2", "vt_commentaire"]
+                "REALISATION": ["vt_primaire", "vt_secondaire", "vt_prim_loc", "vt_prim_ht", "vt_prim_type_extract", "vt_second_loc", "vt_second_ht", "vt_prim_diam", "vt_second_diam", "vt_second_type_extract", "vt_prim_type_materiau", "vt_second_type_materiau", "Element_0", "Element_1", "Element_2", "vt_commentaire"]
             };
             var aFormFieldsToDisplay = oFormFieldsToDisplay[envSrvc["oFormValues"][envSrvc["sFormDefinitionName"]]["controle_type"]];
             $rootScope["displayFormFields"](aFormFieldsToDisplay.concat(aFormFieldsToConcat));
@@ -513,7 +555,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
         envSrvc["oSelectedObject"]["sorted_dir"] = "ASC";
         envSrvc["oSelectedObject"]["edit_column"] = "editModalSectionForm";
         envSrvc["oSelectedObject"]["show_column"] = "showModalSectionForm";
-        // "sIdField" pour les boutons du mode "update" et "display". 
+        // "sIdField" pour les boutons du mode "update" et "display".
         envSrvc["oSelectedObject"]["sIdField"] = "id_controle";
         // Affiche la liste des prétraitements du contrôle.
         $translate(["GRID_TITLE_ANC_SAISIE_ANC_CONTROLE_CONTROLE_TRAITEMENT"]).then(function (oTranslations) {
@@ -816,7 +858,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
         //
         $log.info("initAncControlConclusionForm");
         var aClassesCbf = ["ABSENCE D'INSTALLATION", "NON CONFORME - DÉFAUT DE SÉCURITÉ SANITAIRE", "NON CONFORME - DÉFAUT DE STRUCTURE OU DE FERMETURE", "NON CONFORME - INSTALLATION IMPLANTÉE À MOINS DE 35M D'UN PUITS DÉCLARÉ ET UTILISÉ", "NON CONFORME - INSTALLATION INCOMPLÈTE", "NON CONFORME - INSTALLATION SIGNIFICATIVEMENT SOUS DIMENSIONNÉE", "NON CONFORME - INSTALLATION PRÉSENTANT DES DYSFONCTIONNEMENTS MAJEURS", "INSTALLATION NECESSITANT DES RECOMMANDATIONS DE TRAVAUX"];
-        // Filtre pour le datasource du champ "Montant du controle" (année en cours et type de contrôle).
+        // Filtre pour le datasource du champ "Montant du contrôle" (année en cours et type de contrôle).
         if (envSrvc["sMode"] == "update") {
             var oClMontantDef = formSrvc["getFormElementDefinition"]("cl_montant", envSrvc["sFormDefinitionName"], envSrvc["oFormDefinition"]);
             var oClMontantDatasource = envSrvc['oFormDefinition']['datasources'][oClMontantDef["datasource"]["datasource_id"]];
@@ -1350,7 +1392,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
                 // 1er affichage ou tri de la liste : maj de la mise en forme.
                 var clearObserver = attrs.$observe("appAdminDescriptionColumn", function (value) {
                     console.log(scope["row"]["entity"][scope["col"]["field"]]);
-                    // Si le champ est vide : supprime l'icône.  
+                    // Si le champ est vide : supprime l'icône.
                     if (scope["row"]["entity"][scope["col"]["field"]] == null || scope["row"]["entity"][scope["col"]["field"]] == "")
                         element[0].className = "";
                     else {
@@ -1397,7 +1439,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
                 // 1er affichage ou tri de la liste : maj de la mise en forme.
                 var clearObserver = attrs.$observe("appAdminSignatureColumn", function (value) {
                     console.log(scope["row"]["entity"][scope["col"]["field"]]);
-                    // Si le champ est vide : supprime l'icône.  
+                    // Si le champ est vide : supprime l'icône.
                     if (scope["row"]["entity"][scope["col"]["field"]] == null || scope["row"]["entity"][scope["col"]["field"]] == "")
                         element[0].className = "";
                     else {
@@ -1432,7 +1474,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
         };
     };
     vitisApp["compileProvider"].directive("appAdminSignatureColumn", vitisApp.appAdminSignatureColumnDrtv);
-    
+
     /**
      * initAncParametrageEntrepriseForm function.
      * Traitements avant l'affichage du formulaire de l'onglet "Entreprise".
@@ -1450,7 +1492,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
         if (goog.isDefAndNotNull(oFormValues["maj_date"]))
             oFormValues["maj_date"] = moment(oFormValues["maj_date"]).format('L');
     };
-    
+
     /**
      * initAncParametrageAdministrateurForm function.
      * Traitements avant l'affichage du formulaire de l'onglet "Entreprise".

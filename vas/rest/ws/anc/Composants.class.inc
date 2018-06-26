@@ -40,7 +40,7 @@ class Composants extends Anc {
         $this->aPath = $aPath;
         $this->aProperties = $properties;
         $this->oConnection = new Connection($this->aValues, $this->aProperties);
-        $this->aSelectedFields = Array( "id_installation", "id_controle", "id_composant", "composant_type", "label", "observations", "feature_style_id", "draw_color", "draw_outline_color", "draw_size", "draw_dash", "draw_symbol", "image", "text_font", "text_color", "text_outline_color", "text_size", "text_outline_size", "text_offset_x", "text_offset_y", "text_rotation", "text_text", "ST_AsGeoJSON(ST_Transform(geom, 4326)) as geom");
+        $this->aSelectedFields = Array( "id_installation", "id_controle", "id_composant", "composant_type", "label", "observations", "size", "rotation", "feature_style_id", "draw_color", "draw_outline_color", "draw_size", "draw_dash", "draw_symbol", "draw_rotation", "image", "text_font", "text_color", "text_outline_color", "text_size", "text_outline_size", "text_offset_x", "text_offset_y", "text_rotation", "text_text", "ST_AsGeoJSON(ST_Transform(geom, 4326)) as geom");
     }
 
     /**

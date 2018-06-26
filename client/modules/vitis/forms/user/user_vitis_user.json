@@ -1,6 +1,5 @@
 {
     "search": {
-
     },
     "update": {
         "name": "vitis_user_update_form",
@@ -10,6 +9,7 @@
         "event": "sendSimpleForm()",
         "afterEvent": "disconnectUserPasswordChanged()",
         "nb_cols": 8,
+        "javascript": true,
         "rows": [
             {
                 "fields": [
@@ -128,6 +128,14 @@
                                 "name": "form_submit",
                                 "label": "FORM_UPDATE",
                                 "class": "btn-primary"
+                            },
+                            {
+                                "type": "button",
+                                "name": "unsubscribe",
+                                "label": "ACCOUNT_UNSUBSCRIBE",
+                                "id": "unsubscribe_button",
+                                "class": "btn-primary hidden",
+                                "event": "unsubscribeAccount()"
                             }
                         ]
                     }
@@ -136,7 +144,67 @@
         ]
     },
     "insert": {
-
     },
-    "display": {}
+    "display": {
+        "name": "vitis_user_update_form",
+        "title": "",
+        "input_size": "xs",
+        "nb_cols": 8,
+        "rows": [
+            {
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "login",
+                        "label": "FORM_LOGIN_USER_USER",
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "name",
+                        "label": "FORM_NAME_USER_USER",
+                        "required": true,
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "email",
+                        "label": "FORM_EMAIL_USER_USER",
+                        "required": false,
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "company",
+                        "label": "FORM_AGENCY_USER_USER",
+                        "required": false,
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "label",
+                        "name": "department",
+                        "label": "FORM_DEPARTMENT_USER_USER",
+                        "required": false,
+                        "nb_cols": 12
+                    }
+                ]
+            }
+        ]
+    }
 }

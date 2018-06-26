@@ -49,7 +49,7 @@ ol.interaction.DragPan = function(opt_options) {
    * @type {ol.EventsConditionType}
    */
   this.condition_ = options.condition ?
-      options.condition : ol.events.condition.noModifierKeys;
+    options.condition : ol.events.condition.noModifierKeys;
 
   /**
    * @private
@@ -151,7 +151,7 @@ ol.interaction.DragPan.handleDownEvent_ = function(mapBrowserEvent) {
       view.setHint(ol.ViewHint.INTERACTING, 1);
     }
     // stop any current animation
-    if (view.getHints()[ol.ViewHint.ANIMATING]) {
+    if (view.getAnimating()) {
       view.setCenter(mapBrowserEvent.frameState.viewState.center);
     }
     if (this.kinetic_) {

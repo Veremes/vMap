@@ -52,9 +52,12 @@ class Mj_Emprises extends Mj {
 				$sFunction.= "st_area2d";
 			break;
 			case "LINE" :
+			case "LINESTRING" :
+			case "MULTILINESTRING" :
 				$sFunction.= "st_length2d";
 			break;
 			case "POLYGON" :
+			case "MULTIPOLYGON" :
 				$sFunction.= "st_area2d";
 			break;
 		}

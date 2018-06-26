@@ -19,7 +19,7 @@
 				ALTER FUNCTION s_vitis.f_add_col(_tbl regclass, _col text, _type regtype, OUT success boolean) OWNER TO u_vitis;
 				CREATE FUNCTION f_add_unique_index(_schema text, _table text, _col text, _name text, OUT success boolean) RETURNS boolean LANGUAGE plpgsql AS $$ BEGIN IF EXISTS (SELECT 1 FROM pg_class c JOIN   pg_namespace n ON n.oid = c.relnamespace WHERE  c.relname  = _name  AND   n.nspname = _schema ) THEN  success := FALSE; ELSE EXECUTE ' CREATE UNIQUE INDEX ' || _name || ' ON ' || _schema || '.' || _table || ' (lower(' || _col || '));' ; success := TRUE; END IF; END $$;
 				ALTER FUNCTION s_vitis.f_add_unique_index(_schema text, _table text, _col text, _name text, OUT success boolean) OWNER TO u_vitis;
-				CREATE FUNCTION s2hms(integer) RETURNS character varying LANGUAGE plpgsql AS $_$ declare nDureeSeconde ALIAS for $1; sDureeChaine varchar(10) ; nHeures int ; nMinutes int ; nSecondes int ; nHeures2 varchar(2) ; nMinutes2 varchar(2) ; nSecondes2 varchar(2) ; BEGIN nHeures := nDureeSeconde / 3600 ; nMinutes := (nDureeSeconde % 3600) / 60 ; nSecondes := nDureeSeconde % 60 ; if nHeures < 10 then nHeures2:= 0 || cast(nHeures as text) ; else nHeures2:= cast(nHeures as text)  ; end if; if nMinutes < 10 then nMinutes2:= 0 || cast(nMinutes as text) ; else nMinutes2:= cast(nMinutes as text)  ; end if; if nSecondes < 10 then nSecondes2:= 0 || cast(nSecondes as text) ; else nSecondes2:= cast(nSecondes as text)  ; end if; sDureeChaine := nHeures2 || ':' || nMinutes2 || ':' || nSecondes2; RETURN sDureeChaine; END; $_$;
+				CREATE FUNCTION s2hms(integer) RETURNS character varying LANGUAGE plpgsql AS $_$ declare nDureeSeconde ALIAS for $1; sDureeChaine varchar(10) ; nHeures int ; nMinutes int ; nSecondes int ; nHeures2 varchar(2) ; nMinutes2 varchar(2) ; nSecondes2 varchar(2) ; BEGIN nHeures := nDureeSeconde / 3600 ; nMinutes := (nDureeSeconde %% 3600) / 60 ; nSecondes := nDureeSeconde %% 60 ; if nHeures < 10 then nHeures2:= 0 || cast(nHeures as text) ; else nHeures2:= cast(nHeures as text)  ; end if; if nMinutes < 10 then nMinutes2:= 0 || cast(nMinutes as text) ; else nMinutes2:= cast(nMinutes as text)  ; end if; if nSecondes < 10 then nSecondes2:= 0 || cast(nSecondes as text) ; else nSecondes2:= cast(nSecondes as text)  ; end if; sDureeChaine := nHeures2 || ':' || nMinutes2 || ':' || nSecondes2; RETURN sDureeChaine; END; $_$;
 				ALTER FUNCTION s_vitis.s2hms(integer) OWNER TO u_vitis;
 				CREATE TABLE "user" (user_id integer NOT NULL,login character varying(50),name character varying(80),ip_constraint character varying(255), email character varying(100), company character varying(80),department character varying(80),last_connection timestamp without time zone, domain_id integer,restriction text);
 				ALTER TABLE "user" OWNER TO u_vitis;
@@ -568,7 +568,6 @@
 			<version>2016.02.00</version>
 			<code>
 				<![CDATA[ 
-				GRANT SELECT ON TABLE pg_authid TO vitis_user;
 				-- Frédéric le 15/07/2016 15:21
 				UPDATE s_vitis.vm_table_button SET event = 'deleteUsers()' WHERE tab_id = (select tab_id from s_vitis.vm_tab where name = 'vitis_users') AND label_id = 'vitis_6';
 				]]>
@@ -723,6 +722,67 @@
 		<query>
 			<type>update</type>
 			<version>2017.02.01</version>
+			<code>
+				<![CDATA[ 
+				]]>
+			</code>
+		</query>
+		<query>
+			<type>update</type>
+			<version>2017.02.02</version>
+			<code>
+				<![CDATA[ 
+				]]>
+			</code>
+		</query>
+		<query>
+			<type>update</type>
+			<version>2017.02.03</version>
+			<code>
+				<![CDATA[ 
+				]]>
+			</code>
+		</query>
+		<query>
+			<type>update</type>
+			<version>2017.02.04</version>
+			<code>
+				<![CDATA[ 
+				]]>
+			</code>
+		</query>
+		<query>
+			<type>update</type>
+			<version>2017.03.00</version>
+			<code>
+				<![CDATA[ 
+				]]>
+			</code>
+		</query>
+		<query>
+			<type>update</type>
+			<version>2017.04.00</version>
+			<code>
+				<![CDATA[
+					ALTER FUNCTION s_vitis.is_vitis_admin() OWNER TO u_vitis;
+				]]>
+			</code>
+		</query>
+		<query>
+			<type>update</type>
+			<version>2018.01.00</version>
+			<code>
+				<![CDATA[ 
+					ALTER TABLE s_vitis."user" ADD CONSTRAINT check_u_vitis CHECK (name::text != 'u_vitis'::text)
+					ALTER TABLE s_vitis."user" ADD CONSTRAINT check_postgres CHECK (name::text != 'postgres'::text)
+					-- Armand 06/02/2018 15:31
+					ALTER TABLE s_vitis.domain ALTER COLUMN password TYPE character varying(255);
+				]]>
+			</code>
+		</query>
+		<query>
+			<type>update</type>
+			<version>2018.02.00</version>
 			<code>
 				<![CDATA[ 
 				]]>

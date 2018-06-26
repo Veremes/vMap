@@ -16,7 +16,7 @@
                         "required":false,
                         "nb_cols":12,
                         "id":"photos_f_1_1",
-                        "displayOnly":false
+                        "displayOnly":true
                     }
                 ]
             },
@@ -29,7 +29,8 @@
                         "disabled":false,
                         "required":false,
                         "nb_cols":12,
-                        "id":"fiche_f_2_1"
+                        "id":"fiche_f_2_1",
+                        "displayOnly":true
                     }
                 ]
             },
@@ -39,10 +40,9 @@
                         "type":"file_wsdata",
                         "name":"rapport_f",
                         "label":"Rapport validé",
-                        "disabled":false,
-                        "required":false,
                         "nb_cols":12,
-                        "id":"rapport_f_3_1"
+                        "id":"rapport_f_3_1",
+                        "displayOnly":true
                     }
                 ]
             },
@@ -51,11 +51,12 @@
                     {
                         "type":"file_wsdata",
                         "name":"schema_f",
-                        "label":"Schema de principe",
+                        "label":"Schéma de principe",
                         "disabled":false,
                         "required":false,
                         "nb_cols":12,
-                        "id":"schema_f_4_1"
+                        "id":"schema_f_4_1",
+                        "displayOnly":true
                     }
                 ]
             },
@@ -68,7 +69,8 @@
                         "disabled":false,
                         "required":false,
                         "nb_cols":12,
-                        "id":"documents_f_5_1"
+                        "id":"documents_f_5_1",
+                        "displayOnly":true
                     }
                 ]
             },
@@ -81,7 +83,8 @@
                         "disabled":false,
                         "required":false,
                         "nb_cols":12,
-                        "id":"plan_f_6_1"
+                        "id":"plan_f_6_1",
+                        "displayOnly":true
                     }
                 ]
             },
@@ -209,7 +212,7 @@
                     {
                         "type":"file_wsdata",
                         "name":"schema_f",
-                        "label":"Schema de principe",
+                        "label":"Schéma de principe",
                         "disabled":false,
                         "required":false,
                         "nb_cols":12,

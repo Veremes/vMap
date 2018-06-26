@@ -16,60 +16,59 @@ require_once __DIR__ . '/../../class/vitis_lib/Connection.class.inc';
  */
 class Section extends Cadastre {
 
-	public $oError;
+    public $oError;
 
-	/**
-	 * construct
-	 * @param type $aPath url of the request
-	 * @param type $aValues parameters of the request
-	 * @param type $properties properties
-	 * @param type $oConnection connection object
-	 */
-	function __construct($aPath, $aValues, $properties, $oConnection) {
-		$this->aValues = $aValues;
-		$this->aPath = $aPath;
-		$this->aProperties = $properties;
-		$this->oConnection = $oConnection;
-		$this->aSelectedFields = Array("id_com", "id_sec", "code_com", "commune", "section", "pre", "idu", "tex", "texte", "geom");
-	}
+    /**
+     * construct
+     * @param type $aPath url of the request
+     * @param type $aValues parameters of the request
+     * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
+     * @param type $oConnection connection object
+     * @param type $oConnection connection object
+     */
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
+        $this->aSelectedFields = Array("id_com", "id_sec", "code_com", "commune", "section", "pre", "idu", "tex", "texte", "geom");
+    }
 
-	/**
-	 * @SWG\Get(path="/sections/{id_sec}", 
-	 *   tags={"Section"},
-	 *   summary="Get Section",
-	 *   description="Request to get Section by id",
-	 *   operationId="GET",
-	 *   produces={"application/xml", "application/json", "application/x-vm-json"},
-	 *   @SWG\Parameter(
-	 *     name="token",
-	 *     in="query",
-	 *     description="user token",
-	 *     required=true,
-	 *     type="string"
-	 *   ),
-	 *   @SWG\Parameter(
-	 *     name="id_sec",
-	 *     in="path",
-	 *     description="section id",
-	 *     required=true,
-	 *     type="integer",
-	 *   format="int32"
-	 *   ),
-	 *   @SWG\Response(
-	 *         response=200,
-	 *         description="Poprerties Response",
-	 *         @SWG\Schema(ref="#/definitions/sections")
-	 *     )
-	 *  )
-	 */
+    /**
+     * @SWG\Get(path="/sections/{id_sec}", 
+     *   tags={"Section"},
+     *   summary="Get Section",
+     *   description="Request to get Section by id",
+     *   operationId="GET",
+     *   produces={"application/xml", "application/json", "application/x-vm-json"},
+     *   @SWG\Parameter(
+     *     name="token",
+     *     in="query",
+     *     description="user token",
+     *     required=true,
+     *     type="string"
+     *   ),
+     *   @SWG\Parameter(
+     *     name="id_sec",
+     *     in="path",
+     *     description="section id",
+     *     required=true,
+     *     type="integer",
+     *   format="int32"
+     *   ),
+     *   @SWG\Response(
+     *         response=200,
+     *         description="Poprerties Response",
+     *         @SWG\Schema(ref="#/definitions/sections")
+     *     )
+     *  )
+     */
 
-	/**
-	 * get informations about Section
-	 */
-	function GET() {
-		require __DIR__ . "/../vitis/" . $this->sRessourcesFile;
-		$this->aFields = $this->getFields('public', $this->aProperties['cadastre']['views']['section'], 'id_sec');
-	}
+    /**
+     * get informations about Section
+     */
+    function GET() {
+        require __DIR__ . "/../vitis/" . $this->sRessourcesFile;
+        $this->aFields = $this->getFields('public', $this->aProperties['cadastre']['views']['section'], 'id_sec');
+    }
 
 }
 

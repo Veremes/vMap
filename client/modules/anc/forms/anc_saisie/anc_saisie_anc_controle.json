@@ -72,6 +72,15 @@
                         "required":true,
                         "nb_cols":6,
                         "id":"des_date_control_5_1"
+                    },
+                    {
+                        "type":"label",
+                        "name":"des_interval_control",
+                        "label":"Intervalle avec le prochain contrôle",
+                        "disabled":false,
+                        "required":true,
+                        "nb_cols":6,
+                        "id":"des_interval_control_5_1"
                     }
                 ]
             },
@@ -89,7 +98,7 @@
                     {
                         "type":"label",
                         "name":"des_agent_control",
-                        "label":"Nom du controleur",
+                        "label":"Nom du contrôleur",
                         "disabled":false,
                         "required":false,
                         "nb_cols":4,
@@ -573,7 +582,7 @@
             {
                 "fields":[
                     {
-                        "type":"label",
+                        "type":"tinymce",
                         "name":"des_commentaire",
                         "label":"Commentaires",
                         "nb_cols":12,
@@ -613,6 +622,7 @@
                         "controle_type",
                         "controle_ss_type",
                         "des_date_control",
+                        "des_interval_control",
                         "des_pers_control",
                         "des_agent_control",
                         "des_refus_visite",
@@ -676,6 +686,13 @@
         "rows":[
             {
                 "fields":[
+                    {
+                        "type":"text",
+                        "name":"num_dossier",
+                        "label":"nº installation",
+                        "nb_cols":4,
+                        "visible": true
+                    },
                     {
                         "type":"select",
                         "name":"id_installation",
@@ -858,13 +875,6 @@
             {
                 "fields":[
                     {
-                        "type":"date",
-                        "name":"cl_date_prochain_controle",
-                        "label":"Date du prochain contrôle",
-                        "nb_cols":6,
-                        "id":"Element_12_1_13"
-                    },
-                    {
                         "type":"radio",
                         "name":"cl_facture",
                         "label":"A Facturer",
@@ -987,7 +997,7 @@
                     {
                         "type":"select",
                         "name":"controle_type",
-                        "label":"Type de controle",
+                        "label":"Type de contrôle",
                         "required":false,
                         "nb_cols":6,
                         "id":"controle_type_3_1",
@@ -1005,7 +1015,7 @@
                     {
                         "type":"select",
                         "name":"controle_ss_type",
-                        "label":"Sous type de controle",
+                        "label":"Sous type de contrôle",
                         "required":false,
                         "nb_cols":6,
                         "id":"controle_ss_type_4_1",
@@ -1032,6 +1042,24 @@
                         "nb_cols":6,
                         "id":"des_date_control_5_1",
                         "required":true
+                    },
+                    {
+                        "type":"select",
+                        "name":"des_interval_control",
+                        "label":"Intervalle avec le prochain contrôle",
+                        "required":false,
+                        "nb_cols":6,
+                        "id":"des_interval_control_45_1",
+                        "datasource":{
+                            "datasource_id":"datasource_4",
+                            "sort_order":"ASC",
+                            "distinct":"true",
+                            "label_key":"alias",
+                            "order_by":"alias",
+                            "id_key":"valeur",
+                            "attributs":"valeur|alias"
+                        },
+                        "visible": false
                     }
                 ]
             },
@@ -1050,7 +1078,7 @@
                     {
                         "type":"select",
                         "name":"des_agent_control",
-                        "label":"Nom du controleur",
+                        "label":"Nom du contrôleur",
                         "required":false,
                         "nb_cols":4,
                         "id":"des_agent_control_8_1",
@@ -1250,7 +1278,7 @@
                         "type":"select",
                         "name":"des_concepteur",
                         "label":"Concepteur du projet",
-                        "required":false,
+                        "required":true,
                         "nb_cols":6,
                         "id":"des_concepteur_19_1",
                         "datasource":{
@@ -1282,7 +1310,7 @@
             {
                 "fields":[
                     {
-                        "type":"text",
+                        "type":"number",
                         "name":"car_surface_dispo_m2",
                         "label":"Surface disponible pour l'installation (en m²)",
                         "disabled":false,
@@ -1318,7 +1346,7 @@
                         "type":"text",
                         "name":"car_valeur_permea",
                         "label":"Valeur de Perméabilité (k en mm/h)",
-                        "required":false,
+                        "required":true,
                         "nb_cols":6,
                         "id":"car_valeur_permea_23_1",
                         "visible": false
@@ -1351,7 +1379,7 @@
                         "name":"car_prof_app",
                         "label":"Profondeur d’apparition en cm",
                         "disabled":false,
-                        "required":false,
+                        "required":true,
                         "nb_cols":6,
                         "id":"car_prof_app_25_1",
                         "visible": false
@@ -1889,6 +1917,7 @@
                         "controle_type",
                         "controle_ss_type",
                         "des_date_control",
+                        "des_interval_control",
                         "des_pers_control",
                         "des_agent_control",
                         "des_refus_visite",
@@ -2015,7 +2044,7 @@
                     {
                         "type":"select",
                         "name":"controle_ss_type",
-                        "label":"Sous type de controle",
+                        "label":"Sous type de contrôle",
                         "required":false,
                         "nb_cols":6,
                         "id":"controle_ss_type_4_1",
@@ -2042,6 +2071,24 @@
                         "nb_cols":6,
                         "id":"des_date_control_5_1",
                         "required":true
+                    },
+                    {
+                        "type":"select",
+                        "name":"des_interval_control",
+                        "label":"Intervalle avec le prochain contrôle",
+                        "required":false,
+                        "nb_cols":6,
+                        "id":"des_interval_control_45_1",
+                        "datasource":{
+                            "datasource_id":"datasource_4",
+                            "sort_order":"ASC",
+                            "distinct":"true",
+                            "label_key":"alias",
+                            "order_by":"alias",
+                            "id_key":"valeur",
+                            "attributs":"valeur|alias"
+                        },
+                        "visible": false
                     }
                 ]
             },
@@ -2060,7 +2107,7 @@
                     {
                         "type":"select",
                         "name":"des_agent_control",
-                        "label":"Nom du controleur",
+                        "label":"Nom du contrôleur",
                         "required":false,
                         "nb_cols":4,
                         "id":"des_agent_control_8_1",
@@ -2264,7 +2311,7 @@
                         "type":"select",
                         "name":"des_concepteur",
                         "label":"Concepteur du projet",
-                        "required":false,
+                        "required":true,
                         "nb_cols":6,
                         "id":"des_concepteur_19_1",
                         "datasource":{
@@ -2296,7 +2343,7 @@
             {
                 "fields":[
                     {
-                        "type":"text",
+                        "type":"number",
                         "name":"car_surface_dispo_m2",
                         "label":"Surface disponible pour l'installation (en m²)",
                         "disabled":false,
@@ -2333,7 +2380,7 @@
                         "name":"car_valeur_permea",
                         "label":"Valeur de Perméabilité (k en mm/h)",
                         "disabled":false,
-                        "required":false,
+                        "required":true,
                         "nb_cols":6,
                         "id":"car_valeur_permea_23_1",
                         "visible": false
@@ -2366,7 +2413,7 @@
                         "name":"car_prof_app",
                         "label":"Profondeur d’apparition en cm",
                         "disabled":false,
-                        "required":false,
+                        "required":true,
                         "nb_cols":6,
                         "id":"car_prof_app_25_1",
                         "visible": false
@@ -2897,6 +2944,7 @@
                         "controle_type",
                         "controle_ss_type",
                         "des_date_control",
+                        "des_interval_control",
                         "des_pers_control",
                         "des_agent_control",
                         "des_refus_visite",

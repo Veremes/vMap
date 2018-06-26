@@ -73,7 +73,7 @@ nsVmap.nsToolsManager.Print.prototype.printDirective = function () {
  * @constructor
  * @ngInject
  */
-nsVmap.nsToolsManager.Print.prototype.printController = function ($timeout, $compile, $scope) {
+nsVmap.nsToolsManager.Print.prototype.printController = function ($timeout, $compile, $scope, $q) {
     oVmap.log("nsVmap.nsToolsManager.Print.prototype.printController");
 
     var this_ = this;
@@ -96,17 +96,32 @@ nsVmap.nsToolsManager.Print.prototype.printController = function ($timeout, $com
     /**
      * @private
      */
+    this.$q_ = $q;
+
+    /**
+     * @public
+     */
     $scope['modelIndex'] = 0;
 
     /**
-     * Prints parameters
+     * @public
      */
-    this['properties'];
+    $scope['printstyle_id'] = "";
 
     /**
-     * Print model used
+     * Prints models
      */
-    this['model'];
+    this['models'];
+
+    /**
+     * Prints styles
+     */
+    this['printStyles'] = [];
+
+    /**
+     * Print selectedModel used
+     */
+    this['selectedModel'];
 
     /**
      * Print zone resolution
@@ -160,15 +175,22 @@ nsVmap.nsToolsManager.Print.prototype.printController = function ($timeout, $com
      */
     this.printBox_ = new nsVmap.nsToolsManager.PrintBox();
 
-    // Charge les paramètres d'impression
-    this.loadPrintProperties();
-
     // mise à jour de l'échelle dans le forulaire d'impression lors d'un mouvement sur la carte
     this.listenScaleChanges();
 
     $('#print-select-btn').click(function () {
-        if ($('#print-select-btn').hasClass('active'))
-            this_.loadModelParmas($scope['modelIndex']);
+        if ($('#print-select-btn').hasClass('active')) {
+            // Charge les paramètres d'impression
+            this_.loadPrintProperties().then(function () {
+                if (this_['models'].length > 0) {
+                    if (!goog.isDefAndNotNull(this_['models'][$scope['modelIndex']]) || $scope['modelIndex'] === 0) {
+                        $scope['modelIndex'] = "0";
+                    }
+                    this_['printStyles'] = [];
+                    this_.loadModelParmas($scope['modelIndex']);
+                }
+            });
+        }
     });
 
     // Supprime la zone d'impression lors d'un toggleOutTools
@@ -180,7 +202,7 @@ nsVmap.nsToolsManager.Print.prototype.printController = function ($timeout, $com
 };
 
 /**
- * Load the print properties
+ * Load the print models
  * @returns {undefined}
  * @private
  */
@@ -188,8 +210,8 @@ nsVmap.nsToolsManager.Print.prototype.printController.prototype.loadPrintPropert
     oVmap.log('nsVmap.nsToolsManager.Print.printController.loadPrintProperties');
 
     var this_ = this;
+    var deferred = this.$q_.defer();
 
-    showAjaxLoader();
     ajaxRequest({
         'method': 'GET',
         'url': oVmap['properties']['api_url'] + '/vmap/userprinttemplates',
@@ -201,20 +223,23 @@ nsVmap.nsToolsManager.Print.prototype.printController.prototype.loadPrintPropert
         },
         'scope': this.$scope_,
         'success': function (response) {
-            hideAjaxLoader();
+
+            this_['models'] = [];
 
             // Vérifie si le fichier a bien été chargé, donne un modèle par défaut en cas d'erreur
             if (goog.isDefAndNotNull(response['data'])) {
                 if (goog.isArray(response['data']['userprinttemplates'])) {
                     if (response['data']['userprinttemplates'].length > 0) {
-                        this_['properties'] = {
-                            'models': response['data']['userprinttemplates']
-                        };
+                        this_['models'] = response['data']['userprinttemplates'];
+                        this_.$scope_['printstyle_id'] = null;
                     }
                 }
             }
+
+            deferred.resolve();
         }
     });
+    return deferred.promise;
 };
 
 /**
@@ -254,22 +279,25 @@ nsVmap.nsToolsManager.Print.prototype.printController.prototype.unlistenScaleCha
 };
 
 /**
- * Load the model params
- * @param {number} modelIndex index in properties.models
+ * Load the selectedModel params
+ * @param {number} modelIndex index in models
  * @export
  */
 nsVmap.nsToolsManager.Print.prototype.printController.prototype.loadModelParmas = function (modelIndex) {
     oVmap.log('nsVmap.nsToolsManager.Print.printController.loadModelParmas');
 
     // Charge le modèle
-    this['model'] = this['properties']['models'][modelIndex];
+    this['selectedModel'] = this['models'][modelIndex];
 
     // Charge le template
-    this.setTemplate(this['model'], this.loadModelParmas2);
+    this.setTemplate(this['selectedModel'], this.loadModelParmas2);
+
+    // Charge la liste des styles disponibles
+    this['printStyles'] = this['selectedModel']['printstyles'];
 };
 
 /**
- * Load the model params 2
+ * Load the selectedModel params 2
  * @private
  */
 nsVmap.nsToolsManager.Print.prototype.printController.prototype.loadModelParmas2 = function () {
@@ -409,21 +437,27 @@ nsVmap.nsToolsManager.Print.prototype.printController.prototype.prepareAndLaunch
 
     // Prépare scope
     var scope = {};
-    for (var i = 0; i < this['model']['variables'].length; i++)
-        scope[this['model']['variables'][i]['name']] = this['model']['variables'][i]['value'];
+    for (var i = 0; i < this['selectedModel']['variables'].length; i++)
+        scope[this['selectedModel']['variables'][i]['name']] = this['selectedModel']['variables'][i]['value'];
 
     // Prépare extent
     var extent = this.printBox_.getExtent();
 
     // templateId
-    var templateId = this['model']['printtemplate_id'];
+    var templateId = this['selectedModel']['printtemplate_id'];
+
+    var aLocationOverlayFeatures = oVmap.getMap().getLocationOverlayFeatures().getArray();
+    var aPopupOverlayFeatures = oVmap.getMap().getPopupOverlayFeatures().getArray();
+    var aSelectionOverlayFeatures = oVmap.getMap().getSelectionOverlayFeatures().getArray();
 
     // Lance l'impression
     var returnPrint = this.print({
         scope: scope,
         extent: extent,
         templateId: templateId,
-        resolutionCoeff: this['dpi']
+        printStyleId: this.$scope_['printstyle_id'],
+        resolutionCoeff: this['dpi'],
+        features: goog.array.concat(aLocationOverlayFeatures, aPopupOverlayFeatures, aSelectionOverlayFeatures)
     });
 
     if (returnPrint === 1) {
@@ -439,6 +473,7 @@ nsVmap.nsToolsManager.Print.prototype.printController.prototype.prepareAndLaunch
  * @param {ol.Extent|undefined} opt_options.extent
  * @param {string|undefined} opt_options.mapId
  * @param {string} opt_options.templateId
+ * @param {string} opt_options.printStyleId
  * @param {number|undefined} opt_options.resolutionCoeff
  * @param {array<ol.Feature>|undefined} opt_options.features feature to zoom on
  * @param {number|undefined} opt_options.featuresZoom
@@ -455,9 +490,23 @@ nsVmap.nsToolsManager.Print.prototype.printController.prototype.print = function
         return 0;
     }
 
+    // Récupère la date
+    var today = new Date();
+    var dd = today.getDate();
+    var mm = today.getMonth() + 1; //January is 0!
+    var yyyy = today.getFullYear();
+    if (dd < 10) {
+        dd = '0' + dd;
+    }
+    if (mm < 10) {
+        mm = '0' + mm;
+    }
+    today = dd + '/' + mm + '/' + yyyy;
+
     // Valeurs par défaut
     var resolutionCoeff = goog.isDefAndNotNull(opt_options.resolutionCoeff) ? opt_options.resolutionCoeff : 1;
     var templateId = opt_options.templateId;
+    var printStyleId = opt_options.printStyleId;
 
     // Set includesJSON
     var includesJson = JSON.stringify([{
@@ -466,8 +515,9 @@ nsVmap.nsToolsManager.Print.prototype.printController.prototype.print = function
         }]);
 
     // Set scope
-    var scope = goog.isDefAndNotNull(opt_options.scope) ? opt_options.scope : {};
-    var sScope = JSON.stringify(scope);
+    var oPrintScope = goog.isDefAndNotNull(opt_options.scope) ? opt_options.scope : {};
+    oPrintScope['date'] = goog.isDefAndNotNull(oPrintScope['date']) ? oPrintScope['date'] : today;
+    var sScope = JSON.stringify(oPrintScope);
 
     // Set mapId/mapJson
     var sMapId;
@@ -603,49 +653,63 @@ nsVmap.nsToolsManager.Print.prototype.printController.prototype.print = function
             }
             var mapsJson = JSON.stringify(oMapsJson);
 
-            ajaxRequest({
-                'method': 'POST',
-                'url': oVmap['properties']['api_url'] + '/vmap/printtemplateservices',
-                'headers': {
-                    'Accept': 'application/x-vm-json'
-                },
-                'data': {
-                    'printtemplate_id': templateId,
-                    'format': sFormat,
-                    'orientation': sOrientation,
-                    'includes_json': includesJson,
-                    'maps_json': mapsJson,
-                    'scope_json': sScope
-                },
-                'scope': this_.$scope_,
-                'timeout': 120000,
-                'success': function (response) {
+            // Récupère les infos de l'utilisateur
+            this_.getUserInfos_().then(function (oUserInfos) {
 
-                    var bError = false;
-                    if (!goog.isDefAndNotNull(response['data'])) {
-                        bError = true;
-                    } else if (!goog.isDefAndNotNull(response['data']['printtemplateservices'])) {
-                        bError = true;
-                    } else if (!goog.isDefAndNotNull(response['data']['printtemplateservices']['image'])) {
-                        bError = true;
-                    } else if (response['data']['status'] !== 1) {
-                        bError = true;
+                // Merge les infos utilisateur
+                var oPrintScope = JSON.parse(sScope);
+                for (var key in oUserInfos) {
+                    if (!goog.isDef(oPrintScope['user_' + key])) {
+                        oPrintScope['user_' + key] = oUserInfos[key];
                     }
-                    if (bError) {
+                }
+                sScope = JSON.stringify(oPrintScope);
+
+                ajaxRequest({
+                    'method': 'POST',
+                    'url': oVmap['properties']['api_url'] + '/vmap/printtemplateservices',
+                    'headers': {
+                        'Accept': 'application/x-vm-json'
+                    },
+                    'data': {
+                        'printtemplate_id': templateId,
+                        'printstyle_id': printStyleId,
+                        'format': sFormat,
+                        'orientation': sOrientation,
+                        'includes_json': includesJson,
+                        'maps_json': mapsJson,
+                        'scope_json': sScope
+                    },
+                    'scope': this_.$scope_,
+                    'timeout': 120000,
+                    'success': function (response) {
+
+                        var bError = false;
+                        if (!goog.isDefAndNotNull(response['data'])) {
+                            bError = true;
+                        } else if (!goog.isDefAndNotNull(response['data']['printtemplateservices'])) {
+                            bError = true;
+                        } else if (!goog.isDefAndNotNull(response['data']['printtemplateservices']['image'])) {
+                            bError = true;
+                        } else if (response['data']['status'] !== 1) {
+                            bError = true;
+                        }
+                        if (bError) {
+                            $.notify('Une erreur est survenue lors de l\'impression', 'error');
+                            printWindow.document.write('<div style="width: 100%; text-align: center; margin-top: 80px">Une erreur est survenue lors de l\'impression</div>');
+                            console.error("response: ", response);
+                            return 0;
+                        }
+
+                        $.notify('Impression réussie', 'success');
+                        printWindow.location.href = response['data']['printtemplateservices']['image'];
+                    },
+                    'error': function (response) {
+                        console.error(response);
                         $.notify('Une erreur est survenue lors de l\'impression', 'error');
                         printWindow.document.write('<div style="width: 100%; text-align: center; margin-top: 80px">Une erreur est survenue lors de l\'impression</div>');
-                        console.error("response: ", response);
-                        return 0;
                     }
-
-                    $.notify('Impression réussie', 'success');
-                    printWindow.location.href = response['data']['printtemplateservices']['image'];
-                },
-                'error': function (response) {
-                    console.error(response);
-                    $.notify('Une erreur est survenue lors de l\'impression', 'error');
-                    printWindow.document.write('<div style="width: 100%; text-align: center; margin-top: 80px">Une erreur est survenue lors de l\'impression</div>');
-                }
+                });
             });
         },
         'error': function (response) {
@@ -722,6 +786,36 @@ nsVmap.nsToolsManager.Print.prototype.printController.prototype.getLegendTemplat
     sTemplate = sTemplate.replace(/"/g, '\\"');
 
     return sTemplate;
+};
+
+/**
+ * Get the user infos in a promise
+ * @returns {defer.promise}
+ * @private
+ */
+nsVmap.nsToolsManager.Print.prototype.printController.prototype.getUserInfos_ = function () {
+    oVmap.log("nsVmap.nsToolsManager.Print.prototype.printController.prototype.getUserInfos_");
+
+    var deferred = this.$q_.defer();
+
+    ajaxRequest({
+        'method': 'GET',
+        'url': oVmap['properties']['api_url'] + '/vitis/users/' + sessionStorage['user_id'],
+        'headers': {
+            'Accept': 'application/x-vm-json'
+        },
+        'scope': this.$scope_,
+        'success': function (response) {
+            if (goog.isDefAndNotNull(response['data'])) {
+                if (goog.isDefAndNotNull(response['data']['data'])) {
+                    if (goog.isDefAndNotNull(response['data']['data'][0])) {
+                        deferred.resolve(response['data']['data'][0]);
+                    }
+                }
+            }
+        }
+    });
+    return deferred.promise;
 };
 
 // Définit la directive et le controller

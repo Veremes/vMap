@@ -199,7 +199,7 @@
                     {
                         "type":"select",
                         "name":"wmts_layer",
-                        "label":"FORM_LAYER_VMAP_MAP_LAYER",
+                        "label":"FORM_WMTS_LAYER_VMAP_MAP_LAYER",
                         "nb_cols":6,
                         "visible": false,
                         "required": true,
@@ -319,6 +319,29 @@
                             ]
                         },
                         "default_value": false
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "radio",
+                        "name": "is_bo_filtered",
+                        "label": "FORM_BOFILTERED_VMAP_MAP_LAYER",
+                        "nb_cols": 6,
+                        "options": {
+                            "choices": [
+                                {
+                                    "label": "Oui",
+                                    "value": true
+                                },
+                                {
+                                    "label": "Non",
+                                    "value": false
+                                }
+                            ]
+                        },
+                        "default_value": true
                     }
                 ]
             },
@@ -481,7 +504,7 @@
                     {
                         "type":"select",
                         "name":"wmts_layer",
-                        "label":"FORM_LAYER_VMAP_MAP_LAYER",
+                        "label":"FORM_WMTS_LAYER_VMAP_MAP_LAYER",
                         "nb_cols":6,
                         "visible": false,
                         "required": true,
@@ -607,6 +630,30 @@
                 ]
             },
             {
+                "fields": [
+                    {
+                        "type": "radio",
+                        "name": "is_bo_filtered",
+                        "label": "FORM_BOFILTERED_VMAP_MAP_LAYER",
+                        "nb_cols": 6,
+                        "options": {
+                            "choices": [
+                                {
+                                    "label": "Oui",
+                                    "value": true
+                                },
+                                {
+                                    "label": "Non",
+                                    "value": false
+                                }
+                            ]
+                        },
+                        "default_value": true,
+                        "visible": false
+                    }
+                ]
+            },
+            {
                 "fields":[
                     {
                         "type":"button",
@@ -704,7 +751,7 @@
                     {
                         "type":"label",
                         "name":"wmts_layer",
-                        "label":"FORM_LAYER_VMAP_MAP_LAYER",
+                        "label":"FORM_WMTS_LAYER_VMAP_MAP_LAYER",
                         "nb_cols":6
                     }
                 ]
@@ -780,6 +827,16 @@
                         "type":"label",
                         "name":"is_filtered",
                         "label":"FORM_FILTERED_VMAP_MAP_LAYER",
+                        "nb_cols":6
+                    }
+                ]
+            },
+            {
+                "fields":[
+                    {
+                        "type":"label",
+                        "name":"is_bo_filtered",
+                        "label":"FORM_BOFILTERED_VMAP_MAP_LAYER",
                         "nb_cols":6
                     }
                 ]

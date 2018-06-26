@@ -216,10 +216,10 @@ and open the template in the editor.
     border: 1px solid #eee;
     height: auto;
 }
-
+/*
 .CodeMirror-hscrollbar{
     overflow-x: hidden;
-}
+}*/
 
 // Classe de repérage sur visualizer par rapport aux arbres
 .hover-in-tree{
@@ -244,8 +244,141 @@ and open the template in the editor.
     background-color: rgba(255,0,0,0.5); 
 }
 
+/*th, td{
+    width:75px;
+    font-size:11px
+}*/
+
+/*td:not(:first-child){
+    padding-left: 31px;
+    padding-top: 5px;
+}*/
+
+/*th:not(:first-child){
+    //transform: rotateZ(-90deg);
+    padding: 0px;
+    height: 60px;
+}*/
+
+/*td:first-child{
+    padding-left: 5px;
+}*/
+
+/*td{
+    border-right: 1px solid #ddd;
+}*/
+
+/*th{
+    border-bottom: 2px solid #ddd;
+}*/
+
+.studio-table-fixed{
+    overflow:auto;
+    padding-left:0px!important;
+    //width:100%;
+}
+
+.studio-table-fixed>table{
+    table-layout: fixed;
+    border-spacing: 0px;
+    border-collapse: separate;
+    width:100%;
+}
+
+/*.studio-table-fixed>table>thead{
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 1px;
+}*/
+
+.studio-table-fixed>table>tbody>tr:first-child>td{
+    padding-top: 5px;
+}
+
+.studio-table-fixed>table>tbody>tr>td{
+	border-right: 1px solid #ddd;
+}
+
+
+.studio-table-fixed>table>tbody>tr>td:not(:first-child){
+    padding-left: 31px;
+    padding-top: 5px;
+}
+
+.studio-table-fixed>table>tbody>tr>td:first-child{
+	padding-left: 5px;
+    position:sticky;
+    left:0;
+    z-index:10000;
+    background-color: inherit;
+    width:190px;
+}
+
+.studio-table-fixed>table>thead>tr>th{
+    z-index: 10001;
+    background-color: #FFFFFF;
+    border-bottom: 2px solid #ddd;
+}
+
+.studio-table-fixed>table>thead>tr>th:not(:first-child){
+    //transform: rotateZ(-90deg);
+    padding: 0px;
+    height: 60px;
+}
+
+.studio-table-fixed>table>thead>tr>th:first-child{
+    position:sticky;
+    left:0;
+    z-index: 10002;
+    background-color: #FFFFFF;
+    width:190px;
+}
+
+.studio-table-fixed>table>thead,  .studio-table-fixed>table>thead>tr ,.studio-table-fixed>table>thead>tr>th,  .studio-table-fixed>table>tbody>tr {
+  position:sticky;
+  top:0;
+}
+
+.studio-table-fixed>table>thead>tr>th, .studio-table-fixed>table>thead>tr>td {
+	width:75px;
+    font-size:11px
+}
+
+.checkbox label::before, .checkbox label::after{
+    width:13px;
+    height: 13px;
+}
+
+.checkbox {
+    padding-left: 12px;
+}
+
+.collapser-form-wab-modal{
+    font-size: 40px;
+    padding-top: 10px;
+    cursor: pointer;
+}
+
+.transition-form-wab-collapser{
+    transition: width 0.5s; 
+    //transition: display 1s; 
+}
 .form-tools-tree-container{
     overflow-y: auto;
     overflow-x: hidden;
     height: calc(~"100% - 72px");
+}
+// Onglets Bootstrap dans la définition d'un élement.
+.studio-form-element-def-tab .nav-tabs {
+    font-size: 12px;
+}
+.studio-form-element-def-tab .tab-pane {
+    padding: 10px 0;
+}
+// Icone d'aide pour un paramètre d'un élément de formulaire.
+.input-group-addon-helper {
+    min-width: initial;
+    color: initial;
+    background-color: initial;
+    top: initial;
+    //border: initial;
 }

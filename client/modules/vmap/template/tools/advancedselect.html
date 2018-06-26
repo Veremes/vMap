@@ -4,22 +4,23 @@
 
     <!--Palette d'interrogation-->
     <div id="basictools-select-select-palette" ng-show="vmapScope.sizeOf(ctrl.oQueryableBOs) > 0">
-        
+
         <div class="btn-group btn-block">
-            <button type="button" 
+            <button type="button"
                     class="btn btn-sm btn-info"
                     style="width: 80%"
                     ng-class="{'white color-gray': ctrl.currentAction === 'basicTools-selectByPoint' || ctrl.currentAction === 'basicTools-selectByLineString' || ctrl.currentAction === 'basicTools-selectByPolygon' || ctrl.currentAction === 'basicTools-selectByCircle'}"
                     ng-click="ctrl.selectGeomType !== '' ? ctrl.startSelection(ctrl.selectGeomType, ctrl.currentAction === 'basicTools-selectBy' + ctrl.selectGeomType) : angular.noop">
                 Sélection graphique
             </button>
-            <button type="button" 
-                    class="btn btn-sm btn-default dropdown-toggle" 
+            <button type="button"
+                    class="btn btn-sm btn-default dropdown-toggle"
                     style="width: 20%"
-                    data-toggle="dropdown" 
-                    aria-haspopup="true" 
+                    data-toggle="dropdown"
+                    aria-haspopup="true"
                     aria-expanded="false">
                 <span class="icon-point" ng-show="ctrl.selectGeomType === 'Point'"></span>
+                <span class="icon-multipoint" ng-show="ctrl.selectGeomType === 'MultiPoint'"></span>
                 <span class="icon-line" ng-show="ctrl.selectGeomType === 'LineString'"></span>
                 <span class="icon-polygon" ng-show="ctrl.selectGeomType === 'Polygon'"></span>
                 <span class="icon-circle" ng-show="ctrl.selectGeomType === 'Circle'"></span>
@@ -28,6 +29,10 @@
                 <li><a href="javascript:void(0)"
                        ng-click="ctrl.selectGeomType = 'Point'; ctrl.startSelection('Point', false)">
                         <span class="icon-point"></span> Point
+                    </a></li>
+                <li><a href="javascript:void(0)"
+                       ng-click="ctrl.selectGeomType = 'MultiPoint'; ctrl.startSelection('MultiPoint', false)">
+                        <span class="icon-multipoint"></span> Multi point
                     </a></li>
                 <li><a href="javascript:void(0)"
                        ng-click="ctrl.selectGeomType = 'LineString'; ctrl.startSelection('LineString', false)">
@@ -48,7 +53,7 @@
 
         <!--Bouton Requêteur-->
         <div style="text-align: center">
-            <button type="button" 
+            <button type="button"
                     class="btn btn-info btn-sm btn-block"
                     ng-click="ctrl.displaySelectionTable(ctrl.aSelections)">
                 <span class="icon-format_list_bulleted margin-sides-2"></span>
@@ -81,19 +86,16 @@
                         <ul class="nav nav-pills nav-stacked" style="width: 180px">
 
                             <!--Boutons du menu-->
-                            <li data-toggle="pill" 
-                                id="select_modal_tab_{{bo_id}}"
-                                href="#select_modal_container_{{$index}}" 
+                            <li data-toggle="pill"
+                                id="select_modal_tab_{{bo.business_object_id}}"
                                 class="list-group-item list-group-item-modal"
-                                ng-repeat="(bo_id, bo) in ctrl.oBusinessObjects"
-                                ng-class="{'active': $index === 0}">
-                                <span ng-show="ctrl.tableSelection[bo_id].length === ctrl.limitList_">
-                                    {{bo.title}} ({{ctrl.tableSelection[bo_id].length}}+)
+                                ng-repeat="bo in ctrl.oBusinessObjects| orderObjectBy:'title'"
+                                ng-class="{'active': ctrl.sSelectedBo === bo.business_object_id}"
+                                ng-click="ctrl.sSelectedBo = bo.business_object_id">
+                                <span ng-show="ctrl.tableSelectionMetadata[bo.business_object_id]['total_row_number'] !== undefined">
+                                    {{bo.title}} ({{ctrl.tableSelectionMetadata[bo.business_object_id]['total_row_number']}})
                                 </span>
-                                <span ng-show="ctrl.tableSelection[bo_id].length !== undefined && ctrl.tableSelection[bo_id].length !== ctrl.limitList_">
-                                    {{bo.title}} ({{ctrl.tableSelection[bo_id].length}})
-                                </span>
-                                <span ng-show="ctrl.tableSelection[bo_id].length === undefined">
+                                <span ng-show="ctrl.tableSelectionMetadata[bo.business_object_id]['total_row_number'] === undefined">
                                     {{bo.title}} (0)
                                 </span>
                             </li>
@@ -104,24 +106,23 @@
                     <div class="col-md-10" style="height: 100%;">
 
                         <!--Tables-->
-                        <div id="select_modal_container_{{$index}}" 
-                             class="mapmodal-element fade"
-                             ng-repeat="(bo_id, bo) in ctrl.oBusinessObjects"
-                             ng-class="{'in active': $index === 0}">
+                        <div ng-repeat="(bo_id, bo) in ctrl.oBusinessObjects"
+                             ng-show="ctrl.sSelectedBo === bo_id"
+                             class="mapmodal-element">
 
                             <!--Search Form reader-->
                             <div id="select_search_form_reader_{{bo_id}}"
-                                 app-form-reader 
+                                 app-form-reader
                                  app-properties="ctrl.properties"
                                  app-token="ctrl.token"></div>
 
                             <!--Table-->
-                            <div class="select_modal_table_container">     
-                                <table id="select_table_{{bo_id}}" 
+                            <div class="select_modal_table_container">
+                                <table id="select_table_{{bo_id}}"
                                        class="select_modal_table"
                                        data-toggle="table"
                                        data-search="false"
-                                       data-escape="true"
+                                       data-escape="false"
                                        data-show-columns="false"
                                        data-classes="table table-hover table-condensed"
                                        data-striped="true"
@@ -132,29 +133,110 @@
                                             <th data-field="state" data-checkbox="true"></th>
                                             <th class="col-btn" data-field="action" data-formatter="nsVmap.nsToolsManager.AdvancedSelect.selectTableFormatter" data-events="selectTableEvents"></th>
                                             <th ng-repeat="(key, value) in bo.list_fields"
-                                                ng-if="value !== 'selection'"
+                                                ng-if="value !== 'bo_selection_'"
                                                 data-field="{{value}}"
-                                                data-escape="true"
+                                                data-escape="false"
                                                 data-sortable="true">{{value}}</th>
-                                            <th data-field="selection" data-visible="false"></th>
+                                            <th data-field="bo_selection_" data-visible="false"></th>
                                         </tr>
                                     </thead>
                                 </table>
                             </div>
                             <div class="select_modal_table_buttons">
-                                <button class="btn btn-default" ng-click="ctrl.tableDeleteSelection('#select_table_' + bo_id)" ng-show="bo.user_rights.indexOf('DELETE') !== -1">
-                                    <span class="icon-trash"></span> Supprimer les enregistrements
-                                </button>
-                                <button class="btn btn-default" ng-click="ctrl.tableAddToCard('#select_table_' + bo_id, false)">
-                                    <span class="icon-shopping_basket"></span> Ajouter au panier
-                                </button>
-                                <button class="btn btn-default" ng-click="ctrl.tableAddToCard('#select_table_' + bo_id, true)">
-                                    <span class="glyphicon glyphicon-repeat"></span> Remplacer panier
-                                </button>
+                                <div class="col-md-4 col-sm-12 col-xs-12">
+                                    <div class="input-group input-group-sm"
+                                         ng-show="ctrl.tableSelectionMetadata[bo.business_object_id]['total_pages'] > 1"
+                                         ng-init="ctrl.initTablePage(bo_id)">
+                                        <button class="btn input-group-addon" data-pager-action="previous"
+                                                ng-click="ctrl.goTablePage(bo_id, ctrl.tableSelectionMetadata[bo_id].current_page - 1)"
+                                                ng-disabled="ctrl.tableSelectionMetadata[bo_id].current_page < 2">
+                                            <i class="glyphicon glyphicon-triangle-left"></i>
+                                        </button>
+                                        <input type="number"
+                                               class="form-control"
+                                               style="width: 50px;float: none;"
+                                               data-pager-action="pagenum"
+                                               ng-model="ctrl.tableSelectionMetadata[bo_id].current_page"
+                                               ng-change="ctrl.goTablePageWithTimeout(bo_id, ctrl.tableSelectionMetadata[bo_id].current_page)">
+                                        <input type="number"
+                                               class="form-control"
+                                               style="width: 50px;float: none;"
+                                               data-pager-action="pagenum"
+                                               disabled
+                                               ng-model="ctrl.tableSelectionMetadata[bo_id].total_pages">
+                                        <button class="btn input-group-addon" data-pager-action="next"
+                                                ng-click="ctrl.goTablePage(bo_id, ctrl.tableSelectionMetadata[bo_id].current_page + 1)"
+                                                ng-disabled="ctrl.tableSelectionMetadata[bo_id].current_page == ctrl.tableSelectionMetadata[bo_id].total_pages">
+                                            <i class="glyphicon glyphicon-triangle-right"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-xs-8" style="text-align: right">
+                                    <button class="btn btn-default" ng-click="ctrl.tableDeleteSelection('#select_table_' + bo_id)" ng-show="bo.user_rights.indexOf('DELETE') !== -1">
+                                        <span class="icon-trash"></span> Supprimer les enregistrements
+                                    </button>
+                                    <button class="btn btn-default" ng-click="ctrl.tableAddToCard('#select_table_' + bo_id, false)">
+                                        <span class="icon-shopping_basket"></span> Ajouter au panier
+                                    </button>
+                                    <button class="btn btn-default" ng-click="ctrl.tableAddToCard('#select_table_' + bo_id, true)">
+                                        <span class="glyphicon glyphicon-repeat"></span> Remplacer panier
+                                    </button>
+                                    <div class="export btn-group dropup">
+                                        <button class="btn btn-default dropdown-toggle" aria-label="export type" title="Export data" data-toggle="dropdown" type="button">
+                                            <i class="glyphicon glyphicon-export icon-share"></i> Exporter <span class="caret"></span>
+                                        </button>
+                                        <ul class="dropdown-menu" role="menu">
+                                            <li role="menuitem" data-type="json" ng-click="ctrl.exportTable(bo_id, '#select_table_' + bo_id, 'json')"><a href="javascript:void(0)">JSON</a></li>
+                                            <li role="menuitem" data-type="csv" ng-click="ctrl.exportTable(bo_id, '#select_table_' + bo_id, 'csv')"><a href="javascript:void(0)">CSV</a></li>
+                                            <li role="menuitem" data-type="excel" ng-click="ctrl.exportTable(bo_id, '#select_table_' + bo_id, 'xlsx')"><a href="javascript:void(0)">MS-Excel</a></li>
+                                            <li ng-if="ctrl.bGTFExport" role="menuitem" data-type="excel" ng-click="ctrl.exportTable(bo_id, '#select_table_' + bo_id, 'gtf')"><a href="javascript:void(0)">Autres formats</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--GTF export form modal-->
+<div class="modal fade" id="vmap-gtf-export-form-modal">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title"><span class="glyphicon glyphicon-export icon-share margin-sides-5"></span>Demande d'export</h4>
+            </div>
+            <div class="modal-body">
+                <form id="vmap-gtf-export-form" ng-submit="ctrl.submitGtfExportFormModal(ctrl.oGTFExportAttibutes)">
+                    <div class="form-group">
+                        <label for="vmap-gtf-export-form-format">Format de sortie</label>
+                        <select id="vmap-gtf-export-form-format"
+                                class="form-control"
+                                ng-model="ctrl.oGTFExportAttibutes.format"
+                                ng-options="item.value as item.label for item in ctrl.gtf_export_formats"
+                                ng-required="true"></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="vmap-gtf-export-form-coordsys">Stystème de coordonnées (SRID)</label>
+                        <select id="vmap-gtf-export-form-coordsys"
+                                class="form-control"
+                                ng-model="ctrl.oGTFExportAttibutes.coordsys"
+                                ng-options="item.value as item.label for item in ctrl.gtf_export_coordsys"
+                                ng-required="true"></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="vmap-gtf-export-form-mails">Addresses mail (séparées par un point virgule)</label>
+                        <input type="text" class="form-control" id="vmap-gtf-export-form-mails" placeholder="ex: john.doe@veremes.com;armand@gmail.com" ng-model="ctrl.oGTFExportAttibutes.mails" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary" form="vmap-gtf-export-form">Demander un export</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
             </div>
         </div>
     </div>

@@ -1,5 +1,6 @@
 <?php
 
+require_once 'Map.class.inc';
 require_once 'PrintServices.class.inc';
 require_once __DIR__ . '/../vitis/Vitis.class.inc';
 require_once __DIR__ . '/../../class/vitis_lib/Connection.class.inc';
@@ -35,9 +36,10 @@ class PrintMapServices extends PrintServices {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
      * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
@@ -231,6 +233,14 @@ class PrintMapServices extends PrintServices {
          */
         $sImageUrl = $this->aProperties['web_server_name'] . '/' . $this->aProperties['public_alias'] . '/vmap/prints/print_map_' . $sTimestamp . '.jpeg';
 
+        // Vérifie que la carte existe bien
+        if (!empty($sMapId)) {
+            if (!$this->checkMapId($sMapId)) {
+                $oError = new VitisError(0, 'map_id (' . $sMapId . ') not founded');
+                return json_encode($oError->aFields);
+            }
+        }
+
         // Change la taille de l'image en fonction de la résolution
         if (isset($this->aValues['resolution_coeff'])) {
             $aImageSize = explode('|', $sImageSize);
@@ -305,6 +315,30 @@ class PrintMapServices extends PrintServices {
         }
 
         return $sScale;
+    }
+
+    function checkMapId($sMapId) {
+
+        $aPath = array('vmap', 'maps', $sMapId);
+
+        $aValues = array(
+            'token' => $this->aValues['token'],
+            'output' => 'application/json',
+            'sEncoding' => 'UTF-8',
+            'sSourceEncoding' => 'UTF-8',
+            'xslstylesheet' => '',
+            'my_vitis_id' => $sMapId,
+            'module' => 'vmap'
+        );
+
+        $oMap = new Map($aPath, $aValues, $this->aProperties);
+        $oMap->GET();
+
+        if (!empty($oMap->aFields['map_id'])) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
 }

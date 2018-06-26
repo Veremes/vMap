@@ -35,12 +35,11 @@ class UserPrintStyles extends Vmap {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
+     * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = new Connection($this->aValues, $this->aProperties);
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
         $this->aSelectedFields = Array("printstyle_id", "name", "definition");
     }
 
@@ -134,7 +133,8 @@ class UserPrintStyles extends Vmap {
                 $oUserPrintStyle = new stdClass();
                 $oUserPrintStyle->printstyle_id = $oPrintStyle->aFields['printstyle_id'];
                 $oUserPrintStyle->name = $oPrintStyle->aFields['name'];
-                $oUserPrintStyle->definition = str_replace(array("\r", "\n", "\t"), '', $oPrintStyle->aFields['definition']);
+//                $oUserPrintStyle->definition = str_replace(array("\r", "\n", "\t"), '', $oPrintStyle->aFields['definition']);
+                $oUserPrintStyle->definition = $oPrintStyle->aFields['definition'];
                 $oUserPrintStyles->userprintstyles[] = $oUserPrintStyle;
             }
             $this->aFields = $oUserPrintStyles;

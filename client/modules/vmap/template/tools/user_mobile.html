@@ -1,0 +1,26 @@
+<a class="list-group-item sublist-group-item" ng-click="ctrl.displayUserInfos()"><span class="icon-format_list_bulleted mobile_menu_logo"></span> Infos utilisateur</a>
+<a class="list-group-item sublist-group-item" ng-click="ctrl.disconnect()"><span class="icon-block mobile_menu_logo"></span> Déconnexion</a>
+
+<!--Modale contenant le formulaire utilisateur-->
+<div class="modal fade" id="basictools-user-form-reader-modal" role="dialog">
+    <div class="modal-dialog">
+        <!--Modal content-->
+        <div class="modal-content" style="">
+            <div class="modal-header">                
+                <!-- Bouton retour -->
+                <div class="btn btn-default vmap_mobile_return_modal right" data-dismiss="modal">
+                    <span class="icon-caret-left"></span> Retour
+                </div>
+                <h4 class="modal-title">{{sUserLoginText}}</h4>
+            </div>
+            <div class="modal-body">
+
+                <!--Form reader-->
+                <div id="basictools-user-form-reader"
+                     app-form-reader 
+                     app-properties="ctrl.properties"
+                     app-token="ctrl.token"></div>
+            </div>
+        </div>
+    </div>
+</div>

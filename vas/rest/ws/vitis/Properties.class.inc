@@ -35,12 +35,11 @@ class Properties extends Vitis {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
+     * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = new Connection($this->aValues, $this->aProperties);
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
 
         $this->aSelectedFields = Array("services_alias", 'language', 'domain.*', 'vas_home', 'database', 'sign_up', 'password_forgotten');
 
@@ -293,7 +292,7 @@ class Properties extends Vitis {
         $aReturn = array('status' => 1, 'message' => '');
         // Vérifie que le formulaire de properties n'est pas vide
         if (!empty($aPropertiesForm)) {
-            
+
             // Message de retour
             $aMessage = array('status' => REQUEST_SUCCESS);
 

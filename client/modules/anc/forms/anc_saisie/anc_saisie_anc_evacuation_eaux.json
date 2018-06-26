@@ -26,7 +26,7 @@
                     {
                         "type":"label",
                         "name":"id_controle",
-                        "label":"Identifiant du controle",
+                        "label":"Identifiant du contrôle",
                         "nb_cols":3,
                         "id":"id_controle_2_1"
                     }
@@ -48,7 +48,7 @@
                     {
                         "type":"label",
                         "name":"evac_type",
-                        "label":"Type d'evacuation",
+                        "label":"Type d'évacuation",
                         "nb_cols":3,
                         "id":"evac_type_3_1"
                     },
@@ -390,7 +390,7 @@
                     {
                         "type":"file_wsdata",
                         "name":"schema_f",
-                        "label":"Schema de principe",
+                        "label":"Schéma de principe",
                         "nb_cols":12,
                         "id":"schema_f_39_1",
                         "displayOnly":true
@@ -649,7 +649,7 @@
                     {
                         "type":"select",
                         "name":"id_controle",
-                        "label":"Identifiant du controle",
+                        "label":"Identifiant du contrôle",
                         "required":true,
                         "nb_cols":4,
                         "id":"id_controle_2_1",
@@ -690,8 +690,8 @@
                     {
                         "type":"select",
                         "name":"evac_type",
-                        "label":"Type d'evacuation",
-                        "required":true,
+                        "label":"Type d'évacuation",
+                        "required":false,
                         "nb_cols":4,
                         "id":"evac_type_3_1",
                         "id_from":"evac_type_3_1_from",
@@ -990,7 +990,7 @@
                         "type":"text",
                         "name":"evac_rp_type",
                         "label":"Profondeur du puits d'infiltration",
-                        "required":false,
+                        "required":true,
                         "nb_cols":4,
                         "id":"evac_rp_type_18_1"
                     },
@@ -1315,7 +1315,7 @@
                     {
                         "type":"file_wsdata",
                         "name":"schema_f",
-                        "label":"Schema de principe",
+                        "label":"Schéma de principe",
                         "nb_cols":12,
                         "id":"schema_f_39_1",
                         "displayOnly":false
@@ -1475,7 +1475,7 @@
                     {
                         "type":"select",
                         "name":"id_controle",
-                        "label":"Identifiant du controle",
+                        "label":"Identifiant du contrôle",
                         "required":true,
                         "nb_cols":4,
                         "id":"id_controle_2_1",
@@ -1516,8 +1516,8 @@
                     {
                         "type":"select",
                         "name":"evac_type",
-                        "label":"Type d'evacuation",
-                        "required":true,
+                        "label":"Type d'évacuation",
+                        "required":false,
                         "nb_cols":4,
                         "id":"evac_type_3_1",
                         "id_from":"evac_type_3_1_from",
@@ -2189,7 +2189,7 @@
                     {
                         "type":"file_wsdata",
                         "name":"schema_f",
-                        "label":"Schema de principe",
+                        "label":"Schéma de principe",
                         "nb_cols":12,
                         "id":"schema_f_39_1",
                         "displayOnly":false

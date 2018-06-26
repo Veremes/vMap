@@ -25,7 +25,7 @@ if (system.args.length < 11) {
         console.log("args[" + i + "]: ", system.args[i]);
     }
 
-    var abordTimeout = 5 * 60 * 1000;
+    var abordTimeout = 2 * 60 * 1000;
 //    var abordTimeout = 10000;
 
 

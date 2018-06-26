@@ -64,24 +64,21 @@ class Connection {
         if (session_status() == PHP_SESSION_NONE)
             session_start();
         $bIsconnected = true;
-        if ($_SESSION == array()) {
-            if ($aValues['token'] == $this->aProperties['public_token']) {
-                $this->aValues = $aValues;
-                $_SESSION["ses_Login"] = $this->aProperties['public_login'];
-                $ciphertext = des($this->aProperties['public_login'], $this->aProperties['public_password'], 1, 0);
-                $_SESSION["ses_Password"] = stringToHex($ciphertext);
-                if (empty($this->aValues['duration']))
-                    $this->aValues['duration'] = 10;
-                $_SESSION["ses_Date"] = date('Y-m-d H:i:s', time() + ($this->aValues['duration'] * 60));
-            } else {
-                $this->oError = new VitisError(16, 'invalid token');
-                $bIsconnected = false;
-            }
+        // Variable de session vide et token privée : erreur. 
+        if (empty($_SESSION) && $aValues['token'] != $this->aProperties['public_token']) {
+            $this->oError = new VitisError(16, 'invalid token');
+            $bIsconnected = false;
+        }
+        else if ($aValues['token'] == $this->aProperties['public_token']) {
+            $_SESSION["ses_Login"] = $this->aProperties['public_login'];
+            $ciphertext = des($this->aProperties['public_login'], $this->aProperties['public_password'], 1, 0);
+            $_SESSION["ses_Password"] = stringToHex($ciphertext);
+            if (empty($this->aValues['duration']))
+                $this->aValues['duration'] = $this->aProperties['cookie_lifetime'];
+            $_SESSION["ses_Date"] = date('Y-m-d H:i:s', time() + ($this->aValues['duration'] * 60));
         }
         if ($bIsconnected) {
             $this->connect();
-            if (empty($this->oError))
-                $this->updateLastConnection();
         }
     }
 

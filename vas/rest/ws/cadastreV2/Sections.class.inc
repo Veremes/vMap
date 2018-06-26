@@ -35,12 +35,11 @@ class Sections extends Cadastre {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
+     * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = new Connection($this->aValues, $this->aProperties);
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
         $this->aSelectedFields = Array("id_com", "id_sec", "substring (id_com, 3, 3) as code_com", "commune", "replace(pre, '000', '')||replace(section, '0', '') as section", "pre", "substring (id_sec, 3, 8) as idu", "replace(section, '0', '0') as tex", "section as texte", "geom");
     }
 

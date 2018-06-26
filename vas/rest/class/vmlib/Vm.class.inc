@@ -305,6 +305,77 @@ class Vm extends BD {
     }
 
     /**
+     * Get a column projection
+     * @param string $sSchema
+     * @param string $sTable
+     * @param string $sColumn
+     * @return string
+     */
+    function getColumnSRID($sSchema, $sTable, $sColumn) {
+        $sColumnProj = null;
+        $sSchemaKey = 'schema_' . vitisUniqId();
+        $sTableKey = 'table_' . vitisUniqId();
+        $sColumnKey = 'column_' . vitisUniqId();
+
+        $aParams = array();
+        $aParams[$sSchemaKey] = array('value' => $sSchema, 'type' => 'column_name');
+        $aParams[$sTableKey] = array('value' => $sTable, 'type' => 'column_name');
+        $aParams[$sColumnKey] = array('value' => $sColumn, 'type' => 'column_name');
+        $sSQLSRID = 'SELECT st_srid("[' . $sColumnKey . ']") as column_srid FROM "[' . $sSchemaKey . ']"."[' . $sTableKey . ']" WHERE "[' . $sColumnKey . ']" is not null AND st_srid("[' . $sColumnKey . ']") != 0 LIMIT 1';
+
+        $oResult = $this->executeWithParams($sSQLSRID, $aParams);
+        if ($this->enErreur()) {
+            writeToErrorLog($this->getBDMessage());
+        } else {
+            if (!isset($this->enErreur)) {
+                $this->enErreur = false;
+            }
+            if (!$this->enErreur && $this->nombreLigne($oResult) > 0) {
+                $aData = array();
+                while ($aObject = $this->ligneSuivante($oResult)) {
+                    foreach ($aObject as $sParamKey => $sParamValue) {
+                        if ($sParamKey === 'column_srid') {
+                            $sColumnProj = $sParamValue;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Nouvelle tentative avec une requête différente
+        if ($sColumnProj === null || $sColumnProj == "0") {
+            // ne fonctionne pas dans tous les cas pour les vues
+            $sSQLSRID = "SELECT Find_SRID('[" . $sSchemaKey . "]', '[" . $sTableKey . "]', '[" . $sColumnKey . "]') as column_srid";
+
+            $oResult = $this->executeWithParams($sSQLSRID, $aParams);
+            if ($this->enErreur()) {
+                writeToErrorLog($this->getBDMessage());
+            } else {
+                if (!isset($this->enErreur)) {
+                    $this->enErreur = false;
+                }
+                if (!$this->enErreur && $this->nombreLigne($oResult) > 0) {
+                    $aData = array();
+                    while ($aObject = $this->ligneSuivante($oResult)) {
+                        foreach ($aObject as $sParamKey => $sParamValue) {
+                            if ($sParamKey === 'column_srid') {
+                                $sColumnProj = $sParamValue;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Nouvelle tentative avec une requête différente
+        if ($sColumnProj === null || $sColumnProj == "0") {
+            $sColumnProj = $this->getTableSRID($sTable, $sSchema);
+        }
+
+        return $sColumnProj;
+    }
+
+    /**
      * M�thode permettant de r�cup�rer le type de g�om�trie d'une table contenant des donn�es spatiales.
      * \private
      * \param $sTable Nom de la table.
@@ -344,6 +415,32 @@ class Vm extends BD {
             case "pgsql" :
                 $aTag = array("[sSchema]", "[sTable]");
                 $aReplacer = array($sSchema, $sTable);
+                $sSql = str_replace($aTag, $aReplacer, $sSql);
+                break;
+        }
+        $iResult = $this->execute($sSql);
+        if ($aValue = $this->ligneSuivante($iResult))
+            $iDims = $aValue['coord_dimension'];
+        $iResult = $this->fermeResultat();
+        return $iDims;
+    }
+
+    /**
+     * M�thode permettant de r�cup�rer la dimension d'une colonne contenant des donn�es spatiales (2 pour 2D, 3 pour 3D...).
+     * \private
+     * \param $sSchema Nom du sch�ma contenant la table.
+     * \param $sTable Nom de la table.
+     * \param $sColumn Nom de la colonne.
+     * \return Un entier correspondant au nombre de dimension d'une table.
+     */
+    function getColumnDimension($sSchema, $sTable, $sColumn) {
+        $iDims = "2";
+        include("vmlib/Vm.class.sql.inc");
+        $sSql = $aSql[$this->sgbd]['getColumnDimension'];
+        switch ($this->sgbd) {
+            case "pgsql" :
+                $aTag = array("[sSchema]", "[sTable]", "[sColumn]");
+                $aReplacer = array($sSchema, $sTable, $sColumn);
                 $sSql = str_replace($aTag, $aReplacer, $sSql);
                 break;
         }
@@ -753,7 +850,7 @@ class Vm extends BD {
                 }
                 $sLigne .= "</tr>";
                 if ($bImage)
-                    $sLigne.= "<tr><td colspan='" . $iColspan . "' width='100%' class='interligne'>&nbsp;</td></tr>";
+                    $sLigne .= "<tr><td colspan='" . $iColspan . "' width='100%' class='interligne'>&nbsp;</td></tr>";
                 $bPremiereLigne = false;
             }
             if (($iN % 2) == 0)
@@ -779,7 +876,7 @@ class Vm extends BD {
             //for ($i=0;$i<$iFieldCount;$i++) $sLigne .= "<td>".$aValues{$i}."</td>";
             $sLigne .= "</tr>";
             if ($bImage)
-                $sLigne.= "<tr><td colspan='" . $iColspan . "' width='100%' class='interligne'>&nbsp;</td></tr>";
+                $sLigne .= "<tr><td colspan='" . $iColspan . "' width='100%' class='interligne'>&nbsp;</td></tr>";
             $sResult .= $sLigne;
         }
         if ($sResult == "")

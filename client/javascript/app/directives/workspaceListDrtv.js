@@ -41,15 +41,18 @@ vitisApp.appWorkspaceListDrtv = function ($timeout, $rootScope, $templateRequest
 
                 // Evènement déclenché si la page sélectionnée change.
                 gridApi["pagination"]["on"]["paginationChanged"](scope, function (newPage, pageSize) {
-                    // Change la page;
-                    if (typeof (envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]) !== "undefined" && typeof (scope.$root["gridApi"][envSrvc["sSelectedGridOptionsName"]]) !== "undefined") {
-                        var oFilter = envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["oFilter"];
-                        //envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["oFilter"] = angular.copy(oFilterDistinct);
-                        envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["oFilter"] = angular.copy(oFilter);
-                        scope["setGridPage"](newPage, pageSize, envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["oFilter"], envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["oUrlParams"]);
-                        // Sauve le nombre d'éléments par page. 
-                        propertiesSrvc["rows_per_page"] = envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["paginationPageSize"];
-                    }
+                    // Change la page.
+                    if (gridApi["grid"]["options"]["useExternalPagination"] !== false) {
+                        if (typeof (envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]) !== "undefined" && typeof (scope.$root["gridApi"][envSrvc["sSelectedGridOptionsName"]]) !== "undefined") {
+                            var oFilter = envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["oFilter"];
+                            //envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["oFilter"] = angular.copy(oFilterDistinct);
+                            envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["oFilter"] = angular.copy(oFilter);
+                            scope["setGridPage"](newPage, pageSize, envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["oFilter"], envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["oUrlParams"]);
+                            // Sauve le nombre d'éléments par page.
+                            propertiesSrvc["rows_per_page"] = envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["paginationPageSize"];
+                        }
+                    } else
+                        scope.$root["setPaginationStatus"]();
                 });
                 // Evènement déclenché si le tri change.
                 gridApi["core"]["on"]["sortChanged"](scope, function (grid, sortColumns) {
@@ -62,28 +65,28 @@ vitisApp.appWorkspaceListDrtv = function ($timeout, $rootScope, $templateRequest
                     envSrvc["oGridOptionsCopy"][envSrvc["sSelectedGridOptionsName"]]["oUrlParams"]["order_by"] = oUrlParams["order_by"];
                     envSrvc["oGridOptionsCopy"][envSrvc["sSelectedGridOptionsName"]]["oUrlParams"]["sort_order"] = oUrlParams["sort_order"];
 
-                    // Index de la section affichée. 
+                    // Index de la section affichée.
                     var iSelectedSectionIndex = 0;
                     if (typeof (envSrvc["oSectionForm"]) != "undefined" && typeof (envSrvc["oSectionForm"][envSrvc["oSelectedObject"]["name"]]) != "undefined" && typeof (envSrvc["oSectionForm"][envSrvc["oSelectedObject"]["name"]]["iSelectedSectionIndex"]) != "undefined")
                         iSelectedSectionIndex = envSrvc["oSectionForm"][envSrvc["oSelectedObject"]["name"]]["iSelectedSectionIndex"];
                     // Sauve le tri (colonne + direction).
-                    var aGridColumns = envSrvc["oSelectedObject"]["sections"][iSelectedSectionIndex]["columns"];
-                    var i = 0;
-                    while (i < aGridColumns.length) {
-                        delete aGridColumns[i]["sort"];
-                        // La colonne est celle du tri sélectionné ?
-                        /*
-                        if (aGridColumns[i]["field"] === oUrlParams["order_by"]) {
-                            aGridColumns[i]["sort"] = {
-                                "direction": uiGridConstants[oUrlParams["sort_order"]],
-                                "ignoreSort": true,
-                                "priority": 0
-                            };
+                    if (Array.isArray(envSrvc["oSelectedObject"]["sections"])) {
+                        var aGridColumns = envSrvc["oSelectedObject"]["sections"][iSelectedSectionIndex]["columns"];
+                        var i = 0;
+                        while (i < aGridColumns.length) {
+                            delete aGridColumns[i]["sort"];
+                            // La colonne est celle du tri sélectionné ?
+                            if (aGridColumns[i]["field"] === oUrlParams["order_by"]) {
+                                aGridColumns[i]["sort"] = {
+                                    "direction": uiGridConstants[oUrlParams["sort_order"]],
+                                    "ignoreSort": true,
+                                    "priority": 0
+                                };
+                            }
+                            i++;
                         }
-                        */
-                        i++;
+                        envSrvc["oSelectedObject"]["sections"][iSelectedSectionIndex]["columns"] = aGridColumns;
                     }
-                    envSrvc["oSelectedObject"]["sections"][iSelectedSectionIndex]["columns"] = aGridColumns;
                     // Sauve les paramètres passés dans l'url pour l'api Rest.
                     envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["oUrlParams"] = oUrlParams;
                     // Charge la 1ere page avec le tri
@@ -105,7 +108,7 @@ vitisApp.appWorkspaceListDrtv = function ($timeout, $rootScope, $templateRequest
                             if (typeof (scope["gridOptions"]["appDragAndDropEvent"]) !== "undefined" && typeof (scope["gridOptions"]["appDragAndDropEvent"]["rowFinishDrag"]) !== "undefined")
                                 scope.$root[scope["gridOptions"]["appDragAndDropEvent"]["rowFinishDrag"]]();
                         });
-                        // 
+                        //
                         gridApi["draggableRows"]["on"]["rowEnterRow"](scope, function (info, rowElement) {
                         });
                         //
@@ -115,19 +118,36 @@ vitisApp.appWorkspaceListDrtv = function ($timeout, $rootScope, $templateRequest
                         gridApi["dragndrop"]["setDragDisabled"] = true;
                 }
 
-                // Charge la 1ere page.
+                // Charge la 1ere page quand la liste des colonnes est ok.
                 envSrvc["oGridOptionsCopy"][envSrvc["sSelectedGridOptionsName"]] = angular.copy(envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]);
-                if (envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["appLoadGridData"])
-                    scope["setGridPage"](1, envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["paginationPageSize"], envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["oFilter"], envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["oUrlParams"]);
+                if (envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["appLoadGridData"]) {
+                    var columnsAddedEvent = $rootScope.$on("workspaceListColumnsAdded", function (event, arg) {
+
+                        // Permet de sauvegarder la page en cours quand on revient sur la liste
+                        var iPageNumber = goog.isDefAndNotNull(envSrvc["oSelectedObject"]["iPageNumber"]) ? envSrvc["oSelectedObject"]["iPageNumber"] : 1;
+                        // Si on est dans une liste de section, il ne faut pas utiliser la page sauvegardée
+                        if (envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["sectionGrid"] === true) {
+                            iPageNumber = goog.isDefAndNotNull(envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["paginationCurrentPage"]) ? envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["paginationCurrentPage"] : 1;
+                        }
+
+                        scope["setGridPage"](iPageNumber, envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["paginationPageSize"], envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["oFilter"], envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["oUrlParams"]);
+                        columnsAddedEvent();
+                    });
+                }
                 //
-                if (envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["appResizeGrid"] === true)
+                if (envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["appResizeGrid"] === true) {
                     scope.$root["gridApi"][envSrvc["sSelectedGridOptionsName"]]["core"]["handleWindowResize"]();
+                    scope.$root["gridApi"][envSrvc["sSelectedGridOptionsName"]]["core"]["refreshRows"]();
+                }
+                // Mise à jour de la barre de statut.
+                scope.$root["setPaginationStatus"]();
             };
             //
             $timeout(function () {
                 // Redimensionnement de la fenêtre (attends Angular)
                 externFunctionSrvc["resizeWin"]();
                 scope.$root["gridApi"][envSrvc["sSelectedGridOptionsName"]]["core"]["handleWindowResize"]();
+                scope.$root["gridApi"][envSrvc["sSelectedGridOptionsName"]]["core"]["refreshRows"]();
                 // ui-grid : sélectionne toute la ligne si click sur une de ses colonnes.
                 $(element).find(".ui-grid-render-container-body").on("click.selectRow", function (event) {
                     var oCell = event.target;
@@ -142,7 +162,8 @@ vitisApp.appWorkspaceListDrtv = function ($timeout, $rootScope, $templateRequest
                 element[0].querySelector(".ui-grid-render-container-body .ui-grid-viewport").style.height = "Calc(100% - 30px)";
                 // Emission d'un évènement de fin de compilation du template workspaceList.
                 $rootScope.$emit("workspaceListTplCompiled");
-            });
+            }, 1);
+
             // Affiche / cache le formulaire de recherche de la liste.
             $(element).find(".workspacelist-grid-header-search-button-arrow-right").click(function () {
                 // Compilation du template de formulaire des filtres.
@@ -158,9 +179,11 @@ vitisApp.appWorkspaceListDrtv = function ($timeout, $rootScope, $templateRequest
                                 if (typeof (envSrvc["oWorkspaceList"][envSrvc["sSelectedGridOptionsName"]]["oDefaultValues"]) == "undefined") {
                                     envSrvc["oWorkspaceList"][envSrvc["sSelectedGridOptionsName"]]["oDefaultValues"] = angular.copy(envSrvc["oFormValues"][envSrvc["sFormDefinitionName"]]);
                                     envSrvc["oWorkspaceList"][envSrvc["sSelectedGridOptionsName"]]["oValues"] = angular.copy(envSrvc["oFormValues"][envSrvc["sFormDefinitionName"]]);
+                                    envSrvc["oWorkspaceList"][envSrvc["sSelectedGridOptionsName"]]["oFormDefinition"] = angular.copy(envSrvc["oFormDefinition"][envSrvc["sFormDefinitionName"]]);
                                 } else {
                                     // Copie du formulaire sauvé (le formReader remet le form. à vide ?).
                                     envSrvc["oFormValues"][envSrvc["sFormDefinitionName"]] = angular.copy(envSrvc["oWorkspaceList"][envSrvc["sSelectedGridOptionsName"]]["oValues"]);
+                                    envSrvc["oFormDefinition"][envSrvc["sFormDefinitionName"]] = angular.copy(envSrvc["oWorkspaceList"][envSrvc["sSelectedGridOptionsName"]]["oFormDefinition"]);
                                     // Rafraîchit le formulaire.
                                     scope.$broadcast('$$rebind::refresh');
                                     scope.$apply();
@@ -177,6 +200,7 @@ vitisApp.appWorkspaceListDrtv = function ($timeout, $rootScope, $templateRequest
                     $(element).find(".workspacelist-grid-header-search-form").slideToggle(400, function () {
                         externFunctionSrvc["resizeWin"]();
                         scope.$root["gridApi"][envSrvc["sSelectedGridOptionsName"]]["core"]["handleWindowResize"]();
+                        scope.$root["gridApi"][envSrvc["sSelectedGridOptionsName"]]["core"]["refreshRows"]();
                     });
                 });
             });

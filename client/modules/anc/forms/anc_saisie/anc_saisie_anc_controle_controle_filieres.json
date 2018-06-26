@@ -104,7 +104,7 @@
                     {
                         "type":"label",
                         "name":"fag_cap_eh",
-                        "label":"Capcité EH",
+                        "label":"Capacité EH",
                         "disabled":false,
                         "required":false,
                         "nb_cols":4,
@@ -949,7 +949,7 @@
             {
                 "fields":[
                     {
-                        "type":"label",
+                        "type":"tinymce",
                         "name":"fag_commentaires",
                         "label":"Commentaires",
                         "nb_cols":12,
@@ -1031,7 +1031,7 @@
                         ]
                     }
                 ]
-            }            
+            }
         ],
         "initEvent": "initAncControlFilieresAgreeesForm()",
         "tabs":{
@@ -1274,6 +1274,15 @@
                         "required":false,
                         "nb_cols":4,
                         "id":"fag_denom_7_1",
+                        "datasource":{
+                            "datasource_id":"datasource_63",
+                            "sort_order":"ASC",
+                            "distinct":"true",
+                            "label_key":"alias",
+                            "order_by":"alias",
+                            "id_key":"valeur",
+                            "attributs":"valeur|alias"
+                        },
                         "id_from":"fag_denom_7_1_from"
                     },
                     {
@@ -1311,12 +1320,12 @@
                     {
                         "type":"text",
                         "name":"fag_cap_eh",
-                        "label":"Capcité EH",
+                        "label":"Capacité EH",
                         "nb_cols":4,
                         "id":"fag_cap_eh_10_1"
                     },
                     {
-                        "type":"text",
+                        "type":"number",
                         "name":"fag_nb_cuv",
                         "label":"Nombre de cuves",
                         "disabled":false,
@@ -1329,7 +1338,7 @@
             {
                 "fields":[
                     {
-                        "type":"text",
+                        "type":"number",
                         "name":"fag_num",
                         "label":"Numéro de série cuve",
                         "disabled":false,
@@ -1338,7 +1347,7 @@
                         "id":"fag_num_12_1"
                     },
                     {
-                        "type":"text",
+                        "type":"number",
                         "name":"fag_num_filt",
                         "label":"Numéro de séries filtre",
                         "disabled":false,
@@ -2465,7 +2474,7 @@
             {
                 "fields":[
                     {
-                        "type":"text",
+                        "type":"number",
                         "name":"fag_en_bord",
                         "label":"Num de bordereau de suivi des matières de vidange",
                         "disabled":false,
@@ -2493,7 +2502,7 @@
                         "id_from":"fag_en_dest_71_1_from"
                     },
                     {
-                        "type":"text",
+                        "type":"number",
                         "name":"fag_en_perc",
                         "label":"Pourcentage de boue dans la fosse",
                         "disabled":false,
@@ -2895,6 +2904,15 @@
                         "required":false,
                         "nb_cols":4,
                         "id":"fag_denom_7_1",
+                        "datasource":{
+                            "datasource_id":"datasource_63",
+                            "sort_order":"ASC",
+                            "distinct":"true",
+                            "label_key":"alias",
+                            "order_by":"alias",
+                            "id_key":"valeur",
+                            "attributs":"valeur|alias"
+                        },
                         "id_from":"fag_denom_7_1_from"
                     },
                     {
@@ -2932,12 +2950,12 @@
                     {
                         "type":"text",
                         "name":"fag_cap_eh",
-                        "label":"Capcité EH",
+                        "label":"Capacité EH",
                         "nb_cols":4,
                         "id":"fag_cap_eh_10_1"
                     },
                     {
-                        "type":"text",
+                        "type":"number",
                         "name":"fag_nb_cuv",
                         "label":"Nombre de cuves",
                         "disabled":false,
@@ -2950,7 +2968,7 @@
             {
                 "fields":[
                     {
-                        "type":"text",
+                        "type":"number",
                         "name":"fag_num",
                         "label":"Numéro de série cuve",
                         "disabled":false,
@@ -2959,7 +2977,7 @@
                         "id":"fag_num_12_1"
                     },
                     {
-                        "type":"text",
+                        "type":"number",
                         "name":"fag_num_filt",
                         "label":"Numéro de séries filtre",
                         "disabled":false,
@@ -4082,7 +4100,7 @@
             {
                 "fields":[
                     {
-                        "type":"text",
+                        "type":"number",
                         "name":"fag_en_bord",
                         "label":"Num de bordereau de suivi des matières de vidange",
                         "disabled":false,
@@ -4110,7 +4128,7 @@
                         "id_from":"fag_en_dest_71_1_from"
                     },
                     {
-                        "type":"text",
+                        "type":"number",
                         "name":"fag_en_perc",
                         "label":"Pourcentage de boue dans la fosse",
                         "disabled":false,
@@ -4342,7 +4360,7 @@
                         ]
                     }
                 ]
-            }            
+            }
         ],
         "initEvent": "initAncControlFilieresAgreeesForm()",
         "event":"sendSimpleForm()",
@@ -5255,6 +5273,19 @@
                 "filter": {"constructeur": true}
             },
             "ressource_id":"vitis/genericquerys"
+        },
+        "datasource_63":{
+            "type":"web_service",
+            "dataType":"tableValue",
+            "name":"fag_denom",
+            "description":"",
+            "parameters":{
+                "filter": {"id_nom_table": "filieres_agrees", "nom_liste": "fag_denom"},
+                "schema":"s_anc",
+                "table":"param_liste"
+            },
+            "ressource_id":"vitis/genericquerys",
+            "id":"datasource_63"
         }
     }
 }

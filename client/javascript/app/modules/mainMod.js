@@ -9,7 +9,7 @@ goog.require('vitis.loadApp');
 goog.require('vitis.application.config');
 
 // Module.
-var aModuleDependencies = ["ui.grid", "ui.grid.selection", "ui.grid.pagination", "ui.grid.moveColumns", "ui.grid.resizeColumns" ,"ui.grid.exporter", "pascalprecht.translate", "angular.bind.notifier", "formReader"];
+var aModuleDependencies = ["ui.grid", "ui.grid.selection", "ui.grid.pagination", "ui.grid.moveColumns", "ui.grid.resizeColumns", "ui.grid.exporter", "pascalprecht.translate", "angular.bind.notifier", "formReader", "ngSanitize"];
 aModuleDependencies = aModuleDependencies.concat(oApplicationFiles["vitisModuleDependencies"]);
 
 vitisApp.module = angular.module("vitisApp", aModuleDependencies);
@@ -77,8 +77,8 @@ vitisApp.config = function ($httpProvider, $translateProvider, $translatePartial
     $translatePartialLoaderProvider["addPart"]('lang');
     // Langue par défaut.
     $translateProvider["preferredLanguage"]('fr');
-    // Echappement des tags html.
-    //$translateProvider["useSanitizeValueStrategy"]('escape');
+    // Sécurisation des données de traduction.
+    $translateProvider["useSanitizeValueStrategy"](null);
     // 
     /*
      $httpProvider.interceptors.push(function () {
@@ -139,14 +139,14 @@ vitisApp.config = function ($httpProvider, $translateProvider, $translatePartial
                         }
                     };
                     var sTitle = "";
-                    switch(response["data"]["errorCode"]) {
+                    switch (response["data"]["errorCode"]) {
                         // Token expiré.
                         case 15:
                             // Paramètres de la fenêtre modale.
                             oOptions["message"] = "EXPIRED_TOKEN_ERROR";
                             sTitle = "EXPIRED_TOKEN_ERROR_TITLE";
                             break;
-                        // Token invalide.
+                            // Token invalide.
                         case 16:
                             // Paramètres de la fenêtre modale.
                             oOptions["message"] = "INVALID_TOKEN_ERROR";
@@ -183,30 +183,31 @@ vitisApp.config = function ($httpProvider, $translateProvider, $translatePartial
         };
     });
     // Modification du gestionnaire d'erreur d'Angular pour afficher les erreurs.
-    if (sessionStorage['debug'] == "true") {
-        $provide.decorator("$exceptionHandler", ['$delegate', function($delegate) {
-            return function(exception, cause) {
+    $provide.decorator("$exceptionHandler", ['$delegate', function ($delegate) {
+            return function (exception, cause) {
                 $delegate(exception, cause);
-                // Injection des services.
-                var envSrvc = angular.element(vitisApp.appHtmlFormDrtv).injector().get(["envSrvc"]);
-                var externFunctionSrvc = angular.element(vitisApp.appHtmlFormDrtv).injector().get(["externFunctionSrvc"]);
-                var sHeader = "<b>Mode: " + envSrvc["oSelectedMode"]["title"] + " / " + "Onglet: " + envSrvc["oSelectedObject"]["label"] + "</b><br>";
-                var oOptions = {
-                    "className": "modal-danger modal-error-log",
-                    "message": "<div>" + sHeader + exception["stack"].replace(/[\n\r]/g, '<br>').replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;') + "</div>",
-                    "buttons": {
-                        "ok": {
-                            label: "OK",
-                            className: "btn-default"
+                if (sessionStorage['debug'] == "true") {
+                    // Injection des services.
+                    var envSrvc = angular.element(vitisApp.appHtmlFormDrtv).injector().get(["envSrvc"]);
+                    var externFunctionSrvc = angular.element(vitisApp.appHtmlFormDrtv).injector().get(["externFunctionSrvc"]);
+                    var sHeader = "<b>Mode: " + envSrvc["oSelectedMode"]["title"] + " / " + "Onglet: " + envSrvc["oSelectedObject"]["label"] + "</b><br>";
+                    var oOptions = {
+                        "className": "modal-danger modal-error-log",
+                        "message": "<div>" + sHeader + exception["stack"].replace(/[\n\r]/g, '<br>').replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;') + "</div>",
+                        "buttons": {
+                            "ok": {
+                                label: "OK",
+                                className: "btn-default"
+                            }
+                        },
+                        "callback": function () {
                         }
-                    },
-                    "callback": function () {
-                    }
-                };
-                // Affichage de la fenêtre modale.
-                externFunctionSrvc["modalWindow"]("alert", exception["name"] + ": " + exception["message"], oOptions);
+                    };
+                    // Affichage de la fenêtre modale.
+                    externFunctionSrvc["modalWindow"]("alert", exception["name"] + ": " + exception["message"], oOptions);
+                }
             };
-        }]);
-    }
+        }
+    ]);
 };
 vitisApp.module.config(vitisApp.config);

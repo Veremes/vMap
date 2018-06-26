@@ -3,12 +3,12 @@
 <installer>
 	<schema>
 		<name>s_anc</name>
-		<version>2017.01.00</version>
+		<version>2018.02.00</version>
 		<dependenciesCollection>
 			<dependency>
 				<nature>schema</nature>
 				<name>s_vitis</name>
-				<version>2017.02.00</version>
+				<version>2018.03.00</version>
 				<object>vas</object>
 			</dependency>
 			<dependency>
@@ -21,7 +21,7 @@
 	<dependenciesCollection>
 		<dependency>
 			<nature>vas</nature>
-			<version>2017.02.00</version>
+			<version>2018.03.00</version>
 		</dependency>
 	</dependenciesCollection>
 </installer>

@@ -12,9 +12,9 @@
  * 
  */
 require_once 'Vitis.class.inc';
-require_once __DIR__.'/../../class/vitis_lib/Connection.class.inc';
+require_once __DIR__ . '/../../class/vitis_lib/Connection.class.inc';
 require_once 'Domain.class.inc';
-require_once(__DIR__.'/../../class/vmlib/BdDataAccess.inc');
+require_once(__DIR__ . '/../../class/vmlib/BdDataAccess.inc');
 
 class Domains extends Vitis {
     /**
@@ -35,12 +35,11 @@ class Domains extends Vitis {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
+     * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = new Connection($this->aValues, $this->aProperties);
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
         $this->aSelectedFields = Array("domain_id", "domain", "alias", "server", "port", "dn_search_user", "filter_user", "dn_search_group", "filter_group", "login", "password", "verify_rights", "type");
     }
 
@@ -244,23 +243,22 @@ class Domains extends Vitis {
      * @return id of the user created
      */
     function POST() {
-        $aReturn = $this->genericPost($this->aProperties['schema_framework'], 'domain', $this->aProperties['schema_framework'].'.seq_common', 'domain_id');
-		if ($aReturn['sStatus'] == 1){
+        $aReturn = $this->genericPost($this->aProperties['schema_framework'], 'domain', $this->aProperties['schema_framework'] . '.seq_common', 'domain_id');
+        if ($aReturn['sStatus'] == 1) {
             $oDomain = new Domain($this->aPath, $this->aValues, $this->aProperties, $this->oConnection);
             $oDomain->GET();
             $error = $this->writeDomainInProperties($oDomain->aFields, "insert");
-            if ($error['sStatus'] == 1){
+            if ($error['sStatus'] == 1) {
                 $sMessage = $aReturn['sMessage'];
-            }else{
+            } else {
                 $oError = new VitisError(1, $error['sMessage']);
                 $aXmlRacineAttribute['status'] = 0;
-                $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']); 
+                $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
             }
-        }else{
+        } else {
             $sMessage = $aReturn['sMessage'];
         }
         return $sMessage;
-        
     }
 
     /**
@@ -288,18 +286,17 @@ class Domains extends Vitis {
             $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['getInfoRolname'], $aParams);
             if ($this->oConnection->oBd->nombreLigne($oPDOresult) == 0) {
                 $aParams = array();
-                $aParams['sDomain'] = array('value' => $aValues["domain"], 'type' => 'string');
+                $aParams['sDomain'] = array('value' => 'vitis_' . $aValues["domain"], 'type' => 'double_quote');
                 $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['createRolname'], $aParams);
                 if ($this->oConnection->oBd->enErreur()) {
                     $aReturn = array(sStatus => 0, sMessage => $this->oBd->getBDMessage());
                     return array(aReturn => $aReturn);
-
                 }
             }
         }
-        
+
         $aReturn = array('sStatus' => 1, 'sMessage' => "");
-        return  $aReturn;
+        return $aReturn;
     }
 
     /**
@@ -322,7 +319,7 @@ class Domains extends Vitis {
      *     description="domain id",
      *     required=true,
      *     type="integer",
-       *   format="int32"
+     *   format="int32"
      *   ),
      *   @SWG\Parameter(
      *     name="domain",
@@ -428,25 +425,25 @@ class Domains extends Vitis {
      */
     function PUT() {
         $aReturn = $this->genericPut($this->aProperties['schema_framework'], 'domain', 'domain_id');
-        if ($aReturn['sStatus'] == 1){
-			
+        if ($aReturn['sStatus'] == 1) {
+
             $oDomain = new Domain($this->aPath, $this->aValues, $this->aProperties, $this->oConnection);
             $oDomain->GET();
             $error = $this->writeDomainInProperties($oDomain->aFields, "update");
-            if ($error['sStatus'] == 1){
+            if ($error['sStatus'] == 1) {
                 $sMessage = $aReturn['sMessage'];
-            }else{
-				
+            } else {
+
                 $oError = new VitisError(1, $error['sMessage']);
                 $aXmlRacineAttribute['status'] = 0;
-                $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']); 
+                $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
             }
-        }else{
+        } else {
             $sMessage = $aReturn['sMessage'];
         }
         return $sMessage;
     }
-    
+
     /**
      * @SWG\Delete(path="/domains/",
      *   tags={"Domains"},
@@ -504,28 +501,30 @@ class Domains extends Vitis {
      *     )
      *  )
      */
-    
+
     /**
      * delete domain
      * @return id of domain deleted or error object if a domain is not deleted
      */
     function DELETE() {
         $aReturn = $this->genericDelete($this->aProperties['schema_framework'], 'domain', 'domain_id');
-        if ($aReturn['sStatus'] == 1){
+        if ($aReturn['sStatus'] == 1) {
             $oDomain = new Domain($this->aPath, $this->aValues, $this->aProperties, $this->oConnection);
             $oDomain->GET();
             $error = $this->writeDomainInProperties($oDomain->aFields, 'delete');
-            if ($error['sStatus'] == 1){
+            if ($error['sStatus'] == 1) {
                 $sMessage = $aReturn['sMessage'];
-            }else{
+            } else {
                 $oError = new VitisError(1, $error['sMessage']);
                 $aXmlRacineAttribute['status'] = 0;
-                $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']); 
+                $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
             }
-        }else{
+        } else {
             $sMessage = $aReturn['sMessage'];
         }
         return $sMessage;
     }
+
 }
+
 ?>

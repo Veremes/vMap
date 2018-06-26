@@ -90,6 +90,20 @@ class WabBusinessObject {
         $this->oBd->executeWithParams($sSql, $aParams);
     }
 
+    public function wabGetStatus($sSchema, $sTable, $sBoNameField, $mBoIdValue) {
+        require 'BusinessObject.class.sql.inc';
+        // GET Status name
+        $sSql = $aSQL["getStatusName"];
+        $aParams = array(
+          "SCHEMA" => array("value"=> $sSchema, "type"=> 'column_name'),
+          "TABLE" => array("value"=> $sTable, "type"=> 'column_name'),
+          "BOIDFIELD" => array("value"=> $sBoNameField, "type"=> 'column_name'),
+          "BOID" => array("value"=> $mBoIdValue, "type"=> 'number')
+          );
+
+        $oResultat = $this->oBd->executeWithParams($sSql, $aParams);
+        return $this->oBd->objetSuivant($oResultat)->name;
+    }
     /*     * ********************************************************************
       Ajoute une note
       \sLineAttribute : Champ de form. contenant la note à ajouter
@@ -230,7 +244,7 @@ class WabBusinessObject {
       /Retour : booléen (T:ok, F:erreur)
      * ******************************************************************** */
 
-    function insertOrder($sWorkspaceKey, $sWkParams, $iPriorityId = 1, $iEmailOptionId = 3, $sEmailNotifications = '', $sXslStyleSheet = '') {
+    function insertOrder($sWorkspaceKey, $sWkParams, $iPriorityId = 1, $iEmailOptionId = 3, $sEmailNotifications = null, $sXslStyleSheet = '') {
         
       $bNoError = true;
 
@@ -261,9 +275,13 @@ class WabBusinessObject {
           'priority_id'=>$iPriorityId,
           'email_option_id'=>$iEmailOptionId,
           'wk_params'=>$sWkParams,
-          'xslstylesheet'=>$sXslStyleSheet,
-          'email_notifications'=>$sEmailNotifications
+          'xslstylesheet'=>$sXslStyleSheet
         );
+        
+        if ( $sEmailNotifications != null){
+          $postfields['email_notifications'] = $sEmailNotifications;
+        }
+
         $oReturn = $this->postCurlRequest ($sUrl, $postfields);
                  
       } else
@@ -291,6 +309,9 @@ class WabBusinessObject {
             $iEmailTemplateId = $this->aProperties['default_mail_model'];
         writeToErrorLog(print_r($this->aProperties, true));
         $oEmail = new Email($this->oBd, $iEmailTemplateId, $this->aProperties, $aObjects);
+        //if(!empty($sValuesKey)){
+        //$oEmail->aValues = $this->aValues;
+        //}
         if (!empty($oEmail->oEmailTemplate->name))
             $sMessage = $oEmail->send();
         return $sMessage;

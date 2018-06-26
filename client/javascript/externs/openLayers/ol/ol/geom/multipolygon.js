@@ -223,12 +223,13 @@ ol.geom.MultiPolygon.prototype.getFlatInteriorPoints = function() {
 
 /**
  * Return the interior points as {@link ol.geom.MultiPoint multipoint}.
- * @return {ol.geom.MultiPoint} Interior points.
+ * @return {ol.geom.MultiPoint} Interior points as XYM coordinates, where M is
+ * the length of the horizontal intersection that the point belongs to.
  * @api
  */
 ol.geom.MultiPolygon.prototype.getInteriorPoints = function() {
   var interiorPoints = new ol.geom.MultiPoint(null);
-  interiorPoints.setFlatCoordinates(ol.geom.GeometryLayout.XY,
+  interiorPoints.setFlatCoordinates(ol.geom.GeometryLayout.XYM,
       this.getFlatInteriorPoints().slice());
   return interiorPoints;
 };
@@ -375,7 +376,7 @@ ol.geom.MultiPolygon.prototype.setCoordinates = function(coordinates, opt_layout
     } else {
       var lastEnds = endss[endss.length - 1];
       this.flatCoordinates.length = lastEnds.length === 0 ?
-          0 : lastEnds[lastEnds.length - 1];
+        0 : lastEnds[lastEnds.length - 1];
     }
     this.changed();
   }

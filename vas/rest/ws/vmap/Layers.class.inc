@@ -36,12 +36,11 @@ class Layers extends Vmap {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
+     * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = new Connection($this->aValues, $this->aProperties);
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
     }
 
     /**
@@ -187,7 +186,8 @@ class Layers extends Vmap {
         for ($i = 0; $i < count($this->aObjects); $i++) {
             if (!empty($this->aObjects[$i]->aFields['bo_id_list'])) {
                 $aBoIds = explode('|', $this->aObjects[$i]->aFields['bo_id_list']);
-                $this->aObjects[$i]->aFields['business_objects'] = $this->aObjects[$i]->getBusinessObjectsInfos($aBoIds);
+//                $this->aObjects[$i]->aFields['business_objects'] = $this->aObjects[$i]->getBusinessObjectsInfos($aBoIds, $this->oConnection);
+                $this->aObjects[$i]->aFields['business_objects'] = $this->getBusinessObjectsInfos($aBoIds);
             }
         }
 
@@ -200,6 +200,24 @@ class Layers extends Vmap {
         $aReturn = array('sStatus' => $aXmlRacineAttribute['status'], "sMessage" => $sMessage);
 
         return $aReturn;
+    }
+
+    /**
+     * Get the infos from the business objects defined in $aBoIds
+     * @param array $aBoIds
+     * @return array
+     */
+    function getBusinessObjectsInfos($aBoIds) {
+        $aBoInfos = array();
+        for ($i = 0; $i < count($aBoIds); $i++) {
+            $aPath = array('vmap', 'businessobjects', $aBoIds[$i]);
+            $aValues = $this->aValues;
+            $aValues['my_vitis_id'] = $aBoIds[$i];
+            $oBo = new BusinessObject($aPath, $aValues, $this->aProperties, false, $this->oConnection);
+            $oBo->GET();
+            array_push($aBoInfos, $oBo->aFields);
+        }
+        return $aBoInfos;
     }
 
     /**
@@ -349,11 +367,9 @@ class Layers extends Vmap {
                 $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['setLayerBoId'], $aParams);
             }
             // Associe les objets métiers à la couche
-            if (!empty($this->aValues['bo_id_list'])) {
-                if (!empty($this->aValues['my_vitis_id'])) {
-                    $aBoList = explode('|', $this->aValues['bo_id_list']);
-                    $this->associateBusinessobjects($aBoList, $this->aValues['my_vitis_id']);
-                }
+            if (!empty($this->aValues['my_vitis_id'])) {
+                $aBoList = explode('|', $this->aValues['bo_id_list']);
+                $this->associateBusinessobjects($aBoList, $this->aValues['my_vitis_id']);
             }
         }
         return $aReturn['sMessage'];
@@ -600,11 +616,9 @@ class Layers extends Vmap {
                 $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['setLayerBoId'], $aParams);
             }
             // Associe les objets métiers à la couche
-            if (!empty($this->aValues['bo_id_list'])) {
-                if (!empty($this->aValues['my_vitis_id'])) {
-                    $aBoList = explode('|', $this->aValues['bo_id_list']);
-                    $this->associateBusinessobjects($aBoList, $this->aValues['my_vitis_id']);
-                }
+            if (!empty($this->aValues['my_vitis_id'])) {
+                $aBoList = explode('|', $this->aValues['bo_id_list']);
+                $this->associateBusinessobjects($aBoList, $this->aValues['my_vitis_id']);
             }
         }
         return $aReturn['sMessage'];
@@ -713,21 +727,25 @@ class Layers extends Vmap {
     function associateBusinessobjects($aBoList, $iLayerId) {
         require $this->sRessourcesFile;
 
-        // Supprime les objets métiers actuellements liés à la couche
-        $aSQLParams = array(
-            'sSchemaVmap' => array('value' => $this->aProperties['schema_vmap'], 'type' => 'column_name'),
-            'layer_id' => array('value' => $iLayerId, 'type' => 'number')
-        );
-        $oResult = $this->oConnection->oBd->executeWithParams($aSql['deleteAssociatedBos'], $aSQLParams);
-
-        // Ajoute les objets métiers à la couche
-        for ($i = 0; $i < count($aBoList); $i++) {
+        if (count($aBoList) > 0) {
+            // Supprime les objets métiers actuellements liés à la couche
             $aSQLParams = array(
                 'sSchemaVmap' => array('value' => $this->aProperties['schema_vmap'], 'type' => 'column_name'),
-                'business_object_id' => array('value' => $aBoList[$i], 'type' => 'string'),
                 'layer_id' => array('value' => $iLayerId, 'type' => 'number')
             );
-            $oResult = $this->oConnection->oBd->executeWithParams($aSql['addAssociatedBos'], $aSQLParams);
+            $oResult = $this->oConnection->oBd->executeWithParams($aSql['deleteAssociatedBos'], $aSQLParams);
+
+            // Ajoute les objets métiers à la couche
+            for ($i = 0; $i < count($aBoList); $i++) {
+                if (!empty($aBoList[$i])) {
+                    $aSQLParams = array(
+                        'sSchemaVmap' => array('value' => $this->aProperties['schema_vmap'], 'type' => 'column_name'),
+                        'business_object_id' => array('value' => $aBoList[$i], 'type' => 'string'),
+                        'layer_id' => array('value' => $iLayerId, 'type' => 'number')
+                    );
+                    $oResult = $this->oConnection->oBd->executeWithParams($aSql['addAssociatedBos'], $aSQLParams);
+                }
+            }
         }
     }
 

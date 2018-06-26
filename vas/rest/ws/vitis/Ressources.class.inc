@@ -16,23 +16,21 @@ require_once __DIR__ . '/../../class/vitis_lib/Connection.class.inc';
 require_once(__DIR__ . '/../../class/vmlib/BdDataAccess.inc');
 
 class Ressources extends Vitis {
-  
 
     /**
      * construct
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
+     * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = new Connection($this->aValues, $this->aProperties);
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
         $this->aSelectedFields = Array("ressource_id", "module", "name", "description", "fields", "columns", "objects", "actions");
     }
 
-      /**
+    /**
      * get Columns
      * @return Columns
      */
@@ -51,8 +49,7 @@ class Ressources extends Vitis {
                         $this->getData($sDir);
                     }
                 }
-            }
-            else
+            } else
                 writeToErrorLog('scandir(./ws): failed to open dir');
         }
 
@@ -96,13 +93,13 @@ class Ressources extends Vitis {
                     if (in_array("fields", $aFields)) {
                         $sClass->aFields["fields"] = "";
                         foreach ($sClass->aSelectedFields as $sFields) {
-                            if (strpos($sFields, " as ")){
+                            if (strpos($sFields, " as ")) {
                                 $field = explode(" as ", $sFields)[1];
-                            }else{
-                                 $field = $sFields;
+                            } else {
+                                $field = $sFields;
                             }
                             if ($sClass->aFields["fields"] == "") {
-                                $sClass->aFields["fields"] =  $field;
+                                $sClass->aFields["fields"] = $field;
                             } else {
                                 $sClass->aFields["fields"] .= ", " . $field;
                             }
@@ -110,19 +107,23 @@ class Ressources extends Vitis {
                     }
                     if (in_array("columns", $aFields)) {
                         require_once 'Columns.class.inc';
-                        $oColumn = new Columns($this->aPath, array("ressource_id" => $sClass->aFields["ressource_id"], "module" => $sDir), $this->aProperties, $this->oConnection);
+                        $this->aValues["ressource_id"] = $sClass->aFields["ressource_id"];
+                        $this->aValues["module"] = $sDir;
+                        $oColumn = new Columns($this->aPath, $this->aValues, $this->aProperties, false);
                         $oColumn->GET();
                         array_push($sClass->aObjects, $oColumn);
                     }
                     if (in_array("actions", $aFields)) {
                         require_once 'Actions.class.inc';
-                        $oActions = new Actions($this->aPath, array("ressource_id" => $sClass->aFields["ressource_id"], "module" => $sDir), $this->aProperties, $this->oConnection);
+                        $this->aValues["ressource_id"] = $sClass->aFields["ressource_id"];
+                        $this->aValues["module"] = $sDir;
+                        $oActions = new Actions($this->aPath, $this->aValues, $this->aProperties, false);
                         $oActions->GET();
                         array_push($sClass->aObjects, $oActions);
                     }
                     if (in_array("objects", $aFields)) {
                         require_once'Tabs.class.inc';
-						$aValues = array("filter" => '{"relation": "AND","operators":[{"column": "ressource_id","compare_operator": "=","value": "' . $sClass->aFields["ressource_id"] . '"}, {"column": "lang","compare_operator": "=","value": "' . $this->aProperties["language"] . '"}]}', "token" => $this->aValues['token'], 'order_by' => 'index');
+                        $aValues = array("filter" => '{"relation": "AND","operators":[{"column": "ressource_id","compare_operator": "=","value": "' . $sClass->aFields["ressource_id"] . '"}, {"column": "lang","compare_operator": "=","value": "' . $this->aProperties["language"] . '"}]}', "token" => $this->aValues['token'], 'order_by' => 'index');
                         $oTabs = new Tabs($this->aPath, $aValues, $this->aProperties);
                         $oTabs->GET();
                         array_push($sClass->aObjects, $oTabs);

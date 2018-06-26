@@ -14,7 +14,8 @@ goog.require('ol.geom.flat.contains');
  * @param {Array.<number>} flatCenters Flat centers.
  * @param {number} flatCentersOffset Flat center offset.
  * @param {Array.<number>=} opt_dest Destination.
- * @return {Array.<number>} Destination.
+ * @return {Array.<number>} Destination point as XYM coordinate, where M is the
+ * length of the horizontal intersection that the point belongs to.
  */
 ol.geom.flat.interiorpoint.linearRings = function(flatCoordinates, offset,
     ends, stride, flatCenters, flatCentersOffset, opt_dest) {
@@ -23,18 +24,20 @@ ol.geom.flat.interiorpoint.linearRings = function(flatCoordinates, offset,
   /** @type {Array.<number>} */
   var intersections = [];
   // Calculate intersections with the horizontal line
-  var end = ends[0];
-  x1 = flatCoordinates[end - stride];
-  y1 = flatCoordinates[end - stride + 1];
-  for (i = offset; i < end; i += stride) {
-    x2 = flatCoordinates[i];
-    y2 = flatCoordinates[i + 1];
-    if ((y <= y1 && y2 <= y) || (y1 <= y && y <= y2)) {
-      x = (y - y1) / (y2 - y1) * (x2 - x1) + x1;
-      intersections.push(x);
+  for (var r = 0, rr = ends.length; r < rr; ++r) {
+    var end = ends[r];
+    x1 = flatCoordinates[end - stride];
+    y1 = flatCoordinates[end - stride + 1];
+    for (i = offset; i < end; i += stride) {
+      x2 = flatCoordinates[i];
+      y2 = flatCoordinates[i + 1];
+      if ((y <= y1 && y2 <= y) || (y1 <= y && y <= y2)) {
+        x = (y - y1) / (y2 - y1) * (x2 - x1) + x1;
+        intersections.push(x);
+      }
+      x1 = x2;
+      y1 = y2;
     }
-    x1 = x2;
-    y1 = y2;
   }
   // Find the longest segment of the horizontal line that has its center point
   // inside the linear ring.
@@ -61,10 +64,10 @@ ol.geom.flat.interiorpoint.linearRings = function(flatCoordinates, offset,
     pointX = flatCenters[flatCentersOffset];
   }
   if (opt_dest) {
-    opt_dest.push(pointX, y);
+    opt_dest.push(pointX, y, maxSegmentLength);
     return opt_dest;
   } else {
-    return [pointX, y];
+    return [pointX, y, maxSegmentLength];
   }
 };
 
@@ -75,7 +78,8 @@ ol.geom.flat.interiorpoint.linearRings = function(flatCoordinates, offset,
  * @param {Array.<Array.<number>>} endss Endss.
  * @param {number} stride Stride.
  * @param {Array.<number>} flatCenters Flat centers.
- * @return {Array.<number>} Interior points.
+ * @return {Array.<number>} Interior points as XYM coordinates, where M is the
+ * length of the horizontal intersection that the point belongs to.
  */
 ol.geom.flat.interiorpoint.linearRingss = function(flatCoordinates, offset, endss, stride, flatCenters) {
   var interiorPoints = [];

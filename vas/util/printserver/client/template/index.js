@@ -27,6 +27,7 @@ var initTemplate = function (opt_options) {
         token: opt_options.token,
         apiUrl: opt_options.apiUrl,
         templateId: opt_options.templateId,
+        styleId: opt_options.styleId,
         includes: opt_options.includes,
         scope: opt_options.scope
     });

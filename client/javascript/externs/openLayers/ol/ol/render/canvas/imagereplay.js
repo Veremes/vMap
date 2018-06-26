@@ -11,11 +11,21 @@ goog.require('ol.render.canvas.Replay');
  * @param {number} tolerance Tolerance.
  * @param {ol.Extent} maxExtent Maximum extent.
  * @param {number} resolution Resolution.
+ * @param {number} pixelRatio Pixel ratio.
  * @param {boolean} overlaps The replay can have overlapping geometries.
+ * @param {?} declutterTree Declutter tree.
  * @struct
  */
-ol.render.canvas.ImageReplay = function(tolerance, maxExtent, resolution, overlaps) {
-  ol.render.canvas.Replay.call(this, tolerance, maxExtent, resolution, overlaps);
+ol.render.canvas.ImageReplay = function(
+    tolerance, maxExtent, resolution, pixelRatio, overlaps, declutterTree) {
+  ol.render.canvas.Replay.call(this,
+      tolerance, maxExtent, resolution, pixelRatio, overlaps, declutterTree);
+
+  /**
+   * @private
+   * @type {ol.DeclutterGroup}
+   */
+  this.declutterGroup_ = null;
 
   /**
    * @private
@@ -125,19 +135,19 @@ ol.render.canvas.ImageReplay.prototype.drawPoint = function(pointGeometry, featu
   var stride = pointGeometry.getStride();
   var myBegin = this.coordinates.length;
   var myEnd = this.drawCoordinates_(
-        flatCoordinates, 0, flatCoordinates.length, stride);
+      flatCoordinates, 0, flatCoordinates.length, stride);
   this.instructions.push([
     ol.render.canvas.Instruction.DRAW_IMAGE, myBegin, myEnd, this.image_,
-      // Remaining arguments to DRAW_IMAGE are in alphabetical order
-    this.anchorX_, this.anchorY_, this.height_, this.opacity_,
+    // Remaining arguments to DRAW_IMAGE are in alphabetical order
+    this.anchorX_, this.anchorY_, this.declutterGroup_, this.height_, this.opacity_,
     this.originX_, this.originY_, this.rotateWithView_, this.rotation_,
-    this.scale_, this.snapToPixel_, this.width_
+    this.scale_ * this.pixelRatio, this.snapToPixel_, this.width_
   ]);
   this.hitDetectionInstructions.push([
     ol.render.canvas.Instruction.DRAW_IMAGE, myBegin, myEnd,
     this.hitDetectionImage_,
-      // Remaining arguments to DRAW_IMAGE are in alphabetical order
-    this.anchorX_, this.anchorY_, this.height_, this.opacity_,
+    // Remaining arguments to DRAW_IMAGE are in alphabetical order
+    this.anchorX_, this.anchorY_, this.declutterGroup_, this.height_, this.opacity_,
     this.originX_, this.originY_, this.rotateWithView_, this.rotation_,
     this.scale_, this.snapToPixel_, this.width_
   ]);
@@ -157,19 +167,19 @@ ol.render.canvas.ImageReplay.prototype.drawMultiPoint = function(multiPointGeome
   var stride = multiPointGeometry.getStride();
   var myBegin = this.coordinates.length;
   var myEnd = this.drawCoordinates_(
-        flatCoordinates, 0, flatCoordinates.length, stride);
+      flatCoordinates, 0, flatCoordinates.length, stride);
   this.instructions.push([
     ol.render.canvas.Instruction.DRAW_IMAGE, myBegin, myEnd, this.image_,
-      // Remaining arguments to DRAW_IMAGE are in alphabetical order
-    this.anchorX_, this.anchorY_, this.height_, this.opacity_,
+    // Remaining arguments to DRAW_IMAGE are in alphabetical order
+    this.anchorX_, this.anchorY_, this.declutterGroup_, this.height_, this.opacity_,
     this.originX_, this.originY_, this.rotateWithView_, this.rotation_,
-    this.scale_, this.snapToPixel_, this.width_
+    this.scale_ * this.pixelRatio, this.snapToPixel_, this.width_
   ]);
   this.hitDetectionInstructions.push([
     ol.render.canvas.Instruction.DRAW_IMAGE, myBegin, myEnd,
     this.hitDetectionImage_,
-      // Remaining arguments to DRAW_IMAGE are in alphabetical order
-    this.anchorX_, this.anchorY_, this.height_, this.opacity_,
+    // Remaining arguments to DRAW_IMAGE are in alphabetical order
+    this.anchorX_, this.anchorY_, this.declutterGroup_, this.height_, this.opacity_,
     this.originX_, this.originY_, this.rotateWithView_, this.rotation_,
     this.scale_, this.snapToPixel_, this.width_
   ]);
@@ -202,7 +212,7 @@ ol.render.canvas.ImageReplay.prototype.finish = function() {
 /**
  * @inheritDoc
  */
-ol.render.canvas.ImageReplay.prototype.setImageStyle = function(imageStyle) {
+ol.render.canvas.ImageReplay.prototype.setImageStyle = function(imageStyle, declutterGroup) {
   var anchor = imageStyle.getAnchor();
   var size = imageStyle.getSize();
   var hitDetectionImage = imageStyle.getHitDetectionImage(1);
@@ -210,6 +220,7 @@ ol.render.canvas.ImageReplay.prototype.setImageStyle = function(imageStyle) {
   var origin = imageStyle.getOrigin();
   this.anchorX_ = anchor[0];
   this.anchorY_ = anchor[1];
+  this.declutterGroup_ = /** @type {ol.DeclutterGroup} */ (declutterGroup);
   this.hitDetectionImage_ = hitDetectionImage;
   this.image_ = image;
   this.height_ = size[1];

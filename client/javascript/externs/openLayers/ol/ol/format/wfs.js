@@ -47,15 +47,15 @@ ol.format.WFS = function(opt_options) {
    * @type {ol.format.GMLBase}
    */
   this.gmlFormat_ = options.gmlFormat ?
-      options.gmlFormat : new ol.format.GML3();
+    options.gmlFormat : new ol.format.GML3();
 
   /**
    * @private
    * @type {string}
    */
   this.schemaLocation_ = options.schemaLocation ?
-      options.schemaLocation :
-          ol.format.WFS.SCHEMA_LOCATIONS[ol.format.WFS.DEFAULT_VERSION];
+    options.schemaLocation :
+    ol.format.WFS.SCHEMA_LOCATIONS[ol.format.WFS.DEFAULT_VERSION];
 
   ol.format.XMLFeature.call(this);
 };
@@ -92,6 +92,13 @@ ol.format.WFS.WFSNS = 'http://www.opengis.net/wfs';
 
 /**
  * @const
+ * @type {string}
+ */
+ol.format.WFS.FESNS = 'http://www.opengis.net/fes';
+
+
+/**
+ * @const
  * @type {Object.<string, string>}
  */
 ol.format.WFS.SCHEMA_LOCATIONS = {
@@ -107,6 +114,22 @@ ol.format.WFS.SCHEMA_LOCATIONS = {
  * @type {string}
  */
 ol.format.WFS.DEFAULT_VERSION = '1.1.0';
+
+
+/**
+ * @return {Array.<string>|string|undefined} featureType
+ */
+ol.format.WFS.prototype.getFeatureType = function() {
+  return this.featureType_;
+};
+
+
+/**
+ * @param {Array.<string>|string|undefined} featureType Feature type(s) to parse.
+ */
+ol.format.WFS.prototype.setFeatureType = function(featureType) {
+  this.featureType_ = featureType;
+};
 
 
 /**
@@ -400,6 +423,25 @@ ol.format.WFS.writeOgcFidFilter_ = function(node, fid, objectStack) {
 
 
 /**
+ * @param {string|undefined} featurePrefix The prefix of the feature.
+ * @param {string} featureType The type of the feature.
+ * @returns {string} The value of the typeName property.
+ * @private
+ */
+ol.format.WFS.getTypeName_ = function(featurePrefix, featureType) {
+  featurePrefix = featurePrefix ? featurePrefix :
+    ol.format.WFS.FEATURE_PREFIX;
+  var prefix = featurePrefix + ':';
+  // The featureType already contains the prefix.
+  if (featureType.indexOf(prefix) === 0) {
+    return featureType;
+  } else {
+    return prefix + featureType;
+  }
+};
+
+
+/**
  * @param {Node} node Node.
  * @param {ol.Feature} feature Feature.
  * @param {Array.<*>} objectStack Node stack.
@@ -410,10 +452,9 @@ ol.format.WFS.writeDelete_ = function(node, feature, objectStack) {
   ol.asserts.assert(feature.getId() !== undefined, 26); // Features must have an id set
   var featureType = context['featureType'];
   var featurePrefix = context['featurePrefix'];
-  featurePrefix = featurePrefix ? featurePrefix :
-      ol.format.WFS.FEATURE_PREFIX;
   var featureNS = context['featureNS'];
-  node.setAttribute('typeName', featurePrefix + ':' + featureType);
+  var typeName = ol.format.WFS.getTypeName_(featurePrefix, featureType);
+  node.setAttribute('typeName', typeName);
   ol.xml.setAttributeNS(node, ol.format.WFS.XMLNS, 'xmlns:' + featurePrefix,
       featureNS);
   var fid = feature.getId();
@@ -434,10 +475,10 @@ ol.format.WFS.writeUpdate_ = function(node, feature, objectStack) {
   ol.asserts.assert(feature.getId() !== undefined, 27); // Features must have an id set
   var featureType = context['featureType'];
   var featurePrefix = context['featurePrefix'];
-  featurePrefix = featurePrefix ? featurePrefix :
-      ol.format.WFS.FEATURE_PREFIX;
   var featureNS = context['featureNS'];
-  node.setAttribute('typeName', featurePrefix + ':' + featureType);
+  var typeName = ol.format.WFS.getTypeName_(featurePrefix, featureType);
+  var geometryName = feature.getGeometryName();
+  node.setAttribute('typeName', typeName);
   ol.xml.setAttributeNS(node, ol.format.WFS.XMLNS, 'xmlns:' + featurePrefix,
       featureNS);
   var fid = feature.getId();
@@ -447,15 +488,19 @@ ol.format.WFS.writeUpdate_ = function(node, feature, objectStack) {
     for (var i = 0, ii = keys.length; i < ii; i++) {
       var value = feature.get(keys[i]);
       if (value !== undefined) {
-        values.push({name: keys[i], value: value});
+        var name = keys[i];
+        if (value instanceof ol.geom.Geometry) {
+          name = geometryName;
+        }
+        values.push({name: name, value: value});
       }
     }
     ol.xml.pushSerializeAndPop(/** @type {ol.XmlNodeStackItem} */ (
       {'gmlVersion': context['gmlVersion'], node: node,
-        'srsName': context['srsName']}),
-        ol.format.WFS.TRANSACTION_SERIALIZERS_,
-        ol.xml.makeSimpleNodeFactory('Property'), values,
-        objectStack);
+        'hasZ': context['hasZ'], 'srsName': context['srsName']}),
+    ol.format.WFS.TRANSACTION_SERIALIZERS_,
+    ol.xml.makeSimpleNodeFactory('Property'), values,
+    objectStack);
     ol.format.WFS.writeOgcFidFilter_(node, fid, objectStack);
   }
 };
@@ -538,8 +583,14 @@ ol.format.WFS.writeQuery_ = function(node, featureType, objectStack) {
   var featureNS = context['featureNS'];
   var propertyNames = context['propertyNames'];
   var srsName = context['srsName'];
-  var prefix = featurePrefix ? featurePrefix + ':' : '';
-  node.setAttribute('typeName', prefix + featureType);
+  var typeName;
+  // If feature prefix is not defined, we must not use the default prefix.
+  if (featurePrefix) {
+    typeName = ol.format.WFS.getTypeName_(featurePrefix, featureType);
+  } else {
+    typeName = featureType;
+  }
+  node.setAttribute('typeName', typeName);
   if (srsName) {
     node.setAttribute('srsName', srsName);
   }
@@ -595,6 +646,21 @@ ol.format.WFS.writeBboxFilter_ = function(node, filter, objectStack) {
 
 /**
  * @param {Node} node Node.
+ * @param {ol.format.filter.Contains} filter Filter.
+ * @param {Array.<*>} objectStack Node stack.
+ * @private
+ */
+ol.format.WFS.writeContainsFilter_ = function(node, filter, objectStack) {
+  var context = objectStack[objectStack.length - 1];
+  context['srsName'] = filter.srsName;
+
+  ol.format.WFS.writeOgcPropertyName_(node, filter.geometryName);
+  ol.format.GML3.prototype.writeGeometryElement(node, filter.geometry, objectStack);
+};
+
+
+/**
+ * @param {Node} node Node.
  * @param {ol.format.filter.Intersects} filter Filter.
  * @param {Array.<*>} objectStack Node stack.
  * @private
@@ -625,6 +691,32 @@ ol.format.WFS.writeWithinFilter_ = function(node, filter, objectStack) {
 
 /**
  * @param {Node} node Node.
+ * @param {ol.format.filter.During} filter Filter.
+ * @param {Array.<*>} objectStack Node stack.
+ * @private
+ */
+ol.format.WFS.writeDuringFilter_ = function(node, filter, objectStack) {
+
+  var valueReference = ol.xml.createElementNS(ol.format.WFS.FESNS, 'ValueReference');
+  ol.format.XSD.writeStringTextNode(valueReference, filter.propertyName);
+  node.appendChild(valueReference);
+
+  var timePeriod = ol.xml.createElementNS(ol.format.GMLBase.GMLNS, 'TimePeriod');
+
+  node.appendChild(timePeriod);
+
+  var begin = ol.xml.createElementNS(ol.format.GMLBase.GMLNS, 'begin');
+  timePeriod.appendChild(begin);
+  ol.format.WFS.writeTimeInstant_(begin, filter.begin);
+
+  var end = ol.xml.createElementNS(ol.format.GMLBase.GMLNS, 'end');
+  timePeriod.appendChild(end);
+  ol.format.WFS.writeTimeInstant_(end, filter.end);
+};
+
+
+/**
+ * @param {Node} node Node.
  * @param {ol.format.filter.LogicalNary} filter Filter.
  * @param {Array.<*>} objectStack Node stack.
  * @private
@@ -632,12 +724,14 @@ ol.format.WFS.writeWithinFilter_ = function(node, filter, objectStack) {
 ol.format.WFS.writeLogicalFilter_ = function(node, filter, objectStack) {
   /** @type {ol.XmlNodeStackItem} */
   var item = {node: node};
-  filter.conditions.forEach(function(condition) {
+  var conditions = filter.conditions;
+  for (var i = 0, ii = conditions.length; i < ii; ++i) {
+    var condition = conditions[i];
     ol.xml.pushSerializeAndPop(item,
         ol.format.WFS.GETFEATURE_SERIALIZERS_,
         ol.xml.makeSimpleNodeFactory(condition.getTagName()),
         [condition], objectStack);
-  });
+  }
 };
 
 
@@ -755,6 +849,21 @@ ol.format.WFS.writeOgcLiteral_ = function(node, value) {
 
 
 /**
+ * @param {Node} node Node.
+ * @param {string} time PropertyName value.
+ * @private
+ */
+ol.format.WFS.writeTimeInstant_ = function(node, time) {
+  var timeInstant = ol.xml.createElementNS(ol.format.GMLBase.GMLNS, 'TimeInstant');
+  node.appendChild(timeInstant);
+
+  var timePosition = ol.xml.createElementNS(ol.format.GMLBase.GMLNS, 'timePosition');
+  timeInstant.appendChild(timePosition);
+  ol.format.XSD.writeStringTextNode(timePosition, time);
+};
+
+
+/**
  * @type {Object.<string, Object.<string, ol.XmlSerializer>>}
  * @private
  */
@@ -763,10 +872,12 @@ ol.format.WFS.GETFEATURE_SERIALIZERS_ = {
     'Query': ol.xml.makeChildAppender(ol.format.WFS.writeQuery_)
   },
   'http://www.opengis.net/ogc': {
+    'During': ol.xml.makeChildAppender(ol.format.WFS.writeDuringFilter_),
     'And': ol.xml.makeChildAppender(ol.format.WFS.writeLogicalFilter_),
     'Or': ol.xml.makeChildAppender(ol.format.WFS.writeLogicalFilter_),
     'Not': ol.xml.makeChildAppender(ol.format.WFS.writeNotFilter_),
     'BBOX': ol.xml.makeChildAppender(ol.format.WFS.writeBboxFilter_),
+    'Contains': ol.xml.makeChildAppender(ol.format.WFS.writeContainsFilter_),
     'Intersects': ol.xml.makeChildAppender(ol.format.WFS.writeIntersectsFilter_),
     'Within': ol.xml.makeChildAppender(ol.format.WFS.writeWithinFilter_),
     'PropertyIsEqualTo': ol.xml.makeChildAppender(ol.format.WFS.writeComparisonFilter_),
@@ -892,7 +1003,7 @@ ol.format.WFS.prototype.writeTransaction = function(inserts, updates, deletes,
   var objectStack = [];
   var node = ol.xml.createElementNS(ol.format.WFS.WFSNS, 'Transaction');
   var version = options.version ?
-        options.version : ol.format.WFS.DEFAULT_VERSION;
+    options.version : ol.format.WFS.DEFAULT_VERSION;
   var gmlVersion = version === '1.0.0' ? 2 : 3;
   node.setAttribute('service', 'WFS');
   node.setAttribute('version', version);
@@ -908,10 +1019,11 @@ ol.format.WFS.prototype.writeTransaction = function(inserts, updates, deletes,
   var schemaLocation = ol.format.WFS.SCHEMA_LOCATIONS[version];
   ol.xml.setAttributeNS(node, 'http://www.w3.org/2001/XMLSchema-instance',
       'xsi:schemaLocation', schemaLocation);
+  var featurePrefix = options.featurePrefix ? options.featurePrefix : ol.format.WFS.FEATURE_PREFIX;
   if (inserts) {
     obj = {node: node, 'featureNS': options.featureNS,
-      'featureType': options.featureType, 'featurePrefix': options.featurePrefix,
-      'gmlVersion': gmlVersion, 'srsName': options.srsName};
+      'featureType': options.featureType, 'featurePrefix': featurePrefix,
+      'gmlVersion': gmlVersion, 'hasZ': options.hasZ, 'srsName': options.srsName};
     ol.obj.assign(obj, baseObj);
     ol.xml.pushSerializeAndPop(obj,
         ol.format.WFS.TRANSACTION_SERIALIZERS_,
@@ -920,8 +1032,8 @@ ol.format.WFS.prototype.writeTransaction = function(inserts, updates, deletes,
   }
   if (updates) {
     obj = {node: node, 'featureNS': options.featureNS,
-      'featureType': options.featureType, 'featurePrefix': options.featurePrefix,
-      'gmlVersion': gmlVersion, 'srsName': options.srsName};
+      'featureType': options.featureType, 'featurePrefix': featurePrefix,
+      'gmlVersion': gmlVersion, 'hasZ': options.hasZ, 'srsName': options.srsName};
     ol.obj.assign(obj, baseObj);
     ol.xml.pushSerializeAndPop(obj,
         ol.format.WFS.TRANSACTION_SERIALIZERS_,
@@ -930,7 +1042,7 @@ ol.format.WFS.prototype.writeTransaction = function(inserts, updates, deletes,
   }
   if (deletes) {
     ol.xml.pushSerializeAndPop({node: node, 'featureNS': options.featureNS,
-      'featureType': options.featureType, 'featurePrefix': options.featurePrefix,
+      'featureType': options.featureType, 'featurePrefix': featurePrefix,
       'gmlVersion': gmlVersion, 'srsName': options.srsName},
     ol.format.WFS.TRANSACTION_SERIALIZERS_,
     ol.xml.makeSimpleNodeFactory('Delete'), deletes,
@@ -938,7 +1050,7 @@ ol.format.WFS.prototype.writeTransaction = function(inserts, updates, deletes,
   }
   if (options.nativeElements) {
     ol.xml.pushSerializeAndPop({node: node, 'featureNS': options.featureNS,
-      'featureType': options.featureType, 'featurePrefix': options.featurePrefix,
+      'featureType': options.featureType, 'featurePrefix': featurePrefix,
       'gmlVersion': gmlVersion, 'srsName': options.srsName},
     ol.format.WFS.TRANSACTION_SERIALIZERS_,
     ol.xml.makeSimpleNodeFactory('Native'), options.nativeElements,

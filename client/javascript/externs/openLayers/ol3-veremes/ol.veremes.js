@@ -1,4 +1,4 @@
-/* global ol, goog, oVmap, vitisApp */
+/* global ol, goog, ol, vitisApp */
 
 /**
  * @author: Armand Bahi
@@ -19,6 +19,9 @@ goog.require('ol.ordering');
 goog.require('ol.style.Shadow');
 goog.require('ol.style.FontSymbol');
 goog.require('ol.style.FontSymbol.FontAwesome');
+
+// veremes
+goog.require('ol.interaction.MobileModify');
 
 var $log = null;
 var log = function (sMessage) {
@@ -182,6 +185,11 @@ ol.Feature.prototype.getPointJSONStyle_ = function (olStyle) {
             if (goog.isDefAndNotNull(olStyle.getImage().getSrc)) {
                 if (goog.isDefAndNotNull(olStyle.getImage().getSrc())) {
                     oStyle['draw']['image'] = olStyle.getImage().getSrc();
+                }
+            }
+            if (goog.isDefAndNotNull(olStyle.getImage().getRotation)) {
+                if (goog.isDefAndNotNull(olStyle.getImage().getRotation())) {
+                    oStyle['draw']['rotation'] = olStyle.getImage().getRotation();
                 }
             }
         }
@@ -416,10 +424,47 @@ ol.Feature.prototype.getPointStyleByJSON_ = function (oJSON) {
             })
         }));
     } else if (goog.isDefAndNotNull(oJSON['draw']['image'])) {
-        // Image
-        style.setImage(new ol.style.Icon({
-            src: oJSON['draw']['image']
-        }));
+
+
+        var imgElem = document.createElement('img');
+        imgElem.src = oJSON['draw']['image'];
+
+        setTimeout(function () {
+
+            var rotation = 0;
+            if (goog.isDefAndNotNull(oJSON['draw']['rotation'])) {
+                if (goog.isNumber(parseFloat(oJSON['draw']['rotation']))) {
+                    if (!Number.isNaN(parseFloat(oJSON['draw']['rotation']))) {
+                        rotation = parseFloat(oJSON['draw']['rotation']);
+                    }
+                }
+            }
+
+            var size = 20;
+            if (goog.isDefAndNotNull(oJSON['draw']['size'])) {
+                if (goog.isNumber(parseFloat(oJSON['draw']['size']))) {
+                    if (!Number.isNaN(parseFloat(oJSON['draw']['size']))) {
+                        size = parseFloat(oJSON['draw']['size']);
+                    }
+                }
+            }
+
+            var heightWidthRatio = imgElem.width / imgElem.height;
+            var iconHeight = size;
+            var iconWidth = size * heightWidthRatio;
+            var canvasElem = document.createElement('canvas');
+            var context = canvasElem.getContext('2d');
+            canvasElem.height = iconHeight;
+            canvasElem.width = iconWidth;
+            context.drawImage(imgElem, 0, 0, iconWidth, iconHeight);
+
+            // Image
+            style.setImage(new ol.style.Icon({
+                img: canvasElem,
+                imgSize: [iconWidth, iconHeight],
+                rotation: rotation * Math.PI / 180
+            }));
+        });
     } else {
         // Cercle
         style.setImage(new ol.style.Circle({
@@ -562,4 +607,284 @@ ol.Feature.prototype.getPolygonStyleByJSON_ = function (oJSON) {
     }
 
     return style;
+};
+
+
+/**
+ * Parse a WKT geom and a EPSG projection code to return an EWKT geometry
+ * @param {string} WKTGeom WKT Geom
+ * @param {string} EPSGProj EPSG Code
+ * @returns {string} EWKT Geom
+ * @export
+ */
+ol.getEWKTFromWKT = function (WKTGeom, EPSGProj) {
+    log('ol.getEWKTFromWKT');
+
+    if (!goog.isString(WKTGeom)) {
+        console.error('WKTGeom is not a string');
+        return null;
+    }
+    if (!goog.isString(EPSGProj)) {
+        console.error('EPSGProj is not a string');
+        return null;
+    }
+    if (!EPSGProj.indexOf('EPSG:') === 0) {
+        console.error('EPSGProj is not an EPSG code');
+        return null;
+    }
+
+    var SRID = EPSGProj.substr(5);
+    var EWKTGeom = 'SRID=' + SRID + ';' + WKTGeom;
+
+    return EWKTGeom;
+};
+
+/**
+ * Get a WKT with proj from an EWKT geom
+ * @param {string} EWKTGeom
+ * @returns {object}
+ * @export
+ */
+ol.getWKTFromEWKT = function (EWKTGeom) {
+    log('ol.getWKTFromEWKT');
+
+    var sProj, WKTGeom;
+    if (!goog.isString(EWKTGeom)) {
+        console.error('EWKTGeom is not a string');
+        return null;
+    }
+
+    WKTGeom = EWKTGeom.substr(EWKTGeom.indexOf(';') + 1);
+    sProj = 'EPSG:' + EWKTGeom.slice(5, EWKTGeom.indexOf(';'));
+
+    /**
+     * Le WKT et EWKT n'ont pas la même syntaxe pour les géométries 3d
+     * WKT: "MULTILINESTRING Z ((710630.741851595 6153582.35273146 0,710624.342249182 6153579.04143213 0 (...)"
+     * EWKT: "SRID=2154;MULTILINESTRING((710630.741851595 6153582.35273146 0,710624.342249182 6153579.04143213 0 (...)"
+     */
+
+    // Vérifications pour le Z (3d)
+    var bIs3DGeom = false;
+    var sLastParenthesis = EWKTGeom.substr(
+            EWKTGeom.lastIndexOf('(') + 1,
+            EWKTGeom.indexOf(')', EWKTGeom.lastIndexOf('(')) - EWKTGeom.lastIndexOf('(') - 1
+            );
+    if (sLastParenthesis.split(',')[0].split(' ').length === 3) {
+        bIs3DGeom = true;
+    }
+
+    // Corrections pour la 3D
+    if (bIs3DGeom) {
+        WKTGeom = WKTGeom.substr(0, WKTGeom.indexOf('(')) + ' Z' + WKTGeom.substr(WKTGeom.indexOf('('));
+    }
+
+    return {
+        'proj': sProj,
+        'geom': WKTGeom
+    };
+};
+
+/**
+ * Return an EWKT geometry from a geom and a proj
+ * @param {ol.geom.Geometry} geom
+ * @param {String|undefined} proj
+ * @returns {String} EWKT Geom
+ * @export
+ */
+ol.getEWKTFromGeom = function (geom, proj) {
+    log('ol.getEWKTFromGeom', geom);
+
+    if (!goog.isDefAndNotNull(geom)) {
+        console.error('geom is not defined');
+        return null;
+    }
+    if (!goog.isString(proj)) {
+        console.error('proj is not a string');
+        return null;
+    }
+    if (!proj.indexOf('EPSG:') === 0) {
+        console.error('proj is not an EPSG code');
+        return null;
+    }
+
+    var WKT = new ol.format.WKT();
+    var WKTGeom = WKT.writeGeometry(geom, {
+        dataProjection: proj,
+        featureProjection: proj
+    });
+
+    // Corrections pour la 3D car en EWKT il ne faut pas de "Z"
+    WKTGeom = WKTGeom.substr(0, WKTGeom.indexOf('(')).replace(' Z', '') + WKTGeom.substr(WKTGeom.indexOf('('));
+
+    var SRID = proj.substr(5);
+    var EWKTGeom = 'SRID=' + SRID + ';' + WKTGeom;
+
+    return EWKTGeom;
+};
+
+/**
+ * Return an OpenLayers geometry from a EWKT geom
+ * @param {string} EWKTGeom
+ * @param {string|undefined} proj
+ * @returns {ol.geom.Geometry}
+ * @export
+ */
+ol.getGeomFromEWKT = function (EWKTGeom, proj) {
+    log('ol.getGeomFromEWKT');
+
+    if (!goog.isString(EWKTGeom)) {
+        console.error('EWKTGeom is not a string: ', EWKTGeom);
+        return null;
+    }
+
+    if (ol.isEWKTGeom(EWKTGeom)) {
+
+        var WKTFormat = new ol.format.WKT();
+        var oWKT = ol.getWKTFromEWKT(EWKTGeom);
+        var WKTGeom = oWKT['geom'];
+        var EWKTGeomProj = oWKT['proj'];
+
+        var oGeom = WKTFormat.readGeometry(WKTGeom, {
+            dataProjection: EWKTGeomProj,
+            featureProjection: proj
+        });
+
+        return oGeom;
+
+    } else {
+        console.error('Geom is not an EWKT Geometry: ', EWKTGeom);
+        return null;
+    }
+
+};
+
+/**
+ * Return an OpenLayers array of features from a EWKT geom
+ * @param {string} EWKTGeom
+ * @param {string|undefined} proj
+ * @returns {Array.<ol.Feature>}
+ * @export
+ */
+ol.getFeaturesFromEWKT = function (EWKTGeom, proj) {
+    log('ol.getFeaturesFromEWKT');
+
+    if (!goog.isString(EWKTGeom)) {
+        console.error('EWKTGeom is not a string: ', EWKTGeom);
+        return null;
+    }
+
+    if (ol.isEWKTGeom(EWKTGeom)) {
+
+        var WKTFormat = new ol.format.WKT();
+        var oWKT = ol.getWKTFromEWKT(EWKTGeom);
+        var WKTGeom = oWKT['geom'];
+        var EWKTGeomProj = oWKT['proj'];
+
+        var aFeatures = WKTFormat.readFeatures(WKTGeom, {
+            dataProjection: EWKTGeomProj,
+            featureProjection: proj
+        });
+
+        return aFeatures;
+
+    } else {
+        console.error('Geom is not an EWKT Geometry: ', EWKTGeom);
+        return null;
+    }
+
+};
+
+/**
+ * Return an EWKT geometry from a geom and a proj
+ * @param {array<ol.Feature>} aFeatures
+ * @param {String|undefined} proj
+ * @returns {String} EWKT Geom
+ * @export
+ */
+ol.getEWKTFromFeatures = function (aFeatures, proj) {
+    log('ol.getEWKTFromGeom', aFeatures);
+
+    if (!goog.isDefAndNotNull(aFeatures)) {
+        console.error('geom is not defined');
+        return null;
+    }
+    if (!goog.isString(proj)) {
+        console.error('proj is not a string');
+        return null;
+    }
+    if (!proj.indexOf('EPSG:') === 0) {
+        console.error('proj is not an EPSG code');
+        return null;
+    }
+
+    var WKT = new ol.format.WKT();
+    var WKTGeom = WKT.writeFeatures(aFeatures, {
+        dataProjection: proj,
+        featureProjection: proj
+    });
+
+    // Corrections pour la 3D car en EWKT il ne faut pas de "Z"
+    WKTGeom = WKTGeom.substr(0, WKTGeom.indexOf('(')).replace(' Z', '') + WKTGeom.substr(WKTGeom.indexOf('('));
+
+    var SRID = proj.substr(5);
+    var EWKTGeom = 'SRID=' + SRID + ';' + WKTGeom;
+
+    return EWKTGeom;
+};
+
+/**
+ * Return true if EWKTGeom is an EWKT geometry 
+ * @param {string} EWKTGeom
+ * @returns {boolean}
+ * @export
+ */
+ol.isEWKTGeom = function (EWKTGeom) {
+    log('ol.isEWKTGeom');
+
+    if (EWKTGeom.substr(0, 5).toUpperCase() !== 'SRID=')
+        return false;
+
+    var WKTFormat = new ol.format.WKT();
+    var WKTGeom = ol.getWKTFromEWKT(EWKTGeom)['geom'];
+
+    try {
+        WKTFormat.readGeometry(WKTGeom);
+    } catch (e) {
+        console.error('readGeometry failed: ', EWKTGeom);
+        return false;
+    }
+
+    return true;
+};
+
+/**
+ * Return a WKT geometry from a geom and a proj
+ * @param {array<ol.Feature>} aFeatures
+ * @param {String|undefined} proj
+ * @returns {String} EWKT Geom
+ * @export
+ */
+ol.getWKTFromFeatures = function(aFeatures, proj){
+        log('ol.getEWKTFromGeom', aFeatures);
+
+    if (!goog.isDefAndNotNull(aFeatures)) {
+        console.error('geom is not defined');
+        return null;
+    }
+    if (!goog.isString(proj)) {
+        console.error('proj is not a string');
+        return null;
+    }
+    if (!proj.indexOf('EPSG:') === 0) {
+        console.error('proj is not an EPSG code');
+        return null;
+    }
+
+    var WKT = new ol.format.WKT();
+    var WKTGeom = WKT.writeFeatures(aFeatures, {
+        dataProjection: proj,
+        featureProjection: proj
+    });
+    
+    return WKTGeom;
 };

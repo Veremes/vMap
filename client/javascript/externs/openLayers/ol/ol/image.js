@@ -6,7 +6,6 @@ goog.require('ol.ImageState');
 goog.require('ol.events');
 goog.require('ol.events.EventType');
 goog.require('ol.extent');
-goog.require('ol.obj');
 
 
 /**
@@ -15,16 +14,13 @@ goog.require('ol.obj');
  * @param {ol.Extent} extent Extent.
  * @param {number|undefined} resolution Resolution.
  * @param {number} pixelRatio Pixel ratio.
- * @param {Array.<ol.Attribution>} attributions Attributions.
  * @param {string} src Image source URI.
  * @param {?string} crossOrigin Cross origin.
  * @param {ol.ImageLoadFunctionType} imageLoadFunction Image load function.
  */
-ol.Image = function(extent, resolution, pixelRatio, attributions, src,
-    crossOrigin, imageLoadFunction) {
+ol.Image = function(extent, resolution, pixelRatio, src, crossOrigin, imageLoadFunction) {
 
-  ol.ImageBase.call(this, extent, resolution, pixelRatio, ol.ImageState.IDLE,
-      attributions);
+  ol.ImageBase.call(this, extent, resolution, pixelRatio, ol.ImageState.IDLE);
 
   /**
    * @private
@@ -40,12 +36,6 @@ ol.Image = function(extent, resolution, pixelRatio, attributions, src,
   if (crossOrigin !== null) {
     this.image_.crossOrigin = crossOrigin;
   }
-
-  /**
-   * @private
-   * @type {Object.<number, (HTMLCanvasElement|Image|HTMLVideoElement)>}
-   */
-  this.imageByContext_ = {};
 
   /**
    * @private
@@ -73,22 +63,8 @@ ol.inherits(ol.Image, ol.ImageBase);
  * @inheritDoc
  * @api
  */
-ol.Image.prototype.getImage = function(opt_context) {
-  if (opt_context !== undefined) {
-    var image;
-    var key = ol.getUid(opt_context);
-    if (key in this.imageByContext_) {
-      return this.imageByContext_[key];
-    } else if (ol.obj.isEmpty(this.imageByContext_)) {
-      image = this.image_;
-    } else {
-      image = /** @type {Image} */ (this.image_.cloneNode(false));
-    }
-    this.imageByContext_[key] = image;
-    return image;
-  } else {
-    return this.image_;
-  }
+ol.Image.prototype.getImage = function() {
+  return this.image_;
 };
 
 

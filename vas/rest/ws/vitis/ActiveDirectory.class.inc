@@ -35,12 +35,11 @@ class ActiveDirectory extends Vitis {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
+     * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = new Connection($this->aValues, $this->aProperties);
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
         $this->aSelectedFields = Array('workspace_id', 'name');
     }
 
@@ -481,8 +480,8 @@ class ActiveDirectory extends Vitis {
      */
     Public function testDomain() {
         $bIsError = false;
-         $aValues = $this->aValues;
-        if (empty($this->aValues['domain_id'])){
+        $aValues = $this->aValues;
+        if (empty($this->aValues['domain_id'])) {
             require $this->sRessourcesFile;
             $aParams['sSchemaFramework'] = array('value' => $this->aProperties['schema_framework'], 'type' => 'schema_name');
             $aParams['domain'] = array('value' => $this->aValues['domain'], 'type' => 'string');
@@ -490,16 +489,16 @@ class ActiveDirectory extends Vitis {
             if ($this->oConnection->oBd->enErreur()) {
                 $aReturn = array('sStatus' => 1, 'sMessage' => $this->oConnection->oBd->getBDMessage());
                 $bIsError = true;
-            }else{
+            } else {
                 $oResult = $this->oConnection->oBd->objetSuivant($oPDOresult);
                 $aValues['my_vitis_id'] = $oResult->domain_id;
             }
-        }else{
+        } else {
             $aValues['my_vitis_id'] = $this->aValues['domain_id'];
         }
-     
-        if ($bIsError == false){
-           
+
+        if ($bIsError == false) {
+
             // Infos du domaine
             $oDomain = new Domain($this->aPath, $aValues, $this->aProperties, $this->oConnection);
             $oDomain->GET();
@@ -510,7 +509,7 @@ class ActiveDirectory extends Vitis {
             // Informations de l'AD stocké dans un tableau
             $sLoginLdap = $this->aValues['login'] . '@' . $this->aValues['domain'];
 
-            $aLdap = array('sIdLdap' =>  $this->aValues['my_vitis_id'], 'sType' => $this->aValues['type'], 'sLdapName' => $this->aValues['domain'], 'sLoginLdap' => $sLoginLdap, 'sPwdLdap' => $this->aValues['password'], 'sServer' => $this->aValues['server'], 'sPort' => $this->aValues['port']);
+            $aLdap = array('sIdLdap' => $this->aValues['my_vitis_id'], 'sType' => $this->aValues['type'], 'sLdapName' => $this->aValues['domain'], 'sLoginLdap' => $sLoginLdap, 'sPwdLdap' => $this->aValues['password'], 'sServer' => $this->aValues['server'], 'sPort' => $this->aValues['port']);
 
             $aLdap['sObject'] = $this->aValues['object'];
 

@@ -1,4 +1,4 @@
-/* global nsVmap, ol, oVmap, goog, angular, vitisApp */
+/* global nsVmap, ol, oVmap, goog, angular, vitisApp, bootbox */
 
 /**
  * @author: Armand Bahi
@@ -57,7 +57,8 @@ nsVmap.Map = function () {
      */
     this.oOpenLayersMap_ = new ol.Map({
         layers: this.olLayers_,
-        view: this.olView_
+        view: this.olView_,
+        moveTolerance: 5
     });
 
     /**
@@ -164,6 +165,135 @@ nsVmap.Map = function () {
     });
 
     /**
+     * Location style
+     * @type {ol.style.Style}
+     */
+    this.oOpenLayersGPSStyle_ = new ol.style.Style({
+        fill: new ol.style.Fill({
+            color: 'rgba(30, 132, 202, 1)'
+        }),
+        stroke: new ol.style.Stroke({
+            color: 'rgba(255, 255, 255, 1)',
+            width: 2
+        }),
+        image: new ol.style.Circle({
+            radius: 6,
+            stroke: new ol.style.Stroke({
+                color: 'rgba(255, 255, 255, 1)',
+                width: 3
+            }),
+            fill: new ol.style.Fill({
+                color: 'rgba(30, 132, 202, 1)'
+            })
+        })
+    });
+
+    /**
+     * @type {ol.Collection}
+     * @private
+     */
+    this.oOpenLayersGPSOverlayFeatures_ = new ol.Collection();
+
+    /**
+     * @type {ol.layer.Vector}
+     * @private
+     */
+    this.oOpenLayersGPSOverlay_ = new ol.layer.Vector({
+        map: this.oOpenLayersMap_,
+        style: this.oOpenLayersGPSStyle_,
+        source: new ol.source.Vector({
+            features: this.oOpenLayersGPSOverlayFeatures_,
+            useSpatialIndex: false
+        })
+    });
+
+    /**
+     * Mobile draw style
+     * @type {ol.style.Style}
+     */
+    this.oOpenLayersMobileDrawStyle_ = new ol.style.Style({
+        fill: new ol.style.Fill({
+            color: 'rgba(255, 255, 255, 0.2)'
+        }),
+        stroke: new ol.style.Stroke({
+            color: '#ffcc33',
+            width: 2
+        }),
+        image: new ol.style.Circle({
+            radius: 6,
+            fill: new ol.style.Fill({
+                color: '#ffcc33',
+                width: 1
+            }),
+            stroke: new ol.style.Stroke({
+                color: '#FFFFFF'
+            })
+        })
+    });
+
+    /**
+     * @type {ol.Collection}
+     * @private
+     */
+    this.oOpenLayersMobileDrawOverlayFeatures_ = new ol.Collection();
+
+    /**
+     * @type {ol.layer.Vector}
+     * @private
+     */
+    this.oOpenLayersMobileDrawOverlay_ = new ol.layer.Vector({
+        map: this.oOpenLayersMap_,
+        style: this.oOpenLayersMobileDrawStyle_,
+        source: new ol.source.Vector({
+            features: this.oOpenLayersMobileDrawOverlayFeatures_,
+            useSpatialIndex: false
+        })
+    });
+
+    /**
+     * Mobile edit geom style
+     * @type {ol.style.Style}
+     */
+    this.oOpenLayersMobileGeomEditStyle_ = new ol.style.Style({
+        fill: new ol.style.Fill({
+            color: 'rgba(255,255,255,0.4)'
+        }),
+        stroke: new ol.style.Stroke({
+            color: '#3399CC',
+            width: 1.25
+        }),
+        image: new ol.style.Circle({
+            radius: 7,
+            stroke: new ol.style.Stroke({
+                color: 'rgba(255, 255, 255, 1)',
+                width: 2
+            }),
+            fill: new ol.style.Fill({
+                color: 'rgba(30, 132, 202, 1)'
+            })
+        })
+    });
+
+    /**
+     * @type {ol.Collection}
+     * @private
+     */
+    this.oOpenLayersMobileGeomEditOverlayFeatures_ = new ol.Collection();
+
+    /**
+     * @type {ol.layer.Vector}
+     * @private
+     */
+    this.oOpenLayersMobileGeomEditOverlay_ = new ol.layer.Vector({
+        map: this.oOpenLayersMap_,
+        style: this.oOpenLayersMobileGeomEditStyle_,
+        source: new ol.source.Vector({
+            features: this.oOpenLayersMobileGeomEditOverlayFeatures_,
+            useSpatialIndex: false
+        })
+    });
+
+    /**
      * Contient les évènements ajoutés sur la carte par la méthode addEventOnMap ou setEventOnMap
      * @type {array}
      * @private
@@ -218,6 +348,26 @@ nsVmap.Map = function () {
 
     this.oOpenLayersMap_.getViewport().setAttribute('id', 'map1');
 
+    // Variables pour l'insertion
+    this.mobileDrawCallback_ = null;
+    this.mobileDrawType_ = null;
+    this.mobileDrawMulti_ = false;
+    this.mobileDrawUndoHistory_ = [];
+    this.mobileDrawRedoHistory_ = [];
+    this.mobileDrawTmpPoints_ = [];
+    this.mobileDrawTmpFeature_ = null;
+    this.mobileDrawOutputFeatures_ = [];
+
+    // Variables pour l'édition de géométrie
+    this.mobileGeomEditCallback_ = null;
+    this.mobileGeomEditTmpFeature_ = null;
+    this.mobileGeomEditClosestPointFeature_ = null;
+    this.mobileGeomEditModify_ = this.getGeomEditionModifyInteraction_();
+
+    this.mobileInteractiveEvent_ = 'moveend';
+    this.mobileInteractiveDrawTmpEvent_ = null;
+    this.mobileInteractiveTmpDrawFunction_ = null;
+
     // Lors du click sur 'echap', désactive les actions et le tooltip
     $(document).keydown(function (e) {
         if (e.keyCode === 27) {
@@ -228,10 +378,17 @@ nsVmap.Map = function () {
 
     // Ajoute les couches à reprojeter en cas de changement de carte dans layersToTransform_
     this.layersToTransform_ = [];
+    this.layersToTransform_.push(this.oOpenLayersMobileGeomEditOverlay_);
+    this.layersToTransform_.push(this.oOpenLayersMobileDrawOverlay_);
     this.layersToTransform_.push(this.oOpenLayersSelectionOverlay_);
     this.layersToTransform_.push(this.oOpenLayersLocationOverlay_);
     this.layersToTransform_.push(this.oOpenLayersPopupOverlay_);
+    this.layersToTransform_.push(this.oOpenLayersGPSOverlay_);
     this.layersToTransform_.push(this.vmapTextOverlay_);
+
+    if (oVmap['properties']['is_mobile']) {
+        this_.trackGPSPosition();
+    }
 };
 
 /**
@@ -937,6 +1094,618 @@ nsVmap.Map.prototype.zoomOnFeatures = function (aFeatures) {
     });
 };
 
+/**
+ * Get the GPS position
+ * @returns {array}
+ */
+nsVmap.Map.prototype.getGPS = function () {
+    oVmap.log('nsVmap.Map.prototype.getGPS');
+    return goog.isDefAndNotNull(vitisApp['oGeoLocation']) ? vitisApp['oGeoLocation'] : null;
+};
+
+/**
+ * Get the GPS position
+ * @returns {ol.Coordinate}
+ * @export
+ */
+nsVmap.Map.prototype.getGPSPosition = function (sProj) {
+    oVmap.log('nsVmap.Map.prototype.getGPSPosition');
+
+    var aGPSCoordinates;
+    var oGPS = this.getGPS();
+    if (goog.isDefAndNotNull(oGPS)) {
+        var aPosition = oGPS.getPosition();
+        var oProj = goog.isDefAndNotNull(sProj) ? sProj : 'EPSG:4326';
+        if (goog.isDefAndNotNull(aPosition)) {
+            aGPSCoordinates = ol.proj.transform(aPosition, 'EPSG:4326', oProj);
+        } else {
+            $.notify('Impossible de récupérer la position actuelle', 'error');
+        }
+        return aGPSCoordinates;
+    } else {
+        return null;
+    }
+};
+
+/**
+ * Center the map on the GPS position
+ * @export
+ */
+nsVmap.Map.prototype.centerGPSPosition = function () {
+    oVmap.log('nsVmap.Map.prototype.centerGPSPosition');
+
+    var aGPSPosition = this.getGPSPosition(oVmap.getMap().getOLMap().getView().getProjection());
+    if (goog.isDefAndNotNull(aGPSPosition)) {
+        oVmap.getMap().getOLMap().getView().setCenter(aGPSPosition);
+    }
+};
+
+/**
+ * Track the GPS position: update a point feature into this.oOpenLayersGPSOverlay_
+ * @export
+ */
+nsVmap.Map.prototype.trackGPSPosition = function () {
+    oVmap.log('nsVmap.Map.prototype.trackGPSPosition');
+
+    var this_ = this;
+    var oGPS = this.getGPS();
+    var displayPosition = function () {
+        // Affiche la position
+        var aGPSPosition = this_.getGPSPosition(oVmap.getMap().getOLMap().getView().getProjection());
+        this_.oOpenLayersGPSOverlayFeatures_.clear();
+        console.log("aGPSPosition: ", aGPSPosition);
+        if (goog.isArray(aGPSPosition)) {
+            if (goog.isNumber(aGPSPosition[0]) && goog.isNumber(aGPSPosition[1])) {
+                this_.oOpenLayersGPSOverlay_.getSource().addFeature(new ol.Feature({
+                    geometry: new ol.geom.Point(aGPSPosition)
+                }));
+                // Affiche la précision
+                var iAccuracy = this_.getGPS().getAccuracy();
+                var olAccuracyFeature = new ol.Feature({
+                    geometry: new ol.geom.Circle(aGPSPosition, iAccuracy)
+                });
+                olAccuracyFeature.setStyle(new ol.style.Style({
+                    fill: new ol.style.Fill({
+                        color: 'rgba(30, 132, 202, 0.3)'
+                    }),
+                    stroke: new ol.style.Stroke({
+                        color: 'rgba(255, 255, 255, 0)',
+                        width: 2
+                    }),
+                    image: new ol.style.Circle({
+                        radius: 8,
+                        stroke: new ol.style.Stroke({
+                            color: 'rgba(255, 255, 255, 0)',
+                            width: 3
+                        }),
+                        fill: new ol.style.Fill({
+                            color: 'rgba(30, 132, 202, 0.3)'
+                        })
+                    })
+                }));
+                this_.oOpenLayersGPSOverlay_.getSource().addFeature(olAccuracyFeature);
+            }
+        }
+    };
+
+    if (goog.isDefAndNotNull(oGPS)) {
+        // Écoute les changements
+        oGPS.on('change', function () {
+            displayPosition();
+        });
+        setTimeout(function () {
+            displayPosition();
+        });
+
+        // Cas d'erreur
+        var lastError = Date.now();
+        var errorTimeout = 5000;
+        this.getGPS().on('error', function () {
+            if (lastError < Date.now() - errorTimeout) {
+                lastError = Date.now();
+                $.notify('Impossible de récupérer la position actuelle', 'error');
+            }
+        });
+    }
+};
+
+/********************************************
+ *           INTERFACE MOBILE
+ *******************************************/
+
+nsVmap.Map.prototype.getMobileDrawTargetPixel = function () {
+    oVmap.log('nsVmap.Map.prototype.getMobileDrawTargetPixel');
+
+    var horizontalCenter = $('.ol_draw_menu_vertical_bar')[0].offsetLeft;
+    var verticalCener = $('.ol_draw_menu_horizontal_bar')[0].offsetTop;
+    var targetPixel = [horizontalCenter + 1, verticalCener - 38];
+
+    return targetPixel;
+};
+
+nsVmap.Map.prototype.getGeomEditionModifyTargetPixel = function () {
+    oVmap.log('nsVmap.Map.prototype.getGeomEditionModifyTargetPixel');
+
+    var horizontalCenter = $('.ol_geom_edit_menu_vertical_bar')[0].offsetLeft;
+    var verticalCener = $('.ol_geom_edit_menu_horizontal_bar')[0].offsetTop;
+    var targetPixel = [horizontalCenter + 1, verticalCener - 38];
+
+    return targetPixel;
+};
+
+/**
+ * Start drawing with the mobile interface
+ * @param {string} sGeomType
+ * @param {function} callback
+ * @export
+ */
+nsVmap.Map.prototype.startMobileDraw = function (sGeomType, callback) {
+    oVmap.log('nsVmap.Map.prototype.startMobileDraw');
+
+    this.mobileDrawCallback_ = callback;
+
+    var this_ = this;
+
+    // Géométrie multiple ? 
+    this.mobileDrawMulti_ = false;
+    if (sGeomType.substr(0, 5).toUpperCase() === 'MULTI') {
+        this.mobileDrawMulti_ = true;
+        sGeomType = sGeomType.substr(5).toUpperCase();
+    }
+
+    // Type de géométrie
+    if (sGeomType !== 'POINT'
+            && sGeomType !== 'LINESTRING'
+            && sGeomType !== 'POLYGON'
+            && sGeomType !== 'CIRCLE') {
+        console.error('Type non valide: ', sGeomType);
+        return null;
+    }
+
+    // Renseigne le type de géométrie
+    this.mobileDrawType_ = sGeomType;
+
+    // Vide les dessins antérieurs
+    this.oOpenLayersMobileDrawOverlayFeatures_.clear();
+    this.mobileDrawTmpPoints_ = [];
+    this.mobileDrawUndoHistory_ = [];
+    this.mobileDrawRedoHistory_ = [];
+    this.mobileDrawOutputFeatures_ = [];
+
+    // Affiche le menu
+    $('#mobile-draw-menu').removeClass('hidden');
+
+    // Renseigne la liste des dessins
+    var scope = this.getMapMenuScope();
+    scope.$applyAsync(function () {
+        scope['aDrawFeatures'] = this_.mobileDrawTmpPoints_;
+        scope['aDrawType'] = this_.mobileDrawType_;
+    });
+};
+
+/**
+ * Validate the point
+ * @param {array} aCoodrs
+ */
+nsVmap.Map.prototype.addMobileDrawPoint_ = function (aCoodrs) {
+    oVmap.log('nsVmap.Map.prototype.addMobileDrawPoint_');
+
+    if (this.mobileDrawType_ === 'POINT') {
+        this.mobileDrawTmpPoints_.length = 0;
+    }
+    if (this.mobileDrawType_ === 'CIRCLE') {
+        if (this.mobileDrawTmpPoints_.length >= 2) {
+            this.mobileDrawTmpPoints_.length = 0;
+        }
+    }
+
+    // Ajoute les coordonnées à la feature en cours
+    this.mobileDrawTmpPoints_.push(aCoodrs);
+
+    // Ajoute à l'historique
+    this.mobileDrawUndoHistory_.push(angular.copy(this.mobileDrawTmpPoints_));
+    this.mobileDrawRedoHistory_.length = 0;
+
+    this.renderDrawTmpFeature_();
+
+    // Termine automatiquement l'insertion si c'est un point ou un cercle
+    if (this.mobileDrawType_ === 'POINT') {
+        this.finishMobileDraw();
+    }
+    if (this.mobileDrawType_ === 'CIRCLE') {
+        if (this.mobileDrawTmpPoints_.length === 2) {
+            this.finishMobileDraw();
+        }
+    }
+};
+
+/**
+ * Render the feature determined by this.mobileDrawTmpPoints_
+ * @private
+ */
+nsVmap.Map.prototype.renderDrawTmpFeature_ = function () {
+    oVmap.log('nsVmap.Map.prototype.renderDrawTmpFeature_');
+
+    var this_ = this;
+
+    // Affiche la feature temporaire
+    this.displayDrawTmpFeature_();
+
+    // Renseigne la vue
+    var scope = this.getMapMenuScope();
+    scope.$applyAsync(function () {
+        scope['aDrawFeatures'] = this_.mobileDrawTmpPoints_;
+        scope['mobileDrawUndoHistory'] = this_.mobileDrawUndoHistory_;
+        scope['mobileDrawRedoHistory'] = this_.mobileDrawRedoHistory_;
+    });
+};
+
+/**
+ * @param {array} aPoints
+ * @private
+ */
+nsVmap.Map.prototype.createTmpDrawGeom_ = function (aPoints) {
+    oVmap.log('nsVmap.Map.prototype.createTmpDrawGeom_');
+
+    var oGeom = null;
+    if (aPoints.length === 1) {
+        oGeom = new ol.geom.Point(aPoints[0]);
+    } else if (aPoints.length > 1) {
+        oGeom = this.getDrawOutput_(aPoints);
+    }
+    return oGeom;
+};
+
+/**
+ * Get the olGeom drawed
+ * @param {array} aPoints
+ * @returns {ol.geom.Point|ol.geom.Polygon|ol.geom.LineString|ol.geom.Circle}
+ * @private
+ */
+nsVmap.Map.prototype.getDrawOutput_ = function (aPoints) {
+    oVmap.log('nsVmap.Map.prototype.getDrawOutput_');
+
+    switch (this.mobileDrawType_) {
+        case 'POINT':
+            return new ol.geom.Point(aPoints[0]);
+            break;
+        case 'LINESTRING':
+            return new ol.geom.LineString(aPoints);
+            break;
+        case 'POLYGON':
+            
+            // Ajoute la même coord à la fin de la géométrie de manière à boucler le polygone
+            var aTmpPoints = angular.copy(aPoints);
+            aTmpPoints.push(aTmpPoints[0]);
+            
+            return new ol.geom.Polygon([aTmpPoints]);
+            break;
+        case 'CIRCLE':
+            if (aPoints.length !== 2) {
+                return null;
+            } else {
+                var radius = new ol.geom.LineString(aPoints).getLength();
+                return new ol.geom.Circle(aPoints[0], radius);
+            }
+            break;
+        default:
+            break;
+    }
+};
+
+/**
+ * Display the tmp feature
+ * @private
+ */
+nsVmap.Map.prototype.displayDrawTmpFeature_ = function () {
+    oVmap.log('nsVmap.Map.prototype.displayDrawTmpFeature_');
+
+    // Supprime l'ancienne feature
+    if (goog.isDefAndNotNull(this.mobileDrawTmpFeature_)) {
+        this.oOpenLayersMobileDrawOverlay_.getSource().removeFeature(this.mobileDrawTmpFeature_);
+        this.mobileDrawTmpFeature_ = null;
+    }
+
+    // Affiche la géométrie
+    this.mobileDrawTmpFeature_ = new ol.Feature({
+        geometry: this.createTmpDrawGeom_(this.mobileDrawTmpPoints_)
+    });
+    this.oOpenLayersMobileDrawOverlay_.getSource().addFeature(this.mobileDrawTmpFeature_);
+};
+
+/**
+ * Ends the draw interaction and call the callback
+ * @export
+ */
+nsVmap.Map.prototype.finishMobileDraw = function () {
+    oVmap.log('nsVmap.Map.prototype.finishMobileDraw');
+
+    // Géométrie multiple ? 
+    var this_ = this;
+    if (this.mobileDrawMulti_) {
+        bootbox['dialog']({
+            'message': "<h4>Valider la géométrie ?</h4>",
+            'buttons': {
+                'cancel': {
+                    'label': 'Non, annuler la saisie',
+                    'className': 'btn-danger width-100 margin-10',
+                    'callback': function () {
+                        this_.endMobileDraw();
+                    }
+                },
+                'addPart': {
+                    'label': 'Ajouter une autre partie',
+                    'className': 'btn-primary width-100 margin-10',
+                    'callback': function () {
+
+                        // Récupère la feature dessinée
+                        var drawedFeature = new ol.Feature({
+                            geometry: this_.createTmpDrawGeom_(this_.mobileDrawTmpPoints_)
+                        });
+                        this_.mobileDrawOutputFeatures_.push(drawedFeature);
+
+                        this_.mobileDrawTmpPoints_ = [];
+                        this_.mobileDrawUndoHistory_ = [];
+                        this_.mobileDrawRedoHistory_ = [];
+                        this_.mobileDrawTmpFeature_ = null;
+                    }
+                },
+                'confirm': {
+                    'label': 'Oui, terminer',
+                    'className': 'btn-success width-100 margin-10',
+                    'callback': function () {
+
+                        // Récupère la feature dessinée
+                        var drawedFeature = new ol.Feature({
+                            geometry: this_.createTmpDrawGeom_(this_.mobileDrawTmpPoints_)
+                        });
+                        this_.mobileDrawOutputFeatures_.push(drawedFeature);
+
+                        // Ferme l'outil d'insertion
+                        this_.endMobileDraw();
+
+                        // Retourne les géométries dans un tableau
+                        if (goog.isDefAndNotNull(this_.mobileDrawCallback_)) {
+                            this_.mobileDrawCallback_.call(this_, this_.mobileDrawOutputFeatures_);
+                        }
+                    }
+                }
+            }
+        });
+    } else {
+        var drawedFeature = this.endMobileDraw();
+        if (goog.isDefAndNotNull(this.mobileDrawCallback_)) {
+            this.mobileDrawCallback_.call(this, drawedFeature);
+        }
+    }
+
+};
+
+/**
+ * Cancel the draw interface
+ * @export
+ */
+nsVmap.Map.prototype.cancelMobileDraw = function () {
+    oVmap.log('nsVmap.Map.prototype.cancelMobileDraw');
+
+    this.endMobileDraw();
+};
+
+/**
+ * End with the mobile draw and return the feature drawed
+ * @returns {ol.Feature}
+ * @export
+ */
+nsVmap.Map.prototype.endMobileDraw = function () {
+    oVmap.log('nsVmap.Map.prototype.endMobileDraw');
+
+    // Récupère la feature dessinée
+    var drawedFeature = new ol.Feature({
+        geometry: this.createTmpDrawGeom_(this.mobileDrawTmpPoints_)
+    });
+
+    // Cache le menu
+    $('#mobile-draw-menu').addClass('hidden');
+
+    // Supprime l'ancienne feature
+    if (goog.isDefAndNotNull(this.mobileDrawTmpFeature_)) {
+        this.oOpenLayersMobileDrawOverlay_.getSource().clear();
+        this.mobileDrawTmpFeature_ = null;
+    }
+
+    return drawedFeature;
+};
+
+/**
+ * Get if the feature is complete or not
+ * @returns {Boolean}
+ * @export
+ */
+nsVmap.Map.prototype.isDrawFeatureComplete = function () {
+
+    var isComplete = false;
+    if (goog.isArray(this.mobileDrawTmpPoints_)) {
+        if (this.mobileDrawType_ === 'POINT') {
+            if (this.mobileDrawTmpPoints_.length > 0) {
+                isComplete = true;
+            }
+        } else {
+            if (this.mobileDrawTmpPoints_.length > 1) {
+                isComplete = true;
+            }
+        }
+    }
+    return isComplete;
+};
+
+/**
+ * Undo the last change
+ * @export
+ */
+nsVmap.Map.prototype.undoLastChange = function () {
+    oVmap.log('nsVmap.Map.prototype.undoLastChange');
+
+    if (this.mobileDrawUndoHistory_.length >= 2) {
+        this.mobileDrawRedoHistory_.push(angular.copy(this.mobileDrawTmpPoints_));
+        this.mobileDrawTmpPoints_ = angular.copy(this.mobileDrawUndoHistory_[this.mobileDrawUndoHistory_.length - 2]);
+        this.mobileDrawUndoHistory_.pop();
+        this.renderDrawTmpFeature_();
+    }
+};
+
+/**
+ * Redo the last undo change
+ * @export
+ */
+nsVmap.Map.prototype.redoLastChange = function () {
+    oVmap.log('nsVmap.Map.prototype.redoLastChange');
+
+    if (this.mobileDrawRedoHistory_.length >= 1) {
+        this.mobileDrawTmpPoints_ = angular.copy(this.mobileDrawRedoHistory_[this.mobileDrawRedoHistory_.length - 1]);
+        this.mobileDrawRedoHistory_.pop();
+        this.renderDrawTmpFeature_();
+    }
+};
+
+/**
+ * 
+ * @private
+ */
+nsVmap.Map.prototype.getMapMenuScope = function () {
+    return angular.element($('#mobile-draw-menu')).scope();
+};
+
+/**
+ * Start the mobile editing feature procedure
+ * @param {ol.Feature} olFeature
+ * @param {function} callback
+ * @export
+ */
+nsVmap.Map.prototype.startMobileGeomEdition = function (olFeature, callback) {
+    oVmap.log('nsVmap.Map.prototype.startMobileGeomEdition');
+
+    var this_ = this;
+
+    if (!goog.isDefAndNotNull(olFeature)) {
+        return null;
+    }
+    if (!olFeature instanceof ol.Feature) {
+        return null;
+    }
+
+    if (goog.isDefAndNotNull(callback)) {
+        this.mobileGeomEditCallback_ = callback;
+    }
+
+    // Affiche le menu
+    $('#mobile-geom-edit-menu').removeClass('hidden');
+
+    this.mobileGeomEditTmpFeature_ = olFeature;
+
+    // Ajoute la feature dans this.oOpenLayersMobileGeomEditOverlay_
+    this.oOpenLayersMobileGeomEditOverlay_.getSource().addFeature(olFeature);
+
+    // Met l'édition en étape 1
+    var scope = this.getMapMenuScope()['$parent'];
+    scope.$applyAsync(function () {
+        scope['edit_state'] = 1;
+    });
+
+
+    this.setInteraction(this.mobileGeomEditModify_, 'map-mobile-geom-edit-modify');
+    this.mobileGeomEditModify_.trackVertex(this_.getGeomEditionModifyTargetPixel(), this_.oOpenLayersMap_);
+};
+
+/**
+ * Get the MobileModify object
+ * @returns {ol.interaction.MobileModify}
+ * @private
+ */
+nsVmap.Map.prototype.getGeomEditionModifyInteraction_ = function () {
+    oVmap.log('nsVmap.Map.prototype.getGeomEditionModifyInteraction_');
+
+    var oMobileModify = new ol.interaction.MobileModify({
+        pixelTolerance: 100,
+        hangingTolerance: 10,
+        features: this.oOpenLayersMobileGeomEditOverlayFeatures_
+    });
+
+    return oMobileModify;
+};
+
+/**
+ * Validate the vertex to work in
+ * @export
+ */
+nsVmap.Map.prototype.validateGeomEditionModifyVertex = function () {
+    oVmap.log('nsVmap.Map.prototype.validateGeomEditionModifyVertex');
+
+    this.mobileGeomEditModify_.validateVertex(this.getGeomEditionModifyTargetPixel(), this.oOpenLayersMap_);
+
+    // Met l'édition en étape 2
+    var scope = this.getMapMenuScope()['$parent'];
+    scope.$applyAsync(function () {
+        scope['edit_state'] = 2;
+    });
+};
+
+/**
+ * Validate the modification
+ * @export
+ */
+nsVmap.Map.prototype.validateGeomEditionModifyGeometry = function () {
+    oVmap.log('nsVmap.Map.prototype.validateGeomEditionModifyGeometry');
+
+    this.mobileGeomEditModify_.validateGeometry(this.getGeomEditionModifyTargetPixel(), this.oOpenLayersMap_);
+
+    // Met l'édition en étape 1
+    var scope = this.getMapMenuScope()['$parent'];
+    scope.$applyAsync(function () {
+        scope['edit_state'] = 1;
+    });
+};
+
+/**
+ * Cancel the edition
+ * @returns {undefined}
+ * @export
+ */
+nsVmap.Map.prototype.cancelMobileGeomEdition = function () {
+    oVmap.log('nsVmap.Map.prototype.cancelMobileGeomEdition');
+
+    this.endMobileGeomEdition_();
+};
+
+/**
+ * Finish the edition and call the callback
+ * @export
+ */
+nsVmap.Map.prototype.finishMobileGeomEdition = function () {
+    oVmap.log('nsVmap.Map.prototype.finishMobileGeomEdition');
+
+    this.mobileGeomEditCallback_.call(this, this.mobileGeomEditTmpFeature_);
+
+    this.endMobileGeomEdition_();
+};
+
+/**
+ * Ends the edition
+ * @private
+ */
+nsVmap.Map.prototype.endMobileGeomEdition_ = function () {
+    oVmap.log('nsVmap.Map.prototype.endMobileGeomEdition_');
+
+    // Cache le menu
+    $('#mobile-geom-edit-menu').addClass('hidden');
+
+    // Supprime l'ancienne feature
+    this.oOpenLayersMobileGeomEditOverlay_.getSource().clear();
+
+    // Désactive l'interraction
+    this.removeActionsOnMap();
+};
+
+
 /************************************************
  ---------- DIRECTIVES AND CONTROLLERS -----------
  *************************************************/
@@ -961,7 +1730,29 @@ nsVmap.Map.prototype.mapDirective = function () {
         controller: 'AppMapController',
         controllerAs: 'ctrl',
         bindToController: true,
-        template: '<div id="olMap"></div>'
+        template: '<div id="olMap"></div><div app-map-menu app-map="ctrl.map"></div>'
+    };
+};
+
+/**
+ * App-specific directive wrapping the ngeo map directive. The directive's
+ * controller has a property "map" including a reference to the OpenLayers
+ * map.
+ *
+ * @return {angular.Directive} The directive specs.
+ * @constructor
+ */
+nsVmap.Map.prototype.mapMenuDirective = function () {
+    oVmap.log("nsVmap.Map.prototype.mapMenuDirective");
+    return {
+        restrict: 'A',
+        scope: {
+            'map': '=appMap'
+        },
+        controller: 'AppMapMenuController',
+        controllerAs: 'ctrl',
+        bindToController: true,
+        templateUrl: oVmap['properties']['vmap_folder'] + '/' + 'template/map/map.html'
     };
 };
 
@@ -973,7 +1764,7 @@ nsVmap.Map.prototype.mapDirective = function () {
 nsVmap.Map.prototype.mapController = function ($scope, $window, $element) {
     oVmap.log("nsVmap.Map.prototype.mapController");
     var this_ = this;
-    
+
     /**
      * @private
      */
@@ -1079,6 +1870,23 @@ nsVmap.Map.prototype.mapController = function ($scope, $window, $element) {
 };
 
 /**
+ * The application's main controller.
+ * @ngInject
+ * @constructor
+ */
+nsVmap.Map.prototype.mapMenuController = function ($scope, $window, $element) {
+    oVmap.log("nsVmap.Map.prototype.mapMenuController");
+
+
+};
+
+// Définit les directives et controlleurs
+oVmap.module.directive('appMap', nsVmap.Map.prototype.mapDirective);
+oVmap.module.directive('appMapMenu', nsVmap.Map.prototype.mapMenuDirective);
+oVmap.module.controller('AppMapController', nsVmap.Map.prototype.mapController);
+oVmap.module.controller('AppMapMenuController', nsVmap.Map.prototype.mapMenuController);
+
+/**
  * Empty the events created by listenLoadErrors()
  */
 nsVmap.Map.prototype.mapController.prototype.emptyLoadErrorsEvents = function () {
@@ -1149,6 +1957,7 @@ nsVmap.Map.prototype.mapController.prototype.displayLoadErrors = function (sSrc)
         'headers': {
             'Accept': 'application/x-vm-json'
         },
+        'ajaxLoader': false,
         'scope': this.$scope_,
         'success': function (response) {
             var error = jQuery.parseXML(response['data']);
@@ -1175,6 +1984,156 @@ nsVmap.Map.prototype.mapController.prototype.startAnimation = function () {
     start = goog.now();
     this.animationDelay.stop();
     this.animationDelay.start();
+};
+
+/********************************************
+ *           INTERFACE MOBILE
+ *******************************************/
+
+/**
+ * Add a draw point
+ * @export
+ */
+nsVmap.Map.prototype.mapMenuController.prototype.addMobileDrawPoint = function () {
+    oVmap.log('nsVmap.Map.prototype.mapMenuController.prototype.addMobileDrawPoint');
+
+    oVmap.getMap().addMobileDrawPoint_(this.getInsertTargetPosition_());
+};
+
+/**
+ * Get the insert target coordinates
+ * @returns {ol.Coordinate|ol.Pixel}
+ */
+nsVmap.Map.prototype.mapMenuController.prototype.getInsertTargetPosition_ = function () {
+    oVmap.log('nsVmap.Map.prototype.mapMenuController.prototype.getInsertTargetPosition_');
+
+    var targetPixel = oVmap.getMap().getMobileDrawTargetPixel();
+    var aCoords = oVmap.getMap().getOLMap().getCoordinateFromPixel(targetPixel);
+
+    return aCoords;
+};
+
+/**
+ * Get the insert target coordinates
+ * @returns {ol.Coordinate|ol.Pixel}
+ */
+nsVmap.Map.prototype.mapMenuController.prototype.getEditTargetPosition_ = function () {
+    oVmap.log('nsVmap.Map.prototype.mapMenuController.prototype.getEditTargetPosition_');
+
+    var targetPixel = oVmap.getMap().getGeomEditionModifyTargetPixel();
+    var aCoords = oVmap.getMap().getOLMap().getCoordinateFromPixel(targetPixel);
+
+    return aCoords;
+};
+
+/**
+ * End the draw interaction
+ * @export
+ */
+nsVmap.Map.prototype.mapMenuController.prototype.finishMobileDraw = function () {
+    oVmap.log('nsVmap.Map.prototype.mapMenuController.prototype.finishMobileDraw');
+    return oVmap.getMap().finishMobileDraw();
+};
+
+/**
+ * Cancel the draw interaction
+ * @export
+ */
+nsVmap.Map.prototype.mapMenuController.prototype.cancelMobileDraw = function () {
+    oVmap.log('nsVmap.Map.prototype.mapMenuController.prototype.cancelMobileDraw');
+    return oVmap.getMap().cancelMobileDraw();
+};
+
+/**
+ * Get if the feature is complete
+ * @export
+ */
+nsVmap.Map.prototype.mapMenuController.prototype.isDrawFeatureComplete = function () {
+    return oVmap.getMap().isDrawFeatureComplete();
+};
+
+/**
+ * Center the map on the GPS position
+ * @export
+ */
+nsVmap.Map.prototype.mapMenuController.prototype.geolocateMe = function () {
+    oVmap.log('nsVmap.Map.prototype.mapMenuController.prototype.geolocateMe');
+
+    var this_ = this;
+    var aGPSPosition = oVmap.getMap().getGPSPosition(oVmap.getMap().getOLMap().getView().getProjection());
+    if (goog.isDefAndNotNull(aGPSPosition)) {
+
+        oVmap.getMap().getOLMap().getView().setCenter(aGPSPosition);
+
+        // Le centre de la carte n'est pas le centre de la cible (symbolisée par une croix dans l'interface d'insertion),
+        // Il faut donc adapter le centre de la carte
+        setTimeout(function () {
+            var aInsertTargetPosition = this_.getInsertTargetPosition_();
+            if (goog.isDefAndNotNull(aGPSPosition) && goog.isDefAndNotNull(aInsertTargetPosition)) {
+                var x1 = aGPSPosition[0];
+                var y1 = aGPSPosition[1];
+                var x2 = aInsertTargetPosition[0];
+                var y2 = aInsertTargetPosition[1];
+
+                // Ajoute la différence pour centrer sur la croix
+                oVmap.getMap().getOLMap().getView().setCenter([x1 + (x1 - x2), y1 + (y1 - y2)]);
+            }
+        });
+    }
+};
+
+/**
+ * Undo the last change
+ * @export
+ */
+nsVmap.Map.prototype.mapMenuController.prototype.undoLastChange = function () {
+    oVmap.log('nsVmap.Map.prototype.mapMenuController.prototype.undoLastChange');
+    return oVmap.getMap().undoLastChange();
+};
+
+/**
+ * Redo the last change
+ * @export
+ */
+nsVmap.Map.prototype.mapMenuController.prototype.redoLastChange = function () {
+    oVmap.log('nsVmap.Map.prototype.mapMenuController.prototype.redoLastChange');
+    return oVmap.getMap().redoLastChange();
+};
+
+/**
+ * Validate the vertex to modify
+ * @export
+ */
+nsVmap.Map.prototype.mapMenuController.prototype.validateGeomEditionModifyVertex = function () {
+    oVmap.log('nsVmap.Map.prototype.mapMenuController.prototype.validateGeomEditionModifyVertex');
+    return oVmap.getMap().validateGeomEditionModifyVertex();
+};
+
+/**
+ * Validate the vertex to modify
+ * @export
+ */
+nsVmap.Map.prototype.mapMenuController.prototype.validateGeomEditionModifyGeometry = function () {
+    oVmap.log('nsVmap.Map.prototype.mapMenuController.prototype.validateGeomEditionModifyGeometry');
+    return oVmap.getMap().validateGeomEditionModifyGeometry();
+};
+
+/**
+ * Cancel the geom edition interface
+ * @export
+ */
+nsVmap.Map.prototype.mapMenuController.prototype.cancelMobileGeomEdition = function () {
+    oVmap.log('nsVmap.Map.prototype.mapMenuController.prototype.cancelMobileGeomEdition');
+    return oVmap.getMap().cancelMobileGeomEdition();
+};
+
+/**
+ * Finish the geom edition
+ * @export
+ */
+nsVmap.Map.prototype.mapMenuController.prototype.finishMobileGeomEdition = function () {
+    oVmap.log('nsVmap.Map.prototype.mapMenuController.prototype.finishMobileGeomEdition');
+    return oVmap.getMap().finishMobileGeomEdition();
 };
 
 /************************************************
@@ -1414,7 +2373,3 @@ nsVmap.Map.prototype.getLayerById = function (layerId) {
     // Si aucun layer ne correspondait
     return null;
 };
-
-// Définit la directive et le controller
-oVmap.module.directive('appMap', nsVmap.Map.prototype.mapDirective);
-oVmap.module.controller('AppMapController', nsVmap.Map.prototype.mapController);

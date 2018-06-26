@@ -76,7 +76,7 @@
                             <label for="wms_service_tests_all_layers_checkbox" style="cursor:pointer" title=""></label>
                         </div> 
                         <ul class="form-map-layertree-ul">
-                            <li ng-repeat="oLayer in oGetCapabilities.json.Capability.Layer.Layer" class="margin-3">
+                            <li ng-repeat="oLayer in oGetCapabilities.json.Capability.Layer.Layer | orderBy: 'Title'" class="margin-3">
                                 <div class="list-group-item auto-height">
                                     <span class="font-11 layer-name layer-name-tree" ng-attr-title="{{oLayer.Title}}">{{oLayer.Title}}</span>                     
                                     <!-- Checkbox visible -->

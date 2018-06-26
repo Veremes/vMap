@@ -22,7 +22,7 @@ goog.require("vitis.modules.main");
  * @ngInject
  **/
 vitisApp.loginCtrl = function ($scope, $translate, $rootScope, $q, sessionSrvc, externFunctionSrvc, envSrvc, propertiesSrvc, userSrvc, $templateRequest, $compile, formSrvc) {
-/**
+    /**
  * showErrorAlert function.
  * Affiche un message d'erreur.
  * @param {string} sMessage Message d'erreur.
@@ -59,41 +59,47 @@ vitisApp.loginCtrl = function ($scope, $translate, $rootScope, $q, sessionSrvc, 
         $scope["showErrorAlert"]("FORM_APP_STATUS_ERROR");
     if (propertiesSrvc["VM_STATUS"] == "UNSTABLE")
         $scope["showErrorAlert"]("FORM_VAS_STATUS_ERROR");
-    
+
     // Paramètres pour la requête ajax du subform.
     $scope["oFormRequestParams"] = {
-        "sUrl": "forms/login.json"
+        "sUrl": envSrvc["sLoginForm"]
     };
-    
-    // Options du <select> 'Domaine'.
-    var clearListener = $rootScope.$on('formDefinitionLoaded', function(event, sFormDefinitionName) {
+
+    // Affichage du champ de form. "Domaine".
+    var clearListener = $rootScope.$on('formDefinitionLoaded', function (event, sFormDefinitionName) {
         // Supprime le "listener".
         clearListener();
-        if (typeof(propertiesSrvc['domain']) != 'undefined') {
-            if (Object.keys(propertiesSrvc['domain']).length > 1 || Object.keys(propertiesSrvc['domain'])[0] != '') {
+        var oDomain = formSrvc["getFormElementDefinition"]('domain', 'login_form');
+        if (typeof (propertiesSrvc['domain']) != 'undefined') {
+            if (Object.keys(propertiesSrvc['domain']).length > 1 || Object.keys(propertiesSrvc['domain'])[0] != '')
+                oDomain['visible'] = true;
+        }
+    });
+
+    // Options du <select> 'Domaine'.
+    var clearListener2 = $rootScope.$on('endFormNgRepeat', function (event, sFormDefinitionName) {
+        // Supprime le "listener".
+        clearListener2();
+        //
+        var oDomain = formSrvc["getFormElementDefinition"]('domain', 'login_form');
+        if (oDomain['visible']) {
+            var oFormValues = envSrvc["oFormValues"][envSrvc["sFormDefinitionName"]];
+            var aKeys = Object.keys(propertiesSrvc['domain']);
+            var aOptions = [{"label": aKeys[i], "value": ""}];
                 var i = 0;
-                var aOptions = [{'label': '', 'value': ''}];
-                var aKeys = Object.keys(propertiesSrvc['domain']);
                 while (i < aKeys.length) {
                     // Ajoute les options non vides.
                     if (aKeys[i] != '' && propertiesSrvc['domain'][aKeys[i]])
                         aOptions.push({'label': aKeys[i], 'value': propertiesSrvc['domain'][aKeys[i]]});
                     i++;
                 }
-                var oDomain = formSrvc["getFormElementDefinition"]('domain', 'login_form');            
-                var aListOptions = [];
-                for (var i = 0; i < aOptions.length; i++) {
-                    aListOptions.push(aOptions[i]['label'] + '|' + aOptions[i]['value']);
+            oFormValues["domain"] = {
+                "options": aOptions,
+                "selectedOption": {"label": aKeys[i], "value": ""}
+            };
                 }
-                oDomain['visible'] = true;
-                oDomain['options'] = aListOptions;
-                // Rafraichissement du formulaire.
-                $scope.$broadcast('$$rebind::refresh');
-                $scope.$apply();
-            }
-        }
     });
-    
+
     /*
      $scope["fpwd_enabled"] = true;
      if (goog.isDefAndNotNull(propertiesSrvc["password_forgotten"])) {
@@ -111,7 +117,7 @@ vitisApp.loginCtrl = function ($scope, $translate, $rootScope, $q, sessionSrvc, 
      */
     $('#modal_forgotten_password').on('hidden.bs.modal', function () {
         $scope["sFormDefinitionName"] = "login_form";
-        var sUrl = "forms/login.json";
+        var sUrl = envSrvc["sLoginForm"];
         // Paramètres pour la requête ajax du subform.
         $scope["oFormRequestParams"] = {
             "sUrl": sUrl
@@ -121,7 +127,7 @@ vitisApp.loginCtrl = function ($scope, $translate, $rootScope, $q, sessionSrvc, 
 
     $('#modal_sign_up').on('hidden.bs.modal', function () {
         $scope["sFormDefinitionName"] = "login_form";
-        var sUrl = "forms/login.json";
+        var sUrl = envSrvc["sLoginForm"];
         // Paramètres pour la requête ajax du subform.
         $scope["oFormRequestParams"] = {
             "sUrl": sUrl
@@ -136,7 +142,7 @@ vitisApp.loginCtrl = function ($scope, $translate, $rootScope, $q, sessionSrvc, 
 
         // Paramètres pour la requête ajax du subform.
         $scope["oFormRequestParams"] = {
-            "sUrl": "forms/forgotten_password.json"
+            "sUrl": envSrvc["sForgottenPasswordForm"]
         };
         // Suppression de la définition et des données du formulaire (sinon problème de cache...).
 
@@ -159,7 +165,7 @@ vitisApp.loginCtrl = function ($scope, $translate, $rootScope, $q, sessionSrvc, 
 
         // Paramètres pour la requête ajax du subform.
         $scope["oFormRequestParams"] = {
-            "sUrl": "forms/sign_up.json"
+            "sUrl": envSrvc["sSignUpForm"]
         };
         // Suppression de la définition et des données du formulaire (sinon problème de cache...).
 
@@ -172,6 +178,24 @@ vitisApp.loginCtrl = function ($scope, $translate, $rootScope, $q, sessionSrvc, 
         var sTemplateUrl = 'templates/formTpl.html';
         $templateRequest(sTemplateUrl).then(function (sTemplate) {
             $compile($("#modal_sign_up_form_container").html(sTemplate).contents())($scope);
+            // Affichage des conditions générales d'utilisation.
+            if (propertiesSrvc["sign_up_cgu"] === true) {
+                var clearListenerformDefinitionLoaded = $scope.$root.$on("formDefinitionLoaded", function (event, sFormDefinitionName) {
+                    clearListenerformDefinitionLoaded();
+                    var oCguElementDef = formSrvc["getFormElementDefinition"]("signupcgu", sFormDefinitionName);
+                    oCguElementDef["visible"] = true;
+                });
+                // Url des CGU.
+                var clearListenerformExtracted = $scope.$root.$on("formExtracted", function (event, sFormDefinitionName) {
+                    clearListenerformExtracted();
+                        var oCguElementDef = formSrvc["getFormElementDefinition"]("signupcgu", sFormDefinitionName);
+                        $translate(["ACCEPT_CGU"], propertiesSrvc).then(function (translations) {
+                            oCguElementDef["label"] = translations["ACCEPT_CGU"];
+                            angular.element("#" + oCguElementDef["id"]).scope().$broadcast('$$rebind::refresh');
+                            angular.element("#" + oCguElementDef["id"]).scope().$applyAsync();
+                        });
+                });
+            }
         });
 
         /*var test = grecaptcha.render("captcha", {
@@ -195,18 +219,20 @@ vitisApp.loginCtrl = function ($scope, $translate, $rootScope, $q, sessionSrvc, 
             });
             return;
         }
-        if (!goog.isDefAndNotNull($scope["oFormValues"][sFormName]["signupcgi"])) {
-            var sTitle = "CHECKCGI";
-            $translate(sTitle).then(function (sTranslation) {
-                $.notify(sTranslation, "error");
-            });
-            return;
-        } else if ($scope["oFormValues"][sFormName]["signupcgi"] === false) {
-            var sTitle = "CHECKCGI";
-            $translate(sTitle).then(function (sTranslation) {
-                $.notify(sTranslation, "error");
-            });
-            return;
+        if (propertiesSrvc["sign_up_cgu"] === true) {
+            if (!goog.isDefAndNotNull($scope["oFormValues"][sFormName]["signupcgu"])) {
+                var sTitle = "CHECKCGU";
+                $translate(sTitle).then(function (sTranslation) {
+                    $.notify(sTranslation, "error");
+                });
+                return;
+            } else if ($scope["oFormValues"][sFormName]["signupcgu"] === false) {
+                var sTitle = "CHECKCGU";
+                $translate(sTitle).then(function (sTranslation) {
+                    $.notify(sTranslation, "error");
+                });
+                return;
+            }
         }
         if (!goog.isDefAndNotNull($scope["oFormValues"][sFormName]["signuppasswordconfirmation"])) {
             var sTitle = "CONFIRMPASSWORD";
@@ -214,7 +240,7 @@ vitisApp.loginCtrl = function ($scope, $translate, $rootScope, $q, sessionSrvc, 
                 $.notify(sTranslation, "error");
             });
             return;
-        } else if ($scope["oFormValues"][sFormName]["signuppasswordconfirmation"] !== $scope["oFormValues"][sFormName]["signuppassword"]) {
+        } else if ($scope["oFormValues"][sFormName]["signuppasswordconfirmation"] !== $scope["oFormValues"][sFormName]["password"]) {
             var sTitle = "CONFIRMPASSWORD";
             $translate(sTitle).then(function (sTranslation) {
                 $.notify(sTranslation, "error");
@@ -225,14 +251,7 @@ vitisApp.loginCtrl = function ($scope, $translate, $rootScope, $q, sessionSrvc, 
         ajaxRequest({
             'method': 'POST',
             'url': propertiesSrvc["web_server_name"] + '/' + propertiesSrvc["services_alias"] + "/vitis/accounts/sign_up",
-            'params': {
-                "username": $scope["oFormValues"][sFormName]["signupusername"],
-                "fullname": $scope["oFormValues"][sFormName]["signupfullname"],
-                "password": $scope["oFormValues"][sFormName]["signuppassword"],
-                "mail": $scope["oFormValues"][sFormName]["signupmail"],
-                "company": $scope["oFormValues"][sFormName]["signuporganization"],
-                "captcha": $scope["oFormValues"][sFormName]["captcha"]
-            },
+            "params": formSrvc["getFormData"](sFormName, true),
             'success': function (response) {
                 hideAjaxLoader();
                 if (response["status"] === 403) {
@@ -351,7 +370,7 @@ vitisApp.loginCtrl = function ($scope, $translate, $rootScope, $q, sessionSrvc, 
             var sUser = $scope["oFormValues"][sFormName]["user_login"];
             // Concatène le domaine au login ?
             var oDomainValue = $scope["oFormValues"][sFormName]["domain"];
-            if (typeof(oDomainValue) != "undefined" && typeof(oDomainValue["selectedOption"]) != "undefined" && oDomainValue["selectedOption"]["value"] != "" && typeof(oDomainValue["selectedOption"]["value"]) != "undefined" && sUser.indexOf("@") == -1)
+            if (typeof (oDomainValue) != "undefined" && typeof (oDomainValue["selectedOption"]) != "undefined" && oDomainValue["selectedOption"]["value"] != "" && typeof (oDomainValue["selectedOption"]["value"]) != "undefined" && sUser.indexOf("@") == -1)
                 sUser += "@" + oDomainValue["selectedOption"]["value"];
             // Demande de token pour l'utilisateur.
             ajaxRequest({
@@ -393,9 +412,29 @@ vitisApp.loginCtrl = function ($scope, $translate, $rootScope, $q, sessionSrvc, 
                             sessionSrvc["saveSessionToLocalStorage"]();
                         }
                     } else {
-                        $scope["showErrorAlert"]("FORM_LOGIN_CONNECTION_ERROR");
+                        // Message d'erreur spécifique suivant le code erreur retourné.
+                        var sConnectionErrorMessage;
+                        if (typeof (response["data"]["errorCode"]) == "undefined")
+                            response["data"]["errorCode"] = "";
+                        switch (response["data"]["errorCode"]) {
+                            // Adresse IP non autorisée.
+                            case 11:
+                                sConnectionErrorMessage = "FORM_LOGIN_CONNECTION_ERROR_FORBIDDEN_IP";
+                                var errorMessage = response["data"]["errorMessage"];
+                                var ipAddress = errorMessage.substr(errorMessage.indexOf("'") + 1, errorMessage.lastIndexOf("'") - errorMessage.indexOf("'") - 1);
+                                $translate([sConnectionErrorMessage]).then(function (translations) {
+                                    sConnectionErrorMessage = translations[sConnectionErrorMessage];y
+                                    $scope["showErrorAlert"](sConnectionErrorMessage.replace('[IPAddress]', ipAddress));
                         deferred.reject();
+                                });
+
+                                break;
+                            default:
+                                sConnectionErrorMessage = "FORM_LOGIN_CONNECTION_ERROR";
+                                $scope["showErrorAlert"](sConnectionErrorMessage);
+                                deferred.reject();
                     }
+                }
                 }
             });
         }

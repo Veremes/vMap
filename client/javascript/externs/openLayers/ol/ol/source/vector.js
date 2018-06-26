@@ -84,7 +84,7 @@ ol.source.Vector = function(opt_options) {
    * @type {ol.LoadingStrategy}
    */
   this.strategy_ = options.strategy !== undefined ? options.strategy :
-      ol.loadingstrategy.all;
+    ol.loadingstrategy.all;
 
   var useSpatialIndex =
       options.useSpatialIndex !== undefined ? options.useSpatialIndex : true;
@@ -157,7 +157,9 @@ ol.inherits(ol.source.Vector, ol.source.Source);
 /**
  * Add a single feature to the source.  If you want to add a batch of features
  * at once, call {@link ol.source.Vector#addFeatures source.addFeatures()}
- * instead.
+ * instead. A feature will not be added to the source if feature with
+ * the same id is already there. The reason for this behavior is to avoid
+ * feature duplication when using bbox or tile loading strategies.
  * @param {ol.Feature} feature Feature to add.
  * @api
  */
@@ -612,7 +614,7 @@ ol.source.Vector.prototype.getClosestFeatureToCoordinate = function(coordinate, 
  * `useSpatialIndex` set to `false`.
  * @param {ol.Extent=} opt_extent Destination extent. If provided, no new extent
  *     will be created. Instead, that extent's coordinates will be overwritten.
- * @return {!ol.Extent} Extent.
+ * @return {ol.Extent} Extent.
  * @api
  */
 ol.source.Vector.prototype.getExtent = function(opt_extent) {
@@ -761,6 +763,26 @@ ol.source.Vector.prototype.loadFeatures = function(
 
 
 /**
+ * Remove an extent from the list of loaded extents.
+ * @param {ol.Extent} extent Extent.
+ * @api
+ */
+ol.source.Vector.prototype.removeLoadedExtent = function(extent) {
+  var loadedExtentsRtree = this.loadedExtentsRtree_;
+  var obj;
+  loadedExtentsRtree.forEachInExtent(extent, function(object) {
+    if (ol.extent.equals(object.extent, extent)) {
+      obj = object;
+      return true;
+    }
+  });
+  if (obj) {
+    loadedExtentsRtree.remove(obj);
+  }
+};
+
+
+/**
  * Remove a single feature from the source.  If you want to remove all features
  * at once, use the {@link ol.source.Vector#clear source.clear()} method
  * instead.
@@ -818,6 +840,17 @@ ol.source.Vector.prototype.removeFromIdIndex_ = function(feature) {
     }
   }
   return removed;
+};
+
+
+/**
+ * Set the new loader of the source. The next loadFeatures call will use the
+ * new loader.
+ * @param {ol.FeatureLoader} loader The loader to set.
+ * @api
+ */
+ol.source.Vector.prototype.setLoader = function(loader) {
+  this.loader_ = loader;
 };
 
 

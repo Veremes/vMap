@@ -14,6 +14,16 @@ ol.render.VectorContext = function() {
 
 
 /**
+ * Render a geometry with a custom renderer.
+ *
+ * @param {ol.geom.SimpleGeometry} geometry Geometry.
+ * @param {ol.Feature|ol.render.Feature} feature Feature.
+ * @param {Function} renderer Renderer.
+ */
+ol.render.VectorContext.prototype.drawCustom = function(geometry, feature, renderer) {};
+
+
+/**
  * Render a geometry.
  *
  * @param {ol.geom.Geometry} geometry The geometry to render.
@@ -98,14 +108,10 @@ ol.render.VectorContext.prototype.drawPolygon = function(polygonGeometry, featur
 
 
 /**
- * @param {Array.<number>} flatCoordinates Flat coordinates.
- * @param {number} offset Offset.
- * @param {number} end End.
- * @param {number} stride Stride.
  * @param {ol.geom.Geometry|ol.render.Feature} geometry Geometry.
  * @param {ol.Feature|ol.render.Feature} feature Feature.
  */
-ol.render.VectorContext.prototype.drawText = function(flatCoordinates, offset, end, stride, geometry, feature) {};
+ol.render.VectorContext.prototype.drawText = function(geometry, feature) {};
 
 
 /**
@@ -117,11 +123,13 @@ ol.render.VectorContext.prototype.setFillStrokeStyle = function(fillStyle, strok
 
 /**
  * @param {ol.style.Image} imageStyle Image style.
+ * @param {ol.DeclutterGroup=} opt_declutterGroup Declutter.
  */
-ol.render.VectorContext.prototype.setImageStyle = function(imageStyle) {};
+ol.render.VectorContext.prototype.setImageStyle = function(imageStyle, opt_declutterGroup) {};
 
 
 /**
  * @param {ol.style.Text} textStyle Text style.
+ * @param {ol.DeclutterGroup=} opt_declutterGroup Declutter.
  */
-ol.render.VectorContext.prototype.setTextStyle = function(textStyle) {};
+ol.render.VectorContext.prototype.setTextStyle = function(textStyle, opt_declutterGroup) {};

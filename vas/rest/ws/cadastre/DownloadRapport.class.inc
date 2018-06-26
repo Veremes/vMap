@@ -35,13 +35,11 @@ class DownloadRapport extends Cadastre {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
      * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = new Connection($this->aValues, $this->aProperties);
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
     }
 
     /**
@@ -80,18 +78,18 @@ class DownloadRapport extends Cadastre {
      *  )
      */
     function GET() {
-        
+
         if (!in_array('vmap_cadastre_user', $this->oConnection->aPrivileges)) {
             $oError = new VitisError(0, 'INSUFFICIENT_PRIVILEGES');
             $aXmlRacineAttribute['status'] = 0;
             $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
             return $sMessage;
         }
-        
+
         if ($this->oConnection->oError == null) {
             if (!empty($this->aValues['sFileName'])) {
                 $aRestriction = explode('|', $_SESSION['ses_restriction']);
-                if (strpos($this->aValues['sFileName'], "../") === false && ($_SESSION['ses_restriction'] == "%" || in_array(substr($this->aValues['sFileName'], 0, 5), $aRestriction))){
+                if (strpos($this->aValues['sFileName'], "../") === false && ($_SESSION['ses_restriction'] == "%" || in_array(substr($this->aValues['sFileName'], 0, 5), $aRestriction))) {
                     $sFile = $this->aProperties["cadastre"]["rp"]["rp_dir"] . "/" . $this->aValues['sYear'] . '/' . $this->aValues['sType'] . '/' . $this->aValues['sFileName'];
                     if (is_file($sFile)) {
                         switch (pathinfo($sFile, PATHINFO_EXTENSION)) {
@@ -119,12 +117,12 @@ class DownloadRapport extends Cadastre {
                     } else {
                         return 'Une erreur est survenue lors de la g�n�ration du rapport';
                     }
-                }else{
-                    http_response_code(403); 
+                } else {
+                    http_response_code(403);
                 }
             }
-        }else{
-            http_response_code(403); 
+        } else {
+            http_response_code(403);
         }
     }
 

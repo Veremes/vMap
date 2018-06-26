@@ -34,20 +34,26 @@ ol.interaction.DragAndDrop = function(opt_options) {
    * @type {Array.<function(new: ol.format.Feature)>}
    */
   this.formatConstructors_ = options.formatConstructors ?
-      options.formatConstructors : [];
+    options.formatConstructors : [];
 
   /**
    * @private
    * @type {ol.proj.Projection}
    */
   this.projection_ = options.projection ?
-      ol.proj.get(options.projection) : null;
+    ol.proj.get(options.projection) : null;
 
   /**
    * @private
    * @type {Array.<ol.EventsKey>}
    */
   this.dropListenKeys_ = null;
+
+  /**
+   * @private
+   * @type {ol.source.Vector}
+   */
+  this.source_ = options.source || null;
 
   /**
    * @private
@@ -122,6 +128,10 @@ ol.interaction.DragAndDrop.prototype.handleResult_ = function(file, event) {
       break;
     }
   }
+  if (this.source_) {
+    this.source_.clear();
+    this.source_.addFeatures(features);
+  }
   this.dispatchEvent(
       new ol.interaction.DragAndDrop.Event(
           ol.interaction.DragAndDrop.EventType_.ADD_FEATURES, file,
@@ -141,14 +151,10 @@ ol.interaction.DragAndDrop.handleEvent = ol.functions.TRUE;
 
 
 /**
- * @inheritDoc
+ * @private
  */
-ol.interaction.DragAndDrop.prototype.setMap = function(map) {
-  if (this.dropListenKeys_) {
-    this.dropListenKeys_.forEach(ol.events.unlistenByKey);
-    this.dropListenKeys_ = null;
-  }
-  ol.interaction.Interaction.prototype.setMap.call(this, map);
+ol.interaction.DragAndDrop.prototype.registerListeners_ = function() {
+  var map = this.getMap();
   if (map) {
     var dropArea = this.target ? this.target : map.getViewport();
     this.dropListenKeys_ = [
@@ -166,6 +172,31 @@ ol.interaction.DragAndDrop.prototype.setMap = function(map) {
 
 
 /**
+ * @inheritDoc
+ */
+ol.interaction.DragAndDrop.prototype.setActive = function(active) {
+  ol.interaction.Interaction.prototype.setActive.call(this, active);
+  if (active) {
+    this.registerListeners_();
+  } else {
+    this.unregisterListeners_();
+  }
+};
+
+
+/**
+ * @inheritDoc
+ */
+ol.interaction.DragAndDrop.prototype.setMap = function(map) {
+  this.unregisterListeners_();
+  ol.interaction.Interaction.prototype.setMap.call(this, map);
+  if (this.getActive()) {
+    this.registerListeners_();
+  }
+};
+
+
+/**
  * @param {ol.format.Feature} format Format.
  * @param {string} text Text.
  * @param {olx.format.ReadOptions} options Read options.
@@ -177,6 +208,17 @@ ol.interaction.DragAndDrop.prototype.tryReadFeatures_ = function(format, text, o
     return format.readFeatures(text, options);
   } catch (e) {
     return null;
+  }
+};
+
+
+/**
+ * @private
+ */
+ol.interaction.DragAndDrop.prototype.unregisterListeners_ = function() {
+  if (this.dropListenKeys_) {
+    this.dropListenKeys_.forEach(ol.events.unlistenByKey);
+    this.dropListenKeys_ = null;
   }
 };
 

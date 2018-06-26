@@ -86,19 +86,19 @@ vitisApp.mainCtrl = function ($scope, $timeout, $translate, $translatePartialLoa
             modesSrvc["selectMode"]($scope, modesSrvc["modes"][0]["mode_id"]);
         }
 
-        // Sélection de l'objet à afficher
-        if (goog.isDefAndNotNull(oUrlParams['object_id']) && goog.isDefAndNotNull(oUrlParams['mode_id'])) {
-            modesSrvc["selectObject"]($scope, oUrlParams['object_id'], oUrlParams['mode_id']);
-            $rootScope.$on(oUrlParams['object_id'] + '_form', function () {
-                // Sélection de l'objet à afficher
-                if (goog.isDefAndNotNull(oUrlParams['action']) && goog.isDefAndNotNull(oUrlParams['ids'])) {
-                    var oId = oUrlParams['ids'].split('|')[0];
-                    setTimeout(function () {
-                        angular.element(vitisApp.appWorkspaceListDrtv).scope().$root[oUrlParams['action']](oId);
-                    }, 1000);
-                }
-            });
-        }
+//        // Sélection de l'objet à afficher
+//        if (goog.isDefAndNotNull(oUrlParams['object_id']) && goog.isDefAndNotNull(oUrlParams['mode_id'])) {
+//            modesSrvc["selectObject"]($scope, oUrlParams['object_id'], oUrlParams['mode_id']);
+//            $rootScope.$on(oUrlParams['object_id'] + '_form', function () {
+//                // Sélection de l'objet à afficher
+//                if (goog.isDefAndNotNull(oUrlParams['action']) && goog.isDefAndNotNull(oUrlParams['ids'])) {
+//                    var oId = oUrlParams['ids'].split('|')[0];
+//                    setTimeout(function () {
+//                        angular.element(vitisApp.appWorkspaceListDrtv).scope().$root[oUrlParams['action']](oId);
+//                    }, 1000);
+//                }
+//            });
+//        }
     });
 
 
@@ -167,8 +167,10 @@ vitisApp.mainCtrl = function ($scope, $timeout, $translate, $translatePartialLoa
                 $scope["setFullScreen"](envSrvc["oSelectedMode"]["fullScreen"]);
                 sessionStorage["ajaxLoader"] = envSrvc["oSelectedMode"]["ajaxLoader"];
                 var gridApi = $scope.$root["gridApi"][$scope["sSelectedGridOptionsName"]];
-                if (gridApi != null)
+                if (gridApi != null){
                     gridApi["core"]["handleWindowResize"]();
+                    gridApi["core"]["refreshRows"]();
+                }
             }, 100);
             // Redimensionnement d'une liste ui-grid (si déja affiché).
         });
@@ -211,8 +213,10 @@ vitisApp.mainCtrl = function ($scope, $timeout, $translate, $translatePartialLoa
                 }, 100);
                 // Redimensionnement d'une liste ui-grid (si déja affiché).
                 var gridApi = $scope.$root["gridApi"][$scope["sSelectedGridOptionsName"]];
-                if (gridApi != null)
+                if (gridApi != null){
                     gridApi["core"]["handleWindowResize"]();
+                    gridApi["core"]["refreshRows"]();
+                }
                 //
             });
         } else {
@@ -271,6 +275,13 @@ vitisApp.mainCtrl = function ($scope, $timeout, $translate, $translatePartialLoa
                 clearListener();
             });
         }
+        $timeout(function(){
+            var gridApi = $scope.$root["gridApi"][$scope["sSelectedGridOptionsName"]];
+            if (gridApi != null){
+                gridApi["core"]["handleWindowResize"]();
+                gridApi["core"]["refreshRows"]();
+            }
+        },10);
     };
 
     $rootScope["showModeScrollBoutton"] = function () {

@@ -17,7 +17,7 @@ page.onError = function (msg, trace) {
 };
 
 if (system.args.length < 1) {
-    console.log('Usage: [printmap.js PrintClientURL APIRestUrl Token OutputFileName TemplateId Orientation JsonIncludes JsonScope Quality]');
+    console.log('Usage: [printmap.js PrintClientURL APIRestUrl Token OutputFileName TemplateId PrintStyleId Orientation JsonIncludes JsonScope Quality]');
     phantom.exit(1);
 } else {
 
@@ -35,10 +35,11 @@ if (system.args.length < 1) {
     var sToken = system.args[3];
     var sOutputFileName = system.args[4];
     var sTemplateId = system.args[5];
-    var sFormat = system.args[6];
-    var sOrientation = system.args[7];
-    var sIncludes = system.args[8];
-    var sScope = system.args[9];
+    var sPrintStyleId = system.args[6];
+    var sFormat = system.args[7];
+    var sOrientation = system.args[8];
+    var sIncludes = system.args[9];
+    var sScope = system.args[10];
 
     // Si sIncludes est un fichier
     if (fs.exists(sIncludes)) {
@@ -126,6 +127,7 @@ if (system.args.length < 1) {
                 token: sToken,
                 apiUrl: sApiRestUrl,
                 templateId: sTemplateId,
+                styleId: sPrintStyleId,
                 includes: oIncludes,
                 scope: oScope
             };

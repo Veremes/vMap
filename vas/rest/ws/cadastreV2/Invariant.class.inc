@@ -23,13 +23,11 @@ class Invariant extends Cadastre {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
      * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties, $oConnection) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = $oConnection;
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
         $this->aSelectedFields = Array('id_local', 'id_local as ID_BAT', 'id_com as ID_COM', 'invar as INVAR', 'dnupro as DNUPRO', 'id_par as ID_PAR', 'ccosec as CCOSEC', 'dnupla as DNUPLA');
     }
 

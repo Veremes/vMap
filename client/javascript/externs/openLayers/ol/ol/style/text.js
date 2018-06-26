@@ -2,6 +2,7 @@ goog.provide('ol.style.Text');
 
 
 goog.require('ol.style.Fill');
+goog.require('ol.style.TextPlacement');
 
 
 /**
@@ -63,7 +64,28 @@ ol.style.Text = function(opt_options) {
    * @type {ol.style.Fill}
    */
   this.fill_ = options.fill !== undefined ? options.fill :
-      new ol.style.Fill({color: ol.style.Text.DEFAULT_FILL_COLOR_});
+    new ol.style.Fill({color: ol.style.Text.DEFAULT_FILL_COLOR_});
+
+  /**
+   * @private
+   * @type {number}
+   */
+  this.maxAngle_ = options.maxAngle !== undefined ? options.maxAngle : Math.PI / 4;
+
+  /**
+   * @private
+   * @type {ol.style.TextPlacement|string}
+   */
+  this.placement_ = options.placement !== undefined ? options.placement : ol.style.TextPlacement.POINT;
+
+  //TODO Use options.overflow directly after removing @deprecated exceedLength
+  var overflow = options.overflow === undefined ? options.exceedLength : options.overflow;
+
+  /**
+   * @private
+   * @type {boolean}
+   */
+  this.overflow_ = overflow !== undefined ? overflow : false;
 
   /**
    * @private
@@ -82,6 +104,24 @@ ol.style.Text = function(opt_options) {
    * @type {number}
    */
   this.offsetY_ = options.offsetY !== undefined ? options.offsetY : 0;
+
+  /**
+   * @private
+   * @type {ol.style.Fill}
+   */
+  this.backgroundFill_ = options.backgroundFill ? options.backgroundFill : null;
+
+  /**
+   * @private
+   * @type {ol.style.Stroke}
+   */
+  this.backgroundStroke_ = options.backgroundStroke ? options.backgroundStroke : null;
+
+  /**
+   * @private
+   * @type {Array.<number>}
+   */
+  this.padding_ = options.padding === undefined ? null : options.padding;
 };
 
 
@@ -103,6 +143,9 @@ ol.style.Text.DEFAULT_FILL_COLOR_ = '#333';
 ol.style.Text.prototype.clone = function() {
   return new ol.style.Text({
     font: this.getFont(),
+    placement: this.getPlacement(),
+    maxAngle: this.getMaxAngle(),
+    overflow: this.getOverflow(),
     rotation: this.getRotation(),
     rotateWithView: this.getRotateWithView(),
     scale: this.getScale(),
@@ -118,12 +161,42 @@ ol.style.Text.prototype.clone = function() {
 
 
 /**
+ * Get the `overflow` configuration.
+ * @return {boolean} Let text overflow the length of the path they follow.
+ * @api
+ */
+ol.style.Text.prototype.getOverflow = function() {
+  return this.overflow_;
+};
+
+
+/**
  * Get the font name.
  * @return {string|undefined} Font.
  * @api
  */
 ol.style.Text.prototype.getFont = function() {
   return this.font_;
+};
+
+
+/**
+ * Get the maximum angle between adjacent characters.
+ * @return {number} Angle in radians.
+ * @api
+ */
+ol.style.Text.prototype.getMaxAngle = function() {
+  return this.maxAngle_;
+};
+
+
+/**
+ * Get the label placement.
+ * @return {ol.style.TextPlacement|string} Text placement.
+ * @api
+ */
+ol.style.Text.prototype.getPlacement = function() {
+  return this.placement_;
 };
 
 
@@ -228,6 +301,47 @@ ol.style.Text.prototype.getTextBaseline = function() {
 
 
 /**
+ * Get the background fill style for the text.
+ * @return {ol.style.Fill} Fill style.
+ * @api
+ */
+ol.style.Text.prototype.getBackgroundFill = function() {
+  return this.backgroundFill_;
+};
+
+
+/**
+ * Get the background stroke style for the text.
+ * @return {ol.style.Stroke} Stroke style.
+ * @api
+ */
+ol.style.Text.prototype.getBackgroundStroke = function() {
+  return this.backgroundStroke_;
+};
+
+
+/**
+ * Get the padding for the text.
+ * @return {Array.<number>} Padding.
+ * @api
+ */
+ol.style.Text.prototype.getPadding = function() {
+  return this.padding_;
+};
+
+
+/**
+ * Set the `overflow` property.
+ *
+ * @param {boolean} overflow Let text overflow the path that it follows.
+ * @api
+ */
+ol.style.Text.prototype.setOverflow = function(overflow) {
+  this.overflow_ = overflow;
+};
+
+
+/**
  * Set the font.
  *
  * @param {string|undefined} font Font.
@@ -235,6 +349,17 @@ ol.style.Text.prototype.getTextBaseline = function() {
  */
 ol.style.Text.prototype.setFont = function(font) {
   this.font_ = font;
+};
+
+
+/**
+ * Set the maximum angle between adjacent characters.
+ *
+ * @param {number} maxAngle Angle in radians.
+ * @api
+ */
+ol.style.Text.prototype.setMaxAngle = function(maxAngle) {
+  this.maxAngle_ = maxAngle;
 };
 
 
@@ -257,6 +382,17 @@ ol.style.Text.prototype.setOffsetX = function(offsetX) {
  */
 ol.style.Text.prototype.setOffsetY = function(offsetY) {
   this.offsetY_ = offsetY;
+};
+
+
+/**
+ * Set the text placement.
+ *
+ * @param {ol.style.TextPlacement|string} placement Placement.
+ * @api
+ */
+ol.style.Text.prototype.setPlacement = function(placement) {
+  this.placement_ = placement;
 };
 
 
@@ -334,4 +470,37 @@ ol.style.Text.prototype.setTextAlign = function(textAlign) {
  */
 ol.style.Text.prototype.setTextBaseline = function(textBaseline) {
   this.textBaseline_ = textBaseline;
+};
+
+
+/**
+ * Set the background fill.
+ *
+ * @param {ol.style.Fill} fill Fill style.
+ * @api
+ */
+ol.style.Text.prototype.setBackgroundFill = function(fill) {
+  this.backgroundFill_ = fill;
+};
+
+
+/**
+ * Set the background stroke.
+ *
+ * @param {ol.style.Stroke} stroke Stroke style.
+ * @api
+ */
+ol.style.Text.prototype.setBackgroundStroke = function(stroke) {
+  this.backgroundStroke_ = stroke;
+};
+
+
+/**
+ * Set the padding (`[top, right, bottom, left]`).
+ *
+ * @param {!Array.<number>} padding Padding.
+ * @api
+ */
+ol.style.Text.prototype.setPadding = function(padding) {
+  this.padding_ = padding;
 };

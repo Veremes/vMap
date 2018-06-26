@@ -68,7 +68,7 @@ nsVmap.Map.MapPopup = function (olFeature, olPoint) {
     this.HTML_.appendChild(this.HTMLContainer_);
 
     this.HTMLButtonsContainer_ = document.createElement('div');
-    this.HTMLButtonsContainer_.style = 'height: 7px;';
+    this.HTMLButtonsContainer_.className = 'ol-popup-buttons-container';
     this.HTMLContainer_.appendChild(this.HTMLButtonsContainer_);
 
     // Ajoute le style défini en properties
@@ -106,19 +106,6 @@ nsVmap.Map.MapPopup = function (olFeature, olPoint) {
 
 
     /**
-     * @type {ol.Overlay}
-     * @private
-     */
-    this.popupOverlay_ = new ol.Overlay(({
-        element: this.HTML_,
-        autoPan: true,
-        position: goog.isDefAndNotNull(olPoint) ? this.getGeometryCenter(olPoint) : this.getGeometryCenter(olFeature.getGeometry()),
-        autoPanAnimation: {
-            duration: 250
-        }
-    }));
-
-    /**
      * Add a click handler to hide the popup.
      * @return {boolean} Don't follow the href.
      */
@@ -127,71 +114,90 @@ nsVmap.Map.MapPopup = function (olFeature, olPoint) {
         return false;
     };
 
-    /**
-     * Put the current element upon of the others
-     */
-    this.HTML_.onclick = function () {
+    if (oVmap['properties']['is_mobile']) {
+        $('#mobile-popup-bar').removeClass('hidden');
+        $('#mobile-popup-bar').append(this.HTML_.children);
+    } else {
 
-        var map = oVmap.getMap().getOLMap();
-        var aOverlays = map.getOverlays().getArray();
-
-        // Met tous z-index à 10
-        for (var i = 0; i < aOverlays.length; i++) {
-            if ($(aOverlays[i].getElement()).hasClass('ol-popup')) {
-                $(aOverlays[i].getElement()).css('z-index', 10);
+        /**
+         * @type {ol.Overlay}
+         * @private
+         */
+        this.popupOverlay_ = new ol.Overlay(({
+            element: this.HTML_,
+            autoPan: true,
+            position: goog.isDefAndNotNull(olPoint) ? this.getGeometryCenter(olPoint) : this.getGeometryCenter(olFeature.getGeometry()),
+            autoPanAnimation: {
+                duration: 250
             }
-        }
+        }));
 
-        // Met le z-index de l'élément clické à 11
-        $(this_.HTML_).css('z-index', 11);
-    };
+        /**
+         * Put the current element upon of the others
+         */
+        this.HTML_.onclick = function () {
 
-    var positionEnd = [0, 0];
-    var pixelStart = [0, 0];
-    var diffX = 0;
-    var diffY = 0;
+            var map = oVmap.getMap().getOLMap();
+            var aOverlays = map.getOverlays().getArray();
 
-//    function drag_start(event) {
-//        pixelStart = this_.map_.getPixelFromCoordinate(this_.popupOverlay_.getPosition());
-//        var posX = event.clientX;
-//        var posY = event.clientY;
-//        diffX = posX - pixelStart[0];
-//        diffY = posY - pixelStart[1];
-//        return false;
-//    }
-//    function drag(event) {
-//        var posX = event.clientX;
-//        var posY = event.clientY;
-//        if (posX === 0 || posY === 0)
+            // Met tous z-index à 10
+            for (var i = 0; i < aOverlays.length; i++) {
+                if ($(aOverlays[i].getElement()).hasClass('ol-popup')) {
+                    $(aOverlays[i].getElement()).css('z-index', 10);
+                }
+            }
+
+            // Met le z-index de l'élément clické à 11
+            $(this_.HTML_).css('z-index', 11);
+        };
+
+//        // Déplacement drag de la popup
+//        var positionEnd = [0, 0];
+//        var pixelStart = [0, 0];
+//        var diffX = 0;
+//        var diffY = 0;
+//
+//        function drag_start(event) {
+//            pixelStart = this_.map_.getPixelFromCoordinate(this_.popupOverlay_.getPosition());
+//            var posX = event.clientX;
+//            var posY = event.clientY;
+//            diffX = posX - pixelStart[0];
+//            diffY = posY - pixelStart[1];
 //            return false;
-//        positionEnd = this_.map_.getCoordinateFromPixel([posX - diffX, posY - diffY]);
-//        this_.popupOverlay_.setPosition(positionEnd);
-//        return false;
-//    }
-//    this_.HTMLContainer_.addEventListener('dragstart', drag_start, false);
-//    this_.HTMLContainer_.addEventListener('drag', drag, false);
+//        }
+//        function drag(event) {
+//            var posX = event.clientX;
+//            var posY = event.clientY;
+//            if (posX === 0 || posY === 0)
+//                return false;
+//            positionEnd = this_.map_.getCoordinateFromPixel([posX - diffX, posY - diffY]);
+//            this_.popupOverlay_.setPosition(positionEnd);
+//            return false;
+//        }
+//        this_.HTMLContainer_.addEventListener('dragstart', drag_start, false);
+//        this_.HTMLContainer_.addEventListener('drag', drag, false);
 
-    this.map_.addOverlay(this.popupOverlay_);
+        this.map_.addOverlay(this.popupOverlay_);
 
+        // Change de coordonnées lorsqu'on change de projection
+        this.map_.on('change:view', function () {
 
-    // Change de coordonnées lorsqu'on change de projection
-    this.map_.on('change:view', function () {
+            var oldProj = this.projection_;
+            var oldCoord = this.popupOverlay_.getPosition();
 
-        var oldProj = this.projection_;
-        var oldCoord = this.popupOverlay_.getPosition();
+            if (!goog.isDef(oldCoord))
+                return 0;
+            if (!goog.isDef(oldProj))
+                return 0;
 
-        if (!goog.isDef(oldCoord))
-            return 0;
-        if (!goog.isDef(oldProj))
-            return 0;
+            var newProj = this.map_.getView().getProjection().getCode();
+            var newCoord = ol.proj.transform(oldCoord, oldProj, newProj);
 
-        var newProj = this.map_.getView().getProjection().getCode();
-        var newCoord = ol.proj.transform(oldCoord, oldProj, newProj);
+            this.popupOverlay_.setPosition(newCoord);
+            this.projection_ = newProj;
 
-        this.popupOverlay_.setPosition(newCoord);
-        this.projection_ = newProj;
-
-    }, this);
+        }, this);
+    }
 };
 
 /**
@@ -309,11 +315,16 @@ nsVmap.Map.MapPopup.prototype.addMessageTable = function (data) {
         row.appendChild(column2);
 
         if (goog.isString(data[item])) {
-            data[item] = data[item].replace(/</g, "&lt;").replace(/>/g, "&gt;");
+//            data[item] = data[item].replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            
             // Recherche les liens
             if (oVmap.isLink(data[item], 'bo_link')) {
                 data[item] = oVmap.parseLink(data[item], 'bo_link');
             }
+            
+            // Prévention d'injections XSS
+            data[item] = oVmap['$sanitize'](data[item]);
+            
             // Recherche les fonctions autorisées
             for (var i = 0; i < aAllowedFunctions.length; i++) {
                 if (data[item].indexOf('{{' + aAllowedFunctions[i] + '(') !== -1 && data[item].indexOf(')}}') !== -1) {
@@ -460,8 +471,14 @@ nsVmap.Map.MapPopup.prototype.remove = function (bRemoveFeature) {
 
     bRemoveFeature = goog.isDef(bRemoveFeature) ? bRemoveFeature : true;
 
-    this.popupOverlay_.setPosition(undefined);
     this.HTMLCloser_.blur();
+
+    if (oVmap['properties']['is_mobile']) {
+        $('#mobile-popup-bar').empty()
+        $('#mobile-popup-bar').addClass('hidden');
+    } else {
+        this.popupOverlay_.setPosition(undefined);
+    }
 
     // supprime la feature
     if (goog.isDef(this.olFeature_) && bRemoveFeature !== false) {

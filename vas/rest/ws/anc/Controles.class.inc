@@ -13,6 +13,10 @@
  */
 require_once __DIR__ . '/Anc.class.inc';
 require_once 'Controle.class.inc';
+require_once 'Evacuation_eauxs.class.inc';
+require_once 'Filieres_agrees.class.inc';
+require_once 'Pretraitements.class.inc';
+require_once 'Traitements.class.inc';
 require_once 'Composants.class.inc';
 
 class Controles extends Anc {
@@ -154,8 +158,8 @@ class Controles extends Anc {
     function POST() {
         $this->aValues['create'] = $_SESSION["ses_Login"];
         $this->aValues['create_date'] = date('Y-m-d');
-        if (empty($this->aValues['des_date_control']))
-            $this->aValues['des_date_control'] = date('Y-m-d');
+        //if (empty($this->aValues['des_date_control']))
+            //$this->aValues['des_date_control'] = date('Y-m-d');
         if (empty($this->aValues['des_interval_control']))
             $this->aValues['des_interval_control'] = 0;
         // Sauve le nom des fichiers.
@@ -172,7 +176,7 @@ class Controles extends Anc {
         if (!empty($_FILES['plan_f']))
             $this->aValues['plan_f'] = $_FILES['plan_f']["name"];
         // Conversion des dates
-        $aDates = array('cl_date_avis','cl_facture_le','des_date_installation','des_date_recommande','dep_date_depot','dep_date_envoi_incomplet');
+        $aDates = array('cl_date_avis', 'cl_facture_le', 'des_date_installation', 'des_date_recommande', 'dep_date_depot', 'dep_date_envoi_incomplet', 'des_date_control');
         foreach ($aDates as $sDate) {
             if (isset($this->aValues[$sDate])) {
                 if ($this->aValues[$sDate] == '')
@@ -245,8 +249,7 @@ class Controles extends Anc {
         if (!empty($this->aValues['composants'])) {
 
             // Supprime les composants liés au controle
-            $aControleComposantsIds = $this->getControleComposants();
-            $this->deleteComposants($aControleComposantsIds);
+            $this->deleteControleComposants($this->aPath[2]);
 
             // Récupère les composants au bon format
             $aComposants = $this->getTableFormedComposants(json_decode($this->aValues['composants'], true));
@@ -255,7 +258,7 @@ class Controles extends Anc {
             $this->createComposants($aComposants);
         }
         // Conversion des dates
-        $aDates = array('cl_date_avis','cl_facture_le','des_date_control','des_date_installation','des_date_recommande','dep_date_depot','dep_date_envoi_incomplet');
+        $aDates = array('cl_date_avis', 'cl_facture_le', 'des_date_control', 'des_date_installation', 'des_date_recommande', 'dep_date_depot', 'dep_date_envoi_incomplet');
         foreach ($aDates as $sDate) {
             if (isset($this->aValues[$sDate])) {
                 if ($this->aValues[$sDate] == '')
@@ -267,20 +270,6 @@ class Controles extends Anc {
         //
         $aReturn = $this->genericPut($this->aProperties['schema_anc'], 'v_controle', 'id_controle');
         return $aReturn['sMessage'];
-    }
-
-    /**
-     * Get the composants associated to the controle
-     * @return array
-     */
-    function getControleComposants() {
-        require $this->sRessourcesFile;
-        $aSQLParams = array();
-        $aSQLParams['sSchemaAnc'] = array('value' => $this->aProperties['schema_anc'], 'type' => 'schema_name');
-        $aSQLParams['idControle'] = array('value' => $this->aPath[2], 'type' => 'number');
-        $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['getControleComposants'], $aSQLParams);
-        $aComposantsIds = $this->oConnection->oBd->getResultTableAssoc($oPDOresult);
-        return $aComposantsIds;
     }
 
     /**
@@ -331,36 +320,6 @@ class Controles extends Anc {
 
 
         return $aComposants;
-    }
-
-    /**
-     * Delete the composants defined in $aComposants
-     * @param array $aComposants
-     */
-    function deleteComposants($aComposants) {
-        if (count($aComposants) > 0) {
-            $sIdList = '';
-            $aIdList = array();
-            for ($i = 0; $i < count($aComposants); $i++) {
-                if (!empty($aComposants[$i]['id_composant'])) {
-                    array_push($aIdList, $aComposants[$i]['id_composant']);
-                }
-            }
-            $sIdList = join('|', $aIdList);
-
-            $aPath = array('anc', 'composants');
-            $aValues = array(
-                'token' => $this->aValues['token'],
-                'output' => $this->aValues['output'],
-                'sEncoding' => $this->aValues['sEncoding'],
-                'sSourceEncoding' => $this->aValues['sSourceEncoding'],
-                'xslstylesheet' => $this->aValues['xslstylesheet'],
-                'module' => $this->aValues['module'],
-                'idList' => $sIdList,
-            );
-            $oComposants = new Composants($aPath, $aValues, $this->aProperties, $this->oConnection);
-            $oComposants->DELETE();
-        }
     }
 
     /**
@@ -448,8 +407,311 @@ class Controles extends Anc {
      * @return id of controles deleted or error object if a controles is not deleted
      */
     function DELETE() {
+        require $this->sRessourcesFile;
+
+        // Supprime les objets dépendants
+        $this->deleteControleDependencies($this->aValues['idList']);
+
+//        $aParams['idControle'] = array('value' => $this->aValues['id_controle'], 'type' => 'integer');
+//        $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['getInstallationControls'], $aParams);
+//        if ($this->oConnection->oBd->enErreur()) {
+//            $aReturn = array('status' => 0, 'message' => $this->oConnection->oBd->getBDMessage(), 'error_code' => 1);
+//            return json_encode($aReturn);
+//        }
+
         $aReturn = $this->genericDelete($this->aProperties['schema_anc'], 'v_controle', 'id_controle');
         return $aReturn['sMessage'];
+    }
+
+    /**
+     * Delete the controle dependencies
+     * @param string $sIdControles
+     */
+    function deleteControleDependencies($sIdControles) {
+
+        // Suppression dpépendance s_anc.evacuation_eaux
+        $this->deleteControleEvacuationEaux($sIdControles);
+
+        // Suppression dpépendance s_anc.filieres_agrees
+        $this->deleteControleFilieresAgrees($sIdControles);
+
+        // Suppression dpépendance s_anc.pretraitement
+        $this->deleteControlePretraitements($sIdControles);
+
+        // Suppression dpépendance s_anc.traitement
+        $this->deleteControleTraitements($sIdControles);
+        
+        // Suppression dpépendance s_anc.composant
+        $this->deleteControleComposants($sIdControles);
+    }
+
+    /**
+     * Get the composant's evacuationEaux
+     * @param string $sIdControles
+     * @return array|null
+     */
+    function getControleEvacuationEaux($sIdControles) {
+        require $this->sRessourcesFile;
+
+        $aParams = array();
+        $aParams['sSchemaAnc'] = array('value' => $this->aProperties['schema_anc'], 'type' => 'schema_name');
+        $aParams['idList'] = array('value' => $sIdControles, 'type' => 'group');
+        $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['getControleEvacuationEaux'], $aParams);
+        if ($this->oConnection->oBd->enErreur()) {
+            return null;
+        } else {
+            $aEvacuationEaux = $this->oConnection->oBd->getResultTableAssoc($oPDOresult);
+            return $aEvacuationEaux;
+        }
+    }
+
+    /**
+     * Get the composant's FilieresAgrees
+     * @param string $sIdControles
+     * @return array|null
+     */
+    function getControleFilieresAgrees($sIdControles) {
+        require $this->sRessourcesFile;
+
+        $aParams = array();
+        $aParams['sSchemaAnc'] = array('value' => $this->aProperties['schema_anc'], 'type' => 'schema_name');
+        $aParams['idList'] = array('value' => $sIdControles, 'type' => 'group');
+        $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['getControleFilieresAgrees'], $aParams);
+        if ($this->oConnection->oBd->enErreur()) {
+            return null;
+        } else {
+            $aFilieresAgrees = $this->oConnection->oBd->getResultTableAssoc($oPDOresult);
+            return $aFilieresAgrees;
+        }
+    }
+
+    /**
+     * Get the composant's Pretraitement
+     * @param string $sIdControles
+     * @return array|null
+     */
+    function getControlePretraitements($sIdControles) {
+        require $this->sRessourcesFile;
+
+        $aParams = array();
+        $aParams['sSchemaAnc'] = array('value' => $this->aProperties['schema_anc'], 'type' => 'schema_name');
+        $aParams['idList'] = array('value' => $sIdControles, 'type' => 'group');
+        $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['getControlePretraitements'], $aParams);
+        if ($this->oConnection->oBd->enErreur()) {
+            return null;
+        } else {
+            $aPretraitement = $this->oConnection->oBd->getResultTableAssoc($oPDOresult);
+            return $aPretraitement;
+        }
+    }
+
+    /**
+     * Get the composant's Traitement
+     * @param string $sIdControles
+     * @return array|null
+     */
+    function getControleTraitements($sIdControles) {
+        require $this->sRessourcesFile;
+
+        $aParams = array();
+        $aParams['sSchemaAnc'] = array('value' => $this->aProperties['schema_anc'], 'type' => 'schema_name');
+        $aParams['idList'] = array('value' => $sIdControles, 'type' => 'group');
+        $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['getControleTraitements'], $aParams);
+        if ($this->oConnection->oBd->enErreur()) {
+            return null;
+        } else {
+            $aTraitement = $this->oConnection->oBd->getResultTableAssoc($oPDOresult);
+            return $aTraitement;
+        }
+    }
+
+    /**
+     * Get the composant's Composant
+     * @param string $sIdControles
+     * @return array|null
+     */
+    function getControleComposants($sIdControles) {
+        require $this->sRessourcesFile;
+
+        $aParams = array();
+        $aParams['sSchemaAnc'] = array('value' => $this->aProperties['schema_anc'], 'type' => 'schema_name');
+        $aParams['idList'] = array('value' => $sIdControles, 'type' => 'group');
+        $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['getControleComposants'], $aParams);
+        if ($this->oConnection->oBd->enErreur()) {
+            return null;
+        } else {
+            $aComposant = $this->oConnection->oBd->getResultTableAssoc($oPDOresult);
+            return $aComposant;
+        }
+    }
+
+    /**
+     * Delete the composant's EvacuationEaux
+     * @param string $sIdControles
+     */
+    function deleteControleEvacuationEaux($sIdControles) {
+
+        $aEvacuationEaux = $this->getControleEvacuationEaux($sIdControles);
+        if (!empty($aEvacuationEaux)) {
+            if (count($aEvacuationEaux) > 0) {
+                $sIdList = '';
+                $aIdList = array();
+                for ($i = 0; $i < count($aEvacuationEaux); $i++) {
+                    if (!empty($aEvacuationEaux[$i]['id_eva'])) {
+                        array_push($aIdList, $aEvacuationEaux[$i]['id_eva']);
+                    }
+                }
+                $sIdList = join('|', $aIdList);
+                $aPath = array('anc', 'evacuation_eauxs');
+                $aValues = array(
+                    'token' => $this->aValues['token'],
+                    'output' => $this->aValues['output'],
+                    'sEncoding' => $this->aValues['sEncoding'],
+                    'sSourceEncoding' => $this->aValues['sSourceEncoding'],
+                    'xslstylesheet' => $this->aValues['xslstylesheet'],
+                    'module' => $this->aValues['module'],
+                    'idList' => $sIdList,
+                );
+                $oComposants = new Evacuation_eauxs($aPath, $aValues, $this->aProperties, $this->oConnection);
+                $oComposants->DELETE();
+            }
+        }
+    }
+
+    /**
+     * Delete the composant's FilieresAgrees
+     * @param string $sIdControles
+     */
+    function deleteControleFilieresAgrees($sIdControles) {
+
+        $aFilieresAgrees = $this->getControleFilieresAgrees($sIdControles);
+
+        if (!empty($aFilieresAgrees)) {
+            if (count($aFilieresAgrees) > 0) {
+                $sIdList = '';
+                $aIdList = array();
+                for ($i = 0; $i < count($aFilieresAgrees); $i++) {
+                    if (!empty($aFilieresAgrees[$i]['id_fag'])) {
+                        array_push($aIdList, $aFilieresAgrees[$i]['id_fag']);
+                    }
+                }
+                $sIdList = join('|', $aIdList);
+                $aPath = array('anc', 'evacuation_eauxs');
+                $aValues = array(
+                    'token' => $this->aValues['token'],
+                    'output' => $this->aValues['output'],
+                    'sEncoding' => $this->aValues['sEncoding'],
+                    'sSourceEncoding' => $this->aValues['sSourceEncoding'],
+                    'xslstylesheet' => $this->aValues['xslstylesheet'],
+                    'module' => $this->aValues['module'],
+                    'idList' => $sIdList,
+                );
+                $oComposants = new Filieres_agrees($aPath, $aValues, $this->aProperties, $this->oConnection);
+                $oComposants->DELETE();
+            }
+        }
+    }
+
+    /**
+     * Delete the composant's Pretraitement
+     * @param string $sIdControles
+     */
+    function deleteControlePretraitements($sIdControles) {
+
+        $aPretraitement = $this->getControlePretraitements($sIdControles);
+
+        if (!empty($aPretraitement)) {
+            if (count($aPretraitement) > 0) {
+                $sIdList = '';
+                $aIdList = array();
+                for ($i = 0; $i < count($aPretraitement); $i++) {
+                    if (!empty($aPretraitement[$i]['id_pretraitement'])) {
+                        array_push($aIdList, $aPretraitement[$i]['id_pretraitement']);
+                    }
+                }
+                $sIdList = join('|', $aIdList);
+                $aPath = array('anc', 'evacuation_eauxs');
+                $aValues = array(
+                    'token' => $this->aValues['token'],
+                    'output' => $this->aValues['output'],
+                    'sEncoding' => $this->aValues['sEncoding'],
+                    'sSourceEncoding' => $this->aValues['sSourceEncoding'],
+                    'xslstylesheet' => $this->aValues['xslstylesheet'],
+                    'module' => $this->aValues['module'],
+                    'idList' => $sIdList,
+                );
+                $oComposants = new Pretraitements($aPath, $aValues, $this->aProperties, $this->oConnection);
+                $oComposants->DELETE();
+            }
+        }
+    }
+
+    /**
+     * Delete the composant's Traitement
+     * @param string $sIdControles
+     */
+    function deleteControleTraitements($sIdControles) {
+
+        $aTraitement = $this->getControleTraitements($sIdControles);
+
+        if (!empty($aTraitement)) {
+            if (count($aTraitement) > 0) {
+                $sIdList = '';
+                $aIdList = array();
+                for ($i = 0; $i < count($aTraitement); $i++) {
+                    if (!empty($aTraitement[$i]['id_traitement'])) {
+                        array_push($aIdList, $aTraitement[$i]['id_traitement']);
+                    }
+                }
+                $sIdList = join('|', $aIdList);
+                $aPath = array('anc', 'evacuation_eauxs');
+                $aValues = array(
+                    'token' => $this->aValues['token'],
+                    'output' => $this->aValues['output'],
+                    'sEncoding' => $this->aValues['sEncoding'],
+                    'sSourceEncoding' => $this->aValues['sSourceEncoding'],
+                    'xslstylesheet' => $this->aValues['xslstylesheet'],
+                    'module' => $this->aValues['module'],
+                    'idList' => $sIdList,
+                );
+                $oComposants = new Traitements($aPath, $aValues, $this->aProperties, $this->oConnection);
+                $oComposants->DELETE();
+            }
+        }
+    }
+
+    /**
+     * Delete the composant's Composant
+     * @param string $sIdControles
+     */
+    function deleteControleComposants($sIdControles) {
+
+        $aComposant = $this->getControleComposants($sIdControles);
+
+        if (!empty($aComposant)) {
+            if (count($aComposant) > 0) {
+                $sIdList = '';
+                $aIdList = array();
+                for ($i = 0; $i < count($aComposant); $i++) {
+                    if (!empty($aComposant[$i]['id_composant'])) {
+                        array_push($aIdList, $aComposant[$i]['id_composant']);
+                    }
+                }
+                $sIdList = join('|', $aIdList);
+                $aPath = array('anc', 'evacuation_eauxs');
+                $aValues = array(
+                    'token' => $this->aValues['token'],
+                    'output' => $this->aValues['output'],
+                    'sEncoding' => $this->aValues['sEncoding'],
+                    'sSourceEncoding' => $this->aValues['sSourceEncoding'],
+                    'xslstylesheet' => $this->aValues['xslstylesheet'],
+                    'module' => $this->aValues['module'],
+                    'idList' => $sIdList,
+                );
+                $oComposants = new Composants($aPath, $aValues, $this->aProperties, $this->oConnection);
+                $oComposants->DELETE();
+            }
+        }
     }
 
 }

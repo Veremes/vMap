@@ -122,7 +122,6 @@ vitisApp.appSimpleFormFormularDrtv = function ($timeout, $translate, $q, envSrvc
                                         scope["modalWindow"]("dialog", "FORM_VALIDATION_ERROR", oOptions);
                                     }
                                     formScope[sFormElementName]["appFormSubmitted"] = false;
-                                    deferred.resolve(false);
                                 }
                             }
                         });

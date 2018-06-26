@@ -44,7 +44,7 @@
                     {
                         "type":"label",
                         "name":"da_chasse_pr_nat_eau",
-                        "label":"localisation de la chasse à auget",
+                        "label":"Localisation de la chasse à auget",
                         "disabled":false,
                         "required":false,
                         "nb_cols":5,
@@ -53,7 +53,7 @@
                     {
                         "type":"label",
                         "name":"da_chasse_ok",
-                        "label":"la chasse à auget est-elle installée correctement (essai en eau) ?",
+                        "label":"La chasse à auget est-elle installée correctement (essai en eau) ?",
                         "disabled":false,
                         "required":false,
                         "nb_cols":7,
@@ -165,7 +165,7 @@
                     {
                         "type":"label",
                         "name":"da_pr_ok",
-                        "label":"la chasse à auget est-elle installée correctement (essai en eau) ?",
+                        "label":"La chasse à auget est-elle installée correctement (essai en eau) ?",
                         "disabled":false,
                         "required":false,
                         "nb_cols":7,
@@ -255,7 +255,7 @@
             {
                 "fields":[
                     {
-                        "type":"label",
+                        "type":"tinymce",
                         "name":"da_commentaires",
                         "label":"Commentaires",
                         "disabled":false,
@@ -394,7 +394,7 @@
                         "id_from":"da_chasse_acces_1_1_from"
                     },
                     {
-                        "type":"text",
+                        "type":"number",
                         "name":"da_chasse_auto",
                         "label":"Volume de la bâche (en Litres)",
                         "disabled":false,
@@ -409,7 +409,7 @@
                     {
                         "type":"select",
                         "name":"da_chasse_pr_nat_eau",
-                        "label":"localisation de la chasse à auget",
+                        "label":"Localisation de la chasse à auget",
                         "required":false,
                         "nb_cols":5,
                         "id":"da_chasse_pr_nat_eau_3_1",
@@ -427,7 +427,7 @@
                     {
                         "type":"select",
                         "name":"da_chasse_ok",
-                        "label":"la chasse à auget est-elle installée correctement (essai en eau) ?",
+                        "label":"La chasse à auget est-elle installée correctement (essai en eau) ?",
                         "required":false,
                         "nb_cols":7,
                         "id":"da_chasse_ok_4_1",
@@ -620,7 +620,7 @@
                     {
                         "type":"select",
                         "name":"da_pr_ok",
-                        "label":"la chasse à auget est-elle installée correctement (essai en eau) ?",
+                        "label":"La chasse à auget est-elle installée correctement (essai en eau) ?",
                         "required":false,
                         "nb_cols":6,
                         "id":"da_pr_ok_13_1",

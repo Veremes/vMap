@@ -6,6 +6,7 @@ goog.require('ol');
 goog.require('ol.Object');
 goog.require('ol.easing');
 goog.require('ol.interaction.Property');
+goog.require('ol.math');
 
 
 /**
@@ -31,7 +32,7 @@ ol.interaction.Interaction = function(options) {
 
   /**
    * @private
-   * @type {ol.Map}
+   * @type {ol.PluggableMap}
    */
   this.map_ = null;
 
@@ -54,13 +55,13 @@ ol.inherits(ol.interaction.Interaction, ol.Object);
  */
 ol.interaction.Interaction.prototype.getActive = function() {
   return /** @type {boolean} */ (
-      this.get(ol.interaction.Property.ACTIVE));
+    this.get(ol.interaction.Property.ACTIVE));
 };
 
 
 /**
  * Get the map associated with this interaction.
- * @return {ol.Map} Map.
+ * @return {ol.PluggableMap} Map.
  * @api
  */
 ol.interaction.Interaction.prototype.getMap = function() {
@@ -83,7 +84,7 @@ ol.interaction.Interaction.prototype.setActive = function(active) {
  * Remove the interaction from its current map and attach it to the new map.
  * Subclasses may set up event handlers to get notified about changes to
  * the map here.
- * @param {ol.Map} map Map.
+ * @param {ol.PluggableMap} map Map.
  */
 ol.interaction.Interaction.prototype.setMap = function(map) {
   this.map_ = map;
@@ -180,6 +181,14 @@ ol.interaction.Interaction.zoom = function(view, resolution, opt_anchor, opt_dur
 ol.interaction.Interaction.zoomByDelta = function(view, delta, opt_anchor, opt_duration) {
   var currentResolution = view.getResolution();
   var resolution = view.constrainResolution(currentResolution, delta, 0);
+
+  if (resolution !== undefined) {
+    var resolutions = view.getResolutions();
+    resolution = ol.math.clamp(
+        resolution,
+        view.getMinResolution() || resolutions[resolutions.length - 1],
+        view.getMaxResolution() || resolutions[0]);
+  }
 
   // If we have a constraint on center, we need to change the anchor so that the
   // new center is within the extent. We first calculate the new center, apply

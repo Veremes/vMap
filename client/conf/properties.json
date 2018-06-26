@@ -1,12 +1,20 @@
 {
+    "mobile_interface": "true",
     "services_alias": "rest[ENV]",
     "web_server_name": "https://[hostname]:[PORT]/",
     "vmap_folder": "modules/vmap",
     "proxy_url": "https://[hostname]:[PORT]/proxy[ENV]/proxy.php",
     "version": "[VERSION]",
-	"build": "[BUILD]",
+    "build": "[BUILD]",
     "status": "unstable",
-	"month_year": "[MONTH_YEAR]",
+    "month_year": "[MONTH_YEAR]",
     "application": "vmap",
-    "environment": "[ENV]"
+    "environment": "[ENV]",
+    "mobile_interface": "true",
+    "mobile_interface_min_width": "1280",
+    "geolocation": "true",
+    "documentation": [{
+            "name": "Documentation vMap",
+            "url": "https://vmap.readthedocs.io/fr/latest/"
+        }]
 }

@@ -164,8 +164,8 @@ ol.interaction.MouseWheelZoom.handleEvent = function(mapBrowserEvent) {
 
   if (!this.mode_ || now - this.startTime_ > this.trackpadEventGap_) {
     this.mode_ = Math.abs(delta) < 4 ?
-        ol.interaction.MouseWheelZoom.Mode_.TRACKPAD :
-        ol.interaction.MouseWheelZoom.Mode_.WHEEL;
+      ol.interaction.MouseWheelZoom.Mode_.TRACKPAD :
+      ol.interaction.MouseWheelZoom.Mode_.WHEEL;
   }
 
   if (this.mode_ === ol.interaction.MouseWheelZoom.Mode_.TRACKPAD) {
@@ -244,7 +244,7 @@ ol.interaction.MouseWheelZoom.prototype.decrementInteractingHint_ = function() {
 
 /**
  * @private
- * @param {ol.Map} map Map.
+ * @param {ol.PluggableMap} map Map.
  */
 ol.interaction.MouseWheelZoom.prototype.handleWheelZoom_ = function(map) {
   var view = map.getView();

@@ -39,9 +39,9 @@ class Versions extends Vitis {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
-		if (!empty($this->aValues['token'])) {
-			$this->oConnection = new Connection($this->aValues, $this->aProperties);
-		}
+        if (!empty($this->aValues['token'])) {
+            $this->oConnection = new Connection($this->aValues, $this->aProperties);
+        }
     }
 
     /**
@@ -71,7 +71,7 @@ class Versions extends Vitis {
      * @return versions
      */
     function GET() {
-         if ($this->oConnection->oError == null) {
+        if ($this->oConnection->oError == null) {
             $this->getVersion();
             if (!empty($this->aValues['token']) && in_array("vitis_admin", $this->oConnection->aPrivileges)) {
 
@@ -188,11 +188,11 @@ class Versions extends Vitis {
             }
             $aXmlRacineAttribute['status'] = 1;
             $sMessage = $this->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
-        }else{
-            http_response_code(403); 
-            $aXmlRacineAttribute['status']=0;
+        } else {
+            http_response_code(403);
+            $aXmlRacineAttribute['status'] = 0;
             $this->aFields['errorMessage'] = "ERROR : invalid token";
-            $sMessage = $this->asDocument('','vitis',$this->aValues['sEncoding'],True,$aXmlRacineAttribute,$this->aValues['sSourceEncoding'],$this->aValues['output']);
+            $sMessage = $this->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
         }
 
         return $sMessage;

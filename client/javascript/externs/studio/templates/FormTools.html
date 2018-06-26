@@ -15,6 +15,14 @@
                      </a>
                  </li>
                  <li>
+                     <a title="{{::ctrl.text.InfoBulle.CopyClipboard}}"
+                        href="javascript:void(0);"
+                        ng-click="ctrl.copyToClipboard()">
+                         <span class="glyphicon glyphicon-copy" aria-hidden="true"></span>
+                         {{::ctrl.text.InfoBulle.CopyClipboard}}
+                     </a>
+                 </li>
+                 <li>
                      <a title="{{::ctrl.text.InfoBulle.Paste}}"
                         href="javascript:void(0);"
                         ng-click="ctrl.paste()">
@@ -22,6 +30,14 @@
                          {{::ctrl.text.InfoBulle.Paste}}
                      </a>
                  </li>
+                 <!--<li>
+                     <a title="{{::ctrl.text.InfoBulle.PasteClipboard}}"
+                        href="javascript:void(0);"
+                        ng-click="ctrl.pasteFromClipboard()">
+                         <span class="glyphicon glyphicon-paste" aria-hidden="true"></span>
+                         {{::ctrl.text.InfoBulle.PasteClipboard}}
+                     </a>
+                 </li>-->
                  <li>
                      <a title="{{::ctrl.text.InfoBulle.Labelize}}"
                         href="javascript:void(0);"
@@ -36,6 +52,22 @@
                         ng-click="ctrl.bTreeWithLines_ = !ctrl.bTreeWithLines_">
                          <span class="glyphicon glyphicon-menu-hamburger" aria-hidden="true"></span>
                          {{::ctrl.text.InfoBulle.Row}}
+                     </a>
+                 </li>
+                 <li ng-if="ctrl.applicationName === 'wab'">
+                     <a title="{{::ctrl.text.InfoBulle.MethodCreator}}"
+                        href="javascript:void(0);"
+                        ng-click="ctrl.openModalMethodcreator()">
+                         <span class="glyphicon glyphicon-tasks" aria-hidden="true"></span>
+                         {{::ctrl.text.InfoBulle.MethodCreator}}
+                     </a>
+                 </li>
+                 <li ng-if="ctrl.applicationName === 'wab'">
+                     <a title="{{::ctrl.text.InfoBulle.IdName}}"
+                        href="javascript:void(0);"
+                        ng-click="ctrl.idName()">
+                         <span class="glyphicon glyphicon-screenshot" aria-hidden="true"></span>
+                         {{::ctrl.text.InfoBulle.IdName}}
                      </a>
                  </li>
              </ul>

@@ -202,6 +202,9 @@ class Controle extends Anc {
         if (!empty($aStyle['draw_symbol'])) {
             $aGeoJSONStyle['draw']['symbol'] = $aStyle['draw_symbol'];
         }
+        if (!empty($aStyle['draw_rotation'])) {
+            $aGeoJSONStyle['draw']['rotation'] = $aStyle['draw_rotation'];
+        }
         if (!empty($aStyle['image'])) {
             $aGeoJSONStyle['draw']['image'] = $aStyle['image'];
         }
