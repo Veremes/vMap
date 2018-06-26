@@ -8,5 +8,5 @@ vMap is able to manage business objects while using WMS producing server softwar
 ## Getting Started
 
 - Try the [demo](https://demo.veremes.net/vmap/)
-- Download the [setup](http://freedownload.veremes.net/?p=vMap/)
+- Download the setup on the [vStore](https://vstore.veremes.net/store/)
 - Follow the [install procedure](http://www.veremes.com/procedure-dinstallation-de-vmap)
