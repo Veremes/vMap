@@ -35,13 +35,11 @@ class ReleveDePropriete extends Cadastre {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
      * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = new Connection($this->aValues, $this->aProperties);
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
     }
 
     /**
@@ -90,7 +88,7 @@ class ReleveDePropriete extends Cadastre {
      *  )
      */
     function GET() {
-        
+
         if (!in_array('vmap_cadastre_user', $this->oConnection->aPrivileges)) {
             $oError = new VitisError(0, 'INSUFFICIENT_PRIVILEGES');
             $aXmlRacineAttribute['status'] = 0;
@@ -148,11 +146,11 @@ class ReleveDePropriete extends Cadastre {
 
         // Récupère le chemin du fichier
         switch ($sType) {
-			case "tiers" :
+            case "tiers" :
             case "standard" :
                 $fileName = $IDDNUPRO;
                 break;
-            
+
             case "parcelle" :
                 $fileName = $ID_PAR;
                 break;
@@ -186,7 +184,7 @@ class ReleveDePropriete extends Cadastre {
 
             // Création d'un nouvel objet Relevé de Propriété
             switch ($sType) {
-				 case "tiers" :
+                case "tiers" :
                 case "standard" :
                     require_once __DIR__ . '/../../class/majic_lib/Mj_Compte_Communal.class.inc';
                     $oRP = new Mj_Compte_Communal($IDDNUPRO, $oBD);
@@ -196,15 +194,15 @@ class ReleveDePropriete extends Cadastre {
                         $aReturn['error']['errorMessage'] = "Erreur lors de la génération du fichier PDF de relevé de propriété.";
                         return json_encode($aReturn);
                     } else {
-						if ($sType === "tiers"){
-							$sDir = $sYear . "/tiers/"; 
-						}else{
-							$sDir = $sYear . "/standard/";
-						}
+                        if ($sType === "tiers") {
+                            $sDir = $sYear . "/tiers/";
+                        } else {
+                            $sDir = $sYear . "/standard/";
+                        }
                         $sFile = str_replace("*", "~", $IDDNUPRO);
                     }
                     break;
-               
+
                 case "parcelle" :
                     require_once __DIR__ . '/../../class/majic_lib/Mj_Compte_Communal_Parcelle.class.inc';
                     $oRP = new Mj_Compte_Communal_Parcelle("", $ID_PAR, $oBD);

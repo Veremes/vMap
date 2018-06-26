@@ -95,7 +95,6 @@ nsVmap.nsToolsManager.Controls = function (aControls) {
      */
     this.map_ = oVmap.getMap().getOLMap();
 
-
     this.handleDragOver = function (event) {
         event.stopPropagation();
         event.preventDefault();
@@ -115,6 +114,16 @@ nsVmap.nsToolsManager.Controls = function (aControls) {
     };
 
     this.DragAndDrop = false;
+
+    // Mobile
+    var aAvaliableMobileControls = ['MapName', 'Scale', 'ScaleLine', 'Zoom', 'RefreshSocket'];
+    if (oClientProperties['is_mobile']) {
+        for (var i = this.aAvaliableControls.length - 1; i >= 0; i--) {
+            if (aAvaliableMobileControls.indexOf(this.aAvaliableControls[i]['id']) === -1) {
+                this.aAvaliableControls.splice(i, 1);
+            }
+        }
+    }
 };
 // Obligatoire pour instancier dans nsVmap.nsToolsManager.ToolsManager
 goog.exportProperty(nsVmap.nsToolsManager, 'Controls', nsVmap.nsToolsManager.Controls);
@@ -206,7 +215,7 @@ nsVmap.nsToolsManager.Controls.prototype.addControl = function (control) {
 //        break;
         case 'CurrentProjection':
 
-            $('#olMap').children().children('.ol-overlaycontainer-stopevent').append('<div id="current-projection" class="ol-current-projection ol-unselectable ol-control"></div>');
+            $('#olMap').children().children('.ol-overlaycontainer-stopevent').append('<div class="ol-current-projection ol-unselectable"><span id="current-projection" class="ol-control"></span></div>');
 
             $("#current-projection").html(oVmap['oProjections'][oVmap.getMap().getOLMap().getView().getProjection().getCode()]);
 
@@ -214,7 +223,7 @@ nsVmap.nsToolsManager.Controls.prototype.addControl = function (control) {
 
         case 'MapName':
 
-            $('#olMap').children().children('.ol-overlaycontainer-stopevent').append('<div id="map-name" class="ol-map-name ol-unselectable ol-control"></div>');
+            $('#olMap').children().children('.ol-overlaycontainer-stopevent').append('<div class="ol-map-name ol-unselectable"><span id="map-name" class="ol-control"></span></div>');
             var vMapCatalog = oVmap.getMapManager().getMapCatalog();
             for (var i = 0; i < vMapCatalog['maps'].length; i++) {
                 if (vMapCatalog['maps'][i]['used'] === true) {
@@ -228,7 +237,7 @@ nsVmap.nsToolsManager.Controls.prototype.addControl = function (control) {
 
             var tool = '<div class="dropup"> <button class="btn btn-sm btn-default dropdown-toggle padding-sides-10 set-scale-btn" style="width: auto" type="button" onclick="$(\'#scale-list\').toggle()"> <span id="current-scale">' + oVmap.getMap().getScale({
                 "pretty": true
-            }) + '</span> <span class="caret"></span> </button> <ul id="scale-list" style="font-size: 12px" class="dropdown-menu" aria-labelledby="dropdownMenu2"> <li><a class="pointer" onclick="$(\'#scale-modal\').modal(\'show\')">Ajouter à la liste</a></li> <li><a class="pointer" onclick="oVmap.getMap().setScale(1000000)">1:1,000,000</a></li> <li><a class="pointer" onclick="oVmap.getMap().setScale(500000)">1:500,000</a></li> <li><a class="pointer" onclick="oVmap.getMap().setScale(250000)">1:250,000</a></li> <li><a class="pointer" onclick="oVmap.getMap().setScale(100000)">1:100,000</a></li> <li><a class="pointer" onclick="oVmap.getMap().setScale(50000)">1:50,000</a></li> <li><a class="pointer" onclick="oVmap.getMap().setScale(25000)">1:25,000</a></li> <li><a class="pointer" onclick="oVmap.getMap().setScale(10000)">1:10,000</a></li> <li><a class="pointer" onclick="oVmap.getMap().setScale(5000)">1:5,000</a></li> <li><a class="pointer" onclick="oVmap.getMap().setScale(1000)">1:1,000</a></li> <li><a class="pointer" onclick="oVmap.getMap().setScale(250)">1:250</a></li> <li><a class="pointer" onclick="oVmap.getMap().setScale(100)">1:100</a></li> </ul> </div>';
+            }) + '</span> <span class="caret"></span> </button> <ul id="scale-list" style="font-size: 12px" class="dropdown-menu" aria-labelledby="dropdownMenu2"> ' + (oVmap['properties']['is_mobile'] ? '' : '<li><a class="pointer" onclick="$(\'#scale-modal\').modal(\'show\')">Ajouter à la liste</a></li>') + ' <li><a class="pointer" onclick="oVmap.getMap().setScale(1000000)">1:1,000,000</a></li> <li><a class="pointer" onclick="oVmap.getMap().setScale(500000)">1:500,000</a></li> <li><a class="pointer" onclick="oVmap.getMap().setScale(250000)">1:250,000</a></li> <li><a class="pointer" onclick="oVmap.getMap().setScale(100000)">1:100,000</a></li> <li><a class="pointer" onclick="oVmap.getMap().setScale(50000)">1:50,000</a></li> <li><a class="pointer" onclick="oVmap.getMap().setScale(25000)">1:25,000</a></li> <li><a class="pointer" onclick="oVmap.getMap().setScale(10000)">1:10,000</a></li> <li><a class="pointer" onclick="oVmap.getMap().setScale(5000)">1:5,000</a></li> <li><a class="pointer" onclick="oVmap.getMap().setScale(1000)">1:1,000</a></li> <li><a class="pointer" onclick="oVmap.getMap().setScale(250)">1:250</a></li> <li><a class="pointer" onclick="oVmap.getMap().setScale(100)">1:100</a></li> </ul> </div>';
 
             $('#olMap').children().children('.ol-overlaycontainer-stopevent').append('<div id="current-scale-tool" class="ol-current-scale ol-unselectable ol-control"></div>');
             $("#current-scale-tool").html(tool);

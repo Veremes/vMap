@@ -38,8 +38,10 @@ class GenericQuerys extends Vitis {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
+     * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
         require 'GenericQuerys.class.sql.inc';
         $this->aSql = $aSql;
         $this->aValues = $aValues;
@@ -778,7 +780,7 @@ class GenericQuerys extends Vitis {
             $oError = new VitisError(1, $this->oBd->getBDMessage());
         } else {
             while ($aLigne = $oPDOresult->fetch(PDO::FETCH_ASSOC)) {
-                $oObject = new GenericQuery($this->aPath, $this->aValues, $this->aProperties, $this->oConnection);
+                $oObject = new GenericQuery($this->aPath, $this->aValues, $this->aProperties, true, $this->oConnection);
                 $oObject->aFields = $aLigne;
                 array_push($this->aObjects, $oObject);
             }

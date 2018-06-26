@@ -7,8 +7,12 @@ goog.require('vmap');
 goog.require('ol.proj');
 goog.require('ol.source.WMTS');
 goog.require('ol.format.WMTSCapabilities');
-goog.require('nsVmap.importBoDrtv');
-goog.require('nsVmap.importBoCtrl');
+goog.require('nsVmap.importVexDrtv');
+goog.require('nsVmap.importVexCtrl');
+goog.require('nsVmap.exportVexDrtv');
+goog.require('nsVmap.exportVexCtrl');
+goog.require('vitis.controllers.documentationHelp');
+goog.require('vitis.directives.documentationHelp');
 goog.require('goog.array');
 
 vitisApp.on('appMainDrtvLoaded', function () {
@@ -59,12 +63,10 @@ vitisApp.on('appMainDrtvLoaded', function () {
         vitisApp.externFunctionSrvc()["resizeWin"]();
         angular.element(vitisApp.appMainDrtv).scope()["setFullScreen"]();
 
-        // Pas d'affichage de l'anim ajax.
-        var oModeVmap = modesSrvc["getMode"]("vmap");
-        oModeVmap["ajaxLoader"] = false;
-        // Si vmap est le 1er mode de l'appli. -> obligatoire.
-        if (modesSrvc["modes"][0]["mode_id"] == "vmap")
-            sessionStorage["ajaxLoader"] = false;
+        // Aaffichage de l'anim ajax.
+        modesSrvc["getMode"]("vmap")["ajaxLoader"] = true;
+        if (modesSrvc["modes"][0]["mode_id"] === "vmap")
+            sessionStorage["ajaxLoader"] = true;
 
         oVmap.init();
     };
@@ -521,8 +523,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
             }
             if (goog.isDefAndNotNull(oOptions['login'])) {
                 if (goog.isDefAndNotNull(oOptions['password'])) {
-                    envSrvc['oFormValues'][envSrvc['sFormDefinitionName']]['login'] = oOptions['login'];
-                    envSrvc['oFormValues'][envSrvc['sFormDefinitionName']]['password'] = oOptions['password'];
+                    envSrvc['oFormValues'][envSrvc['sFormDefinitionName']]['service_login'] = oOptions['login'];
+                    envSrvc['oFormValues'][envSrvc['sFormDefinitionName']]['service_password'] = oOptions['password'];
                 }
             }
         }
@@ -536,12 +538,12 @@ vitisApp.on('appMainDrtvLoaded', function () {
         $log.info('setVmapServiceForm');
         // Champs de form. à afficher pour chaque type de service.
         var oServiceFormElements = {
-            'xyz': ['name', 'description', 'url', 'thumbnail', 'form_submit', 'return_list'],
+            'xyz': ['name', 'description', 'url', 'thumbnail', 'form_submit', 'return_list', 'service_login', 'service_password'],
             'osm': ['name', 'description', 'url', 'thumbnail', 'form_submit', 'return_list'],
             'bing': ['name', 'description', 'key', 'thumbnail', 'lang', 'imagery', 'form_submit', 'return_list'],
-            'imagewms': ['name', 'wms_service_type', 'description', 'url', 'service_type_version', 'wms_test_button', 'wms_test_submit_button', 'return_list', 'login', 'password', 'service_options'],
-            'tilewms': ['name', 'wms_service_type', 'description', 'url', 'service_type_version', 'wms_test_button', 'wms_test_submit_button', 'return_list', 'login', 'password', 'service_options'],
-            'wmts': ['name', 'description', 'url', 'service_type_version', 'service_type_type', 'capabilities_url', 'wmts_test_button', 'wmts_test_submit_button', 'return_list', 'service_options']
+            'imagewms': ['name', 'wms_service_type', 'description', 'url', 'service_type_version', 'wms_test_button', 'wms_test_submit_button', 'return_list', 'service_login', 'service_password', 'service_options'],
+            'tilewms': ['name', 'wms_service_type', 'description', 'url', 'service_type_version', 'wms_test_button', 'wms_test_submit_button', 'return_list', 'service_login', 'service_password', 'service_options'],
+            'wmts': ['name', 'description', 'url', 'service_type_version', 'service_type_type', 'capabilities_url', 'wmts_test_button', 'wmts_test_submit_button', 'return_list', 'service_login', 'service_password', 'service_options']
         };
         // Champs de form. affichés par défaut.
         Object.keys(oServiceFormElements).forEach(function (sServiceType) {
@@ -647,31 +649,6 @@ vitisApp.on('appMainDrtvLoaded', function () {
                         formSrvc['getFormElementDefinition']('service_type_id', envSrvc['sFormDefinitionName'], envSrvc['sFormDefinition'])['type'] = 'text';
                     }
                 }
-            }
-            // service_options (login, password etc..)
-            this['setWMSServiceOptions']();
-        }
-    };
-
-    /**
-     * Set the service_options value
-     */
-    angular.element(vitisApp.appMainDrtv).scope()['setWMSServiceOptions'] = function () {
-        $log.info('setWMSServiceOptions');
-
-        if (goog.isDefAndNotNull(envSrvc['oFormValues'][envSrvc['sFormDefinitionName']]['login'])) {
-            if (goog.isDefAndNotNull(envSrvc['oFormValues'][envSrvc['sFormDefinitionName']]['password'])) {
-                var oOptions = envSrvc['oFormValues'][envSrvc['sFormDefinitionName']]['service_options'];
-                if (!goog.isDefAndNotNull(oOptions)) {
-                    oOptions = {};
-                } else if (goog.isString(oOptions)) {
-                    oOptions = JSON.parse(oOptions);
-                } else {
-                    oOptions = {};
-                }
-                oOptions['login'] = envSrvc['oFormValues'][envSrvc['sFormDefinitionName']]['login'];
-                oOptions['password'] = envSrvc['oFormValues'][envSrvc['sFormDefinitionName']]['password'];
-                envSrvc['oFormValues'][envSrvc['sFormDefinitionName']]['service_options'] = JSON.stringify(oOptions);
             }
         }
     };
@@ -914,6 +891,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
         var this_ = this;
         var serviceUrl = angular.copy(envSrvc['oFormValues'][envSrvc['sFormDefinitionName']]['url']);
         var serviceName = angular.copy(envSrvc['oFormValues'][envSrvc['sFormDefinitionName']]['name']);
+        var serviceVersion = angular.copy(envSrvc['oFormValues'][envSrvc['sFormDefinitionName']]['service_type_version']);
 
         if (!goog.isDefAndNotNull(serviceUrl) || serviceUrl === '') {
             $.notify('Lien non défini', 'error');
@@ -936,7 +914,9 @@ vitisApp.on('appMainDrtvLoaded', function () {
             return null;
         }
 
-        this['getCapabilities'](serviceUrl).then(function (oResult) {
+        this['getCapabilities'](serviceUrl, {
+            'version': serviceVersion
+        }).then(function (oResult) {
             if (goog.isDefAndNotNull(oResult)) {
                 if (goog.isDefAndNotNull(oResult['json'])) {
                     $.notify('Service valide', 'success');
@@ -954,7 +934,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
 
                             this_['showLayerModalWindow']({
                                 'capabilities': oResult,
-                                'service_url': serviceUrl
+                                'service_url': serviceUrl,
+                                'service_version': serviceVersion
                             });
                         }
                     });
@@ -1075,8 +1056,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
             'xyz': ['layer_id', 'service_id', 'service_name', 'name', 'layertheme_id', 'theme_name', 'bo_id', 'bo_id_list', 'form_submit', 'return_list'],
             'osm': ['layer_id', 'service_id', 'service_name', 'name', 'layertheme_id', 'theme_name', 'bo_id', 'bo_id_list', 'form_submit', 'return_list'],
             'bing': ['layer_id', 'service_id', 'service_name', 'name', 'layertheme_id', 'theme_name', 'bo_id', 'bo_id_list', 'form_submit', 'return_list'],
-            'tilewms': ['layer_id', 'service_id', 'service_name', 'name', 'description', 'layertheme_id', 'theme_name', 'layer_list', 'layer_options', 'bo_id', 'bo_id_list', 'is_dynamic', 'is_filtered', 'form_submit', 'return_list'],
-            'imagewms': ['layer_id', 'service_id', 'service_name', 'name', 'description', 'layertheme_id', 'theme_name', 'layer_list', 'layer_options', 'bo_id', 'bo_id_list', 'is_dynamic', 'is_filtered', 'form_submit', 'return_list'],
+            'tilewms': ['layer_id', 'service_id', 'service_name', 'name', 'description', 'layertheme_id', 'theme_name', 'layer_list', 'layer_options', 'bo_id', 'bo_id_list', 'is_dynamic', 'is_filtered', 'is_bo_filtered', 'form_submit', 'return_list'],
+            'imagewms': ['layer_id', 'service_id', 'service_name', 'name', 'description', 'layertheme_id', 'theme_name', 'layer_list', 'layer_options', 'bo_id', 'bo_id_list', 'is_dynamic', 'is_filtered', 'is_bo_filtered', 'form_submit', 'return_list'],
             'wmts': ['layer_id', 'service_id', 'service_name', 'name', 'description', 'layertheme_id', 'theme_name', 'wmts_layer', 'matrix_set', 'layer_style', 'layer_format', 'layer_options', 'bo_id', 'bo_id_list', 'form_submit', 'return_list']
         };
 
@@ -1101,6 +1082,9 @@ vitisApp.on('appMainDrtvLoaded', function () {
                 envSrvc["oFormValues"][envSrvc['sFormDefinitionName']]["service_type_id"] = sServiceType;
                 if (goog.isDefAndNotNull(scope['oServices'][sServiceId]['url'])) {
                     envSrvc["oFormValues"][envSrvc['sFormDefinitionName']]["service_url"] = scope['oServices'][sServiceId]['url'];
+                }
+                if (goog.isDefAndNotNull(scope['oServices'][sServiceId]['service_type_version'])) {
+                    envSrvc["oFormValues"][envSrvc['sFormDefinitionName']]["service_type_version"] = scope['oServices'][sServiceId]['service_type_version'];
                 }
             }
         } else {
@@ -1668,7 +1652,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
         }
 
         // Calques à exclure (ceux associées à la carte).
-        var aRows = envSrvc["oGridOptions"][oSaveSelectedObject["name"]]["data"];
+        var aRows = envSrvc["oGridOptions"][oSaveSelectedObject["name"] + '_layers']["data"];
         if (aRows.length > 0) {
             var aLayersId = [];
             for (var i = 0; i < aRows.length; i++) {
@@ -2497,10 +2481,12 @@ vitisApp.on('appMainDrtvLoaded', function () {
 
         $translate(["BTN_ADD_LAYERS_VMAP_MAP_LAYER"]).then(function (oTranslations) {
             var sServiceUrl = envSrvc["oFormValues"][sParentFormDefinitionName]["service_url"];
+            var sVersion = envSrvc["oFormValues"][sParentFormDefinitionName]["service_type_version"];
             sServiceUrl = sServiceUrl.replace("[token]", sha256(sessionSrvc["token"]));
             sServiceUrl = sServiceUrl.replace("[ms_cgi_url]", propertiesSrvc["ms_cgi_url"]);
             this_['showLayerModalWindow']({
                 'service_url': sServiceUrl,
+                'service_version': sVersion,
                 'buttons': [{
                         "label": oTranslations["BTN_ADD_LAYERS_VMAP_MAP_LAYER"],
                         "name": scope["sSelectedObjectName"] + "_add_layer_btn",
@@ -2528,7 +2514,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
         var sParentFormDefinitionName = envSrvc["sFormDefinitionName"];
 
         // Set les options du service (login, password etc...)
-        this['setWMSServiceOptions']();
+//        this['setWMSServiceOptions']();
 
         opt_options = goog.isDefAndNotNull(opt_options) ? opt_options : {};
         var sServiceUrl = goog.isDefAndNotNull(opt_options['service_url']) ? opt_options['service_url'] : envSrvc["oFormValues"][sParentFormDefinitionName]["service_url"];
@@ -2589,7 +2575,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
                 //"enableFullRowSelection": true,
                 "enablePagination": true,
                 "enablePaginationControls": false,
-                "useExternalPagination": true,
+                "useExternalPagination": false,
                 "paginationPageSize": propertiesSrvc["rows_per_page"],
                 "enableColumnMenus": false,
                 "enableColumnResizing": true,
@@ -2602,9 +2588,10 @@ vitisApp.on('appMainDrtvLoaded', function () {
                 "appLoadGridData": false,
                 "appGridTitle": "TITLE_GRID_VMAP_MAP_LAYER_WMS_LAYERS",
                 "appResizeGrid": true,
-                "appFooter": false,
-                "appShowPagination": false,
-                "appActions": []
+                "appFooter": true,
+                "appShowPagination": true,
+                "appActions": [],
+                "appEnableCsvExport": false
             };
         }
 
@@ -2804,6 +2791,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
                                                     'TIMESTAMP': new Date().getTime()
                                                 },
                                                 'service_options': envSrvc["oFormValues"][sParentFormDefinitionName]['service_options'],
+                                                'service_login': envSrvc["oFormValues"][sParentFormDefinitionName]['service_login'],
+                                                'service_password': envSrvc["oFormValues"][sParentFormDefinitionName]['service_password'],
                                                 'index': i + 1
                                             };
                                             oChildrenService['children'].push(oChildrenLayer);
@@ -2869,7 +2858,9 @@ vitisApp.on('appMainDrtvLoaded', function () {
             fillModal(oCapabilities);
         } else if (goog.isDefAndNotNull(sServiceUrl)) {
             // Calques du service wms.
-            scope.$root["getCapabilities"](sServiceUrl).then(function (oGetCapabilities) {
+            scope.$root['getCapabilities'](sServiceUrl, {
+                'version': opt_options['service_version']
+            }).then(function (oGetCapabilities) {
                 oCapabilities = oGetCapabilities;
                 if (goog.isDefAndNotNull(oCapabilities)) {
                     if (goog.isDefAndNotNull(oCapabilities['xml']) && goog.isDefAndNotNull(oCapabilities['json'])) {
@@ -2897,7 +2888,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
         var promise = deferred.promise;
         // Paramètres par défaut.
         var oDefaultOptions = {
-            "showErrorMessage": true
+            "showErrorMessage": true,
+            "version": "1.3.0"
         };
         if (typeof (oOptions) == "undefined")
             oOptions = oDefaultOptions;
@@ -2905,12 +2897,18 @@ vitisApp.on('appMainDrtvLoaded', function () {
             goog.object.extend(oDefaultOptions, oOptions);
             oOptions = oDefaultOptions;
         }
+        if (!goog.isDefAndNotNull(oOptions['version'])) {
+            oOptions['version'] = '1.3.0';
+        }
+        if (!goog.isDefAndNotNull(oOptions['showErrorMessage'])) {
+            oOptions['showErrorMessage'] = true;
+        }
         // Création de l'url vers le service.
         if (sServiceUrl.indexOf("?") === -1)
             sServiceUrl += "?";
         else
             sServiceUrl += "&";
-        sServiceUrl += "service=wms&version=1.3.0&request=GetCapabilities&no_cache=" + new Date().getTime();
+        sServiceUrl += "service=wms&version=" + oOptions['version'] + "&request=GetCapabilities&no_cache=" + new Date().getTime();
 
         function rhtmlspecialchars(str) {
             if (typeof (str) == "string") {
@@ -2946,10 +2944,11 @@ vitisApp.on('appMainDrtvLoaded', function () {
                         oGetCapabilities = {
                             "xml": rhtmlspecialchars(response["data"])
                         };
+
                         // Vérification du résultat.
                         var parser = new DOMParser();
                         var xmlDoc = parser.parseFromString(rhtmlspecialchars(response["data"]), "text/xml");
-                        if (xmlDoc.querySelector("WMS_Capabilities") === null) {
+                        if (xmlDoc.querySelector("Service") === null) {
                             oGetCapabilities = null;
                             if (response["data"]['status'] == 0) {
                                 if (goog.isDefAndNotNull(response["data"]['sMessage'])) {
@@ -3041,6 +3040,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
             if (typeof (oLayersOptions) === "string") {
                 oLayersOptions = JSON.parse(oLayersOptions);
             } else if (typeof (oLayersOptions) !== "object") {
+                oLayersOptions = {};
+            } else if (!goog.isDefAndNotNull(oLayersOptions)) {
                 oLayersOptions = {};
             }
             var oLayersStyles = {};
@@ -3203,7 +3204,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
         //
         $log.info("loadVmapConfig");
         // Paramètres des properties dans les valeurs du formulaire de config de vMap.
-        angular.element(vitisApp.appMainDrtv).scope()["setPropertiesFormValues"](["vmap", "popup", "print", "selection", "controls"]);
+        angular.element(vitisApp.appMainDrtv).scope()["setPropertiesFormValues"](["vmap", "popup", "print", "selection", "controls", "snapping"]);
         // Surcharge l'url du formulaire des properties de vMap.
         var scope = this;
         var sTable = envSrvc["oSelectedObject"]["name"];
@@ -3302,9 +3303,9 @@ vitisApp.on('appMainDrtvLoaded', function () {
     };
 
     /**
-     * Show the import modal
+     * Show the import vex modal
      */
-    angular.element(vitisApp.appMainDrtv).scope()['importBusinessObject'] = function () {
+    angular.element(vitisApp.appMainDrtv).scope()['importVex'] = function () {
         var $compile = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["$compile"]);
         var $scope = this;
         var bHavePrivileges = false;
@@ -3319,18 +3320,58 @@ vitisApp.on('appMainDrtvLoaded', function () {
             }
         }
 
-        $translate(['CTRL_IMPORT_BO_ERROR_INSUFFICIENT_PRIVILEGES', 'CTRL_IMPORT_BO_ERROR_INSUFFICIENT_PRIVILEGES_DESCRIPTION', 'CTRL_IMPORT_BO_IMPORT_TITLE', 'CTRL_IMPORT_BO_LOADING']).then(function (aTranslations) {
+        $translate(['CTRL_IMPORT_VEX_ERROR_INSUFFICIENT_PRIVILEGES', 'CTRL_IMPORT_VEX_ERROR_INSUFFICIENT_PRIVILEGES_DESCRIPTION', 'CTRL_IMPORT_VEX_IMPORT_TITLE', 'CTRL_IMPORT_VEX_LOADING']).then(function (aTranslations) {
             if (!bHavePrivileges) {
-                $scope["modalWindow"]("dialog", aTranslations['CTRL_IMPORT_BO_ERROR_INSUFFICIENT_PRIVILEGES'], {
+                $scope["modalWindow"]("dialog", aTranslations['CTRL_IMPORT_VEX_ERROR_INSUFFICIENT_PRIVILEGES'], {
                     "className": "modal-danger",
-                    "message": aTranslations['CTRL_IMPORT_BO_ERROR_INSUFFICIENT_PRIVILEGES_DESCRIPTION']
+                    "message": aTranslations['CTRL_IMPORT_VEX_ERROR_INSUFFICIENT_PRIVILEGES_DESCRIPTION']
                 });
                 return 0;
             }
             var dialog = bootbox['dialog']({
                 size: 'large',
-                title: aTranslations['CTRL_IMPORT_BO_IMPORT_TITLE'],
-                message: '<div app-import-bo id="import-bo">' + aTranslations['CTRL_IMPORT_BO_LOADING'] + '</div>'
+                title: aTranslations['CTRL_IMPORT_VEX_IMPORT_TITLE'],
+                message: '<div app-import-vex id="import-vex">' + aTranslations['CTRL_IMPORT_VEX_LOADING'] + '</div>'
+            });
+            dialog['init'](function () {
+                setTimeout(function () {
+                    var template = dialog['find']('.bootbox-body');
+                    var content = $compile(template)($scope);
+                }, 1000);
+            });
+        });
+    };
+
+    /**
+     * Show the export vex modal
+     */
+    angular.element(vitisApp.appMainDrtv).scope()['exportVex'] = function () {
+        var $compile = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["$compile"]);
+        var $scope = this;
+        var bHavePrivileges = false;
+
+        var aUserPrivileges = sessionStorage['privileges'].split(',');
+
+        if (goog.isArray(aUserPrivileges)) {
+            if (aUserPrivileges.indexOf('vitis_admin') !== -1 &&
+                    aUserPrivileges.indexOf('vmap_admin') !== -1 &&
+                    aUserPrivileges.indexOf('vm4ms_admin') !== -1) {
+                bHavePrivileges = true;
+            }
+        }
+
+        $translate(['CTRL_EXPORT_VEX_ERROR_INSUFFICIENT_PRIVILEGES', 'CTRL_EXPORT_VEX_ERROR_INSUFFICIENT_PRIVILEGES_DESCRIPTION', 'CTRL_EXPORT_VEX_EXPORT_TITLE', 'CTRL_EXPORT_VEX_LOADING']).then(function (aTranslations) {
+            if (!bHavePrivileges) {
+                $scope["modalWindow"]("dialog", aTranslations['CTRL_EXPORT_VEX_ERROR_INSUFFICIENT_PRIVILEGES'], {
+                    "className": "modal-danger",
+                    "message": aTranslations['CTRL_EXPORT_VEX_ERROR_INSUFFICIENT_PRIVILEGES_DESCRIPTION']
+                });
+                return 0;
+            }
+            var dialog = bootbox['dialog']({
+                size: 'large',
+                title: aTranslations['CTRL_EXPORT_VEX_EXPORT_TITLE'],
+                message: '<div app-export-vex id="export-vex">' + aTranslations['CTRL_EXPORT_VEX_LOADING'] + '</div>'
             });
             dialog['init'](function () {
                 setTimeout(function () {
@@ -3444,10 +3485,13 @@ vitisApp.on('appMainDrtvLoaded', function () {
         $log.info("checkVmapLayerWmsLayers");
         var scope = this;
         var sServiceUrl = envSrvc["oFormValues"][envSrvc["sFormDefinitionName"]]["service_url"];
+        var sVersion = envSrvc["oFormValues"][envSrvc["sFormDefinitionName"]]["service_type_version"];
         sServiceUrl = sServiceUrl.replace("[token]", sha256(sessionSrvc["token"]));
         sServiceUrl = sServiceUrl.replace("[ms_cgi_url]", propertiesSrvc["ms_cgi_url"]);
         // Calques du service wms.
-        scope.$root["getCapabilities"](sServiceUrl).then(function (oGetCapabilities) {
+        scope.$root['getCapabilities'](sServiceUrl, {
+            'version': sVersion
+        }).then(function (oGetCapabilities) {
             if (goog.isDefAndNotNull(oGetCapabilities)) {
                 if (goog.isDefAndNotNull(oGetCapabilities['xml']) && goog.isDefAndNotNull(oGetCapabilities['json'])) {
                     var aLayers = [];
@@ -3497,6 +3541,20 @@ vitisApp.on('appMainDrtvLoaded', function () {
                     }
                 }
             }
+        });
+    };
+
+    /**
+     * deleteVmapBusinessObject function.
+     * Suppression des objets métiers selectionnés.
+     **/
+    angular.element(vitisApp.appMainDrtv).scope()["deleteVmapBusinessObject"] = function () {
+        // Injection des services.
+        var $rootScope = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["$rootScope"]);
+        //
+        $log.info("deleteVmapBusinessObject");
+        $rootScope['DeleteSelection']({
+            "sMessage": "LIST_DELETE_CONFIRM_VMAP_BUSINESS_OBJECT"
         });
     };
 });

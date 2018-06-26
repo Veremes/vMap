@@ -46,6 +46,27 @@ class Vitis extends DbClass {
     public $oConnection;
 
     /**
+     * construct
+     * @param type $aPath url of the request
+     * @param type $aValues parameters of the request
+     * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
+     * @param type $oConnection connection object
+     */
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        if ($bShortcut !== true) {
+            $this->aValues = $aValues;
+            $this->aPath = $aPath;
+            $this->aProperties = $properties;
+            if (empty($oConnection)) {
+                $this->oConnection = new Connection($this->aValues, $this->aProperties);
+            } else {
+                $this->oConnection = $oConnection;
+            }
+        }
+    }
+
+    /**
      * accessible data of the object
      */
     public $aSelectedFields = Array();
@@ -195,6 +216,7 @@ class Vitis extends DbClass {
             $ws_data_alias = '';
         $sParentClassName = get_class($this);
         $sChildClassName = substr($sParentClassName, 0, -1);
+        //$oObject = new $sChildClassName($this->aPath, $this->aValues, $this->aProperties, $this->oConnection);
         $date = new DateTime();
         $this->aSqlParams = array();
         $this->aSqlParams['sSchema'] = array('value' => $sSchema, 'type' => 'column_name');
@@ -222,7 +244,7 @@ class Vitis extends DbClass {
                 if (isset($this->aValues['my_vitis_id'])) {
 
                     //object instantiation
-                    $oObject = new $sChildClassName($this->aPath, $this->aValues, $this->aProperties, $this->oConnection);
+                    $oObject = new $sChildClassName($this->aPath, $this->aValues, $this->aProperties, false, $this->oConnection);
                     $oObject->GET();
 
                     // Vérifie si il y a des fichiers à renvoyer
@@ -345,7 +367,6 @@ class Vitis extends DbClass {
                         $sSql .= " LIMIT [" . $sLimitKey . "]";
                         $this->aSqlParams[$sLimitKey] = array('value' => $this->aValues['limit'], 'type' => 'number');
                     }
-
                     //offset
                     if (!empty($this->aValues['offset'])) {
                         $sOffsetKey = 'offset_' . vitisUniqId();
@@ -361,7 +382,7 @@ class Vitis extends DbClass {
                     $aParams2 = array();
                     if (empty($this->oConnection->oBd->enErreur) && $this->oConnection->oBd->nombreLigne($oResult) > 0) {
                         while ($aLigne = $this->oConnection->oBd->ligneSuivante($oResult)) {
-                            $oObject = new $sChildClassName($this->aPath, $this->aValues, $this->aProperties, $this->oConnection);
+                            $oObject = new $sChildClassName($this->aPath, $this->aValues, $this->aProperties, true);
                             $oObject->aFields = $aLigne;
                             array_push($this->aObjects, $oObject);
                             // Vérifie si il y a des fichiers à renvoyer
@@ -425,6 +446,7 @@ class Vitis extends DbClass {
             $aReturn = array('sStatus' => $aXmlRacineAttribute['status'], "sMessage" => $sMessage);
         else
             $aReturn = array('sStatus' => $aXmlRacineAttribute['status']);
+
         return $aReturn;
     }
 
@@ -583,7 +605,7 @@ class Vitis extends DbClass {
             //$aPrivileges = array_intersect($this->oConnection->aPrivileges, $this->aTablePrivileges) ;
             if (in_array('DELETE', $this->aTablePrivileges)) {
                 if (isset($this->aValues['my_vitis_id'])) {
-                    $oObject = new $sChildClassName($this->aPath, $this->aValues, $this->aProperties, $this->oConnection);
+                    $oObject = new $sChildClassName($this->aPath, $this->aValues, $this->aProperties, false, $this->oConnection);
                     $oObject->DELETE();
                     array_push($this->aObjects, $oObject);
                 } else {
@@ -591,7 +613,7 @@ class Vitis extends DbClass {
                     $aIdList = explode("|", $this->aValues['idList']);
                     foreach ($aIdList as $value) {
                         $this->aValues['my_vitis_id'] = $value;
-                        $oObject = new $sChildClassName($this->aPath, $this->aValues, $this->aProperties, $this->oConnection);
+                        $oObject = new $sChildClassName($this->aPath, $this->aValues, $this->aProperties, false, $this->oConnection);
                         $oObject->DELETE();
                         array_push($this->aObjects, $oObject);
                     }
@@ -664,10 +686,10 @@ class Vitis extends DbClass {
                 $sColumnName = $this->aSelectedFields[$i];
                 if (!empty($this->aOrganizedFields[$sColumnName])) {
                     if (!empty($sResultSRID)) {
-                        $this->aSelectedFields[$i] = "ST_AsEWKT(ST_Transform([" . $sColumnKey . "], [result_srid])) as " . $this->aSelectedFields[$i];
-                        $this->aOrganizedFields["ST_AsEWKT(ST_Transform([" . $sColumnKey . "], [result_srid]))"] = $sColumnName;
+                        $this->aSelectedFields[$i] = "ST_AsEWKT(ST_Transform([" . $sColumnKey . "], [result_srid]::integer)) as " . $this->aSelectedFields[$i];
+                        $this->aOrganizedFields["ST_AsEWKT(ST_Transform([" . $sColumnKey . "], [result_srid]::integer))"] = $sColumnName;
 
-                        $this->aSqlParams['result_srid'] = array('value' => $sResultSRID, 'type' => 'number');
+                        $this->aSqlParams['result_srid'] = array('value' => $sResultSRID, 'type' => 'integer');
                         $this->aSqlParams[$sColumnKey] = array('value' => $sColumnName, 'type' => 'column_name');
                     } else {
                         $this->aSelectedFields[$i] = "ST_AsEWKT([" . $sColumnKey . "]) as " . $this->aSelectedFields[$i];
@@ -1021,10 +1043,11 @@ class Vitis extends DbClass {
         $sFilter = '';
         $aParams = array();
 
+        $aOperator['value'] = $this->parseBools($aOperator['value']);
+
         // Vérifications
         if (empty($aOperator['column']) ||
-                empty($aOperator['compare_operator']) ||
-                (!isset($aOperator['value']) || $aOperator['value'] == '')) {
+                empty($aOperator['compare_operator'])) {
             return null;
         }
         if (!isset($aOperator['value']) || $aOperator['value'] == '') {
@@ -1039,6 +1062,7 @@ class Vitis extends DbClass {
                     if (strlen(trim(json_encode($aOperator))) > 0) {
                         writeToErrorLog(ERROR_0034 . ': missing argument on ' . json_encode($aOperator));
                     }
+                    return null;
                     break;
             }
         }
@@ -1098,7 +1122,7 @@ class Vitis extends DbClass {
                             $aOperator['compare_operator_options']['case_insensitive'] == true) {
 
                         $sValueFilter = 'LOWER(' . $sValueFilter . ')';
-                        $sColumnFilter = 'LOWER(' . $sColumnFilter . ')';
+                        $sColumnFilter = 'LOWER(' . $sColumnFilter . '::text)';
                     }
                 }
 
@@ -1121,15 +1145,15 @@ class Vitis extends DbClass {
                     // source_proj
                     if (!empty($aOperator['compare_operator_options']['source_proj'])) {
                         $sSourceProjKey = 'source_proj_' . vitisUniqId();
-                        $aParams[$sSourceProjKey] = array('value' => $aOperator['compare_operator_options']['source_proj'], 'type' => 'number');
-                        $sSQLSRID = "[" . $sSourceProjKey . "]";
+                        $aParams[$sSourceProjKey] = array('value' => $aOperator['compare_operator_options']['source_proj'], 'type' => 'integer');
+                        $sSQLSRID = "[" . $sSourceProjKey . "]::integer";
                         $sSRID = $aOperator['compare_operator_options']['source_proj'];
                     }
                     // intersect_buffer
                     if (!empty($aOperator['compare_operator_options']['intersect_buffer'])) {
                         $sIntersectBufferKey = 'intersect_buffer' . vitisUniqId();
-                        $aParams[$sIntersectBufferKey] = array('value' => $aOperator['compare_operator_options']['intersect_buffer'], 'type' => 'number');
-                        $sSQLBuffer = "[" . $sIntersectBufferKey . "]";
+                        $aParams[$sIntersectBufferKey] = array('value' => $aOperator['compare_operator_options']['intersect_buffer'], 'type' => 'integer');
+                        $sSQLBuffer = "[" . $sIntersectBufferKey . "]::float";
                     }
                     // intersect_buffer_geom_type
                     if (!empty($aOperator['compare_operator_options']['intersect_buffer_geom_type'])) {
@@ -1169,8 +1193,8 @@ class Vitis extends DbClass {
                     if (!empty($sSchema) && !empty($sTable)) {
                         $sSRID = $this->getColumnProjection($sSchema, $sTable, $aOperator['column']);
                         $sSourceProjKey = 'source_proj_' . vitisUniqId();
-                        $aParams[$sSourceProjKey] = array('value' => $sSRID, 'type' => 'number');
-                        $sSQLSRID = "[" . $sSourceProjKey . "]";
+                        $aParams[$sSourceProjKey] = array('value' => $sSRID, 'type' => 'integer');
+                        $sSQLSRID = "[" . $sSourceProjKey . "]::integer";
                     } else {
                         writeToErrorLog(ERROR_0034 . ': missing $sSchema and $sTable params');
                         break;
@@ -1244,63 +1268,7 @@ class Vitis extends DbClass {
      * @return string
      */
     function getColumnProjection($sSchema, $sTable, $sColumn) {
-
-        $sColumnProj = null;
-        $sSchemaKey = 'schema_' . vitisUniqId();
-        $sTableKey = 'table_' . vitisUniqId();
-        $sColumnKey = 'table_' . vitisUniqId();
-
-        $aParams = array();
-        $aParams[$sSchemaKey] = array('value' => $sSchema, 'type' => 'column_name');
-        $aParams[$sTableKey] = array('value' => $sTable, 'type' => 'column_name');
-        $aParams[$sColumnKey] = array('value' => $sColumn, 'type' => 'column_name');
-        $sSQLSRID = 'SELECT st_srid("[' . $sColumnKey . ']") as column_srid FROM "[' . $sSchemaKey . ']"."[' . $sTableKey . ']" WHERE "[' . $sColumnKey . ']" is not null LIMIT 1';
-
-        $oResult = $this->oConnection->oBd->executeWithParams($sSQLSRID, $aParams);
-        if ($this->oConnection->oBd->enErreur()) {
-            writeToErrorLog($this->oConnection->oBd->getBDMessage());
-        } else {
-            if (!isset($this->oConnection->oBd->enErreur)) {
-                $this->oConnection->oBd->enErreur = false;
-            }
-            if (!$this->oConnection->oBd->enErreur && $this->oConnection->oBd->nombreLigne($oResult) > 0) {
-                $aData = array();
-                while ($aObject = $this->oConnection->oBd->ligneSuivante($oResult)) {
-                    foreach ($aObject as $sParamKey => $sParamValue) {
-                        if ($sParamKey === 'column_srid') {
-                            $sColumnProj = $sParamValue;
-                        }
-                    }
-                }
-            }
-        }
-
-        // Nouvelle tentative avec une requête différente
-        if ($sColumnProj === null) {
-            // ne fonctionne pas dans tous les cas pour les vues
-            $sSQLSRID = "SELECT Find_SRID('[" . $sSchemaKey . "]', '[" . $sTableKey . "]', '[" . $sColumnKey . "]') as column_srid";
-
-            $oResult = $this->oConnection->oBd->executeWithParams($sSQLSRID, $aParams);
-            if ($this->oConnection->oBd->enErreur()) {
-                writeToErrorLog($this->oConnection->oBd->getBDMessage());
-            } else {
-                if (!isset($this->oConnection->oBd->enErreur)) {
-                    $this->oConnection->oBd->enErreur = false;
-                }
-                if (!$this->oConnection->oBd->enErreur && $this->oConnection->oBd->nombreLigne($oResult) > 0) {
-                    $aData = array();
-                    while ($aObject = $this->oConnection->oBd->ligneSuivante($oResult)) {
-                        foreach ($aObject as $sParamKey => $sParamValue) {
-                            if ($sParamKey === 'column_srid') {
-                                $sColumnProj = $sParamValue;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return $sColumnProj;
+        return $this->oConnection->oBd->getColumnSRID($sSchema, $sTable, $sColumn);
     }
 
     /**
@@ -1357,6 +1325,17 @@ class Vitis extends DbClass {
                 break;
         }
         return $sCompare;
+    }
+
+    function boolToString($boolVal = false) {
+        return ($boolVal ? 'true' : 'false');
+    }
+
+    function parseBools($value) {
+        if (is_bool($value)) {
+            $value = $this->boolToString($value);
+        }
+        return $value;
     }
 
     /**

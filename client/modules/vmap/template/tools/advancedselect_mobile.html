@@ -1,0 +1,57 @@
+<div id="vmap-advancedselect-tool"></div>
+
+<!-- Sélection de l'objet -->
+<div class="margin-sides-15">
+    <select class="form-control margin-5" ng-model="ctrl.sSelectedBo" ng-options="bo_id as bo.title for (bo_id, bo) in ctrl.oBusinessObjects"></select>
+</div>
+<!-- Menu -->
+<div id="vmap_menu_requeteur_menu_{{bo_id}}" 
+     class="advanced-select-mobile-accordion"
+     ng-repeat="(bo_id, bo) in ctrl.oBusinessObjects"
+     ng-show="ctrl.sSelectedBo === bo_id">
+
+    <div class="panel list-group height-100">
+        <a href="#" class="list-group-item" data-toggle="collapse" data-target="#vmap_menu_requeteur_menu_filtre_{{bo_id}}" data-parent="#vmap_menu_requeteur_menu_{{bo_id}}">
+            <span class="icon-filter menu_logo"></span>
+            Filtre
+        </a>
+        <div id="vmap_menu_requeteur_menu_filtre_{{bo_id}}" class="sublinks collapse in">
+
+            <!--Search Form reader-->
+            <div id="select_search_form_reader_{{bo_id}}"
+                 app-form-reader 
+                 app-properties="ctrl.properties"
+                 app-token="ctrl.token"></div>
+
+        </div>
+        <a href="#" class="list-group-item" data-toggle="collapse" data-target="#vmap_menu_requeteur_menu_table_{{bo_id}}" data-parent="#vmap_menu_requeteur_menu_{{bo_id}}">
+            <span class="icon-table menu_logo"></span>
+            Tableau résultant
+        </a>
+        <div id="vmap_menu_requeteur_menu_table_{{bo_id}}" class="sublinks collapse margin-10 advanced-select-mobile-accordion-table">
+            <table id="select_table_{{bo_id}}" 
+                   class="select_modal_table"
+                   data-toggle="table"
+                   data-search="false"
+                   data-escape="false"
+                   data-show-columns="true"
+                   data-classes="table table-hover table-condensed"
+                   data-striped="true"
+                   data-click-to-select="true"
+                   data-show-export="false">
+                <thead>
+                    <tr>
+                        <th data-field="state" data-checkbox="true"></th>
+                        <th class="col-btn" data-field="action" data-formatter="nsVmap.nsToolsManager.AdvancedSelect.selectTableFormatter" data-events="selectTableEvents"></th>
+                        <th ng-repeat="(key, value) in bo.list_fields"
+                            ng-if="value !== 'selection'"
+                            data-field="{{value}}"
+                            data-escape="false"
+                            data-sortable="true">{{value}}</th>
+                        <th data-field="selection" data-visible="false"></th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div> 

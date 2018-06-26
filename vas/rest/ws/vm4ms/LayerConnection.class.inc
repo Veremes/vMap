@@ -23,14 +23,12 @@ class LayerConnection extends Vmap4MapServer {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
      * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties, $oConnection) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = $oConnection;
-		$this->aSelectedFields = Array("connection_id", "name", "private", "server", "port", "database", "user", "password");
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
+        $this->aSelectedFields = Array("connection_id", "name", "private", "server", "port", "database", "user", "password");
     }
 
     /**
@@ -70,7 +68,7 @@ class LayerConnection extends Vmap4MapServer {
         require $this->sRessourcesFile;
         $this->aFields = $this->getFields($this->aProperties['schema_vm4ms'], 'connection', 'connection_id');
     }
-    
+
     /**
      * delete a connection
      */
@@ -78,11 +76,12 @@ class LayerConnection extends Vmap4MapServer {
         require $this->sRessourcesFile;
         $this->oConnection->oBd->delete($this->aProperties['schema_vm4ms'], 'connection', 'connection_id', $this->aValues['my_vitis_id'], 'string');
         if ($this->oConnection->oBd->enErreur()) {
-                $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
+            $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
         } else {
-                $this->aFields['connection_id'] = $this->aValues['my_vitis_id'];
+            $this->aFields['connection_id'] = $this->aValues['my_vitis_id'];
         }
     }
+
 }
 
 ?>

@@ -29,7 +29,7 @@ var constructor_form = function (scope, s_url) {
     oFormRequired.sUrl = s_url;
     oFormRequired.scope_ = scope;
     //////////////////////////////////////////////////////////
-    // Push element to Destruct (variable, function, watcher) in oFormRequired.toDestructor
+    // Push element to Destruct (variable, function, watcher) in oFormRequired.toDestructor   
 
     // hide signup and forgotten password button if properties not set
     var propertiesSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["propertiesSrvc"]);
@@ -42,6 +42,16 @@ var constructor_form = function (scope, s_url) {
         if (propertiesSrvc["sign_up"] === "enabled") {
             angular.element("#login_form_sign_up").removeClass("hidden");
         }
+
+        if (propertiesSrvc["login_remember_me"] === "enabled") {
+            angular.element("#login_form_remember_me").parent().removeClass("hidden");
+            if (propertiesSrvc["login_remember_me_default"] == true) {
+                scope.$applyAsync(function () {
+                    scope['oFormValues']['login_form']['remember_me'] = true;
+                });
+            }
+        }
+
     }, 1);
 };
 /**

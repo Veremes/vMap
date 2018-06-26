@@ -22,7 +22,7 @@ ol.tilegrid.WMTS = function(options) {
    * @type {!Array.<string>}
    */
   this.matrixIds_ = options.matrixIds;
-  // FIXME: should the matrixIds become optionnal?
+  // FIXME: should the matrixIds become optional?
 
   ol.tilegrid.TileGrid.call(this, {
     extent: options.extent,
@@ -69,7 +69,7 @@ ol.tilegrid.WMTS.prototype.getMatrixIds = function() {
  * @api
  */
 ol.tilegrid.WMTS.createFromCapabilitiesMatrixSet = function(matrixSet, opt_extent,
- opt_matrixLimits) {
+    opt_matrixLimits) {
 
   /** @type {!Array.<number>} */
   var resolutions = [];
@@ -92,9 +92,9 @@ ol.tilegrid.WMTS.createFromCapabilitiesMatrixSet = function(matrixSet, opt_exten
   var tileWidthPropName = 'TileWidth';
   var tileHeightPropName = 'TileHeight';
 
-  var projection;
-  projection = ol.proj.get(matrixSet[supportedCRSPropName].replace(
-      /urn:ogc:def:crs:(\w+):(.*:)?(\w+)$/, '$1:$3'));
+  var code = matrixSet[supportedCRSPropName];
+  var projection = ol.proj.get(code.replace(/urn:ogc:def:crs:(\w+):(.*:)?(\w+)$/, '$1:$3')) ||
+      ol.proj.get(code);
   var metersPerUnit = projection.getMetersPerUnit();
   // swap origin x and y coordinates if axis orientation is lat/long
   var switchOriginXY = projection.getAxisOrientation().substr(0, 2) == 'ne';
@@ -130,7 +130,7 @@ ol.tilegrid.WMTS.createFromCapabilitiesMatrixSet = function(matrixSet, opt_exten
       }
       resolutions.push(resolution);
       tileSizes.push(tileWidth == tileHeight ?
-          tileWidth : [tileWidth, tileHeight]);
+        tileWidth : [tileWidth, tileHeight]);
       // top-left origin, so height is negative
       sizes.push([elt['MatrixWidth'], -elt['MatrixHeight']]);
     }

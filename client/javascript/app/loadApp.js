@@ -11,6 +11,9 @@ showAjaxLoader();
 
 // Charge les css de l'application.
 loadExternalCss(oApplicationFiles["css"]);
+if (goog.isDefAndNotNull(oApplicationFiles["css_mobile"]) && oClientProperties['is_mobile']) {
+    loadExternalCss(oApplicationFiles["css_mobile"]);
+}
 // Fichiers js à charger. Si mode = debug : charge tous les js d'Angular (contrôleurs, directives...) de tous les modules de l'appli.
 var aAngularJsFiles = oApplicationFiles["js"]["externs"];
 // Chargement des fichiers js de l'application.

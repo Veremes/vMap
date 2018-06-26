@@ -25,13 +25,13 @@ class PublicWmsService extends Vmap4MapServer {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
+     * @param type $oConnection connection object
+     * @param type $bShortcut false to reinit variables
      * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties, $oConnection) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = $oConnection;
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
         $this->aSelectedFields = Array("wmsservice_id", "description", "definition", "web_id", "web_name", "msdebuglevel_id");
     }
 
@@ -52,7 +52,7 @@ class PublicWmsService extends Vmap4MapServer {
 
         $bServicesExist = false;
         $bLayersExist = false;
-        
+
         // Vérifie qu'il y ait aucune couche associée
         if ($this->areLayersAssociated()) {
             $bLayersExist = true;
@@ -67,7 +67,7 @@ class PublicWmsService extends Vmap4MapServer {
             $this->oConnection->oError = new VitisError(1, 'ERROR_SERVICE_ASSOCIATED');
         }
 
-        if (!$bLayersExist && !$bServicesExist) {            
+        if (!$bLayersExist && !$bServicesExist) {
             $this->oConnection->oBd->delete($this->aProperties['schema_vm4ms'], 'wmsservice', 'wmsservice_id', $this->aValues['my_vitis_id'], 'text');
             if ($this->oConnection->oBd->enErreur()) {
                 $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
@@ -90,7 +90,7 @@ class PublicWmsService extends Vmap4MapServer {
         // Récupère l'id du service vMap
         $aVmapGetServiceValues = Array(
             'token' => $this->aValues['token'],
-            'filter' => '{"relation": "AND", "operators": [{"column": "name", "compare_operator": "=", "value": vm4ms_' . $this->aValues['my_vitis_id'] . '}]}',
+            'filter' => '{"relation": "AND", "operators": [{"column": "name", "compare_operator": "=", "value": "vm4ms_' . $this->aValues['my_vitis_id'] . '"}]}',
             'vitis_version' => $this->aValues['vitis_version'],
             'id' => 'services',
             'output' => $this->aValues['output'],
@@ -99,7 +99,7 @@ class PublicWmsService extends Vmap4MapServer {
             'xslstylesheet' => $this->aValues['xslstylesheet'],
             'module' => 'vmap'
         );
-        $oVmapService = new Services($aVmapServicePath, $aVmapGetServiceValues, $this->aProperties);
+        $oVmapService = new Services($aVmapServicePath, $aVmapGetServiceValues, $this->aProperties, false, $this->oConnection);
         $oVmapService->GET();
 
         if (count($oVmapService->aObjects) > 0) {
@@ -122,7 +122,7 @@ class PublicWmsService extends Vmap4MapServer {
         // Récupère l'id du service vMap
         $aGetLayersValues = Array(
             'token' => $this->aValues['token'],
-            'filter' => '{"relation": "AND", "operators": [{"column": "wmsservice_id", "compare_operator": "=", "value": ' . $this->aValues['my_vitis_id'] . '}]}',
+            'filter' => '{"relation": "AND", "operators": [{"column": "wmsservice_id", "compare_operator": "=", "value": "' . $this->aValues['my_vitis_id'] . '"}]}',
             'vitis_version' => $this->aValues['vitis_version'],
             'id' => 'publicwmsservicelayers',
             'output' => $this->aValues['output'],
@@ -131,7 +131,7 @@ class PublicWmsService extends Vmap4MapServer {
             'xslstylesheet' => $this->aValues['xslstylesheet'],
             'module' => 'vm4ms'
         );
-        $oPublicWmsServiceLayers = new PublicWmsServiceLayers($aGetLayersPath, $aGetLayersValues, $this->aProperties);
+        $oPublicWmsServiceLayers = new PublicWmsServiceLayers($aGetLayersPath, $aGetLayersValues, $this->aProperties, false, $this->oConnection);
         $oPublicWmsServiceLayers->GET();
 
         if (count($oPublicWmsServiceLayers->aObjects) > 0) {
@@ -140,6 +140,7 @@ class PublicWmsService extends Vmap4MapServer {
             return false;
         }
     }
+
 }
 
 ?>

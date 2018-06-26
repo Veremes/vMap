@@ -33,8 +33,10 @@ class PrivateToken extends Vitis {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
+     * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
@@ -83,6 +85,20 @@ class PrivateToken extends Vitis {
      * @return the token
      */
     function POST() {
+        
+        // Si token est déjà définit, génère un nouveau token
+        if (isset($this->aValues['token']) && !empty($this->aValues['token']) && $this->aValues['token'] !== 'undefined') {
+            if (empty($this->aValues['user']) && empty($this->aValues['password'])) {
+                $oConnection = new Connection($this->aValues, $this->aProperties);
+                if (!empty($oConnection->oBd->login) && $oConnection->oBd->mdp) {
+                    $this->aValues['user'] = $oConnection->oBd->login;
+                    $this->aValues['password'] = $oConnection->oBd->mdp;
+                    session_regenerate_id(false);
+                    session_write_close();;
+                }
+            }
+        }
+
         session_name(md5($this->aValues["user"] . '_' . uniqid()));
         session_start();
         require_once $this->sRessourcesFile;
@@ -149,8 +165,7 @@ class PrivateToken extends Vitis {
                         $aXmlRacineAttribute['status'] = 0;
                         $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
                         writeToErrorLog('ERROR : The user ' . $_SESSION["ses_Login"] . ' does not exist.');
-                    }
-                    else {
+                    } else {
                         //verify the ip from wich the user is connected
                         $aParams = array();
                         $aParams['sSchemaFramework'] = array('value' => $this->aProperties['schema_framework'], 'type' => 'schema_name');
@@ -166,6 +181,9 @@ class PrivateToken extends Vitis {
                             $bXMLError = true;
                             writeToErrorLog('ERROR : Connection to the database forbidden with the ip \'' . $_SERVER['REMOTE_ADDR'] . '\'.');
                         } else {
+                            
+                            error_log('session_id():' . session_id());
+                            
                             $oConnection = new Connection(Array('token' => session_id()), $this->aProperties);
                             $this->aFields['token'] = session_id();
                             $this->aFields['user'] = $_SESSION["ses_Login"];
@@ -239,8 +257,7 @@ class PrivateToken extends Vitis {
                 $aXmlRacineAttribute['status'] = 0;
                 $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
                 writeToErrorLog('ERROR : The user ' . $_SESSION["ses_Login"] . ' does not exist.');
-            }
-            else {
+            } else {
                 $this->aFields['token'] = $this->aValues['token'];
                 $this->aFields['user'] = $oConnection->aValues['login'];
                 $this->aFields['user_id'] = $_SESSION['ses_user_id'];

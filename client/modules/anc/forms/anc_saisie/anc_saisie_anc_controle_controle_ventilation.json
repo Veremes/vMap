@@ -150,7 +150,7 @@
             {
                 "fields":[
                     {
-                        "type":"label",
+                        "type":"tinymce",
                         "name":"vt_commentaire",
                         "label":"Commentaires",
                         "nb_cols":12,
@@ -376,6 +376,23 @@
                             "id_key":"valeur",
                             "attributs":"valeur|alias"
                         }
+                    },
+                    {
+                        "type":"select",
+                        "name":"vt_prim_type_materiau",
+                        "label":"Type de matériau",
+                        "required":false,
+                        "nb_cols":6,
+                        "id":"vt_prim_type_materiau_6_1",
+                        "datasource":{
+                            "datasource_id":"datasource_11",
+                            "sort_order":"ASC",
+                            "distinct":"true",
+                            "label_key":"alias",
+                            "order_by":"alias",
+                            "id_key":"valeur",
+                            "attributs":"valeur|alias"
+                        }
                     }
                 ]
             },
@@ -463,6 +480,23 @@
                             "id_key":"valeur",
                             "attributs":"valeur|alias"
                         }
+                    },
+                    {
+                        "type":"select",
+                        "name":"vt_second_type_materiau",
+                        "label":"Type de matériau",
+                        "required":false,
+                        "nb_cols":6,
+                        "id":"vt_second_type_materiau_6_1",
+                        "datasource":{
+                            "datasource_id":"datasource_12",
+                            "sort_order":"ASC",
+                            "distinct":"true",
+                            "label_key":"alias",
+                            "order_by":"alias",
+                            "id_key":"valeur",
+                            "attributs":"valeur|alias"
+                        }
                     }
                 ]
             },
@@ -507,32 +541,7 @@
             }
         ],
         "initEvent": "initAncControlVentilationForm()",
-        "event":"sendSimpleForm()",
-        "tabs":{
-            "position":"top",
-            "list":[
-                {
-                    "label":"Tab 0",
-                    "elements":[
-                        "vt_primaire",
-                        "vt_secondaire",
-                        "vt_prim_loc",
-                        "vt_prim_ht",
-                        "vt_prim_diam",
-                        "vt_prim_type_extract",
-                        "vt_second_loc",
-                        "vt_second_ht",
-                        "vt_second_diam",
-                        "vt_second_type_extract",
-                        "update_button",
-                        "Element_1",
-                        "Element_2",
-                        "vt_commentaire",
-                        "emplacement_vt_secondaire"
-                    ]
-                }
-            ]
-        }
+        "event":"sendSimpleForm()"
     },
     "datasources":{
         "datasource_1":{
@@ -648,6 +657,30 @@
             "description":"",
             "parameters":{
                 "filter": {"id_nom_table": "controle", "nom_liste": "vt_second_type_extract"},
+                "schema":"s_anc",
+                "table":"param_liste"
+            },
+            "ressource_id":"vitis/genericquerys"
+        },
+        "datasource_11":{
+            "type":"web_service",
+            "dataType":"tableValue",
+            "name":"vt_prim_type_materiau",
+            "description":"",
+            "parameters":{
+                "filter": {"id_nom_table": "controle", "nom_liste": "vt_prim_type_materiau"},
+                "schema":"s_anc",
+                "table":"param_liste"
+            },
+            "ressource_id":"vitis/genericquerys"
+        },
+        "datasource_12":{
+            "type":"web_service",
+            "dataType":"tableValue",
+            "name":"vt_second_type_materiau",
+            "description":"",
+            "parameters":{
+                "filter": {"id_nom_table": "controle", "nom_liste": "vt_second_type_materiau"},
                 "schema":"s_anc",
                 "table":"param_liste"
             },

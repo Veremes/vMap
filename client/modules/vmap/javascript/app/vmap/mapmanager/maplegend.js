@@ -20,6 +20,17 @@ nsVmap.nsMapManager.MapLegend = function () {
     oVmap.log("nsVmap.nsMapManager.MapLegend");
 };
 
+/**
+ * Allow to hide the unaccessible legend images
+ * @param {object} element
+ * @export
+ */
+nsVmap.nsMapManager.MapLegend.prototype.hideBrokenLegend = function (element) {
+    oVmap.log("nsVmap.nsMapManager.MapLegend.prototype.hideBrokenLegend");
+
+    $(element).closest('.layer-legend').hide();
+};
+
 /************************************************
  ---------- DIRECTIVES AND CONTROLLERS -----------
  *************************************************/
@@ -79,10 +90,16 @@ nsVmap.nsMapManager.MapLegend.prototype.maplegendImageDirective = function () {
 
                         // Place la popover
                         setTimeout(function () {
-                            var iElementBottomOffset = $(element).offset()['top'];
-                            var iElementHeight = $(element).find('img').height();
-                            var iElementMiddleOffset = iElementBottomOffset - iElementHeight / 2;
-                            $(myPopover).css('top', iElementMiddleOffset + 'px');
+                            var popoverTop = $(myPopover).offset()['top'];
+                            var popoverHeight = $(myPopover).height();
+                            var popoverBottom = popoverTop + popoverHeight;
+                            var bodyHeight = $('body').height();
+                            var footerHeight = $('#footer_line').height();
+                            var avaliableHeight = bodyHeight - footerHeight;
+
+                            if (popoverBottom > avaliableHeight) {
+                                $(myPopover).css('top', popoverTop - (popoverBottom - avaliableHeight) + 'px');
+                            }
                         });
                     }
                 }, timeout);
@@ -105,6 +122,8 @@ nsVmap.nsMapManager.MapLegend.prototype.maplegendController = function ($scope) 
     oVmap.log("nsVmap.nsMapManager.MapLegend.prototype.maplegendController");
 
     var this_ = this;
+
+    this.$scope_ = $scope;
 
     /**
      * @private
@@ -138,59 +157,152 @@ nsVmap.nsMapManager.MapLegend.prototype.maplegendController = function ($scope) 
 nsVmap.nsMapManager.MapLegend.prototype.maplegendController.prototype.loadLegend = function () {
     oVmap.log('nsVmap.nsMapManager.MapLegend.maplegendController.loadLegend');
 
+    this['oUrls'] = this.getLegendUrls();
+    this.downloadLegendImgs(this['oUrls']);
+};
+
+/**
+ * Get the legend URLs
+ * @returns {object}
+ */
+nsVmap.nsMapManager.MapLegend.prototype.maplegendController.prototype.getLegendUrls = function () {
+    oVmap.log('nsVmap.nsMapManager.MapLegend.maplegendController.getLegendUrls');
+
     var aLayers = oVmap.getMap().getOLMap().getLayers().getArray();
     var oUrls = {};
 
     // Récupération des URL WMS
     for (var i = 0; i < aLayers.length; i++) {
         if (aLayers[i].get('legend') === true) {
-            if (aLayers[i].get('type') === 'tilewms') {
+            if (aLayers[i].get('visible') === true) {
+                if (aLayers[i].get('type') === 'tilewms') {
 
-                var sLayerName = aLayers[i].get('name');
-                oUrls[sLayerName] = [];
+                    var sLayerName = aLayers[i].get('name');
+                    oUrls[sLayerName] = [];
 
-                for (var ii = 0; ii < aLayers[i].getSource().getUrls().length; ii++) {
-                    var aLayerParam = aLayers[i].getSource().getParams()['LAYERS'].split(',');
+                    for (var ii = 0; ii < aLayers[i].getSource().getUrls().length; ii++) {
+
+                        var sLayers = aLayers[i].getSource().getParams()['LAYERS'];
+                        var aLayerParam = [];
+                        if (goog.isDefAndNotNull(sLayers)) {
+                            aLayerParam = aLayers[i].getSource().getParams()['LAYERS'].split(',');
+                        }
+
+
+                        for (var iii = 0; iii < aLayerParam.length; iii++) {
+
+                            var separator = aLayers[i].getSource().getUrls()[ii].indexOf('?') !== -1 ? '&' : '?';
+
+                            oUrls[sLayerName].push({
+                                'layerId': i,
+                                'collapsed': false,
+                                'url': aLayers[i].getSource().getUrls()[ii],
+                                'layer': aLayerParam[iii],
+                                'olLayer': aLayers[i],
+                                'layerName': aLayers[i].get('name'),
+                                'service_login': goog.isDefAndNotNull(aLayers[i].get('service_login')) ? aLayers[i].get('service_login') : null,
+                                'service_password': goog.isDefAndNotNull(aLayers[i].get('service_password')) ? aLayers[i].get('service_password') : null,
+                                'legendURL': aLayers[i].getSource().getUrls()[ii] + separator + 'request=GetLegendGraphic&LAYER=' + aLayerParam[iii] + '&FORMAT=image/png&VERSION=1.1.0&service=wms'
+                            });
+                        }
+                    }
+                } else if (aLayers[i].get('type') === 'imagewms') {
+
+                    var sLayerName = aLayers[i].get('name');
+
+                    var sLayers = aLayers[i].getSource().getParams()['LAYERS'];
+                    var aLayerParam = [];
+                    if (goog.isDefAndNotNull(sLayers)) {
+                        aLayerParam = aLayers[i].getSource().getParams()['LAYERS'].split(',');
+                    }
+                    oUrls[sLayerName] = [];
+
                     for (var iii = 0; iii < aLayerParam.length; iii++) {
-                        
-                        var separator = aLayers[i].getSource().getUrls()[ii].indexOf('?') !== -1 ? '&' : '?';
-                        
+
+                        var separator = aLayers[i].getSource().getUrl().indexOf('?') !== -1 ? '&' : '?';
+
                         oUrls[sLayerName].push({
                             'layerId': i,
                             'collapsed': false,
-                            'url': aLayers[i].getSource().getUrls()[ii],
+                            'url': aLayers[i].getSource().getUrl(),
                             'layer': aLayerParam[iii],
                             'olLayer': aLayers[i],
                             'layerName': aLayers[i].get('name'),
-                            'legendURL': aLayers[i].getSource().getUrls()[ii] + separator +'request=GetLegendGraphic&LAYER=' + aLayerParam[iii] + '&FORMAT=image/png&VERSION=1.1.0&service=wms'
+                            'service_login': goog.isDefAndNotNull(aLayers[i].get('service_login')) ? aLayers[i].get('service_login') : null,
+                            'service_password': goog.isDefAndNotNull(aLayers[i].get('service_password')) ? aLayers[i].get('service_password') : null,
+                            'legendURL': aLayers[i].getSource().getUrl() + separator + 'request=GetLegendGraphic&LAYER=' + aLayerParam[iii] + '&FORMAT=image/png&VERSION=1.1.0&service=wms'
                         });
                     }
-                }
-            } else if (aLayers[i].get('type') === 'imagewms') {
-
-                var sLayerName = aLayers[i].get('name');
-                var aLayerParam = aLayers[i].getSource().getParams()['LAYERS'].split(',');
-                oUrls[sLayerName] = [];
-
-                for (var iii = 0; iii < aLayerParam.length; iii++) {
-                    
-                    var separator = aLayers[i].getSource().getUrl().indexOf('?') !== -1 ? '&' : '?';
-                    
-                    oUrls[sLayerName].push({
-                        'layerId': i,
-                        'collapsed': false,
-                        'url': aLayers[i].getSource().getUrl(),
-                        'layer': aLayerParam[iii],
-                        'olLayer': aLayers[i],
-                        'layerName': aLayers[i].get('name'),
-                        'legendURL': aLayers[i].getSource().getUrl() + separator + 'request=GetLegendGraphic&LAYER=' + aLayerParam[iii] + '&FORMAT=image/png&VERSION=1.1.0&service=wms'
-                    });
                 }
             }
         }
     }
 
-    this['oUrls'] = oUrls;
+    return oUrls;
+};
+
+/**
+ * Download the blob including the login/pass headers on the request
+ * @param {object} oUrls
+ * @export
+ */
+nsVmap.nsMapManager.MapLegend.prototype.maplegendController.prototype.downloadLegendImgs = function (oUrls) {
+    oVmap.log('nsVmap.nsMapManager.MapLegend.maplegendController.downloadLegendImgs');
+    for (var key in oUrls) {
+        for (var i = 0; i < oUrls[key].length; i++) {
+            oUrls[key][i]['legendBlobURL'] = this.downloadLegendImg(oUrls[key][i]);
+        }
+    }
+};
+
+/**
+ * Télécharge l'image de la légende et la remplie au format blob sous l'attribut legendBlobURL
+ * @param {object} oLegend
+ * @export
+ */
+nsVmap.nsMapManager.MapLegend.prototype.maplegendController.prototype.downloadLegendImg = function (oLegend) {
+    oVmap.log('nsVmap.nsMapManager.MapLegend.maplegendController.downloadLegendImg');
+
+    var this_ = this;
+    var xhr = new XMLHttpRequest();
+    xhr.responseType = 'blob';
+    xhr.onreadystatechange = function () {
+        this_.$scope_.$applyAsync(function () {
+            if ((xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200)
+                    && (xhr.response.type === "image/png" || xhr.response.type === "image/jpg" || xhr.response.type === "image/jpeg")) {
+                oLegend['legendBlobURL'] = URL.createObjectURL(xhr.response);
+            } else {
+                oLegend['legendBlobURL'] = false;
+            }
+        });
+    };
+    xhr.open('GET', oLegend['legendURL'], true);
+    if (goog.isDefAndNotNull(oLegend['service_login']) && goog.isDefAndNotNull(oLegend['service_password'])) {
+        xhr.setRequestHeader("Authorization", "Basic " + btoa(oLegend['service_login'] + ":" + oLegend['service_password']));
+    }
+    // Par défaut la légende est non visible
+    this_.$scope_.$applyAsync(function () {
+        oLegend['legendBlobURL'] = false;
+    });
+    xhr.send();
+};
+
+/**
+ * Retourne true si au moins une des légendes a été chargée
+ * @param {array} aLegends
+ * @returns {Boolean}
+ * @export
+ */
+nsVmap.nsMapManager.MapLegend.prototype.maplegendController.prototype.areLegendsLoaded = function (aLegends) {
+//    oVmap.log('nsVmap.nsMapManager.MapLegend.maplegendController.areLegendsLoaded');
+
+    var bAreLegendsLoaded = false;
+    for (var i = 0; i < aLegends.length; i++) {
+        if (aLegends[i]['legendBlobURL'] !== false) {
+            bAreLegendsLoaded = true;
+        }
+    }
+    return bAreLegendsLoaded;
 };
 
 // Définit la directive et le controller

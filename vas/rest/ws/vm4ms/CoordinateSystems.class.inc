@@ -36,12 +36,11 @@ class CoordinateSystems extends Vmap4MapServer {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
+     * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = new Connection($this->aValues, $this->aProperties);
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
         $this->aSelectedFields = Array("coordsys_id", "epsg", "definition", "label", "epsg_definition");
     }
 
@@ -239,11 +238,11 @@ class CoordinateSystems extends Vmap4MapServer {
      */
     function PUT() {
         $aReturn = $this->genericPut($this->aProperties['schema_vm4ms'], 'coordsys', 'coordsys_id');
-        
+
         // Génère les fichiers de projection        
         $oVm4msMetadataAccess = new Vm4msMetadataAccess($this->oConnection->oBd, '', '', session_id(), $this->aProperties);
         $oVm4msMetadataAccess->generateProjFiles();
-        
+
         return $aReturn['sMessage'];
     }
 

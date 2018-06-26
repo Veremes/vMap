@@ -251,6 +251,7 @@ function hideAjaxLoader() {
  * @param {string|undefined} Options.responseType Type de réponse ("", "text", "json", "blob", "arraybuffer", "document")
  * @param {string} Options.method Type de méthode ("GET", "PUT", "POST", "DELETE")
  * @param {string} Options.url URL cible
+ * @param {boolean|undefined} Options.ajaxLoader false to not show the ajaxLoader
  * @param {function} Options.success Fonction appellée quand la requête se termine correctement
  * @param {function|undefined} Options.error Fonction appellée quand la requête se termine par une erreur
  * @param {function|undefined} Options.aborded Fonction appellée quand la requête est annulée
@@ -292,7 +293,7 @@ function ajaxRequest(oOptions) {
         //charset=UTF-8
     };
     // Token renseigné uniquement si l'URL cible est du même serveur
-    if (isSelfUrl) {
+    if (isSelfUrl && oOptions['sendToken'] !== false) {
         oHeaders['Token'] = sessionStorage['session_token'];
     }
 
@@ -423,7 +424,27 @@ function ajaxRequest(oOptions) {
                                 oOptions['success'](oResponse);
                         }
                     }
-                } else {
+                } 
+                else if (parseInt(this['status']) >= 500 && parseInt(this['status']) < 600) {
+                    // Erreur retournée par le serveur : affichage d'une popup.
+                    var externFunctionSrvc = angular.element(vitisApp.appHtmlFormDrtv).injector().get(["externFunctionSrvc"]);
+                    var oModalOptions = {
+                        "className": "modal-danger",
+                        "buttons": {
+                            "ok": {
+                                label: "OK",
+                                className: "btn-default"
+                            }
+                        },
+                        "message": "ERROR_SERVER_REQUEST_500",
+                        "translationData": {
+                            "status": this["status"],
+                            "statusText": this["statusText"]
+                        }
+                    };
+                    externFunctionSrvc["modalWindow"]("alert", "REQUEST_ERROR", oModalOptions);
+                }
+                else {
                     // Requête annulée ?
                     if (xhr['aborded'] === true) {
                         if (typeof (oOptions['aborded']) == 'function') {
@@ -505,13 +526,13 @@ function ajaxRequest(oOptions) {
         // Envoi de la requête.
         xhr.send(requestData);
         // Affiche le loader.
-        if (sessionStorage['ajaxLoader'] == 'true')
+        if (sessionStorage['ajaxLoader'] == 'true' && oOptions['ajaxLoader'] !== false)
             showAjaxLoader();
         // Maj du compteur des téléchargements en cours.
         var iLoadingCounter = parseInt(sessionStorage['loading_counter']);
         iLoadingCounter++;
         sessionStorage['loading_counter'] = iLoadingCounter;
-
+        
         // Timeout
         if (goog.isNumber(oOptions['timeout'])) {
             setTimeout(function () {
@@ -520,18 +541,18 @@ function ajaxRequest(oOptions) {
                     var intervalID, dialog;
                     var setDialog = function () {
                         dialog = bootbox.confirm({
-                            message: 'Requête sans réponse',
-                            buttons: {
-                                confirm: {
-                                    label: 'Annuler',
-                                    className: 'btn-success'
+                            'message': 'Requête sans réponse',
+                            'buttons': {
+                                'confirm': {
+                                    'label': 'Annuler',
+                                    'className': 'btn-success'
                                 },
-                                cancel: {
-                                    label: 'Attendre',
-                                    className: 'btn-default'
+                                'cancel': {
+                                    'label': 'Attendre',
+                                    'className': 'btn-default'
                                 }
                             },
-                            callback: function (abord) {
+                            'callback': function (abord) {
                                 // Annuler ?
                                 if (abord) {
                                     xhr.abort();
@@ -548,10 +569,10 @@ function ajaxRequest(oOptions) {
                         });
                     };
                     setDialog();
-                    dialog.init(function () {
+                    dialog['init'](function () {
                         var updateTitle = function () {
                             var sMessage = '<h4>Requête sans réponse depuis ' + iSeconds + 's...</h4>';
-                            dialog.find('.bootbox-body').html(sMessage);
+                            dialog['find']('.bootbox-body').html(sMessage);
                         }
                         intervalID = window.setInterval(function () {
                             if (xhr['readyState'] === 4) {
@@ -606,7 +627,7 @@ function cleanObject(oObject, sUrl) {
         if (!goog.isDef(oObject[key])) {
             goog.object.remove(oObject, key);
         }
-        if (key === 'token' || oObject[key] === sessionStorage['session_token']) {
+        if (key === 'token' || (typeof(sessionStorage['session_token']) != "undefined" && oObject[key] === sessionStorage['session_token'])) {
             console.error('Token in params:', oObject, sUrl);
             alert('Attention: token passé en paramètre');
             goog.object.remove(oObject, key);

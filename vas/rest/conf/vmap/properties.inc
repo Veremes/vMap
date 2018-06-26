@@ -13,4 +13,8 @@ $properties["vmap"]["legend_collapsed"] = false;
 $properties['controls']['active_controls'] = 'Attribution|MousePosition|CurrentProjection|MapName|Scale|ScaleLine|OverviewMap|Zoom|ZoomSlider|RefreshSocket';
 $properties["selection"]["limit_popup"] = 1;
 $properties["selection"]["limit_list"] = 50;
+$properties['snapping']['defaut_limit'] = 2000;
+$properties['snapping']['defaut_tolerance'] = 15;
+$properties['snapping']['defaut_visibility'] = false;
+$properties['snapping']['defaut_snapp_mode'] = 'segment_edge_node';
 ?>

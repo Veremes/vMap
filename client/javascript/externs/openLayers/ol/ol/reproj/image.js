@@ -42,7 +42,7 @@ ol.reproj.Image = function(sourceProj, targetProj,
   var maxTargetExtent = targetProj.getExtent();
 
   var limitedTargetExtent = maxTargetExtent ?
-      ol.extent.getIntersection(targetExtent, maxTargetExtent) : targetExtent;
+    ol.extent.getIntersection(targetExtent, maxTargetExtent) : targetExtent;
 
   var targetCenter = ol.extent.getCenter(limitedTargetExtent);
   var sourceResolution = ol.reproj.calculateSourceResolution(
@@ -100,15 +100,12 @@ ol.reproj.Image = function(sourceProj, targetProj,
 
 
   var state = ol.ImageState.LOADED;
-  var attributions = [];
 
   if (this.sourceImage_) {
     state = ol.ImageState.IDLE;
-    attributions = this.sourceImage_.getAttributions();
   }
 
-  ol.ImageBase.call(this, targetExtent, targetResolution, this.sourcePixelRatio_,
-            state, attributions);
+  ol.ImageBase.call(this, targetExtent, targetResolution, this.sourcePixelRatio_, state);
 };
 ol.inherits(ol.reproj.Image, ol.ImageBase);
 
@@ -127,7 +124,7 @@ ol.reproj.Image.prototype.disposeInternal = function() {
 /**
  * @inheritDoc
  */
-ol.reproj.Image.prototype.getImage = function(opt_context) {
+ol.reproj.Image.prototype.getImage = function() {
   return this.canvas_;
 };
 

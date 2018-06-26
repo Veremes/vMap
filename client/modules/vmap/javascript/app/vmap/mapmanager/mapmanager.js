@@ -240,6 +240,10 @@ nsVmap.nsMapManager.MapManager.prototype.loadLayersTools = function (sUrl) {
 nsVmap.nsMapManager.MapManager.prototype.loadMap = function (element) {
     oVmap.log('nsVmap.nsMapManager.MapManager.loadMap');
 
+    if (oVmap['properties']['is_mobile']) {
+        oVmap.getToolsManager().getBasicTools().hideMobileMenu();
+    }
+
     // Récupère l'url
     var sUrl = element.getAttribute("url");
 
@@ -270,7 +274,9 @@ nsVmap.nsMapManager.MapManager.prototype.loadMap = function (element) {
 
     oVmap.log("oVmap.event: mapChanged");
     oVmap['scope'].$broadcast('mapChanged');
-
+    setTimeout(function () {
+        oVmap.resizeLayerTools();
+    }, 1000);
 };
 
 /**
@@ -737,16 +743,7 @@ nsVmap.nsMapManager.MapManager.prototype.addLayerFromVectorContent = function (c
             layerType: 'imagevector',
             serviceName: serviceName,
             layerTitle: layerTitle,
-            features: oFeaturesReaded,
-            style: new ol.style.Style({
-                fill: new ol.style.Fill({
-                    color: 'rgba(255, 255, 255, 0.1)'
-                }),
-                stroke: new ol.style.Stroke({
-                    color: '#319FD3',
-                    width: 2
-                })
-            })
+            features: oFeaturesReaded
         };
         this.addLayer(oLayer);
         return true;
@@ -1376,6 +1373,8 @@ nsVmap.nsMapManager.MapManager.prototype.getBusinessObjectsFromLayers = function
                 'bo_selection_buffer': aBos[ii]['selection_buffer'],
                 'bo_geom_column': aBos[ii]['geom_column'],
                 'bo_geom_type': aBos[ii]['geom_type'],
+                'bo_min_edition_scale': aBos[ii]['min_edition_scale'],
+                'bo_max_edition_scale': aBos[ii]['max_edition_scale'],
                 'bo_index': goog.isDefAndNotNull(aBos[ii]['index']) ? aBos[ii]['index'] : 1000000
             };
         }
@@ -1393,8 +1392,16 @@ nsVmap.nsMapManager.MapManager.prototype.getBusinessObjectsFromLayers = function
 nsVmap.nsMapManager.MapManager.prototype.getQueryableBusinessObjects = function (bOnlyVisible) {
     oVmap.log('nsVmap.nsMapManager.MapManager.prototype.getQueryableBusinessObjects');
 
-    var aQueryableLayers = this.getQueryableLayers(bOnlyVisible);
-    var oQueryableBOs = this.getBusinessObjectsFromLayers(aQueryableLayers);
+    var oBusinessObjects = this.getBusinessObjectsFromLayers(this.getQueryableLayers(bOnlyVisible));
+    var oQueryableBOs = {};
+
+    for (var key in oBusinessObjects) {
+        if (goog.isDefAndNotNull(oBusinessObjects[key]['bo_user_rights'])) {
+            if (oBusinessObjects[key]['bo_user_rights'].indexOf('SELECT') !== -1) {
+                oQueryableBOs[key] = oBusinessObjects[key];
+            }
+        }
+    }
 
     return oQueryableBOs;
 };
@@ -1426,13 +1433,13 @@ nsVmap.nsMapManager.MapManager.prototype.getQueryableBusinessObjectsAsArray = fu
 nsVmap.nsMapManager.MapManager.prototype.getInsertableBusinessObjects = function () {
     oVmap.log('nsVmap.nsMapManager.MapManager.prototype.getInsertableBusinessObjects');
 
-    var aBusinessObjects = this.getBusinessObjectsFromLayers(this.getQueryableLayers());
+    var oBusinessObjects = this.getBusinessObjectsFromLayers(this.getQueryableLayers());
     var aInsertableBOs = [];
 
-    for (var key in aBusinessObjects) {
-        if (goog.isDefAndNotNull(aBusinessObjects[key]['bo_user_rights'])) {
-            if (aBusinessObjects[key]['bo_user_rights'].indexOf('INSERT') !== -1) {
-                aInsertableBOs.push(aBusinessObjects[key]);
+    for (var key in oBusinessObjects) {
+        if (goog.isDefAndNotNull(oBusinessObjects[key]['bo_user_rights'])) {
+            if (oBusinessObjects[key]['bo_user_rights'].indexOf('INSERT') !== -1) {
+                aInsertableBOs.push(oBusinessObjects[key]);
             }
         }
     }

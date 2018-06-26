@@ -10,6 +10,7 @@ goog.require('ol.extent');
 goog.require('ol.obj');
 goog.require('ol.math');
 goog.require('ol.proj');
+goog.require('ol.reproj');
 goog.require('ol.size');
 goog.require('ol.source.TileImage');
 goog.require('ol.source.WMSServerType');
@@ -42,11 +43,13 @@ ol.source.TileWMS = function(opt_options) {
     opaque: !transparent,
     projection: options.projection,
     reprojectionErrorThreshold: options.reprojectionErrorThreshold,
+    tileClass: options.tileClass,
     tileGrid: options.tileGrid,
     tileLoadFunction: options.tileLoadFunction,
     url: options.url,
     urls: options.urls,
-    wrapX: options.wrapX !== undefined ? options.wrapX : true
+    wrapX: options.wrapX !== undefined ? options.wrapX : true,
+    transition: options.transition
   });
 
   /**
@@ -71,21 +74,13 @@ ol.source.TileWMS = function(opt_options) {
    * @private
    * @type {ol.source.WMSServerType|undefined}
    */
-  this.serverType_ =
-      /** @type {ol.source.WMSServerType|undefined} */ (options.serverType);
+  this.serverType_ = /** @type {ol.source.WMSServerType|undefined} */ (options.serverType);
 
   /**
    * @private
    * @type {boolean}
    */
   this.hidpi_ = options.hidpi !== undefined ? options.hidpi : true;
-
-  /**
-   * @private
-   * @type {string}
-   */
-  this.coordKeyPrefix_ = '';
-  this.resetCoordKeyPrefix_();
 
   /**
    * @private
@@ -116,14 +111,14 @@ ol.inherits(ol.source.TileWMS, ol.source.TileImage);
  */
 ol.source.TileWMS.prototype.getGetFeatureInfoUrl = function(coordinate, resolution, projection, params) {
   var projectionObj = ol.proj.get(projection);
+  var sourceProjectionObj = this.getProjection();
 
   var tileGrid = this.getTileGrid();
   if (!tileGrid) {
     tileGrid = this.getTileGridForProjection(projectionObj);
   }
 
-  var tileCoord = tileGrid.getTileCoordForCoordAndResolution(
-      coordinate, resolution);
+  var tileCoord = tileGrid.getTileCoordForCoordAndResolution(coordinate, resolution);
 
   if (tileGrid.getResolutions().length <= tileCoord[0]) {
     return undefined;
@@ -131,14 +126,19 @@ ol.source.TileWMS.prototype.getGetFeatureInfoUrl = function(coordinate, resoluti
 
   var tileResolution = tileGrid.getResolution(tileCoord[0]);
   var tileExtent = tileGrid.getTileCoordExtent(tileCoord, this.tmpExtent_);
-  var tileSize = ol.size.toSize(
-      tileGrid.getTileSize(tileCoord[0]), this.tmpSize);
+  var tileSize = ol.size.toSize(tileGrid.getTileSize(tileCoord[0]), this.tmpSize);
+
 
   var gutter = this.gutter_;
   if (gutter !== 0) {
     tileSize = ol.size.buffer(tileSize, gutter, this.tmpSize);
-    tileExtent = ol.extent.buffer(tileExtent,
-        tileResolution * gutter, tileExtent);
+    tileExtent = ol.extent.buffer(tileExtent, tileResolution * gutter, tileExtent);
+  }
+
+  if (sourceProjectionObj && sourceProjectionObj !== projectionObj) {
+    tileResolution = ol.reproj.calculateSourceResolution(sourceProjectionObj, projectionObj, coordinate, tileResolution);
+    tileExtent = ol.proj.transformExtent(tileExtent, projectionObj, sourceProjectionObj);
+    coordinate = ol.proj.transform(coordinate, projectionObj, sourceProjectionObj);
   }
 
   var baseParams = {
@@ -158,7 +158,7 @@ ol.source.TileWMS.prototype.getGetFeatureInfoUrl = function(coordinate, resoluti
   baseParams[this.v13_ ? 'J' : 'Y'] = y;
 
   return this.getRequestUrl_(tileCoord, tileSize, tileExtent,
-      1, projectionObj, baseParams);
+      1, sourceProjectionObj || projectionObj, baseParams);
 };
 
 
@@ -167,14 +167,6 @@ ol.source.TileWMS.prototype.getGetFeatureInfoUrl = function(coordinate, resoluti
  */
 ol.source.TileWMS.prototype.getGutterInternal = function() {
   return this.gutter_;
-};
-
-
-/**
- * @inheritDoc
- */
-ol.source.TileWMS.prototype.getKeyZXY = function(z, x, y) {
-  return this.coordKeyPrefix_ + ol.source.TileImage.prototype.getKeyZXY.call(this, z, x, y);
 };
 
 
@@ -200,7 +192,7 @@ ol.source.TileWMS.prototype.getParams = function() {
  * @private
  */
 ol.source.TileWMS.prototype.getRequestUrl_ = function(tileCoord, tileSize, tileExtent,
-        pixelRatio, projection, params) {
+    pixelRatio, projection, params) {
 
   var urls = this.urls;
   if (!urls) {
@@ -268,25 +260,7 @@ ol.source.TileWMS.prototype.getRequestUrl_ = function(tileCoord, tileSize, tileE
  */
 ol.source.TileWMS.prototype.getTilePixelRatio = function(pixelRatio) {
   return (!this.hidpi_ || this.serverType_ === undefined) ? 1 :
-      /** @type {number} */ (pixelRatio);
-};
-
-
-/**
- * @private
- */
-ol.source.TileWMS.prototype.resetCoordKeyPrefix_ = function() {
-  var i = 0;
-  var res = [];
-
-  if (this.urls) {
-    var j, jj;
-    for (j = 0, jj = this.urls.length; j < jj; ++j) {
-      res[i++] = this.urls[j];
-    }
-  }
-
-  this.coordKeyPrefix_ = res.join('#');
+  /** @type {number} */ (pixelRatio);
 };
 
 
@@ -352,22 +326,12 @@ ol.source.TileWMS.prototype.fixedTileUrlFunction = function(tileCoord, pixelRati
 };
 
 /**
- * @inheritDoc
- */
-ol.source.TileWMS.prototype.setUrls = function(urls) {
-  ol.source.TileImage.prototype.setUrls.call(this, urls);
-  this.resetCoordKeyPrefix_();
-};
-
-
-/**
  * Update the user-provided params.
  * @param {Object} params Params.
  * @api
  */
 ol.source.TileWMS.prototype.updateParams = function(params) {
   ol.obj.assign(this.params_, params);
-  this.resetCoordKeyPrefix_();
   this.updateV13_();
   this.setKey(this.getKeyForParams_());
 };

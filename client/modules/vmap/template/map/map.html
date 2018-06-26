@@ -1,0 +1,82 @@
+<!-- Interface de saisie -->
+<div ng-if="$root.is_mobile" id="mobile-draw-menu" class="ol_draw_menu hidden">
+    <div class="ol_draw_menu_horizontal_bar"></div>
+    <div class="ol_draw_menu_vertical_bar"></div>
+    <div class="ol_draw_menu_top_buttons_container">
+        <div class="col-xs-6">
+            <div class="dropdown">
+                <button type="button" class="btn btn-warning" id="ol_draw_menu_dropdown_menu" data-toggle="dropdown">Menu <span class="caret"></span></button>
+                <ul class="dropdown-menu" aria-labelledby="ol_draw_menu_dropdown_menu">
+                    <li>
+                        <a href="#" ng-click="ctrl.cancelMobileDraw()">
+                            <span class="icon-block"></span>
+                            Annuler la saisie
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" ng-click="ctrl.undoLastChange()">
+                            <span class="icon-rotate_left"></span>
+                            Précédent
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" ng-click="ctrl.redoLastChange()">
+                            <span class="icon-rotate_right"></span>
+                            Suivant
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-xs-6">
+            <button type="button" class="btn btn-warning" ng-disabled="!ctrl.isDrawFeatureComplete()" ng-click="ctrl.finishMobileDraw()">Terminer</button>
+        </div>
+    </div>
+    <div class="ol_draw_menu_bottom_buttons_container">
+        <div class="col-xs-6">
+            <button type="button" class="btn btn-warning" ng-click="ctrl.geolocateMe()">Localiser</button>
+        </div>
+        <div class="col-xs-6">
+            <button type="button" class="btn btn-warning" ng-click="ctrl.addMobileDrawPoint()">Ajouter</button>
+        </div>
+    </div>
+</div>
+
+<!-- Interface de modification -->
+<div ng-if="$root.is_mobile" id="mobile-geom-edit-menu" class="ol_draw_menu hidden">
+    <div class="ol_geom_edit_menu_horizontal_bar"></div>
+    <div class="ol_geom_edit_menu_vertical_bar"></div>
+    <div class="ol_draw_menu_top_buttons_container">
+        <div ng-show="edit_state === 1" class="color-white text-center">
+            <h4>Choix du vertex à modifier</h4>
+        </div>
+        <div class="col-xs-6">
+            <div ng-show="edit_state === 2" class="dropdown">
+                <button type="button" class="btn btn-warning" id="ol_geom_edit_menu_dropdown_menu" data-toggle="dropdown">Menu <span class="caret"></span></button>
+                <ul class="dropdown-menu" aria-labelledby="ol_geom_edit_menu_dropdown_menu">
+                    <li>
+                        <a href="#" ng-click="ctrl.cancelMobileGeomEdition()">
+                            <span class="icon-block"></span>
+                            Annuler l'opération
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-xs-6">
+        </div>
+    </div>
+    <div class="ol_draw_menu_bottom_buttons_container">
+        <div class="col-xs-6">
+            <button ng-show="edit_state === 1" type="button" class="btn btn-warning" ng-click="ctrl.finishMobileGeomEdition()">Terminer</button>
+            <button ng-show="edit_state === 2" type="button" class="btn btn-warning" ng-click="ctrl.geolocateMe()">Localiser</button>
+        </div>
+        <div class="col-xs-6">
+            <button ng-show="edit_state === 1" type="button" class="btn btn-warning" ng-click="ctrl.validateGeomEditionModifyVertex()">Choisir</button>
+            <button ng-show="edit_state === 2" type="button" class="btn btn-warning" ng-click="ctrl.validateGeomEditionModifyGeometry()">Valider</button>
+        </div>
+    </div>
+</div>
+
+<!--Bandeau popup mobile-->
+<div id="mobile-popup-bar" ng-if="$root.is_mobile" class="hidden"></div>

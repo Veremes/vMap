@@ -2,7 +2,7 @@
 <div id="vmap-select-tool"></div>
 
 <!-- Selection Avancée -->
-<div class="right">
+<div class="right" ng-if="!$root.is_mobile">
     <li role="presentation" style="position: inherit" class="basic-tools-dropdown">
         <a class="basic-tools-element pointer"
            id="basic-tools-dropdown-select-btn" 
@@ -25,7 +25,7 @@
      class="dropdown-menu basic-tools-dropdown-element basic-tools-dropdown-select-modifypalette-content">
     <div class="basic-tools-select-container basic-tools-dropdown-menu">
         <div>
-
+            <!--Bouton ajouter une partie-->
             <div class="btn-group btn-block">
                 <button type="button" 
                         class="btn btn-sm btn-info"
@@ -69,9 +69,8 @@
                         </a></li>
                 </ul>
             </div>
-
             <div class="hr-gray margin-10"></div>
-
+            <!--Modification de géométrie-->
             <ul class="list-menu gray-list-menu">
                 <li class="basic-tools-dropdown-btn">
                     <a class="btn-draw"
@@ -108,9 +107,69 @@
                     </a>
                 </li>
             </ul>
-
             <div class="hr-gray margin-10"></div>
-
+            <!--Snapping-->
+            <div>   
+                <div class="basic-tools-dropdown-btn vmap-select-snapping-collapse-button "
+                     ng-click="ctrl.isSnapMenuCollapse = !ctrl.isSnapMenuCollapse">
+                    <span class ="glyphicon glyphicon-magnet" ></span>
+                    <span class="margin-sides-10"> Accrochage vectoriel </span>
+                    <span class="glyphicon"
+                          ng-class="{'glyphicon-menu-down': ctrl.isSnapMenuCollapse, 'glyphicon-menu-right': !ctrl.isSnapMenuCollapse }"></span>  
+                </div>
+                <div class="collapse"
+                     ng-class="{'in': ctrl.isSnapMenuCollapse}">
+                    <div style="margin: 0px 23px; min-height: 26px;">
+                        <div ng-repeat="oBo in ctrl.aQueryableBOs">
+                            <div class="row">
+                                <div class="left">
+                                    <!-- Checkbox visible -->
+                                    <div class="checkbox checkbox-info margin-3">
+                                        <input id="vmap-select-snapping-menu-checkbox-{{$index}}"
+                                               type="checkbox" 
+                                               style="cursor:pointer"
+                                               ng-model="oBo.bo_snapping_enabled"
+                                               ng-click="ctrl.loadVectorSnappingData()">
+                                        <label for="vmap-select-snapping-menu-checkbox-{{$index}}" style="cursor:pointer" title="Definit si l'objet métier est accrochable">
+                                            {{oBo.bo_title}} 
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="right">
+                                    <div ng-show="(oBo.bo_snapping_enabled)">
+                                        <span ng-class="{'fa fa-2x fa-spinner fa-spin': !oBo.isMouseOverSnaoMenuOb, 'fa fa-2x fa-close color-red': oBo.isMouseOverSnaoMenuOb }"
+                                              ng-mouseover="(oBo.isMouseOverSnaoMenuOb = true)"
+                                              ng-mouseleave="(oBo.isMouseOverSnaoMenuOb = false)"
+                                              ng-click="ctrl.stopLoadingBoVectorSnappingData(oBo); oBo.bo_snapping_enabled = false"
+                                              ng-show="(oBo.bo_snapping_loaded == false)"></span>
+                                        <span class="fa fa-2x fa-check color-green"
+                                              ng-show="(oBo.bo_snapping_loaded == true)"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div> 
+                    </div>
+                    <div class="basic-tools-dropdown-btn" style="margin: 0px 23px; min-height: 26px;">
+                        <div class="row">
+                            <button type="button"
+                                    class="btn btn-info btn-xs width-100"
+                                    ng-click="ctrl.showSnappingOptionsModal()">
+                                <span class="fa fa-cog margin-sides-2"></span>
+                                Options d'accrochage
+                            </button>
+                        </div>
+                    </div>
+                    <div class="hr-gray margin-10" ng-class="{'in': ctrl.isSnapMenuCollapse}"></div>
+                </div>
+            </div>
+            <!--Messages d'alerte pour l'échelle d'édition-->
+            <div class="alert alert-warning vmap-select-scale-alert" role="alert" ng-show="!ctrl.isMaxScaleOk">
+                <span class="glyphicon glyphicon-warning-sign"></span> Échelle maximale de saisie atteinte
+            </div>
+            <div class="alert alert-warning vmap-select-scale-alert" role="alert" ng-show="!ctrl.isMinScaleOk">
+                <span class="glyphicon glyphicon-warning-sign"></span> Échelle minimale de saisie atteinte
+            </div>
+            <!--Boutons-->
             <div style="text-align: center">
                 <button type="button" 
                         class="btn btn-info btn-sm"
@@ -128,9 +187,59 @@
                 <button type="button" 
                         class="btn btn-info btn-sm"
                         ng-show="!ctrl.editGeometryFromForm"
-                        ng-click="ctrl.submitGeomEdition()">
+                        ng-click="ctrl.submitGeomEdition(); ctrl.finishEdition();">
                     <span class="glyphicon glyphicon-share-alt margin-sides-2"></span>
                     Sauvegarder
+                </button>
+            </div>
+        </div>           
+    </div>
+</div>
+
+<!--Snapping parameters modal-->
+<div class="modal fade" id="vmap-select-snap-options-modal" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">×</button>
+                <h4 class="modal-title" data-translate="TITLE_SNAPPING_CONFIGURATION_CONFIGURATION_VMAP_CONFIG"></h4>
+            </div>
+            <div class="modal-body modal-body-big-with-footer-3 font-12">
+                <div class="col-sm-6">
+                    <h5 data-translate="FORM_SNAPPING_DEFAUT_TYPE_ACC_CONFIGURATION_CONFIGURATION_VMAP_CONFIG"></h5>
+                    <select class="form-control"
+                            ng-model="ctrl.tmpSnapOptions.mode">
+                        <option value="segment_edge_node" data-translate="FORM_SNAPPING_METHOD_SEN_CONFIGURATION_CONFIGURATION_VMAP_CONFIG"></option>
+                        <option value="edge_node" data-translate="FORM_SNAPPING_METHOD_EN_CONFIGURATION_CONFIGURATION_VMAP_CONFIG"></option>
+                        <option value="node" data-translate="FORM_SNAPPING_METHOD_N_CONFIGURATION_CONFIGURATION_VMAP_CONFIG"></option>
+                    </select>
+                </div>
+                <div class="col-sm-6">
+                    <h5 data-translate="FORM_SNAPPING_DEFAUT_TOLERANCE_CONFIGURATION_CONFIGURATION_VMAP_CONFIG"></h5>
+                    <input type="number" class="form-control" ng-model="ctrl.tmpSnapOptions.tolerance">
+                </div>
+                <div class="col-sm-6">
+                    <h5 data-translate="FORM_SNAPPING_DEFAUT_LIMIT_CONFIGURATION_CONFIGURATION_VMAP_CONFIG"></h5>
+                    <input type="number" class="form-control" ng-model="ctrl.tmpSnapOptions.limit">
+                </div>
+                <div class="col-sm-6">
+                    <h5 data-translate="FORM_SNAPPING_DEFAUT_VISIBILITY_CONFIGURATION_CONFIGURATION_VMAP_CONFIG"></h5>
+                    <div class="radio radio-inline">
+                        <input type="radio" name="vmap_select_snap_visible" id="vmap_select_snap_visible_1" ng-model="ctrl.tmpSnapOptions.visible" ng-value="true">
+                        <label for="vmap_select_snap_visible_1">Oui</label>
+                    </div>
+                    <div class="radio radio-inline">
+                        <input type="radio" name="vmap_select_snap_visible" id="vmap_select_snap_visible_2" ng-model="ctrl.tmpSnapOptions.visible" ng-value="false">
+                        <label for="vmap_select_snap_visible_2">Non</label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer modal-footer-sm text-left">
+                <button class="btn btn-primary" ng-click="ctrl.resetSnapOptions()">
+                    Rétablir les paramètres par défaut
+                </button>
+                <button class="btn btn-primary" ng-click="ctrl.submitSnappingOptionsModal()">
+                    Valider
                 </button>
             </div>
         </div>
@@ -145,7 +254,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">{{ctrl.editSelection.bo_title}}</h4>
+                <h4 class="modal-title">{{ctrl.parseFormTile(ctrl.editSelection.bo_formtitle, ctrl.editSelection.bo_form)}}</h4>
             </div>
             <div class="modal-body modal-body-big-3 font-12">
                 <!--Form reader-->
@@ -166,7 +275,7 @@
         <div class="modal-content" style="">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">{{ctrl.editSelection.bo_title}}</h4>
+                <h4 class="modal-title">{{ctrl.parseFormTile(ctrl.editSelection.bo_formtitle, ctrl.editSelection.bo_form)}}</h4>
             </div>
             <div class="modal-body modal-body-big-with-footer-3 font-12">
                 <!--Form reader-->
@@ -176,11 +285,12 @@
                      app-token="ctrl.token"></div>
             </div>
             <div class="modal-footer modal-footer-sm text-left">
-                <button class="btn btn-primary" ng-click="ctrl.editFormFeature(ctrl.editSelection)">
+                <button class="btn btn-primary" ng-click="ctrl.editFormFeature(ctrl.editSelection)" ng-if="!$root.is_mobile">
                     <span class="icon-line margin-2"></span>
                     Modifier la géométrie
                 </button>
-                <button class="btn btn-primary" onclick="oVmap.simuleClick('basictools-select-form-reader-submit-btn')">
+                <button class="btn btn-primary" 
+                        onclick="oVmap.simuleClick('basictools-select-form-reader-submit-btn')">
                     <span class="glyphicon glyphicon-share-alt margin-2"></span>
                     Sauvegarder
                 </button>

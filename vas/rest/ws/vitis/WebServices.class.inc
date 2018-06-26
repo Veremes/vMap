@@ -35,12 +35,11 @@ class WebServices extends Vitis {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
+     * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = new Connection($this->aValues, $this->aProperties);
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
 //        $this->aSelectedFields = Array("web_service", "module", "name", "description", "fields", "columns", "objects", "actions");
         $this->aRessourceFields = Array("ressource_id", "module", "name", "description", "fields", "columns", "objects", "actions");
     }
@@ -209,10 +208,10 @@ class WebServices extends Vitis {
                 $this->getRessourceInfos($sWebServiceName, $sRessourceName);
             } else if (!empty($sWebServiceName)) {
                 // infos du web service
-    			$aAttributs = array();
-    			if (!empty($this->aValues['attributs'])){
-    				$aAttributs = explode("|", $this->aValues['attributs']);
-    			}
+                $aAttributs = array();
+                if (!empty($this->aValues['attributs'])) {
+                    $aAttributs = explode("|", $this->aValues['attributs']);
+                }
                 $oWebService = $this->getWebServiceInfos($sWebServiceName, $aAttributs);
                 array_push($this->aObjects, $oWebService);
             } else {
@@ -220,10 +219,10 @@ class WebServices extends Vitis {
                 // Tableau web services
                 $aWebServices = $this->getWebServicesList();
 
-    			$aAttributs = array();
-    			if (!empty($this->aValues['attributs'])){
-    				$aAttributs = explode("|", $this->aValues['attributs']);
-    			}
+                $aAttributs = array();
+                if (!empty($this->aValues['attributs'])) {
+                    $aAttributs = explode("|", $this->aValues['attributs']);
+                }
                 // Ajout dans l'output
                 for ($i = 0; $i < count($aWebServices); $i++) {
                     $oWebService = $this->getWebServiceInfos($aWebServices[$i], $aAttributs);
@@ -234,11 +233,11 @@ class WebServices extends Vitis {
 
             $aXmlRacineAttribute['status'] = 1;
             $sMessage = $this->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
-        }else{
-            http_response_code(403); 
-            $aXmlRacineAttribute['status']=0;
+        } else {
+            http_response_code(403);
+            $aXmlRacineAttribute['status'] = 0;
             $this->aFields['error'] = "ERROR : invalid token";
-            $sMessage = $this->asDocument('','vitis',$this->aValues['sEncoding'],True,$aXmlRacineAttribute,$this->aValues['sSourceEncoding'],$this->aValues['output']);
+            $sMessage = $this->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
             return $sMessage;
         }
         return $sMessage;
@@ -257,8 +256,7 @@ class WebServices extends Vitis {
                     array_push($aWebServices, $sDir);
                 }
             }
-        }
-        else
+        } else
             writeToErrorLog('scandir(./ws): failed to open dir');
         return $aWebServices;
     }
@@ -279,8 +277,8 @@ class WebServices extends Vitis {
         $oJson->name = $sWebServiceName;
 
         if (count($aAttributs) > 0) {
-            foreach ($oJson as $key => $value) {                
-                if(!in_array($key, $aAttributs)){
+            foreach ($oJson as $key => $value) {
+                if (!in_array($key, $aAttributs)) {
                     unset($oJson->$key);
                 }
             }
@@ -360,7 +358,7 @@ class WebServices extends Vitis {
                     }
                     if (in_array("fields", $aFields)) {
                         $sClass->aFields["fields"] = "";
-                        if (!empty($aRessourceFields)){
+                        if (!empty($aRessourceFields)) {
                             foreach ($sClass->aRessourceFields as $sFields) {
                                 if (strpos($sFields, " as ")) {
                                     $field = explode(" as ", $sFields)[1];
@@ -379,7 +377,7 @@ class WebServices extends Vitis {
                         require_once 'Columns.class.inc';
                         $oColumn = new Columns($this->aPath, array("ressource_id" => $sClass->aFields["ressource_id"], "module" => $sWebServiceName), $this->aProperties, $this->oConnection);
                         $oColumn->GET();
-                        if (empty($sClass->aObjects)){
+                        if (empty($sClass->aObjects)) {
                             $sClass->aObjects = array();
                         }
                         array_push($sClass->aObjects, $oColumn);
@@ -392,7 +390,7 @@ class WebServices extends Vitis {
                     }
                     if (in_array("objects", $aFields)) {
                         require_once'Tabs.class.inc';
-						$aValues = array("filter" => '{"relation": "AND","operators":[{"column": "ressource_id","compare_operator": "=","value": "' . $sClass->aFields["ressource_id"] . '"}, {"column": "lang","compare_operator": "=","value": "' . $this->aProperties["language"] . '"}]}', "token" => $this->aValues['token'], 'order_by' => 'index');
+                        $aValues = array("filter" => '{"relation": "AND","operators":[{"column": "ressource_id","compare_operator": "=","value": "' . $sClass->aFields["ressource_id"] . '"}, {"column": "lang","compare_operator": "=","value": "' . $this->aProperties["language"] . '"}]}', "token" => $this->aValues['token'], 'order_by' => 'index');
                         $oTabs = new Tabs($this->aPath, $aValues, $this->aProperties);
                         $oTabs->GET();
                         array_push($sClass->aObjects, $oTabs);

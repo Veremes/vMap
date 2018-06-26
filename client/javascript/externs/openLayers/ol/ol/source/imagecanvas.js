@@ -48,7 +48,7 @@ ol.source.ImageCanvas = function(options) {
    * @type {number}
    */
   this.ratio_ = options.ratio !== undefined ?
-      options.ratio : 1.5;
+    options.ratio : 1.5;
 
 };
 ol.inherits(ol.source.ImageCanvas, ol.source.Image);
@@ -78,8 +78,7 @@ ol.source.ImageCanvas.prototype.getImageInternal = function(extent, resolution, 
   var canvasElement = this.canvasFunction_(
       extent, resolution, pixelRatio, size, projection);
   if (canvasElement) {
-    canvas = new ol.ImageCanvas(extent, resolution, pixelRatio,
-        this.getAttributions(), canvasElement);
+    canvas = new ol.ImageCanvas(extent, resolution, pixelRatio, canvasElement);
   }
   this.canvas_ = canvas;
   this.renderedRevision_ = this.getRevision();

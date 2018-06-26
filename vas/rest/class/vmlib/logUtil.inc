@@ -62,7 +62,11 @@ function writeToLog($sString, $sFileName) {
     $sString = str_replace(chr(13), '[\n]', $sString);
     $sString = str_replace(chr(10), '[\n]', $sString);
     $handle = fopen($sFileName, 'a');
-    $sPrelog = date("d/n/Y H:i:s").' '.$_SESSION['ses_Login'].' '.$_SERVER['REMOTE_ADDR'] . ':' . $_SERVER['REMOTE_PORT'];
+    if(isset($_SESSION['ses_Login']) && isset($_SERVER['REMOTE_ADDR']) && isset($_SERVER['REMOTE_PORT'])){
+        $sPrelog = date("d/n/Y H:i:s").' '.$_SESSION['ses_Login'].' '.$_SERVER['REMOTE_ADDR'] . ':' . $_SERVER['REMOTE_PORT'];
+    } else {
+        $sPrelog = date("d/n/Y H:i:s");
+    }
     if (fwrite($handle, $sPrelog . $properties["log_delim"] . $sString . CR . LF) === false) {
         fclose($handle);
         if (is_writable($sFileName)) {

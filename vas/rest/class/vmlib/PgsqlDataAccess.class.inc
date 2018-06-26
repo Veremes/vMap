@@ -113,14 +113,21 @@ class PgsqlDataAccess {
         $sDatabase = $this->sDatabase;
         $sServer = $this->sServer;
         $sErrorMessage = "";
-        $sSql = "select * from pg_user where usename = '" . $sLogin . "'";
-        $resultat = $oBd->execute($sSql);
+        $sSql = "select * from pg_user where usename = [LOGIN]";
+        $aParams = array();
+        $aParams['LOGIN'] = array('value' => utf8_encode($sLogin), 'type' => 'quoted_string');
+        $resultat = $oBd->executeWithParams($sSql, $aParams);
         if ($oBd->erreurRencontree) {
             $sErrorMessage = $oBd->getBDMessage();
         } else {
             if (!$aLigne = $oBd->ligneSuivante($resultat)) {
-                $sSql = "CREATE USER \"" . $sLogin . "\" PASSWORD 'md5" . md5($sPassword . $sLogin) . "' IN ROLE " . $this->sRoleUser;
-                $oBd->execute($sSql);
+                $sSql = "CREATE USER [LOGIN] PASSWORD [PASSWORD] IN ROLE " . $this->sRoleUser;
+                $aParams = array();
+                if (mb_detect_encoding($sLogin) != 'UTF-8')
+                    $sLogin = utf8_encode($sLogin);
+                $aParams['LOGIN'] = array('value' => $sLogin, 'type' => 'double_quote');
+                $aParams['PASSWORD'] = array('value' => 'md5' . md5($sPassword . $sLogin), 'type' => 'quoted_string');
+                $oBd->executeWithParams($sSql, $aParams);
                 if ($oBd->erreurRencontree) {
                     $sErrorMessage = $oBd->getBDMessage();
                 } else {
@@ -186,8 +193,11 @@ class PgsqlDataAccess {
         $oBd = $this->oBd;
         $sServer = $this->sServer;
         $sErrorMessage = "";
-        $sSql = 'ALTER Role "' . $sLogin . '" PASSWORD \'' . 'md5' . md5($sPassword . $sLogin) . '\'';
-        $oBd->execute($sSql);
+        $sSql = "ALTER Role [LOGIN] PASSWORD [PASSWORD]";
+        $aParams = array();
+        $aParams['LOGIN'] = array('value' => utf8_encode($sLogin), 'type' => 'double_quote');
+        $aParams['PASSWORD'] = array('value' => 'md5' . md5($sPassword . utf8_encode($sLogin)), 'type' => 'quoted_string');
+        $oBd->executeWithParams($sSql, $aParams);
         if ($oBd->erreurRencontree)
             $sErrorMessage = $oBd->getBDMessage();
         return $sErrorMessage;

@@ -11,6 +11,7 @@ goog.require('oVmap');
 
 goog.require('nsVmap.nsToolsManager.BasicSelect');
 goog.require('nsVmap.nsToolsManager.AdvancedSelect');
+goog.require('ol.interaction.Snap');
 
 
 /**
@@ -38,6 +39,17 @@ nsVmap.nsToolsManager.Select = function () {
 nsVmap.nsToolsManager.Select.prototype.queryByEWKTGeom = function (opt_options) {
     var scope = angular.element($('#vmap-select-tool')).scope();
     return scope['ctrl'].queryByEWKTGeom(opt_options);
+};
+
+/**
+ * Get the real scale buffer in metters
+ * @param {number} buffer
+ * @param {string} geomType
+ * @returns {Number}
+ */
+nsVmap.nsToolsManager.Select.prototype.getRealScaleBuffer = function (buffer, geomType) {
+    var scope = angular.element($('#vmap-select-tool')).scope();
+    return scope['ctrl'].getRealScaleBuffer(buffer, geomType);
 };
 
 /**
@@ -150,6 +162,26 @@ nsVmap.nsToolsManager.Select.prototype.getFormData = function (oFormValues, oFor
 };
 
 /**
+ * Creates a FormData object from oValues
+ * @param {object} oValues
+ * @returns {FormData}
+ */
+nsVmap.nsToolsManager.Select.prototype.getFormDataFromValues = function (oValues) {
+    var scope = angular.element($('#vmap-select-tool')).scope();
+    return scope['ctrl'].getFormDataFromValues(oValues);
+};
+
+/**
+ * Get the selected BO
+ * @returns {scopectrl.sSelectedBo}
+ * @export
+ */
+nsVmap.nsToolsManager.Select.prototype.getSelectedBo = function () {
+    var scope = angular.element($('#vmap-basicselect-tool')).scope();
+    return scope['ctrl']['sSelectedBo'];
+};
+
+/**
  * Suggest if realy want to delete the object and call submitDeleteObject
  * @param {object} selection
  * @param {object} selection.bo_type
@@ -195,6 +227,17 @@ nsVmap.nsToolsManager.Select.prototype.editFeature = function (selection) {
 };
 
 /**
+ * Parse the geom title and replace the {{ }}
+ * @param {string} sFormTitle
+ * @param {object} oScope
+ * @export
+ */
+nsVmap.nsToolsManager.Select.prototype.parseFormTile = function (sFormTitle, oScope) {
+    var scope = angular.element($('#vmap-select-tool')).scope();
+    return scope['ctrl'].parseFormTile(sFormTitle, oScope);
+};
+
+/**
  * App-specific directive wrapping the select tools.
  * @return {angular.Directive} The directive specs.
  * @constructor
@@ -224,7 +267,7 @@ nsVmap.nsToolsManager.Select.prototype.selectDirective = function () {
  * @returns {nsVmap.nsToolsManager.Select.prototype.selectController}
  * @export
  */
-nsVmap.nsToolsManager.Select.prototype.selectController = function ($scope, $timeout, $q) {
+nsVmap.nsToolsManager.Select.prototype.selectController = function ($scope, $timeout, $q, $element, $translate) {
     oVmap.log("nsVmap.nsToolsManager.Select.prototype.selectController");
 
     var this_ = this;
@@ -251,6 +294,11 @@ nsVmap.nsToolsManager.Select.prototype.selectController = function ($scope, $tim
     this.canceler_ = $q.defer();
 
     /**
+     * @private
+     */
+    this.$translate_ = $translate;
+
+    /**
      * The current properties
      */
     this['properties'] = oVmap['properties'];
@@ -264,6 +312,42 @@ nsVmap.nsToolsManager.Select.prototype.selectController = function ($scope, $tim
      * Type de géométrie à utiliser
      */
     this['addPartGeomType'] = "";
+
+    /**
+     * Définit si l'échélle est dans la tranche allouée par l'objet métier
+     */
+    this['isMaxScaleOk'] = true;
+
+    /**
+     * Définit si l'échélle est dans la tranche allouée par l'objet métier
+     */
+    this['isMinScaleOk'] = true;
+
+    /**
+     * Booléen représentant l'ouverture du SnapMenu
+     */
+    this['isSnapMenuCollapse'] = false;
+
+    /**
+     * Object contenant les diverses options de snapping
+     */
+    this['snapOptions'] = {
+        'mode': 'segment_edge_node',
+        'tolerance': 15,
+        'limit': 2000,
+        'visible': false
+    };
+    if (goog.isDefAndNotNull(oVmap['properties']['snapping'])) {
+        this['snapOptions']['tolerance'] = oVmap['properties']['snapping']['defaut_tolerance'];
+        this['snapOptions']['mode'] = oVmap['properties']['snapping']['defaut_snapp_mode'];
+        this['snapOptions']['limit'] = oVmap['properties']['snapping']['defaut_limit'];
+        this['snapOptions']['visible'] = oVmap['properties']['snapping']['defaut_visibility'];
+    }
+
+    /**
+     * Object temporaire permettant l'édition des diverses options de snapping
+     */
+    this['tmpSnapOptions'] = angular.copy(this['snapOptions']);
 
     /**
      * Maximum popup mode objects
@@ -316,6 +400,44 @@ nsVmap.nsToolsManager.Select.prototype.selectController = function ($scope, $tim
                 color: 'rgba(0, 0, 0, 0.2)'
             })
         })
+    });
+
+    /**
+     * @type {ol.layer.Vector}
+     * @private
+     */
+    this.oSnapOverlayLayer_ = new ol.layer.Vector({
+        map: oVmap.getMap().getOLMap(),
+        visible: false,
+        source: new ol.source.Vector({
+            useSpatialIndex: false
+        }),
+        style: new ol.style.Style({
+            fill: new ol.style.Fill({
+                color: 'rgba(255, 255, 255, 0.2)'
+            }),
+            stroke: new ol.style.Stroke({
+                color: '#1000ff',
+                width: 2
+            }),
+            image: new ol.style.Circle({
+                radius: 3,
+                fill: new ol.style.Fill({
+                    color: '#1000ff'
+                })
+            })
+        }),
+    });
+
+    /**
+     * @type {ol.interaction.Snap}
+     * @private
+     */
+    this.snap_ = new ol.interaction.Snap({
+        vertex: true,
+        edge: (this['snapOptions']['mode'] === 'segment_edge_node' ? true : false),
+        pixelTolerance: this['snapOptions']['tolerance'],
+        source: this.oSnapOverlayLayer_.getSource()
     });
 
     /**
@@ -398,6 +520,142 @@ nsVmap.nsToolsManager.Select.prototype.selectController = function ($scope, $tim
             });
         }
     }
+
+    // Á chaque fois qui l'utilisateur finit de bouger la carte
+    oVmap.getMap().getOLMap().on('moveend', function () {
+        // Vérifie si l'échelle d'édition est bonne
+        this_.checkEditionScale();
+        // Lance la fonction de rechargement
+        this_.loadVectorSnappingData();
+    });
+
+    // Rempli les bo disponibles
+    oVmap['scope'].$on('layersChanged', function () {
+        this_.checkEditionScale();
+        this_.loadQueryableBos();
+    });
+    oVmap['scope'].$on('selectedBoChanged', function () {
+        this_.checkEditionScale();
+        this_.loadQueryableBos();
+    });
+    setTimeout(function () {
+        this_.loadQueryableBos();
+    });
+
+    // Affiche les modales en plein écran pour la version mobile
+    if (oVmap['properties']['is_mobile']) {
+        $element.find('.modal').on('shown.bs.modal', function () {
+            $('.modal-backdrop.fade.in').hide();
+            $('.modal.fade.in').find('.modal-dialog').addClass('mobile-full-modal');
+        });
+    }
+
+    // Permet de savoir si on est en modification (clic soutenu)
+    this.isModifying_ = false;
+    this.modify_.on('modifyend', function () {
+        this_.isModifying_ = false;
+        this_.checkEditionScale();
+    });
+    this.modify_.on('modifystart', function () {
+        this_.isModifying_ = true;
+    });
+};
+
+/**
+ * Charge la liste des objets métier
+ */
+nsVmap.nsToolsManager.Select.prototype.selectController.prototype.loadQueryableBos = function () {
+    oVmap.log('nsVmap.nsToolsManager.Select.selectController.loadQueryableBos');
+    var this_ = this;
+
+    this_.$scope_.$applyAsync(function () {
+        setTimeout(function () {
+            this_['aQueryableBOs'] = oVmap.getMapManager().getQueryableBusinessObjectsAsArray(true);
+
+            // Snapping
+            for (var i = 0; i < this_['aQueryableBOs'].length; i++) {
+                this_['aQueryableBOs'][i]['loadCanceller'] = this_.$q_.defer();
+                this_['aQueryableBOs'][i]['isMouseOverSnaoMenuOb'] = false;
+                this_['aQueryableBOs'][i]['bo_snapping_loaded'] = null;
+                if (this_['aQueryableBOs'][i]['bo_id'] === oVmap.getToolsManager().getBasicTools().getSelect().getSelectedBo()) {
+                    this_['aQueryableBOs'][i]['bo_snapping_enabled'] = true;
+                } else {
+                    this_['aQueryableBOs'][i]['bo_snapping_enabled'] = false;
+                }
+            }
+
+            // Mobile: cache le bouton "Insertion" si aucun bo est insertable
+            if (goog.isDefAndNotNull(this_['aQueryableBOs'])) {
+                if (oVmap['properties']['is_mobile']) {
+                    if (this_['aQueryableBOs'].length > 0) {
+                        $('#vmap_menu_mobile_menu_requeteur_button').show();
+                    } else {
+                        $('#vmap_menu_mobile_menu_requeteur_button').hide();
+                    }
+                    
+                    //Modifie la taille de la liste des objets métiers pour ne pas qu'elle soit trop large
+                    angular.element("#select-bo-select")[0].style["width"] = "23vw";
+                }
+            }
+        });
+    });
+};
+
+/**
+ * Vérifie que l'échelle en cours respecte les spécification de l'objet métier
+ */
+nsVmap.nsToolsManager.Select.prototype.selectController.prototype.checkEditionScale = function () {
+    oVmap.log('nsVmap.nsToolsManager.Select.selectController.checkEditionScale');
+
+    if (!goog.isDefAndNotNull(this['aQueryableBOs'])) {
+        return;
+    }
+
+    var oBo;
+    for (var i = 0; i < this['aQueryableBOs'].length; i++) {
+        if (this['aQueryableBOs'][i]['bo_id'] === oVmap.getToolsManager().getBasicTools().getSelect().getSelectedBo()) {
+            oBo = this['aQueryableBOs'][i];
+            break;
+        }
+    }
+
+    if (!goog.isDefAndNotNull(oBo)) {
+        return;
+    }
+
+    var maxScale = oBo['bo_max_edition_scale'];
+    var minScale = oBo['bo_min_edition_scale'];
+
+    if (this['currentAction'] === 'basicTools-select-editFeature') {
+        if (goog.isDefAndNotNull(minScale)) {
+            minScale = parseFloat(minScale);
+            if (oVmap.getMap().getScale() < minScale && !this.isModifying_) {
+                oVmap.getMap().getMapTooltip().displayMessage('Échelle minimale de saisie atteinte, dé-zoomez pour continuer l\'édition');
+                this['isMinScaleOk'] = false;
+                this.modify_.setActive(false);
+            } else {
+                this['isMinScaleOk'] = true;
+            }
+        }
+        if (goog.isDefAndNotNull(maxScale)) {
+            maxScale = parseFloat(maxScale);
+            if (oVmap.getMap().getScale() > maxScale && !this.isModifying_) {
+                oVmap.getMap().getMapTooltip().displayMessage('Échelle maximale de saisie atteinte, zoomez pour continuer l\'édition');
+                this['isMaxScaleOk'] = false;
+                this.modify_.setActive(false);
+            } else {
+                this['isMaxScaleOk'] = true;
+            }
+        }
+        if (this['isMinScaleOk'] && this['isMaxScaleOk']) {
+            if (!this.modify_.getActive()) {
+                this.modify_.setActive(true);
+            }
+            if (this.modify_.getActive()) {
+                oVmap.getMap().getMapTooltip().displayMessage('Cliquez sur la géométrie pour la modifier');
+            }
+        }
+    }
 };
 
 /**
@@ -405,6 +663,7 @@ nsVmap.nsToolsManager.Select.prototype.selectController = function ($scope, $tim
  * @param {object} opt_options
  * @param {boolean} opt_options.useTableFormat
  * @param {string} opt_options.EWKTGeometry
+ * @param {string} opt_options.sFilter
  * @param {string} opt_options.bo_id
  * @param {object} opt_options.canceler
  * @param {function} opt_options.callback
@@ -451,13 +710,7 @@ nsVmap.nsToolsManager.Select.prototype.selectController.prototype.queryByEWKTGeo
     var geomType = oVmap.getGeomFromEWKT(opt_options.EWKTGeometry).getType();
 
     // Calcul du buffer
-    var buffer = 0.01;
-    if (geomType === 'Point') {
-        if (goog.isDefAndNotNull(opt_options.buffer)) {
-            var scale = oVmap.getMap().getScale();
-            buffer = (opt_options.buffer * scale) / 1000;
-        }
-    }
+    var buffer = this.getRealScaleBuffer(opt_options.buffer, geomType);
 
     // Limite de features
     if (opt_options.useTableFormat === true)
@@ -473,6 +726,7 @@ nsVmap.nsToolsManager.Select.prototype.selectController.prototype.queryByEWKTGeo
             'Accept': 'application/x-vm-json'
         },
         'data': {
+            'filter': opt_options.sFilter,
             'intersect_geom': opt_options.EWKTGeometry,
             'intersect_buffer': buffer,
             'get_geom': get_geom,
@@ -509,6 +763,32 @@ nsVmap.nsToolsManager.Select.prototype.selectController.prototype.queryByEWKTGeo
             opt_options.callback.call(this, data);
         }
     });
+};
+
+/**
+ * Get the real scale buffer in metters
+ * @param {number} buffer
+ * @param {string} geomType
+ * @returns {Number}
+ */
+nsVmap.nsToolsManager.Select.prototype.selectController.prototype.getRealScaleBuffer = function (buffer, geomType) {
+    oVmap.log('nsVmap.nsToolsManager.Select.prototype.selectController.prototype.getRealScaleBuffer');
+
+    if (!goog.isDefAndNotNull(buffer)) {
+        return null;
+    }
+    if (!goog.isDefAndNotNull(geomType)) {
+        return null;
+    }
+
+    var iAPIBuffer = null;
+    if (geomType === 'Point' || geomType === 'MultiPoint') {
+        if (goog.isDefAndNotNull(buffer)) {
+            var scale = oVmap.getMap().getScale();
+            iAPIBuffer = (buffer * scale) / 1000;
+        }
+    }
+    return iAPIBuffer;
 };
 
 /**
@@ -573,10 +853,7 @@ nsVmap.nsToolsManager.Select.prototype.selectController.prototype.displayObjectC
     if (selection['bo_title'].length === 0)
         return 0;
 
-    this['editSelection'] = {
-        'bo_title': selection['bo_title'],
-        'display_form_size': selection['display_form_size']
-    };
+    this['editSelection'] = selection;
 
     // Récupere les informations du formuaire
     this_.getFormInfos([selection], function (data) {
@@ -1067,9 +1344,9 @@ nsVmap.nsToolsManager.Select.prototype.selectController.prototype.removeDuplicat
         for (var ii = i + 1; ii < aSelections.length; ii++) {
 
             // Compare les objets
-//            if (angular.equals(aSelections[i]['bo_id_field'], aSelections[ii]['bo_id_field']) &&
-//                    angular.equals(aSelections[i]['bo_id_value'], aSelections[ii]['bo_id_value']) &&
-//                    angular.equals(aSelections[i]['bo_type'], aSelections[ii]['bo_type'])) {
+            //            if (angular.equals(aSelections[i]['bo_id_field'], aSelections[ii]['bo_id_field']) &&
+            //                    angular.equals(aSelections[i]['bo_id_value'], aSelections[ii]['bo_id_value']) &&
+            //                    angular.equals(aSelections[i]['bo_type'], aSelections[ii]['bo_type'])) {
 
             if (aSelections[i]['bo_id_field'] == aSelections[ii]['bo_id_field'] &&
                     aSelections[i]['bo_type'] == aSelections[ii]['bo_type'] &&
@@ -1124,7 +1401,6 @@ nsVmap.nsToolsManager.Select.prototype.selectController.prototype.updateBOValues
     var data = this.getFormDataFromValues(boValues);
     var aLayers = this['map'].getLayers().getArray();
 
-    showAjaxLoader();
     ajaxRequest({
         'method': 'PUT',
         'url': oVmap['properties']['api_url'] + '/vmap/querys/' + bo_type,
@@ -1136,13 +1412,13 @@ nsVmap.nsToolsManager.Select.prototype.selectController.prototype.updateBOValues
         'success': function (response) {
 
             if (!goog.isDef(response['data'])) {
-                console.log('Aucune valeur retournée');
+                console.error('Aucune valeur retournée');
                 errorCallback.call();
                 return 0;
             }
 
             if (goog.isDef(response['data']['errorMessage'])) {
-                console.log(response['data']['errorMessage']);
+                console.error(response['data']['errorMessage']);
                 errorCallback.call();
                 return 0;
             }
@@ -1407,6 +1683,37 @@ nsVmap.nsToolsManager.Select.prototype.selectController.prototype.addToCard = fu
     });
 };
 
+/**
+ * Parse the geom title and replace the {{ }}
+ * @param {string} sFormTitle
+ * @param {object} oScope
+ * @export
+ */
+nsVmap.nsToolsManager.Select.prototype.selectController.prototype.parseFormTile = function (sFormTitle, oScope) {
+
+    if (!goog.isString(sFormTitle)) {
+        return sFormTitle;
+    }
+    if (!goog.isObject(oScope)) {
+        return sFormTitle;
+    }
+
+    var sAttr;
+    if (sFormTitle.search('{{') !== -1 && sFormTitle.search('}}') !== -1) {
+        sAttr = sFormTitle.substr(sFormTitle.search('{{') + 2, sFormTitle.search('}}') - sFormTitle.search('{{') - 2);
+        if (goog.isDefAndNotNull(oScope[sAttr])) {
+            sFormTitle = sFormTitle.replace('{{' + sAttr + '}}', oScope[sAttr]);
+        }
+    }
+    if (sFormTitle.search('{{') !== -1 && sFormTitle.search('}}') !== -1) {
+        this.parseFormTile(sFormTitle, oScope);
+    }
+
+    sFormTitle = $('<div/>').html(oVmap['$sanitize'](sFormTitle)).text();
+
+    return sFormTitle;
+};
+
 
 
 // Édition de la géométrie
@@ -1478,23 +1785,32 @@ nsVmap.nsToolsManager.Select.prototype.selectController.prototype.editFeature = 
         this['editGeometryFromForm'] = false;
     }
 
-    // Affiche la palette de modification
-    $('#basictools-select-modify-palette').show();
+    if (oVmap['properties']['is_mobile']) {
+        oVmap.getMap().startMobileGeomEdition(this_['editableSelection']['olFeature'], function (olFeature) {
+            setTimeout(function () {
+                this_['editableSelection']['olFeature'] = olFeature;
+                this_.submitGeomEdition();
+            });
+        });
+    } else {
+        // Affiche la palette de modification
+        $('#basictools-select-modify-palette').show();
 
-    // Timeout car lors du toggleOutTools, clearOverlays est lancé
-    setTimeout(function () {
-        // Ajoute la/les feature(s) 
-        if (goog.isDefAndNotNull(this_['editableSelection']['olFeature'])) {
-            this_.putElementFeatureOnOverlay();
-        }
-
+        // Timeout car lors du toggleOutTools, clearOverlays est lancé
         setTimeout(function () {
-            // Ajoute l'interraction
-            if (this_.oOverlayLayer_.getSource().getFeaturesCollection().getLength() > 0) {
-                this_.startEdition('editFeature', this_.currentAction === 'basicTools-select-editFeature');
+            // Ajoute la/les feature(s)
+            if (goog.isDefAndNotNull(this_['editableSelection']['olFeature'])) {
+                this_.putElementFeatureOnOverlay();
             }
-        }, 100);
-    }, 500);
+
+            setTimeout(function () {
+                // Ajoute l'interraction
+                if (this_.oOverlayLayer_.getSource().getFeaturesCollection().getLength() > 0) {
+                    this_.startEdition('editFeature', this_['currentAction'] === 'basicTools-select-editFeature');
+                }
+            }, 100);
+        }, 500);
+    }
 };
 
 /**
@@ -1530,6 +1846,8 @@ nsVmap.nsToolsManager.Select.prototype.selectController.prototype.startEdition =
         // Ajoute l'interraction
         oVmap.getMap().setInteraction(this.modify_, 'basicTools-select-' + type);
 
+        this_.loadVectorSnappingData();
+
     } else if (type === 'deleteFeature') {
 
         //Ajoute la tooltip
@@ -1552,28 +1870,28 @@ nsVmap.nsToolsManager.Select.prototype.selectController.prototype.startEdition =
         var aFeaturesCopy = goog.array.clone(this.oOverlayFeatures_.getArray());
 
         this.draw_.on('drawend',
-                function (evt) {
-                    // Récupère la feature ajoutée
-                    var feature = evt.feature;
-                    var linearRing = feature.getGeometry().getLinearRing(0);
-                    var bIsContained = false;
-                    for (var i = 0; i < aFeaturesCopy.length; i++) {
-                        // Si le trou est contenu dans une des features
-                        if (aFeaturesCopy[i].getGeometry().containsPolygon(feature.getGeometry())) {
-                            // Troue le polygone
-                            aFeaturesCopy[i].getGeometry().appendLinearRing(linearRing);
-                            bIsContained = true;
-                        }
-                    }
+        function (evt) {
+            // Récupère la feature ajoutée
+            var feature = evt.feature;
+            var linearRing = feature.getGeometry().getLinearRing(0);
+            var bIsContained = false;
+            for (var i = 0; i < aFeaturesCopy.length; i++) {
+                // Si le trou est contenu dans une des features
+                if (aFeaturesCopy[i].getGeometry().containsPolygon(feature.getGeometry())) {
+                    // Troue le polygone
+                    aFeaturesCopy[i].getGeometry().appendLinearRing(linearRing);
+                    bIsContained = true;
+                }
+            }
 
-                    if (!bIsContained) {
-                        bootbox.alert('<h4>Trou non valide: il doit être contenu dans un polygone dessiné</h4>');
-                    } else {
-                        setTimeout(function () {
-                            this_.putFeaturesOnTheElement(this_.oOverlayFeatures_.getArray());
-                        });
-                    }
-                }, this);
+            if (!bIsContained) {
+                bootbox.alert('<h4>Trou non valide: il doit être contenu dans un polygone dessiné</h4>');
+            } else {
+                setTimeout(function () {
+                    this_.putFeaturesOnTheElement(this_.oOverlayFeatures_.getArray());
+                });
+            }
+        }, this);
 
     } else if (type === 'deleteHole') {
 
@@ -1758,27 +2076,47 @@ nsVmap.nsToolsManager.Select.prototype.selectController.prototype.putFeaturesOnT
     // Cas de feature multiple
     else {
         if (this['editableFeatureType'] === 'MULTIPOLYGON') {
+
             var oMultiPolygon = new ol.geom.MultiPolygon();
+            var aCoordinates = [];
+
             for (var i = 0; i < aFeatures.length; i++) {
-                if (aFeatures[i].getGeometry().getType() === 'Polygon')
-                    oMultiPolygon.appendPolygon(aFeatures[i].getGeometry());
+                if (aFeatures[i].getGeometry().getType() === 'Polygon') {
+                    aCoordinates.push(aFeatures[i].getGeometry().getCoordinates());
+                }
             }
+
+            oMultiPolygon.setCoordinates(aCoordinates);
             this['editableSelection']['olFeature'] = new ol.Feature({geometry: oMultiPolygon});
+
         }
         if (this['editableFeatureType'] === 'MULTILINESTRING') {
+
             var oMultiLineString = new ol.geom.MultiLineString();
+            var aCoordinates = [];
+
             for (var i = 0; i < aFeatures.length; i++) {
-                if (aFeatures[i].getGeometry().getType() === 'LineString')
-                    oMultiLineString.appendLineString(aFeatures[i].getGeometry());
+                if (aFeatures[i].getGeometry().getType() === 'LineString') {
+                    aCoordinates.push(aFeatures[i].getGeometry().getCoordinates());
+                }
             }
+
+            oMultiLineString.setCoordinates(aCoordinates);
             this['editableSelection']['olFeature'] = new ol.Feature({geometry: oMultiLineString});
+
         }
         if (this['editableFeatureType'] === 'MULTIPOINT') {
+
             var oMultiPoint = new ol.geom.MultiPoint();
+            var aCoordinates = [];
+
             for (var i = 0; i < aFeatures.length; i++) {
-                if (aFeatures[i].getGeometry().getType() === 'Point')
-                    oMultiPoint.appendPoint(aFeatures[i].getGeometry());
+                if (aFeatures[i].getGeometry().getType() === 'Point') {
+                    aCoordinates.push(aFeatures[i].getGeometry().getCoordinates());
+                }
             }
+
+            oMultiPoint.setCoordinates(aCoordinates);
             this['editableSelection']['olFeature'] = new ol.Feature({geometry: oMultiPoint});
         }
     }
@@ -1867,8 +2205,8 @@ nsVmap.nsToolsManager.Select.prototype.selectController.prototype.validateGeomAn
         if (goog.isDefAndNotNull(this_['editableSelection']['olFeature']))
             if (goog.isDefAndNotNull(this_['editableSelection']['olFeature'].getGeometry()))
                 editFormReaderScope['oFormValues']['update'][this_['editableSelection']['geom_column']] = oVmap.getEWKTFromGeom(this_['editableSelection']['olFeature'].getGeometry());
-            else
-                editFormReaderScope['oFormValues']['update'][this_['editableSelection']['geom_column']] = '';
+        else
+            editFormReaderScope['oFormValues']['update'][this_['editableSelection']['geom_column']] = '';
         else
             editFormReaderScope['oFormValues']['update'][this_['editableSelection']['geom_column']] = '';
 
@@ -1901,6 +2239,10 @@ nsVmap.nsToolsManager.Select.prototype.selectController.prototype.clearOverlays 
     if (this.oOverlayHolesLayer_.getSource().getFeaturesCollection().getLength() > 0) {
         this.oOverlayHolesLayer_.getSource().clear();
     }
+
+    // Supprime le snapping
+    this.oSnapOverlayLayer_.getSource().clear();
+    oVmap.getMap().getOLMap().removeInteraction(this.snap_);
 };
 
 /**
@@ -1909,6 +2251,10 @@ nsVmap.nsToolsManager.Select.prototype.selectController.prototype.clearOverlays 
  */
 nsVmap.nsToolsManager.Select.prototype.selectController.prototype.finishEdition = function () {
     oVmap.log('nsVmap.nsToolsManager.Select.prototype.selectController.finishEdition');
+
+    // Supprime le snapping
+    this.oSnapOverlayLayer_.getSource().clear();
+    oVmap.getMap().getOLMap().removeInteraction(this.snap_);
 
     // Supprime la feature
     this.clearOverlays();
@@ -1921,6 +2267,167 @@ nsVmap.nsToolsManager.Select.prototype.selectController.prototype.finishEdition 
 };
 
 
+// Snapping
+
+/**
+ * Show the snapping options modal
+ * @export
+ */
+nsVmap.nsToolsManager.Select.prototype.selectController.prototype.showSnappingOptionsModal = function () {
+    oVmap.log('nsVmap.nsToolsManager.Select.prototype.selectController.prototype.showSnappingOptionsModal');
+
+    this['tmpSnapOptions'] = angular.copy(this['snapOptions']);
+    $('#vmap-select-snap-options-modal').modal('show');
+};
+
+/**
+ * Validate and hide the snapping options modal
+ * @export
+ */
+nsVmap.nsToolsManager.Select.prototype.selectController.prototype.submitSnappingOptionsModal = function () {
+    oVmap.log('nsVmap.nsToolsManager.Select.prototype.selectController.prototype.submitSnappingOptionsModal');
+
+    this['snapOptions'] = angular.copy(this['tmpSnapOptions']);
+
+    oVmap.getMap().getOLMap().removeInteraction(this.snap_);
+    this.snap_ = new ol.interaction.Snap({
+        vertex: true,
+        edge: (this['snapOptions']['mode'] === 'segment_edge_node' ? true : false),
+        pixelTolerance: this['snapOptions']['tolerance'],
+        source: this.oSnapOverlayLayer_.getSource()
+    });
+    oVmap.getMap().getOLMap().addInteraction(this.snap_);
+
+    $('#vmap-select-snap-options-modal').modal('hide');
+
+    this.loadVectorSnappingData();
+};
+
+/**
+ * Reset snapping option to default values
+ * @export
+ */
+nsVmap.nsToolsManager.Select.prototype.selectController.prototype.resetSnapOptions = function () {
+    oVmap.log('nsVmap.nsToolsManager.Select.prototype.selectController.prototype.resetSnapOptions');
+
+    if (goog.isDefAndNotNull(oVmap['properties']['snapping'])) {
+        this['tmpSnapOptions']['tolerance'] = oVmap['properties']['snapping']['defaut_tolerance'];
+        this['tmpSnapOptions']['mode'] = oVmap['properties']['snapping']['defaut_snapp_mode'];
+        this['tmpSnapOptions']['limit'] = oVmap['properties']['snapping']['defaut_limit'];
+        this['tmpSnapOptions']['visible'] = oVmap['properties']['snapping']['defaut_visibility'];
+    }
+    this.submitSnappingOptionsModal();
+};
+
+/**
+ * Selector function to only reload object when needed
+ * @export
+ */
+nsVmap.nsToolsManager.Select.prototype.selectController.prototype.loadVectorSnappingData = function () {
+    oVmap.log('nsVmap.nsToolsManager.Select.prototype.selectController.prototype.loadVectorSnappingData');
+
+    var this_ = this;
+    var oBo = null;
+    this_.oSnapOverlayLayer_.setVisible(this_['snapOptions']['visible']);
+    this_.oSnapOverlayLayer_.getSource().clear();
+    this_.checkEditionScale();
+    oVmap.getMap().getOLMap().removeInteraction(this_.snap_);
+    setTimeout(function () {
+        if (this_['currentAction'] === 'basicTools-select-editFeature') {
+            if (this_['isMaxScaleOk'] && this_['isMinScaleOk']) {
+                for (var i = 0; i < this_['aQueryableBOs'].length; i++) {
+                    oBo = this_['aQueryableBOs'][i];
+                    this_.stopLoadingBoVectorSnappingData(oBo);
+                    this_.loadBoVectorSnappingData(oBo);
+                }
+                for (var i = 0; i < oBo.length; i++) {
+                    if (oBo[i]['bo_snapping_loaded'] === null) {
+                        oBo[i]['bo_snapping_enabled'] = false;
+                    }
+                }
+                oVmap.getMap().getOLMap().addInteraction(this_.snap_);
+            }
+        }
+    });
+};
+
+/**
+ * Retrieve the object given in parameter with ajaxRequest
+ * @param {type} oBo
+ */
+nsVmap.nsToolsManager.Select.prototype.selectController.prototype.loadBoVectorSnappingData = function (oBo) {
+    oVmap.log('nsVmap.nsToolsManager.Select.prototype.selectController.prototype.loadBoVectorSnappingData');
+    var this_ = this;
+    var bo_id = oBo['bo_id'];
+    var aFeatures = [];
+    var geom = null;
+    var extent = oVmap.getMap().getOLMap().getView().calculateExtent(oVmap.getMap().getOLMap().getSize());
+    var polygonGeom = new ol.geom.Polygon.fromExtent(extent);
+    if (oBo['bo_snapping_enabled'] === true) {
+        oBo['bo_snapping_loaded'] = false;
+        ajaxRequest({
+            'method': 'POST',
+            'url': oVmap['properties']['api_url'] + '/vmap/querys/' + bo_id + '/geometry',
+            'headers': {
+                'X-HTTP-Method-Override': 'GET',
+                'Accept': 'application/x-vm-json'
+            },
+            'data': {
+                'intersect_geom': oVmap.getEWKTFromGeom(polygonGeom),
+                'snapping_limit': this_['snapOptions']['snappingObjectsLimit'],
+                'snapping_mode': this_['snapOptions']['mode']
+            },
+            'ajaxLoader': false,
+            'abord': oBo['loadCanceller'].promise,
+            'scope': this.$scope_,
+            'success': function (response) {
+                if (!goog.isDefAndNotNull(response['data'])) {
+                    oBo['bo_snapping_loaded'] = null;
+                    return 0;
+                }
+                if (goog.isDefAndNotNull(response['data']['errorMessage'])) {
+                    console.error(response['data']['errorMessage']);
+                    oBo['bo_snapping_loaded'] = null;
+                    return 0;
+                }
+                if (response['data'][0]['count'] > this_['snapOptions']['snappingObjectsLimit']) {
+                    oBo['bo_snapping_loaded'] = null;
+                    var text = 'Limit de points atteinte pour object ';
+                    text += oBo['bo_title'];
+                    $.notify(text, "warn");
+                    return 0;
+                }
+                oBo['bo_snapping_loaded'] = true;
+                for (var i = 0; i < response['data'].length; i++) {
+                    if (goog.isDefAndNotNull(response['data'][i]['geom'])) {
+                        geom = response['data'][i]['geom'];
+                        aFeatures.push(new ol.Feature({
+                            geometry: oVmap.getGeomFromEWKT(geom)
+                        }));
+                    }
+                }
+                this_.oSnapOverlayLayer_.getSource().addFeatures(aFeatures);
+            },
+            'error': function (response) {
+                oBo['bo_snapping_loaded'] = null;
+            }
+        });
+    }
+};
+
+/**
+ * Cancel request with a resolve callback
+ * @param {type} oBo
+ */
+nsVmap.nsToolsManager.Select.prototype.selectController.prototype.stopLoadingBoVectorSnappingData = function (oBo) {
+    oVmap.log('nsVmap.nsToolsManager.Select.prototype.selectController.prototype.stopLoadingBoVectorSnappingData');
+    var this_ = this;
+    if (goog.isDefAndNotNull(oBo['loadCanceller'])) {
+        oBo['loadCanceller'].resolve();
+        oBo['loadCanceller'] = this_.$q_.defer();
+        oBo['bo_snapping_loaded'] = null;
+    }
+};
 
 // Définit la directive et le controller
 oVmap.module.directive('appSelect', nsVmap.nsToolsManager.Select.prototype.selectDirective);

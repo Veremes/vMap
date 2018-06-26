@@ -11,7 +11,9 @@ goog.require('vitis.VitisWebsocket');
 goog.require('goog.object');
 goog.require('goog.array');
 
-vitisApp.on('appMainDrtvLoaded', function () {
+goog.require('ol.Geolocation');
+
+vitisApp.on('appInitCtrlLoaded', function () {
 
     // Injection des services.
     var $q = angular.element(vitisApp.appHtmlFormDrtv).injector().get(["$q"]);
@@ -27,53 +29,119 @@ vitisApp.on('appMainDrtvLoaded', function () {
     var $templateRequest = angular.element(vitisApp.appWorkspaceListDrtv).injector().get(["$templateRequest"]);
     var externFunctionSrvc = angular.element(vitisApp.appMainDrtv).injector().get(["externFunctionSrvc"]);
 
-    // WebSocket
-    if (goog.isDefAndNotNull(propertiesSrvc['websocket_alias'])) {
+    vitisApp.on('properties_loaded', function () {
 
-        var sWebSocketUrl = 'wss://' + location.host + '/' + propertiesSrvc['websocket_alias'] + '/';
+        // WebSocket
+        if (goog.isDefAndNotNull(propertiesSrvc['websocket_alias'])) {
 
-        vitisApp['oWebsocket'] = new VitisWebsocket(sWebSocketUrl);
+            var sWebSocketUrl = 'wss://' + location.host + '/' + propertiesSrvc['websocket_alias'] + '/';
 
-        // Espace de stockage pour le refraichissement des grilles lors d'evenements
-        vitisApp['oWebsocket']['oGridRefreshEvents'] = {};
+            vitisApp['oWebsocket'] = new VitisWebsocket(sWebSocketUrl);
 
-        // Connection réussie
-        vitisApp['oWebsocket'].on('connect', function (sReturn) {
-            $log.info('VitisWebsocket: Connected to ' + sWebSocketUrl + ' with ' + sReturn);
-        });
+            // Espace de stockage pour le refraichissement des grilles lors d'evenements
+            vitisApp['oWebsocket']['oGridRefreshEvents'] = {};
 
-        // Déconnection
-        vitisApp['oWebsocket'].on('disconnect', function () {
-            $log.info('VitisWebsocket: Disconnected');
-        });
+            // Connection réussie
+            vitisApp['oWebsocket'].on('connect', function (sReturn) {
+                $log.info('VitisWebsocket: Connected to ' + sWebSocketUrl + ' with ' + sReturn);
+            });
 
-        // Souscription
-        vitisApp['oWebsocket'].on('subscribe', function (sReturn) {
-            $log.info('VitisWebsocket: Subscribed to ' + sReturn);
-        });
+            // Déconnection
+            vitisApp['oWebsocket'].on('disconnect', function () {
+                $log.info('VitisWebsocket: Disconnected');
+            });
 
-        // Réception d'un message echo
-        vitisApp['oWebsocket'].on('echo', function (message) {
-            $log.info('VitisWebsocket echo: ' + message);
-            $.notify('VitisWebsocket: ' + message, 'success');
-        });
+            // Souscription
+            vitisApp['oWebsocket'].on('subscribe', function (sReturn) {
+                $log.info('VitisWebsocket: Subscribed to ' + sReturn);
+            });
 
-        // Réception d'un événement
-        vitisApp['oWebsocket'].on('event', function (event) {
-            $log.info('VitisWebsocket event: ', event);
-        });
+            // Réception d'un message echo
+            vitisApp['oWebsocket'].on('echo', function (message) {
+                $log.info('VitisWebsocket echo: ' + message);
+                $.notify('VitisWebsocket: ' + message, 'success');
+            });
 
-        // Test si la connection a pu être faite
-        setTimeout(function () {
-            if (!vitisApp['oWebsocket'].isConnected()) {
-                $log.error('VitisWebsocket was not able to connect');
-                $translate(["INACCESSIBLE_WEBSOCKET"]).then(function (oTranslations) {
-                    $.notify(oTranslations["INACCESSIBLE_WEBSOCKET"], 'error');
-                });
+            // Réception d'un événement
+            vitisApp['oWebsocket'].on('event', function (event) {
+                $log.info('VitisWebsocket event: ', event);
+            });
+
+            // Test si la connection a pu être faite
+            setTimeout(function () {
+                if (!vitisApp['oWebsocket'].isConnected()) {
+                    $log.error('VitisWebsocket was not able to connect');
+                    $translate(["INACCESSIBLE_WEBSOCKET"]).then(function (oTranslations) {
+                        console.error(oTranslations["INACCESSIBLE_WEBSOCKET"]);
+//                    $.notify(oTranslations["INACCESSIBLE_WEBSOCKET"], 'error');
+                    });
+                }
+            }, 5000);
+        }
+    });
+    setTimeout(function () {
+        // Geolocation
+        if (ol.Geolocation && propertiesSrvc["geolocation_enabled"] === true) {
+            /**
+             * Précision
+             * vitisApp['oGeoLocation'].getAccuracy()
+             * vitisApp['oGeoLocation'].getAltitudeAccuracy()
+             *
+             * Altitude
+             * vitisApp['oGeoLocation'].getAltitude()
+             *
+             * Position
+             * vitisApp['oGeoLocation'].getPosition()
+             *
+             * Vitesse
+             * vitisApp['oGeoLocation'].getSpeed()
+             *
+             * Orientation en radians depuis le nord dans le sens des aiguilles d'une montre
+             * vitisApp['oGeoLocation'].getHeading()
+             */
+            vitisApp['oGeoLocation'] = new ol.Geolocation({
+                projection: 'EPSG:4326',
+                tracking: true,
+                trackingOptions: {
+                    maximumAge: 10000,
+                    enableHighAccuracy: true,
+                    timeout: 300000
+                }
+            });
+        }
+    }, 2000);
+
+    // Geolocation
+    if (ol.Geolocation && window['oClientProperties']['geolocation'] == "true") {
+        /**
+         * Précision
+         * vitisApp['oGeoLocation'].getAccuracy()
+         * vitisApp['oGeoLocation'].getAltitudeAccuracy()
+         *
+         * Altitude
+         * vitisApp['oGeoLocation'].getAltitude()
+         *
+         * Position
+         * vitisApp['oGeoLocation'].getPosition()
+         *
+         * Vitesse
+         * vitisApp['oGeoLocation'].getSpeed()
+         *
+         * Orientation en radians depuis le nord dans le sens des aiguilles d'une montre
+         * vitisApp['oGeoLocation'].getHeading()
+         */
+        vitisApp['oGeoLocation'] = new ol.Geolocation({
+            projection: 'EPSG:4326',
+            tracking: true,
+            trackingOptions: {
+                maximumAge: 10000,
+                enableHighAccuracy: true,
+                timeout: 300000
             }
-        }, 5000);
+        });
     }
 
+    angular.element(vitisApp.appMainDrtv).scope()['is_mobile'] = oClientProperties['is_mobile'];
     /**
      * loadSimpleForm function.
      * Paramétrage avant la compilation du template simpleForm (vm_tab.event).
@@ -94,8 +162,131 @@ vitisApp.on('appMainDrtvLoaded', function () {
         $log.info(sStringToEval);
         scope.$eval(sStringToEval);
     };
-    
-    
+
+    /**
+     * Select a Vitis mode
+     * @param {string} sModeId
+     */
+    angular.element(vitisApp.appMainDrtv).scope()['selectMode'] = function (sModeId) {
+        $log.info("appMainDrtv.selectMode");
+
+        if (!goog.isDefAndNotNull(sModeId)) {
+            console.error('sModeId not defined');
+            return null;
+        }
+
+        var oMode = modesSrvc["getMode"](sModeId);
+
+        if (!goog.isDefAndNotNull(oMode['objects'])) {
+            console.error('sModeId ' + sModeId + ' is not valid');
+            return null;
+        }
+
+        var deferred = $q.defer();
+        var $scope = angular.element($('#mode_column')).scope();
+        modesSrvc["selectMode"]($scope, sModeId).then(function () {
+            $timeout(function () {
+                externFunctionSrvc["resizeWin"]();
+                $scope["setFullScreen"](envSrvc["oSelectedMode"]["fullScreen"]);
+                sessionStorage["ajaxLoader"] = envSrvc["oSelectedMode"]["ajaxLoader"];
+                var gridApi = $scope.$root["gridApi"][$scope["sSelectedGridOptionsName"]];
+                if (gridApi != null) {
+                    gridApi["core"]["handleWindowResize"]();
+                    gridApi["core"]["refreshRows"]();
+                }
+                deferred.resolve();
+            }, 100);
+        });
+        return deferred.promise;
+    };
+
+    /**
+     * Select a Vitis mode and object
+     * @param {string} sModeId
+     * @param {string} sObjectId
+     */
+    angular.element(vitisApp.appMainDrtv).scope()['selectObject'] = function (sModeId, sObjectId) {
+        $log.info("appMainDrtv.selectObject");
+
+        if (!goog.isDefAndNotNull(sModeId)) {
+            console.error('sModeId not defined');
+            return null;
+        }
+        if (!goog.isDefAndNotNull(sObjectId)) {
+            console.error('sObjectId not defined');
+            return null;
+        }
+
+        var oEvent, iObjectId;
+        var oMode = modesSrvc["getMode"](sModeId);
+
+        if (!goog.isDefAndNotNull(oMode['objects'])) {
+            console.error('sModeId ' + sModeId + ' is not valid');
+            return null;
+        }
+
+        for (var i = 0; i < oMode['objects'].length; i++) {
+            if (oMode['objects'][i]['name'] === sObjectId) {
+                iObjectId = angular.copy(i);
+            }
+        }
+
+        var deferred = $q.defer();
+        var $scope = angular.element($('#mode_column')).scope();
+        modesSrvc["selectMode"]($scope, sModeId, oEvent, iObjectId).then(function () {
+            $timeout(function () {
+                externFunctionSrvc["resizeWin"]();
+                $scope["setFullScreen"](envSrvc["oSelectedMode"]["fullScreen"]);
+                sessionStorage["ajaxLoader"] = envSrvc["oSelectedMode"]["ajaxLoader"];
+                var gridApi = $scope.$root["gridApi"][$scope["sSelectedGridOptionsName"]];
+                if (gridApi != null) {
+                    gridApi["core"]["handleWindowResize"]();
+                    gridApi["core"]["refreshRows"]();
+                }
+                deferred.resolve();
+            }, 100);
+        });
+        return deferred.promise;
+    };
+
+    /**
+     * Select a Vitis mode, object and element on update
+     * @param {string} sModeId
+     * @param {string} sObjectId
+     * @param {string} sElemId
+     * @param {string|undefined} sMode update/display
+     */
+    angular.element(vitisApp.appMainDrtv).scope()['selectElement'] = function (sModeId, sObjectId, sElemId, sMode) {
+        $log.info("appMainDrtv.selectElement");
+
+        if (!goog.isDefAndNotNull(sModeId)) {
+            console.error('sModeId not defined');
+            return null;
+        }
+        if (!goog.isDefAndNotNull(sObjectId)) {
+            console.error('sObjectId not defined');
+            return null;
+        }
+        if (!goog.isDefAndNotNull(sElemId)) {
+            console.error('sElemId not defined');
+            return null;
+        }
+
+        sMode = goog.isDefAndNotNull(sMode) ? sMode : 'update';
+
+        this['selectObject'](sModeId, sObjectId).then(function () {
+            var oDataAddedEvent = angular.element(vitisApp.appWorkspaceListDrtv).scope().$root.$on('workspaceListDataAdded', function () {
+                setTimeout(function () {
+                    if (sMode === 'update') {
+                        angular.element(vitisApp.appWorkspaceListDrtv).scope().$root['editSectionForm'](sElemId);
+                    } else if (sMode === 'display') {
+                        angular.element(vitisApp.appWorkspaceListDrtv).scope().$root['showSectionForm'](sElemId);
+                    }
+                });
+                oDataAddedEvent();
+            });
+        });
+    };
 
     /**
      * AddDoubleForm function.
@@ -161,7 +352,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
                 $('#header_line').animate({'margin-top': '0px'});
                 $('#works_line').animate({'height': $('#works_line').height() - headerLineHeight + 'px'});
                 // Redimensionne les éléments html principaux de l'application.
-                $timeout(function(){
+                $timeout(function () {
                     externFunctionSrvc["resizeWin"]();
                 }, 500);
             }
@@ -221,6 +412,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
     vitisApp["compileProvider"].directive('appSetBooleanIconColumn', function () {
         return {
             link: function (scope, element, attrs) {
+
                 // 1er affichage ou tri de la liste : maj de la mise en forme.
                 var clearObserver = attrs.$observe("appSetBooleanIconColumn", function (value) {
                     var sEnabledClassName;
@@ -231,6 +423,31 @@ vitisApp.on('appMainDrtvLoaded', function () {
                     }
                     // Classes css (ui-grid + spécifiques).
                     element[0].className = "ui-grid-cell-contents " + sEnabledClassName;
+                    if (goog.isDefAndNotNull(attrs['popup'])) {
+                        // Traduction du titre et du contenu.
+                        $translate([attrs['popup'], ]).then(function (translations) {
+
+                            if (goog.isString(attrs['popup'])) {
+                                if (attrs['popup'].length > 0) {
+                                    // Création du "tooltip".
+                                    $(element)["popover"]({
+                                        "trigger": "hover",
+                                        "container": "body",
+                                        "content": function () {
+                                            return translations[attrs['popup']];
+                                        },
+                                        // Placement du tooltip à gauche ou à droite suivant la position horizontale de l'élément.
+                                        "placement": function (oPopoverNode, oElementNode) {
+                                            return scope.$root["workspaceTooltipPlacement"](oElementNode);
+                                        },
+                                        "html": true
+                                    });
+                                }
+                            }
+
+                        });
+                    }
+
                 });
                 // Attends la suppression du scope.
                 scope.$on("$destroy", function () {
@@ -281,7 +498,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
         $log.info("modalWindow");
         return externFunctionSrvc["modalWindow"](sType, sTitle, oOptions);
     };
-    
+
     /**
      * selectFirstOption function.
      * Sélectionne la 1ere option d'un <select>.
@@ -336,7 +553,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
         }
 
         // Période minimum entre deux rafraichissements
-        var minimumRefreshTime = goog.isDefAndNotNull(propertiesSrvc["minimum_refresh_period"]) ? propertiesSrvc["minimum_refresh_period"] * 1000 : 10000;
+        var minimumRefreshTime = goog.isDefAndNotNull(propertiesSrvc["minimum_refresh_period"]) ? propertiesSrvc["minimum_refresh_period"] : 100;
 
         if (!goog.isDefAndNotNull(sRefreshObjectId)) {
             return null;
@@ -385,10 +602,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
             // Condition perso
             if (goog.isDefAndNotNull(condition)) {
                 if (!condition.call(this, data)) {
-                    console.log("not loaded");
                     return null;
                 }
-                console.log("loaded");
             }
 
             vitisApp['oWebsocket']['oGridRefreshEvents'][sRefreshObjectId]['lastUpdateDate'] = iNow;
@@ -485,7 +700,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
         $log.info("showCredits");
         // Crée un nouveau scope.
         var scope = this.$new();
-        // Sauve le nouveau scope crée dans la définition de l'onglet. 
+        // Sauve le nouveau scope crée dans la définition de l'onglet.
         modesSrvc["addScopeToObject"](envSrvc["oSelectedObject"]["name"], envSrvc["oSelectedMode"]["mode_id"], scope);
         // Charge les données de crédit de l'application.
         ajaxRequest({
@@ -519,7 +734,43 @@ vitisApp.on('appMainDrtvLoaded', function () {
             }
         });
     };
-    
+
+    /**
+     * showCredits function.
+     * Affichage de la fenêtre modale des crédits.
+     **/
+    angular.element(vitisApp.appMainDrtv).scope()['showDocumentation'] = function () {
+        $log.info("showDocumentation");
+        if (goog.isArray(propertiesSrvc['documentation'])) {
+
+            // Crée un nouveau scope.
+            var scope = this.$new();
+
+            scope['aDocumentation'] = propertiesSrvc['documentation'];
+
+            // Sauve le nouveau scope crée dans la définition de l'onglet.
+            modesSrvc["addScopeToObject"](envSrvc["oSelectedObject"]["name"], envSrvc["oSelectedMode"]["mode_id"], scope);
+
+            // Affichage de la fenêtre modale.
+            var sCreditsContainerId = "client_documentation_modal";
+            var oOptions = {
+                "className": "dialog-modal-window",
+                "message": '<div id="' + sCreditsContainerId + '" class="login-credits"></div>'
+            };
+            scope["modalWindow"]("dialog", "DOCUMENTATION", oOptions);
+
+            // Compile le template des crédits.
+            var sTemplateUrl = 'templates/clientDocumentationTpl.html';
+            $templateRequest(sTemplateUrl).then(function (sTemplate) {
+                $compile($("#" + sCreditsContainerId).html(sTemplate).contents())(scope);
+            });
+            $log.info('compileObjectTemplate : ' + sTemplateUrl);
+
+        } else {
+            console.error('properties.documentation not an array');
+        }
+    };
+
     /**
      * setTagsInput function.
      * Mise en forme d'un ou plusieurs tag (tagsinput).
@@ -553,17 +804,17 @@ vitisApp.on('appMainDrtvLoaded', function () {
         // Recharge la liste.
         scope["setGridPage"](oGridOptions["paginationCurrentPage"], oGridOptions["paginationPageSize"], envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["oFilter"], envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["oUrlParams"]);
     };
-    
+
     // Currently in Test
-      /**
+    /**
      * showExportModal function.
      * Show Export Modal
      **/
     /*angular.element(vitisApp.appWorkspaceListDrtv).scope()["showExportModal"] = function (){
-        $log.info("showExportModal");
-        
-        envSrvc["setModalExportForm"]("insert");
-    };*/
+     $log.info("showExportModal");
+
+     envSrvc["setModalExportForm"]("insert");
+     };*/
 
     /**
      * saveGridSelection function.
@@ -574,7 +825,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
     angular.element(vitisApp.appWorkspaceListDrtv).scope()['saveGridSelection'] = function (scope, oGridOptions) {
         $log.info("saveGridSelection");
         // Sauve la sélection
-        var aSelectedRows = oGridOptions["appSelectedRows"] = scope.$root["gridApi"][scope["sSelectedGridOptionsName"]]["selection"]["getSelectedRows"]();
+        var aSelectedRows = oGridOptions["appSelectedRows"] = scope.$root["gridApi"][envSrvc["sSelectedGridOptionsName"]]["selection"]["getSelectedRows"]();
         if (aSelectedRows.length > 0) {             // Liste des enregistrements à supprimer.
             var i = 0, aSelectedId = [];
             while (i < aSelectedRows.length) {
@@ -620,7 +871,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
 
             if (typeof (sValue) !== "undefined" && (sValue.toString()) !== "") {
                 if (goog.isDefAndNotNull(oFormElement["comparator"])) {
-                    if(goog.isDefAndNotNull(oFormElement["comparator"]["formater"])){
+                    if (goog.isDefAndNotNull(oFormElement["comparator"]["formater"])) {
                         sValue = oFormElement["comparator"]["formater"].replace(/<VALUE_TO_REPLACE>/g, sValue);
                     }
                     oFormElement["comparator"]["value"] = sValue;
@@ -670,16 +921,16 @@ vitisApp.on('appMainDrtvLoaded', function () {
                         });
                     } else if (oFormElement["type"] == "date" || oFormElement["type"] == "datetime") {
                         oFilter["operators"].push(
-                            {
-                                "column": aFormElementsKeys[i],
-                                "compare_operator": ">",
-                                "value": sValue
-                            },
-                            {
-                                "column": aFormElementsKeys[i],
-                                "compare_operator": "<",
-                                "value": moment(sValue).add(1, 'days').format('YYYY-MM-DD')
-                            }
+                                {
+                                    "column": aFormElementsKeys[i],
+                                    "compare_operator": ">",
+                                    "value": sValue
+                                },
+                                {
+                                    "column": aFormElementsKeys[i],
+                                    "compare_operator": "<",
+                                    "value": moment(sValue).add(1, 'days').format('YYYY-MM-DD')
+                                }
                         );
                     } else {
                         oFilter["operators"].push({
@@ -692,12 +943,12 @@ vitisApp.on('appMainDrtvLoaded', function () {
             }
             i++;
         }
-        
+
         // Sauve le filtre dans la définition de l'onglet.
         envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["oFilter"] = angular.copy(oFilter);
         if (envSrvc["sMode"] == "search")
             envSrvc["oWorkspaceList"][envSrvc["sSelectedGridOptionsName"]]["oFilter"] = angular.copy(oFilter);
-        //        
+        //
         scope.$root.$broadcast("oFilterLoaded_" + envSrvc["oSelectedObject"]["name"], envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["oFilter"]);
         // Charge la 1ere page avec les filtres.
         if (envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["paginationCurrentPage"] == 1)
@@ -770,7 +1021,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
                 oTranslationValues["itemEnd"] = oTranslationValues["totalItems"];
         } else
             sTranslationId = "PAGINATION_STATUS_NO_ITEMS";
-        // Traduction.         
+        // Traduction.
         $translate([sTranslationId], oTranslationValues).then(function (translations) {
             scope["sPaginationStatus"] = translations[sTranslationId];
         });
@@ -785,9 +1036,15 @@ vitisApp.on('appMainDrtvLoaded', function () {
      * @param {object} oUrlParams Paramètres optionnels pour le web service.
      **/
     angular.element(vitisApp.appWorkspaceListDrtv).scope()['setGridPage'] = function (iPageNumber, iPageSize, oFilter, oUrlParams) {
-        if (typeof (iPageNumber) != "number")
-            iPageNumber = 1;
+        $log.info("setGridPage");
+
         var scope = angular.element(vitisApp.appWorkspaceListDrtv).scope();
+        if (typeof (iPageNumber) != "number") {
+            iPageNumber = 1;
+        }
+        if (envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["sectionGrid"] !== true) {
+            envSrvc["oSelectedObject"]["iPageNumber"] = angular.copy(iPageNumber);
+        }
         iPageNumber--;
         var iOffset = iPageNumber * iPageSize;
         // Paramètres pour le web service.
@@ -804,6 +1061,13 @@ vitisApp.on('appMainDrtvLoaded', function () {
                 "relation": "AND",
                 "operators": []
             };
+        }
+
+        // Numéro de page
+        if (typeof (envSrvc["oSelectedObject"]["iPageNumber"]) != "undefined") {
+            if (envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["sectionGrid"] !== true) {
+                envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["paginationCurrentPage"] = envSrvc["oSelectedObject"]["iPageNumber"];
+            }
         }
         // Filtre de recherche pour la liste ?
         if (typeof (envSrvc["oSelectedObject"]["filter"]) != "undefined")
@@ -822,6 +1086,21 @@ vitisApp.on('appMainDrtvLoaded', function () {
         // Evènement à éxécuter avant le chargement de la liste ?
         if (typeof (envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["appBeforeEvent"]) != "undefined")
             scope.$root.$eval(envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["appBeforeEvent"]);
+        // Attributs à demander
+        if (goog.isDefAndNotNull(envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]])) {
+            if (goog.isArray(envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["columnDefs"])) {
+                var aAttributs = [];
+                for (var i = 0; i < envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["columnDefs"].length; i++) {
+                    if (goog.isDefAndNotNull(envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["columnDefs"][i]['field'])) {
+                        aAttributs.push(envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["columnDefs"][i]['field']);
+                    }
+                }
+                if (aAttributs.length > 0) {
+                    oUrlParams['attributs'] = aAttributs.join('|');
+                }
+            }
+        }
+
         // Charge la liste des enregistrements de l'onglet.
         ajaxRequest({
             "method": "GET",
@@ -842,7 +1121,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
                     // Evènement à éxécuter après le chargement de la liste ?
                     if (typeof (envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["appAfterEvent"]) != "undefined")
                         scope.$root.$eval(envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["appAfterEvent"]);
-                    // Lignes à sélectionner ?    
+                    // Lignes à sélectionner ?
                     if (typeof (envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["appSelectedRows"]) != "undefined") {
                         scope.$root["gridApi"][envSrvc["sSelectedGridOptionsName"]]["grid"]["modifyRows"](envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["data"]);
                         aGridData.forEach(function (oRow, iIndex) {
@@ -850,6 +1129,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
                                 scope.$root["gridApi"][envSrvc["sSelectedGridOptionsName"]]["selection"]["selectRow"](envSrvc["oGridOptions"][envSrvc["sSelectedGridOptionsName"]]["data"][iIndex])
                         });
                     }
+                    scope.$root.$emit("workspaceListDataAdded");
                 }
             }
         });
@@ -872,9 +1152,11 @@ vitisApp.on('appMainDrtvLoaded', function () {
             aGridColumn = {
                 "name": aColumns[i]["field_label"],
                 "displayName": aColumns[i]["field_label"],
-                "field": aColumns[i]["name"], "width": parseInt(aColumns[i]["width"]) + 15,
+                "field": aColumns[i]["name"],
+                "width": parseInt(aColumns[i]["width"]) + 15,
                 "enableSorting": aColumns[i]["sortable"],
-                "enableColumnResizing": aColumns[i]["resizeable"], "headerCellClass": sSelectedObjectName + "_" + aColumns[i]["name"],
+                "enableColumnResizing": aColumns[i]["resizeable"],
+                "headerCellClass": sSelectedObjectName + "_" + aColumns[i]["name"],
                 "cellClass": "cell-align-" + aColumns[i]["align"]
             };
 
@@ -933,7 +1215,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
         $log.info("executeActionButtonEvent");
         var scope = angular.element(vitisApp.appWorkspaceListDrtv).scope();
         var sIdField = envSrvc["oSelectedObject"]["sIdField"];
-        if (typeof(oGridOptions["appIdField"]) != "undefined")
+        if (typeof (oGridOptions["appIdField"]) != "undefined")
             sIdField = oGridOptions["appIdField"];
         scope.$root[sEvent](oRow["entity"][sIdField]);
     };
@@ -965,7 +1247,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
                         else {
                             // Colonne id de la table.
                             var sIdField = envSrvc["oSelectedObject"]["sIdField"];
-                            if (typeof(oOptions) != "undefined" && typeof(oOptions["sIdField"]) != "undefined")
+                            if (typeof (oOptions) != "undefined" && typeof (oOptions["sIdField"]) != "undefined")
                                 sIdField = oOptions["sIdField"];
                             // Liste des id à supprimer.
                             while (i < aSelectedRows.length) {
@@ -998,6 +1280,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
                                         var sFunctionName = "after" + goog.string.toTitleCase(envSrvc["oSelectedMode"]["mode_id"], "_").replace(/_/g, "") + "Removal";
                                         if (typeof (scope.$root[sFunctionName]) != "undefined")
                                             scope.$root[sFunctionName]();
+                                        // Evènement émis après la suppression des enregistrements.
+                                        scope.$root.$emit("WorkspaceListSelectionRemoved", envSrvc["oSelectedObject"]["name"]);
                                     } else {
                                         // Affichage de la fenêtre modale d'erreur.
                                         var oWindowOptions2 = {
@@ -1018,8 +1302,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
                 }
             };
             scope.$root["modalWindow"]("confirm", "", oWindowOptions);
-        }
-        else {
+        } else {
             $translate(["LIST_DELETE_NO_SELECTION"]).then(function (aTranslations) {
                 var oOptions = {
                     "className": "modal-danger",
@@ -1120,16 +1403,21 @@ vitisApp.on('appMainDrtvLoaded', function () {
             link: function (scope, element, attrs) {
                 // 1er affichage ou tri de la liste : maj de la mise en forme.
                 var clearObserver = attrs.$observe("appFormatDateColumn", function (value) {
-                    if(!goog.isDefAndNotNull(attrs["format"])){
+                    if (!goog.isDefAndNotNull(attrs["format"])) {
                         attrs["format"] = 'L LTS';
                     }
                     // Classe css ui-grid pour la mise en forme de la colonne.
                     element[0].className += " ui-grid-cell-contents";
                     // Formate la date suivant la langue de l'application.
-                    if (goog.isDefAndNotNull(scope["row"]["entity"][scope["col"]["field"]]))
-                        element[0].innerHTML = moment(scope["row"]["entity"][scope["col"]["field"]]).format(attrs["format"]);
-                    else
+                    if (goog.isDefAndNotNull(scope["row"]["entity"][scope["col"]["field"]])) {
+                        var momentSelected = moment(scope["row"]["entity"][scope["col"]["field"]])
+                        if (goog.isDefAndNotNull(attrs["offset"])) {
+                            momentSelected = momentSelected["utcOffset"](parseInt(attrs["offset"]), false);
+                        }
+                        element[0].innerHTML = momentSelected.format(attrs["format"]);
+                    } else {
                         element[0].innerHTML = "";
+                    }
                 });
                 // Attends la suppression du scope.
                 scope.$on("$destroy", function () {
@@ -1213,11 +1501,14 @@ vitisApp.on('appMainDrtvLoaded', function () {
                             "value": envSrvc["sId"]
                         }]
                 },
-                "appShowActions": false // Affichage des boutons d'actions.
+                "appShowActions": false, // Affichage des boutons d'actions.
+                "paginationCurrentPage": 1,
+                "sectionGrid": true
             };
             // Surcharge les paramètres par ceux passés à la fonction.
             if (typeof (oOptions) != "undefined")
                 goog.object.extend(scope["gridOptions"], oOptions);
+
             // Pas de données à charger pour le formulaire de filtre.
             scope["bLoadFormValues"] = false;
         });
@@ -1289,8 +1580,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
         document.execCommand("copy");
         document.getElementsByTagName("body")[0].removeChild(oTempElem);
     };
-    
-    
+
+
     /**
      * addModalSectionForm function.
      * Création d'un enregistrement (simpleForm) dans une fenêtre modale.
@@ -1299,7 +1590,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
         $log.info("addModalSectionForm");
         envSrvc["setModalSectionForm"]("insert");
     };
-    
+
     /**
      * editModalSectionForm function.
      * Edition d'un enregistrement (simpleForm) dans une fenêtre modale.
@@ -1323,7 +1614,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
             sId = envSrvc["sId"];
         envSrvc["setModalSectionForm"]("display", sId);
     };
-    
+
     /**
      * closeModalSectionForm function.
      * Fermeture de la fenêtre modale du from. d'un enregistrement.
@@ -1338,7 +1629,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
         // Ferme la fenêtre.
         $rootScope["hideAllModalWindow"]();
     };
-    
+
     /**
      * setModeFilter function.
      * Définition d'un filtre pour les listes de tous les onglets du mode.
@@ -1351,7 +1642,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
         var aSelectedRows = $rootScope["gridApi"][envSrvc["sSelectedGridOptionsName"]]["selection"]["getSelectedRows"]();
         if (aSelectedRows.length > 0) {
             // Onglets à exclure (onglet du bouton).
-            if (typeof(aObjectsToExclude) == "undefined")
+            if (typeof (aObjectsToExclude) == "undefined")
                 aObjectsToExclude = [];
             aObjectsToExclude.push(envSrvc["oSelectedObject"]["name"]);
             // Définition du filtre dans tous les onglets du mode.
@@ -1360,10 +1651,10 @@ vitisApp.on('appMainDrtvLoaded', function () {
                     envSrvc["oSelectedMode"]["objects"][i]["aModeFilter"] = {
                         "relation": "AND",
                         "operators": [{
-                            "column": envSrvc["oSelectedObject"]["sIdField"],
-                            "compare_operator": "=",
-                            "value": aSelectedRows[0][envSrvc["oSelectedObject"]["sIdField"]]
-                        }]
+                                "column": envSrvc["oSelectedObject"]["sIdField"],
+                                "compare_operator": "=",
+                                "value": aSelectedRows[0][envSrvc["oSelectedObject"]["sIdField"]]
+                            }]
                     };
             }
             // Désactive le bouton.
@@ -1380,7 +1671,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
             gridScope.$applyAsync();
         }
     };
-    
+
     /**
      * unsetModeFilter function.
      * Suppression du filtre pour les listes de tous les onglets du mode.
@@ -1403,4 +1694,31 @@ vitisApp.on('appMainDrtvLoaded', function () {
         gridScope.$broadcast('$$rebind::refresh');
         gridScope.$applyAsync();
     };
+
+    /**
+     * appHideColumn directive.
+     * Cache la colonne de la liste.
+     * @expose
+     **/
+    vitisApp["compileProvider"].directive('appHideColumn', function () {
+        return {
+            link: function (scope, element, attrs) {
+                // Cache la colonne.
+                var oGridApi = scope.$root["gridApi"][envSrvc["sSelectedGridOptionsName"]];
+                var oGridOptions = oGridApi["grid"]["appScope"]["gridOptions"];
+                for (var i in oGridOptions["columnDefs"]) {
+                    if (oGridOptions["columnDefs"][i]["name"] == scope["col"]["name"]) {
+                        oGridOptions["columnDefs"][i]["visible"] = false;
+                        break;
+                    }
+                }
+                // Rafraîchissement de la liste.
+                oGridApi["core"]["refresh"]();
+                // Attends la suppression du scope.
+                scope.$on("$destroy", function () {
+                });
+            }
+        }
+    });
+    vitisApp.module.directive("appHideColumn", vitisApp.appHideColumn);
 });

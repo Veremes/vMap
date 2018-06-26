@@ -1,5 +1,5 @@
 <div class="maplegendtool">
-    <div id="maplegendcontainer-button">
+    <div ng-if="!$root.is_mobile" id="maplegendcontainer-button">
         <div class="list-group-item active pointer maplegend-button-content" 
              title="Légende de la carte" 
              collapse="{{ctrl.legend_collapsed === true ? 'out' : 'in'}}"
@@ -13,8 +13,8 @@
     </div>
     <div id="maplegendcontainer" class="layers-tool legend" collapse="{{ctrl.legend_collapsed === true ? 'out' : 'in'}}">
         <div id="maplegend" class="tree legend">
-            <div ng-repeat="(sLayerName, layer) in ctrl.oUrls"
-                 ng-show="layer[0].olLayer.values.visible === true">
+            <div ng-repeat="(sLayerName, layer) in ctrl.oUrls" class="layer-legend"
+                 ng-show="ctrl.areLegendsLoaded(layer)">
                 <div id="legend_father{{$index}}" data-toggle="collapse" data-target="#legend_element_{{$index}}">
                     <div style="display: inline-block; width:98%">
                         <div class="legend_father_name" title="{{sLayerName}}">{{sLayerName}}</div>
@@ -22,8 +22,9 @@
                 </div>
                 <div id="legend_element_{{$index}}" class="collapse in">
                     <ul class="list-group-item auto-height">
-                        <div ng-repeat="node in layer">                            
-                            <img ng-src="{{node.legendURL}}" class="legend-img" onerror="this.style.display='none'" legend-image-node>
+                        <div ng-repeat="node in layer"
+                             ng-show="node.legendBlobURL">                            
+                            <img ng-src="{{node.legendBlobURL}}" class="legend-img" legend-image-node>
                         </div>
                     </ul>
                 </div>

@@ -35,13 +35,11 @@ class FicheDescriptiveInvariant extends Cadastre {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
      * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = new Connection($this->aValues, $this->aProperties);
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
     }
 
     /**
@@ -111,7 +109,7 @@ class FicheDescriptiveInvariant extends Cadastre {
         $sSchema = $this->aProperties['schema_majic'];
         $sTable = 'v_vmap_maj_fiche_inv_hab';
         $aAttributs = Array('id_local as "ID_BAT"', 'dnupev as "DNUPEV"', 'geaulc as "GEAULC"', 'gelelc as "GELELC"', 'gchclc as "GCHCLC"', 'gteglc as "GTEGLC"', 'dnbbai as "DNBBAI"', 'dnbdou as "DNBDOU"', 'dnblav as "DNBLAV"', 'dnbwc as "DNBWC"', 'deqdha as "DEQDHA"', 'dnbppr as "DNBPPR"', 'dnbpdc as "DNBPDC"',
-            'dsupdc as "DSUPDC"', 'l_dmagtm as "L_DMATGM"', 'l_dmatto as "L_DMATTO"', 'jannat as "JANNAT"', 'l_detent as "L_DETENT"', 'dnbniv as "DNBNIV"', 'dnbsam as "DNBSAM"', 'dnbcha as "DNBCHA"', 'dnbcu8 as "DNBCU8"', 'dnbcu9 as "DNBCU9"', 'dnbsea as "DNBSEA"', 'dnbann as "DNBANN"', 'cconad1 as "CCONAD1"',
+            'dsupdc as "DSUPDC"', 'l_dmatgm as "L_DMATGM"', 'l_dmatto as "L_DMATTO"', 'jannat as "JANNAT"', 'l_detent as "L_DETENT"', 'dnbniv as "DNBNIV"', 'dnbsam as "DNBSAM"', 'dnbcha as "DNBCHA"', 'dnbcu8 as "DNBCU8"', 'dnbcu9 as "DNBCU9"', 'dnbsea as "DNBSEA"', 'dnbann as "DNBANN"', 'cconad1 as "CCONAD1"',
             'l_cconad1 as "L_CCONAD1"', 'dsueic1 as "DSUEIC1"', 'cconad2 as "CCONAD2"', 'l_cconad2 as "L_CCONAD2"', 'dsueic2 as "DSUEIC2"', 'cconad3 as "CCONAD3"', 'l_cconad3 as "L_CCONAD3"', 'dsueic3 as "DSUEIC3"', 'cconad4 as "CCONAD4"', 'l_cconad4 as "L_CCONAD4"', 'dsueic4 as "DSUEIC4"');
 
         $oInvariantInfos['data']['habitations'] = $this->vmapGet($sSchema, $sTable, $aAttributs, $aFilter);

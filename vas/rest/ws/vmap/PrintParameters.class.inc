@@ -35,12 +35,11 @@ class PrintParameters extends Vmap {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
+     * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = new Connection($this->aValues, $this->aProperties);
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
         $this->aSelectedFields = Array("printparameter_id", "printtemplate_id", "name", "editable", "label", "placeholder", "defaultvalue", "print_template");
     }
 

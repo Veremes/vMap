@@ -25,13 +25,11 @@ class VitisSection extends Vitis {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
      * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties, $oConnection) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = $oConnection;
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
         $this->aSelectedFields = Array("section_id", "tab_id", "event", "index", "label", "name", "link_table_name", "template", "ressource_id");
     }
 
@@ -89,20 +87,20 @@ class VitisSection extends Vitis {
                 $oTab->GET();
 
                 $aTabFields = $oTab->aFields;
-                
+
                 $this->aFields['ressource_id'] = $aTabFields['ressource_id'];
                 $this->aFields['mode_id'] = $aTabFields['mode_id'];
                 $this->aFields['tab_name'] = $aTabFields['name'];
                 $this->aFields['sorted_by'] = $aTabFields['sorted_by'];
-                
+
                 $aModePath = array("vitis", "modes", $aTabFields['mode_id']);
                 $aModeValues = $this->aValues;
                 $aModeValues['my_vitis_id'] = $aTabFields['mode_id'];
-                
+
                 $oMode = new Mode($aModePath, $aModeValues, $this->aProperties, $this->oConnection);
                 $oMode->GET();
-                
-                $aModeFields = $oMode->aFields;                
+
+                $aModeFields = $oMode->aFields;
                 $this->aFields['module_name'] = $aModeFields['module_name'];
                 $this->aFields['application_name'] = $aModeFields['application_name'];
             }

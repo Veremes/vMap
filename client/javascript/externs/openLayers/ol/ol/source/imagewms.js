@@ -10,6 +10,7 @@ goog.require('ol.events.EventType');
 goog.require('ol.extent');
 goog.require('ol.obj');
 goog.require('ol.proj');
+goog.require('ol.reproj');
 goog.require('ol.source.Image');
 goog.require('ol.source.WMSServerType');
 goog.require('ol.string');
@@ -55,7 +56,7 @@ ol.source.ImageWMS = function(opt_options) {
    * @type {ol.ImageLoadFunctionType}
    */
   this.imageLoadFunction_ = options.imageLoadFunction !== undefined ?
-      options.imageLoadFunction : ol.source.Image.defaultImageLoadFunction;
+    options.imageLoadFunction : ol.source.Image.defaultImageLoadFunction;
 
   /**
    * @private
@@ -74,8 +75,7 @@ ol.source.ImageWMS = function(opt_options) {
    * @private
    * @type {ol.source.WMSServerType|undefined}
    */
-  this.serverType_ =
-      /** @type {ol.source.WMSServerType|undefined} */ (options.serverType);
+  this.serverType_ = /** @type {ol.source.WMSServerType|undefined} */ (options.serverType);
 
   /**
    * @private
@@ -137,6 +137,13 @@ ol.source.ImageWMS.prototype.getGetFeatureInfoUrl = function(coordinate, resolut
   if (this.url_ === undefined) {
     return undefined;
   }
+  var projectionObj = ol.proj.get(projection);
+  var sourceProjectionObj = this.getProjection();
+
+  if (sourceProjectionObj && sourceProjectionObj !== projectionObj) {
+    resolution = ol.reproj.calculateSourceResolution(sourceProjectionObj, projectionObj, coordinate, resolution);
+    coordinate = ol.proj.transform(coordinate, projectionObj, sourceProjectionObj);
+  }
 
   var extent = ol.extent.getForViewAndSize(
       coordinate, resolution, 0,
@@ -159,7 +166,7 @@ ol.source.ImageWMS.prototype.getGetFeatureInfoUrl = function(coordinate, resolut
 
   return this.getRequestUrl_(
       extent, ol.source.ImageWMS.GETFEATUREINFO_IMAGE_SIZE_,
-      1, ol.proj.get(projection), baseParams);
+      1, sourceProjectionObj || projectionObj, baseParams);
 };
 
 
@@ -226,7 +233,7 @@ ol.source.ImageWMS.prototype.getImageInternal = function(extent, resolution, pix
       projection, params);
 
   this.image_ = new ol.Image(requestExtent, resolution, pixelRatio,
-      this.getAttributions(), url, this.crossOrigin_, this.imageLoadFunction_);
+      url, this.crossOrigin_, this.imageLoadFunction_);
 
   this.renderedRevision_ = this.getRevision();
 

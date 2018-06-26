@@ -14,19 +14,21 @@
                         "label":"ANC_SAISIE_ANC_INSTALLATION_INSTALLATION_DOCUMENTS_FORM_PHOTO_F",
                         "disabled":false,
                         "required":false,
-                        "nb_cols":12
+                        "nb_cols":6,
+                        "displayOnly": true
                     }
                 ]
             },
             {
                 "fields":[
                     {
-                        "type":"image_wsdata",
+                        "type":"file_wsdata",
                         "name":"document_f",
                         "label":"ANC_SAISIE_ANC_INSTALLATION_INSTALLATION_DOCUMENTS_FORM_DOCUMENT_F",
                         "disabled":false,
                         "required":false,
-                        "nb_cols":12
+                        "nb_cols":6,
+                        "displayOnly": true
                     }
                 ]
             },
@@ -89,7 +91,7 @@
                         "label":"ANC_SAISIE_ANC_INSTALLATION_INSTALLATION_DOCUMENTS_FORM_PHOTO_F",
                         "disabled":false,
                         "required":false,
-                        "nb_cols":12,
+                        "nb_cols":6,
                         "id":"photos_f_1_1",
                         "displayOnly":false
                     }
@@ -103,7 +105,7 @@
                         "label":"ANC_SAISIE_ANC_INSTALLATION_INSTALLATION_DOCUMENTS_FORM_DOCUMENT_F",
                         "disabled":false,
                         "required":false,
-                        "nb_cols":12,
+                        "nb_cols":6,
                         "id":"document_f_1_1",
                         "displayOnly":false
                     }

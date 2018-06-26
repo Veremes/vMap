@@ -35,13 +35,11 @@ class FicheUrbanisme extends Cadastre {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
      * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = new Connection($this->aValues, $this->aProperties);
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
     }
 
     /**
@@ -146,12 +144,26 @@ class FicheUrbanisme extends Cadastre {
                 }
                 $aAttributs = Array();
                 foreach ($value as $key2 => $value2) {
-                    if ($key2 != 'title' && $key2 != 'type' && $key2 != 'intersect') {
+                    if ($key2 != 'title' && $key2 != 'type' && $key2 != 'intersect' && $key2 != 'geom_column') {
                         array_push($aAttributs, $key2);
                     }
                 }
-                $oIntersect = $this->vmapIntersectGet($sSchema, $sTable, $parcelleGeom, $aAttributs, $iTolerance);
-                $value['data'] = $oIntersect;
+
+                if (!empty($value['geom_column'])) {
+                    $sGeomColumn = $value['geom_column'];
+                } else {
+                    $sGeomColumn = 'geom';
+                }
+
+                if (!empty($value['type'])) {
+                    $sGeomType = $value['type'];
+                } else {
+                    $sGeomType = 'POLYGON';
+                }
+
+                $aIntersect = $this->vmapIntersectGet($sSchema, $sTable, $parcelleGeom, $aAttributs, $iTolerance, $sGeomColumn, $sGeomType);
+
+                $value['data'] = $aIntersect;
                 array_push($oParcelleInfos['data']['aIntersections'], $value);
             }
         }

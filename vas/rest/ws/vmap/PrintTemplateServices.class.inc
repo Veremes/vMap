@@ -1,6 +1,7 @@
 <?php
 
 require_once 'PrintTemplate.class.inc';
+require_once 'UserPrintTemplate.class.inc';
 require_once 'PrintServices.class.inc';
 require_once 'PrintMapServices.class.inc';
 require_once __DIR__ . '/../vitis/Vitis.class.inc';
@@ -37,13 +38,11 @@ class PrintTemplateServices extends PrintServices {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
      * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = new Connection($this->aValues, $this->aProperties);
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
     }
 
     /**
@@ -65,6 +64,13 @@ class PrintTemplateServices extends PrintServices {
      *     in="formData",
      *     description="template to print out",
      *     required=true,
+     *     type="string"
+     *   ),
+     * @SWG\Parameter(
+     *     name="printstyle_id",
+     *     in="formData",
+     *     description="template to print out",
+     *     required=false,
      *     type="string"
      *   ),
      * @SWG\Parameter(
@@ -128,6 +134,11 @@ class PrintTemplateServices extends PrintServices {
         $sTemplateId = $this->aValues['printtemplate_id'];
 
         $aPrintTemplate = $this->getPrintTemplate($sTemplateId);
+
+        /**
+         * Template id
+         */
+        $sPrintStyleId = $this->aValues['printstyle_id'];
 
         /**
          * 'A3', 'A4', 'A5', 'Legal', 'Letter', 'Tabloid'
@@ -221,7 +232,7 @@ class PrintTemplateServices extends PrintServices {
         $sScopePath = $this->writeToFile($this->aProperties['vas_home'] . '/public/vmap/prints', 'scope_' . $sFileName, $this->sJsonScope);
 
         // Arguments de la ligne de commande
-        $aArguments = array($sProjectPath, $sPrintClientrUrl, $RestUrl, $sToken, $sOutputFile, $sTemplateId, $sFormat, $sOrientation, $sIncludesPath, $sScopePath, $sQuality);
+        $aArguments = array($sProjectPath, $sPrintClientrUrl, $RestUrl, $sToken, $sOutputFile, $sTemplateId, $sPrintStyleId, $sFormat, $sOrientation, $sIncludesPath, $sScopePath, $sQuality);
 
         // Commande à lancer
         $sCommand = '"' . $sPhantomjsPath . '" --ignore-ssl-errors=true --ssl-protocol=any --web-security=false --local-to-remote-url-access=true';
@@ -263,7 +274,7 @@ class PrintTemplateServices extends PrintServices {
         $aPath[2] = $sPrintTemplateId;
         $aValues['my_vitis_id'] = $sPrintTemplateId;
 
-        $aPrintTemplate = new PrintTemplate($aPath, $aValues, $properties, $oConnection);
+        $aPrintTemplate = new UserPrintTemplate($aPath, $aValues, $properties, $oConnection);
         $aPrintTemplate->GET();
 
         return $aPrintTemplate->aFields;
@@ -335,19 +346,18 @@ class PrintTemplateServices extends PrintServices {
                     $aMapsDefinition[$i]['map_definition']['map_json'] = json_encode($aMapsDefinition[$i]['map_definition']['map_json']);
                 }
             }
-            
+
             // Ajout du token
             $aMapsDefinition[$i]['map_definition']['token'] = $this->aValues['token'];
 
             $oTmpMapPrint = new PrintMapServices($this->aPath, $aMapsDefinition[$i]['map_definition'], $this->aProperties);
             $sTmpMapPrintResult = $oTmpMapPrint->POST();
 
-            array_push($this->aLogs, $sTmpMapPrintResult);
-
             // Ajoute la définition si tout est ok
             if (!empty($sTmpMapPrintResult)) {
 
                 $oTmpMapPrintResult = json_decode($sTmpMapPrintResult);
+                array_push($this->aLogs, $oTmpMapPrintResult);
 
                 if ($oTmpMapPrintResult->status == 1) {
                     if (!empty($oTmpMapPrintResult->printmapservices->image)) {
@@ -364,6 +374,8 @@ class PrintTemplateServices extends PrintServices {
                         array_push($aMapsIncludes, $oMapInclude);
                         array_push($this->aFilesToDelete, $oTmpMapPrintResult->printmapservices->imagePath);
                     }
+                } else {
+                    writeToErrorLog('Print map error: ' . $sTmpMapPrintResult);
                 }
             }
 

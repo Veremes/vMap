@@ -187,7 +187,7 @@
                     {
                         "type":"label",
                         "name":"ptr_im_distance",
-                        "label":"Distance inférieure de l'habitation à 10m",
+                        "label":"Distance de l'habitation inférieure à 10m",
                         "disabled":false,
                         "required":false,
                         "nb_cols":4,
@@ -357,7 +357,7 @@
             {
                 "fields":[
                     {
-                        "type":"label",
+                        "type":"tinymce",
                         "name":"ptr_commentaire",
                         "label":"Commentaires",
                         "disabled":false,
@@ -621,7 +621,7 @@
                         "nb_cols":3,
                         "id":"ptr_marque_5_1",
                         "datasource":{
-                            "datasource_id":"datasource_25",
+                            "datasource_id":"datasource_26",
                             "sort_order":"ASC",
                             "distinct":"true",
                             "label_key":"alias",
@@ -796,7 +796,7 @@
                     {
                         "type":"select",
                         "name":"ptr_im_distance",
-                        "label":"Distance inférieure de l'habitation à 10m",
+                        "label":"Distance de l'habitation inférieure à 10m",
                         "required":false,
                         "nb_cols":4,
                         "id":"ptr_im_distance_18_1",
@@ -1262,7 +1262,7 @@
                         "nb_cols":3,
                         "id":"ptr_marque_5_1",
                         "datasource":{
-                            "datasource_id":"datasource_25",
+                            "datasource_id":"datasource_26",
                             "sort_order":"ASC",
                             "distinct":"true",
                             "label_key":"alias",
@@ -1436,7 +1436,7 @@
                     {
                         "type":"select",
                         "name":"ptr_im_distance",
-                        "label":"Distance inférieure de l'habitation à 10m",
+                        "label":"Distance de l'habitation inférieure à 10m",
                         "required":false,
                         "nb_cols":4,
                         "id":"ptr_im_distance_18_1",
@@ -2164,6 +2164,19 @@
             },
             "ressource_id":"vitis/genericquerys",
             "id":"datasource_25"
+        },
+        "datasource_26":{
+            "type":"web_service",
+            "dataType":"tableValue",
+            "name":"ptr_marque",
+            "description":"",
+            "parameters":{
+                "filter": {"id_nom_table": "pretraitement", "nom_liste": "ptr_marque"},
+                "schema":"s_anc",
+                "table":"param_liste"
+            },
+            "ressource_id":"vitis/genericquerys",
+            "id":"datasource_26"
         }
     }
 }

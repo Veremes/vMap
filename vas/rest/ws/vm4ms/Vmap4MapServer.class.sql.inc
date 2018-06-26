@@ -1,4 +1,5 @@
 <?php
+
 //Définition des requêtes de l'api Vitis
 $aSql['checkIP'] = "SELECT user_id, ip_constraint FROM [sSchemaFramework].v_user WHERE login ='[sLogin]'";
 $aSql['getGroups'] = "SELECT group_id FROM [sSchemaFramework].v_user_group_by_rights WHERE user_id = [user_id]";
@@ -8,7 +9,7 @@ $aSql['getTableColumn'] = 'SELECT column_name FROM INFORMATION_SCHEMA.COLUMNS WH
 $aSql['getUserPrivileges'] = 'SELECT groname FROM pg_user s LEFT OUTER JOIN pg_group g on (s.usesysid = any(g.grolist) )inner join [sSchemaFramework].v_user on "v_user".login = usename WHERE user_id = [user_id]';
 $aSql['listDomain'] = 'SELECT distinct domain, alias FROM [sSchemaFramework].domain WHERE "type" = \'AD\'';
 $aSql['createRolname'] = 'CREATE ROLE "vitis_[sDomain]" NOSUPERUSER INHERIT NOCREATEDB CREATEROLE;';
-$aSql['getInfoRolname'] = 'SELECT * FROM pg_authid WHERE rolname = \'vitis_[sDomain]\'';
+$aSql['getInfoRolname'] = 'SELECT * FROM pg_catalog.pg_roles WHERE rolname = \'vitis_[sDomain]\'';
 // Layers
 $aSql['getLayerWmsServices'] = "SELECT DISTINCT wmsservice_id FROM [sSchemaVm4ms].wmsservice_ms_layer WHERE ms_layer_id = [ms_layer_id] ORDER BY wmsservice_id";
 $aSql['insertLayerWmsServices'] = "INSERT INTO [sSchemaVm4ms].wmsservice_ms_layer(wmsservice_id, ms_layer_id) VALUES([wmsservice_id], [ms_layer_id])";
@@ -19,9 +20,12 @@ $aSql['publishLayerDefinition'] = "UPDATE s_vm4ms.ms_layer SET definition = defi
 $aSql['getConnectionType'] = "SELECT private FROM [sSchemaVm4ms].connection WHERE connection_id = [connection_id]";
 $aSql['activateLayers'] = 'UPDATE [sSchemaVm4ms].ms_layer SET active = TRUE WHERE ms_layer_id IN ([idList])';
 $aSql['desactivateLayers'] = 'UPDATE [sSchemaVm4ms].ms_layer SET active = FALSE WHERE ms_layer_id IN ([idList])';
+$aSql['getLayerId'] = "SELECT ms_layer_id FROM [sSchemaVm4ms].ms_layer WHERE name = [name]";
 // WmsServices
 $aSql['insertWmsServiceLayers'] = "INSERT INTO [sSchemaVm4ms].wmsservice_ms_layer(wmsservice_id, ms_layer_id) VALUES([wmsservice_id], [ms_layer_id])";
 $aSql['deleteWmsServiceLayers'] = "DELETE FROM [sSchemaVm4ms].wmsservice_ms_layer WHERE wmsservice_id=[wmsservice_id] AND ms_layer_id IN ([idList])";
 $aSql['getWmsServiceLayersSource'] = "SELECT wmsservice_ms_layer.wmsservice_id, ms_layer.name, source.name as source FROM [sSchemaVm4ms].wmsservice_ms_layer LEFT JOIN [sSchemaVm4ms].ms_layer ON ms_layer.ms_layer_id = wmsservice_ms_layer.ms_layer_id LEFT JOIN [sSchemaVm4ms].source ON source.source_id = ms_layer.source_id WHERE wmsservice_id = [wmsservice_id]";
 $aSql['getPrivateLayersSource'] = "SELECT ms_layer.name, source.name as source FROM [sSchemaVm4ms].ms_layer LEFT JOIN [sSchemaVm4ms].source ON source.source_id = ms_layer.source_id LEFT JOIN [sSchemaVm4ms].connection ON connection.connection_id = ms_layer.connection_id WHERE connection.private = true";
+// vMap services
+$aSql['getVmapCalquesFromVM4MSService'] = "SELECT layer_id, name, layer_list FROM s_vmap.layer WHERE service_id IN (SELECT service_id FROM s_vmap.service where service_vm4ms=TRUE AND name IN ([serviceIdList]))";
 ?>

@@ -1,23 +1,23 @@
 <?php
+
 /**
-* \file Invariants.class.inc
-* \class Invariants
-*
-* \author Armand Bahi <armand.bahi@veremes.com>.
-*
-* \brief This file contains the Invariants php class
-*
-* This class defines Rest Api to Vmap Invariants
-* 
-*/
+ * \file Invariants.class.inc
+ * \class Invariants
+ *
+ * \author Armand Bahi <armand.bahi@veremes.com>.
+ *
+ * \brief This file contains the Invariants php class
+ *
+ * This class defines Rest Api to Vmap Invariants
+ * 
+ */
 require_once 'Cadastre.class.inc';
 require_once 'Invariant.class.inc';
 require_once __DIR__ . '/../../class/vitis_lib/Connection.class.inc';
 require_once __DIR__ . '/../../class/vmlib/BdDataAccess.inc';
 
 class Invariants extends Vmap {
-    
-     /**
+    /**
      * @SWG\Definition(
      *   definition="/invariants",
      *   allOf={
@@ -29,20 +29,20 @@ class Invariants extends Vmap {
      *   description="Operations about invariants"
      * )
      */
+
     /**
      * construct
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
+     * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = new Connection($this->aValues, $this->aProperties);
-		$this->aSelectedFields = Array('oid', 'ID_BAT', 'ID_COM','INVAR', 'DNUPRO','ID_PAR', 'CCOSEC','DNUPLA');
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
+        $this->aSelectedFields = Array('oid', 'ID_BAT', 'ID_COM', 'INVAR', 'DNUPRO', 'ID_PAR', 'CCOSEC', 'DNUPLA');
     }
-    
+
     /**
      * @SWG\Get(path="/invariants",
      *   tags={"Invariant"},
@@ -77,7 +77,7 @@ class Invariants extends Vmap {
      *     description="number of element",
      *     required=false,
      *     type="integer",
-	 *     default="4",
+     *     default="4",
      *     format="int32"
      *   ),
      * @SWG\Parameter(
@@ -116,6 +116,7 @@ class Invariants extends Vmap {
      *     )
      *  )
      */
+
     /**
      * get Invariants
      * @return  Invariants
@@ -124,6 +125,7 @@ class Invariants extends Vmap {
         $aReturn = $this->genericGet('public', $this->aProperties['cadastre']['views']['invariant'], 'ID_BAT');
         return $aReturn['sMessage'];
     }
-    
+
 }
+
 ?>

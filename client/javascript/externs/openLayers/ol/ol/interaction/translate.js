@@ -2,11 +2,13 @@ goog.provide('ol.interaction.Translate');
 
 goog.require('ol');
 goog.require('ol.Collection');
+goog.require('ol.Object');
 goog.require('ol.events');
 goog.require('ol.events.Event');
 goog.require('ol.functions');
 goog.require('ol.array');
 goog.require('ol.interaction.Pointer');
+goog.require('ol.interaction.Property');
 goog.require('ol.interaction.TranslateEventType');
 
 
@@ -29,13 +31,6 @@ ol.interaction.Translate = function(opt_options) {
   });
 
   var options = opt_options ? opt_options : {};
-
-  /**
-   * @type {string|undefined}
-   * @private
-   */
-  this.previousCursor_ = undefined;
-
 
   /**
    * The last position we translated to.
@@ -173,23 +168,15 @@ ol.interaction.Translate.handleDragEvent_ = function(event) {
  * @private
  */
 ol.interaction.Translate.handleMoveEvent_ = function(event) {
-  var elem = event.map.getTargetElement();
+  var elem = event.map.getViewport();
 
   // Change the cursor to grab/grabbing if hovering any of the features managed
   // by the interaction
   if (this.featuresAtPixel_(event.pixel, event.map)) {
-    this.previousCursor_ = this.previousCursor_ !== undefined ?
-        this.previousCursor_ : elem.style.cursor;
-    // WebKit browsers don't support the grab icons without a prefix
-    elem.style.cursor = this.lastCoordinate_ ?
-        '-webkit-grabbing' : '-webkit-grab';
-
-    // Thankfully, attempting to set the standard ones will silently fail,
-    // keeping the prefixed icons
-    elem.style.cursor = this.lastCoordinate_ ?  'grabbing' : 'grab';
-  } else if (this.previousCursor_ !== undefined) {
-    elem.style.cursor = this.previousCursor_;
-    this.previousCursor_ = undefined;
+    elem.classList.remove(this.lastCoordinate_ ? 'ol-grab' : 'ol-grabbing');
+    elem.classList.add(this.lastCoordinate_ ? 'ol-grabbing' : 'ol-grab');
+  } else {
+    elem.classList.remove('ol-grab', 'ol-grabbing');
   }
 };
 
@@ -198,7 +185,7 @@ ol.interaction.Translate.handleMoveEvent_ = function(event) {
  * Tests to see if the given coordinates intersects any of our selected
  * features.
  * @param {ol.Pixel} pixel Pixel coordinate to test for intersection.
- * @param {ol.Map} map Map to test the intersection on.
+ * @param {ol.PluggableMap} map Map to test the intersection on.
  * @return {ol.Feature} Returns the feature found at the specified pixel
  * coordinates.
  * @private
@@ -258,20 +245,18 @@ ol.interaction.Translate.prototype.handleActiveChanged_ = function() {
 
 
 /**
- * @param {ol.Map} oldMap Old map.
+ * @param {ol.PluggableMap} oldMap Old map.
  * @private
  */
 ol.interaction.Translate.prototype.updateState_ = function(oldMap) {
   var map = this.getMap();
   var active = this.getActive();
-  if ((!map || !active) && this.previousCursor_ !== undefined) {
-    if (!map) {
-      map = oldMap;
+  if (!map || !active) {
+    map = map || oldMap;
+    if (map) {
+      var elem = map.getViewport();
+      elem.classList.remove('ol-grab', 'ol-grabbing');
     }
-
-    var elem = map.getTargetElement();
-    elem.style.cursor = this.previousCursor_;
-    this.previousCursor_ = undefined;
   }
 };
 

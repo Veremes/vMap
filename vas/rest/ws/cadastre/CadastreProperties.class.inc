@@ -1,20 +1,20 @@
 <?php
 
-require_once __DIR__ .'/../vitis/Vitis.class.inc';
+require_once __DIR__ . '/../vitis/Vitis.class.inc';
+
 /**
-* \file cadastreproperties.class.inc
-* \class CadatsreProperties
-*
-* \author Armand Bahi <armand.bahi@veremes.com>.
-*
-*	\brief This file contains the Properties php class
-*
-* This class defines the rest api for properties
-* 
-*/
-class CadastreProperties  extends Vitis{
-    
-     /**
+ * \file cadastreproperties.class.inc
+ * \class CadatsreProperties
+ *
+ * \author Armand Bahi <armand.bahi@veremes.com>.
+ *
+ * 	\brief This file contains the Properties php class
+ *
+ * This class defines the rest api for properties
+ * 
+ */
+class CadastreProperties extends Vitis {
+    /**
      * @SWG\Definition(
      *   definition="/cadastreproperties",
      *   allOf={
@@ -26,18 +26,22 @@ class CadastreProperties  extends Vitis{
      *   description="Operations about properties"
      * )
      */
+
     /**
      * construct
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
+     * @param type $oConnection connection object
      */
-    function properties($aPath, $aValues, $properties){
+    function properties($aPath, $aValues, $properties, $bShortcut = false) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
-        $this->aProperties = (object)$properties;
+        $this->aProperties = (object) $properties;
     }
-      /**
+
+    /**
      * @SWG\Get(path="/cadastreproperties", 
      *   tags={"Properties"},
      *   summary="Get the cadastre properties",
@@ -51,19 +55,20 @@ class CadastreProperties  extends Vitis{
      *     )
      *  )
      */
+
     /**
      * 
      * @return properties
      */
-    function GET(){
-        
+    function GET() {
+
         $this->aFields['data'] = $this->aProperties->cadastre;
-        $aXmlRacineAttribute['status']=1;
-        $sMessage = $this->asDocument('','vitis',$this->aValues['sEncoding'],True,$aXmlRacineAttribute,$this->aValues['sSourceEncoding'],$this->aValues['output']);
-				
+        $aXmlRacineAttribute['status'] = 1;
+        $sMessage = $this->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+
         return $sMessage;
     }
-    
+
 }
- 
+
 ?>

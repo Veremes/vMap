@@ -1,23 +1,23 @@
 <?php
+
 /**
-* \file Sources.class.inc
-* \class Sources
-*
-* \author Armand Bahi <armand.bahi@veremes.com>.
-*
-* \brief This file contains the Sources php class
-*
-* This class defines Rest Api to Vmap4MapServer Sources
-* 
-*/
+ * \file Sources.class.inc
+ * \class Sources
+ *
+ * \author Armand Bahi <armand.bahi@veremes.com>.
+ *
+ * \brief This file contains the Sources php class
+ *
+ * This class defines Rest Api to Vmap4MapServer Sources
+ * 
+ */
 require_once 'Vmap4MapServer.class.inc';
 require_once 'Source.class.inc';
 require_once __DIR__ . '/../../class/vitis_lib/Connection.class.inc';
 require_once __DIR__ . '/../../class/vmlib/BdDataAccess.inc';
 
 class Sources extends Vmap4MapServer {
-    
-     /**
+    /**
      * @SWG\Definition(
      *   definition="/sources",
      *   allOf={
@@ -29,19 +29,20 @@ class Sources extends Vmap4MapServer {
      *   description=""
      * )
      */
+
     /**
      * construct
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
+     * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = new Connection($this->aValues, $this->aProperties);
-		$this->aSelectedFields = Array("source_id", "name", "definition");
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
+        $this->aSelectedFields = Array("source_id", "name", "definition");
     }
+
     /**
      * @SWG\Get(path="/sources",
      *   tags={"Sources"},
@@ -114,6 +115,7 @@ class Sources extends Vmap4MapServer {
      *     )
      *  )
      */
+
     /**
      * get Sources
      * @return  Sources
@@ -122,7 +124,7 @@ class Sources extends Vmap4MapServer {
         $aReturn = $this->genericGet($this->aProperties['schema_vm4ms'], 'source', 'source_id');
         return $aReturn['sMessage'];
     }
-    
+
     /**
      * @SWG\Post(path="/sources",
      *   tags={"Sources"},
@@ -158,18 +160,18 @@ class Sources extends Vmap4MapServer {
      * @return array containing the status and the message
      */
     function POST() {
-        $aReturn = $this->genericPost($this->aProperties['schema_vm4ms'], 'source', $this->aProperties['schema_vm4ms'].'.seq_common', 'source_id');
-        if ($aReturn['sStatus'] == 1){
+        $aReturn = $this->genericPost($this->aProperties['schema_vm4ms'], 'source', $this->aProperties['schema_vm4ms'] . '.seq_common', 'source_id');
+        if ($aReturn['sStatus'] == 1) {
             $aXmlRacineAttribute['status'] = 1;
             $sMessage = $this->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
             $oSource = new Source($this->aPath, $this->aValues, $this->aProperties, $this->oConnection);
             $oSource->GET();
-        }else{
+        } else {
             $sMessage = $aReturn['sMessage'];
         }
         return $sMessage;
     }
-    
+
     /**
      * @SWG\Put(path="/sources/{source_id}",
      *   tags={"Sources"},
@@ -218,7 +220,6 @@ class Sources extends Vmap4MapServer {
         return $aReturn['sMessage'];
     }
 
-    
     /**
      * @SWG\Delete(path="/sources/",
      *   tags={"Sources"},
@@ -276,7 +277,7 @@ class Sources extends Vmap4MapServer {
      *     )
      *  )
      */
-    
+
     /**
      * delete source
      * @return id of source deleted or error object if a source is not deleted
@@ -285,5 +286,7 @@ class Sources extends Vmap4MapServer {
         $aReturn = $this->genericDelete($this->aProperties['schema_vm4ms'], 'source', 'source_id');
         return $aReturn['sMessage'];
     }
+
 }
+
 ?>

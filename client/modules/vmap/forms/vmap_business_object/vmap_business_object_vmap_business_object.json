@@ -121,6 +121,28 @@
             {
                 "fields": [{
                         "type": "text",
+                        "name": "formtitle",
+                        "label": "FORM_FORMTITLE_DEVELOPMENT_0",
+                        "required": true,
+                        "pattern": "",
+                        "nb_cols": 6,
+                        "id": "éé_2_1"
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "text",
+                        "name": "summarytitle",
+                        "label": "FORM_SUMMARYTITLE_DEVELOPMENT_0",
+                        "required": true,
+                        "pattern": "",
+                        "nb_cols": 6,
+                        "id": "éé_2_1"
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "text",
                         "name": "id_field",
                         "label": "FORM_ID_FIELD_DEVELOPMENT_0",
                         "required": true,
@@ -356,6 +378,38 @@
             {
                 "fields": [
                     {
+                        "type": "number",
+                        "name": "min_edition_scale",
+                        "label": "FORM_MIN_SNAPPING_SCALE_VMAP_BUSINESS_OBJECT",
+                        "tooltip": {
+                            "title": "",
+                            "content": "FORM_MIN_SNAPPING_SCALE_VMAP_BUSINESS_OBJECT_TOOLTIP",
+                            "container": "body"
+                        },
+                        "required": false,
+                        "nb_cols": 6
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "number",
+                        "name": "max_edition_scale",
+                        "label": "FORM_MAX_SNAPPING_SCALE_VMAP_BUSINESS_OBJECT",
+                        "tooltip": {
+                            "title": "",
+                            "content": "FORM_MAX_SNAPPING_SCALE_VMAP_BUSINESS_OBJECT_TOOLTIP",
+                            "container": "body"
+                        },
+                        "required": false,
+                        "nb_cols": 6
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
                         "type": "button",
                         "class": "btn-ungroup btn-group-sm",
                         "nb_cols": 6,
@@ -408,6 +462,28 @@
                         "type": "text",
                         "name": "title",
                         "label": "FORM_TITLE_DEVELOPMENT_0",
+                        "required": true,
+                        "pattern": "",
+                        "nb_cols": 6,
+                        "id": "éé_2_1"
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "text",
+                        "name": "formtitle",
+                        "label": "FORM_FORMTITLE_DEVELOPMENT_0",
+                        "required": true,
+                        "pattern": "",
+                        "nb_cols": 6,
+                        "id": "éé_2_1"
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "text",
+                        "name": "summarytitle",
+                        "label": "FORM_SUMMARYTITLE_DEVELOPMENT_0",
                         "required": true,
                         "pattern": "",
                         "nb_cols": 6,
@@ -651,6 +727,38 @@
             {
                 "fields": [
                     {
+                        "type": "number",
+                        "name": "min_edition_scale",
+                        "label": "FORM_MIN_SNAPPING_SCALE_VMAP_BUSINESS_OBJECT",
+                        "tooltip": {
+                            "title": "",
+                            "content": "FORM_MIN_SNAPPING_SCALE_VMAP_BUSINESS_OBJECT_TOOLTIP",
+                            "container": "body"
+                        },
+                        "required": false,
+                        "nb_cols": 6
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "number",
+                        "name": "max_edition_scale",
+                        "label": "FORM_MAX_SNAPPING_SCALE_VMAP_BUSINESS_OBJECT",
+                        "tooltip": {
+                            "title": "",
+                            "content": "FORM_MAX_SNAPPING_SCALE_VMAP_BUSINESS_OBJECT_TOOLTIP",
+                            "container": "body"
+                        },
+                        "required": false,
+                        "nb_cols": 6
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
                         "type": "button",
                         "class": "btn-ungroup btn-group-sm",
                         "nb_cols": 6,
@@ -692,6 +800,24 @@
                         "type": "label",
                         "name": "title",
                         "label": "FORM_TITLE_DEVELOPMENT_0",
+                        "id": "éé_2_1",
+                        "nb_cols": 12
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "label",
+                        "name": "formtitle",
+                        "label": "FORM_FORMTITLE_DEVELOPMENT_0",
+                        "id": "éé_2_1",
+                        "nb_cols": 12
+                    }]
+            },
+            {
+                "fields": [{
+                        "type": "label",
+                        "name": "summarytitle",
+                        "label": "FORM_SUMMARYTITLE_DEVELOPMENT_0",
                         "id": "éé_2_1",
                         "nb_cols": 12
                     }]
@@ -845,6 +971,26 @@
                         "label": "FORM_INDEX_VMAP_BUSINESS_OBJECT",
                         "nb_cols": 12
                     }]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "number",
+                        "name": "max_snapping_scale",
+                        "label": "FORM_MAX_SNAPPING_SCALE_VMAP_BUSINESS_OBJECT",
+                        "nb_cols": 12
+                    }
+                ]
+            },
+            {
+                "fields": [
+                    {
+                        "type": "number",
+                        "name": "min_snapping_scale",
+                        "label": "FORM_MIN_SNAPPING_SCALE_VMAP_BUSINESS_OBJECT",
+                        "nb_cols": 12
+                    }
+                ]
             },
             {
                 "fields": [

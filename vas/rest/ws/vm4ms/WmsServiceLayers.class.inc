@@ -36,12 +36,11 @@ class WmsServiceLayers extends Vmap4MapServer {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
+     * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = new Connection($this->aValues, $this->aProperties);
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
         $this->aSelectedFields = Array("ms_layer_id", "name", "title", "active", "wmsservice_id", "opacity");
     }
 
@@ -253,7 +252,7 @@ class WmsServiceLayers extends Vmap4MapServer {
             $aParams['sSchemaVm4ms'] = array('value' => $this->aProperties['schema_vm4ms'], 'type' => 'schema_name');
             $aParams['wmsservice_id'] = array('value' => $this->aValues["my_vitis_id"], 'type' => 'string');
             $aParamsName = array();
-            foreach(explode('|', $this->aValues['idList']) as $iIndex => $iId) {
+            foreach (explode('|', $this->aValues['idList']) as $iIndex => $iId) {
                 $sParamName = 'id_layer_' . $iIndex;
                 $aParamsName[] = ':' . $sParamName;
                 $aParams[$sParamName] = array('value' => $iId, 'type' => 'number');

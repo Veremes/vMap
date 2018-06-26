@@ -33,14 +33,14 @@ class UserPrintTemplates extends Vmap {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
+     * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
         $this->aValues['getGroup'] = true;
         $this->oConnection = new Connection($this->aValues, $this->aProperties);
-        $this->aSelectedFields = Array("printtemplate_id", "name", "rt_format_id", "rt_orientation_id", "definition", "outputformats_id", "sql", "ressource_id", "business_object_id");
+        $this->aSelectedFields = Array("printtemplate_id", "name", "rt_format_id", "rt_orientation_id", "definition", "outputformats_id", "sql", "ressource_id", "business_object_id", "printstyles");
     }
 
     /**
@@ -114,29 +114,31 @@ class UserPrintTemplates extends Vmap {
     function GET() {
         require $this->sRessourcesFile;
         // Structure json des modèles d'impression et leurs paramètres.
-        $sesGroup = $this->oConnection->sesGroup;
+        $aSesGroup = explode(',', $this->oConnection->sesGroup);
+        for ($i = 0; $i < count($aSesGroup); $i++) {
+            $aSesGroup[$i] = floatval($aSesGroup[$i]);
+        }
         if (isset($this->aValues['filter']) && !empty($this->aValues['filter'])) {
             $old_filter = $this->aValues['filter'];
         } else {
             $old_filter = '';
         }
+        $aFilter = array(
+            'relation' => 'AND',
+            'operators' => array(
+                array('column' => 'group_id', 'compare_operator' => 'IN', 'value' => $aSesGroup)
+            )
+        );
         if (isset($this->aValues['filter']) && $this->aValues['filter'] != "") {
-            $aFilter = array(
-                'relation' => 'AND',
-                'operators' => array(
-                    $this->aValues['filter'],
-                    array('column' => 'group_id', 'compare_operator' => 'IN', 'value' => '[' . $sesGroup . ']')
-                )
-            );
-            $this->aValues['filter'] = $aFilter;
-        } else {
-            $this->aValues['filter'] = '{"column":"group_id","compare_operator":"IN","value":[' . $sesGroup . ']}';
+            array_push($aFilter['operators'], json_decode($this->aValues['filter']));
         }
+        $this->aValues['filter'] = json_encode($aFilter);
+
         $aReturn = $this->genericGet($this->aProperties['schema_vmap'], 'v_user_template', 'printtemplate_id');
         $this->aValues['filter'] = $old_filter;
         //$aUserGroupsPrintIds = $this->getPrintIdsFromUserGroups();
         $aPrintStyles = $this->getPrintStylesFromUser();
-        $sPrintStyle = $this->concatPrintStyles($aPrintStyles);
+//        $sPrintStyle = $this->concatPrintStyles($aPrintStyles);
 
         if ($aReturn['sStatus'] == 1) {
             $oUserPrintTemplates = new stdClass();
@@ -153,7 +155,9 @@ class UserPrintTemplates extends Vmap {
                 $oUserPrintTemplate->name = $oPrintTemplate->aFields['name'];
                 $oUserPrintTemplate->format = $oPrintTemplate->aFields['rt_format_id'];
                 $oUserPrintTemplate->orientation = $oPrintTemplate->aFields['rt_orientation_id'];
-                $oUserPrintTemplate->definition = $sPrintStyle . str_replace(array("\r", "\n"), '', $oPrintTemplate->aFields['definition']);
+//                $oUserPrintTemplate->definition = $sPrintStyle . $oPrintTemplate->aFields['definition'];
+                $oUserPrintTemplate->printstyles = $aPrintStyles;
+                $oUserPrintTemplate->definition = $oPrintTemplate->aFields['definition'];
                 $oUserPrintTemplate->variables = array();
                 $oUserPrintTemplates->userprinttemplates[] = $oUserPrintTemplate;
                 $oUserPrintTemplates->data[] = $oUserPrintTemplate;
@@ -195,9 +199,9 @@ class UserPrintTemplates extends Vmap {
      * @return array
      */
     function getPrintStylesFromUser() {
-
         $oUserPrintStyles = new UserPrintStyles($this->aPath, $this->aValues, $this->aProperties);
         $oUserPrintStyles->aValues['my_vitis_id'] = null;
+        $oUserPrintStyles->aValues['filter'] = '';
         $oUserPrintStyles->GET();
 
         $aPrintStyles = $oUserPrintStyles->aFields->userprintstyles;
@@ -210,15 +214,15 @@ class UserPrintTemplates extends Vmap {
      * @param array $aPrintStyles
      * @return string
      */
-    function concatPrintStyles($aPrintStyles) {
-
-        $sPrintStyle = "";
-        for ($i = 0; $i < count($aPrintStyles); $i++) {
-            $sPrintStyle .= $aPrintStyles[$i]->definition;
-        }
-
-        return $sPrintStyle;
-    }
+//    function concatPrintStyles($aPrintStyles) {
+//
+//        $sPrintStyle = "";
+//        for ($i = 0; $i < count($aPrintStyles); $i++) {
+//            $sPrintStyle .= $aPrintStyles[$i]->definition;
+//        }
+//
+//        return $sPrintStyle;
+//    }
 
 }
 

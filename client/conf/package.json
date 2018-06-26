@@ -4,7 +4,7 @@
   "dependencies": {
     "google-closure-compiler": "^20160911.0.0",
     "google-closure-library": "^20160911.0.0",
-    "grunt": "^1.0.1",
+    "grunt": "^1.0.3",
     "grunt-closure-tools": "^1.0.0"
   }
 }

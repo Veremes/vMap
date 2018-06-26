@@ -1,23 +1,23 @@
 <?php
+
 /**
-* \file LieuDits.class.inc
-* \class LieuDits
-*
-* \author Armand Bahi <armand.bahi@veremes.com>.
-*
-* \brief This file contains the LieuDits php class
-*
-* This class defines Rest Api to Vmap LieuDits
-* 
-*/
+ * \file LieuDits.class.inc
+ * \class LieuDits
+ *
+ * \author Armand Bahi <armand.bahi@veremes.com>.
+ *
+ * \brief This file contains the LieuDits php class
+ *
+ * This class defines Rest Api to Vmap LieuDits
+ * 
+ */
 require_once 'Cadastre.class.inc';
 require_once 'LieuDit.class.inc';
 require_once __DIR__ . '/../../class/vitis_lib/Connection.class.inc';
 require_once __DIR__ . '/../../class/vmlib/BdDataAccess.inc';
 
 class LieuDits extends Cadastre {
-    
-     /**
+    /**
      * @SWG\Definition(
      *   definition="/lieudits",
      *   allOf={
@@ -29,20 +29,20 @@ class LieuDits extends Cadastre {
      *   description="Operations about lieudits"
      * )
      */
+
     /**
      * construct
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
+     * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = new Connection($this->aValues, $this->aProperties);
-		$this->aSelectedFields = Array("oid" ,"id_com", "code_com", "section", "pre", "texte", "tex", "tex2", "tex3", "tex4", "tex5", "tex6", "tex7", "tex8", "tex9", "tex10", "geom");
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
+        $this->aSelectedFields = Array("oid", "id_com", "code_com", "section", "pre", "texte", "tex", "tex2", "tex3", "tex4", "tex5", "tex6", "tex7", "tex8", "tex9", "tex10", "geom");
     }
-    
+
     /**
      * @SWG\Get(path="/lieudits",
      *   tags={"LieuDit"},
@@ -77,7 +77,7 @@ class LieuDits extends Cadastre {
      *     description="number of element",
      *     required=false,
      *     type="integer",
-	 *     default="4",
+     *     default="4",
      *     format="int32"
      *   ),
      * @SWG\Parameter(
@@ -116,6 +116,7 @@ class LieuDits extends Cadastre {
      *     )
      *  )
      */
+
     /**
      * get LieuDits
      * @return  LieuDits
@@ -124,6 +125,7 @@ class LieuDits extends Cadastre {
         $aReturn = $this->genericGet('public', $this->aProperties['cadastre']['views']['lieu_dit'], 'oid');
         return $aReturn['sMessage'];
     }
-    
+
 }
+
 ?>

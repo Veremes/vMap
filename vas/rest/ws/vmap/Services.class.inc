@@ -35,13 +35,12 @@ class Services extends Vmap {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
+     * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = new Connection($this->aValues, $this->aProperties);
-        $this->aSelectedFields = Array("service_id", "name", "service_type_id", "description", "url", "key", "thumbnail", "lang", "imagery", "service_type_version", "service_type_type", "service_options", "service_vm4ms");
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
+        $this->aSelectedFields = Array("service_id", "name", "service_type_id", "description", "url", "key", "thumbnail", "lang", "imagery", "service_type_version", "service_type_type", "service_options", "service_vm4ms", "service_login", "service_password");
     }
 
     /**
@@ -124,7 +123,9 @@ class Services extends Vmap {
 
         // Remplace les balises
         for ($i = 0; $i < count($this->aObjects); $i++) {
-            $this->aObjects[$i]->aFields['url'] = str_replace('[ms_cgi_url]', $this->aProperties['ms_cgi_url'], $this->aObjects[$i]->aFields['url']);
+            if (!empty($this->aObjects[$i]->aFields['url'])) {
+                $this->aObjects[$i]->aFields['url'] = str_replace('[ms_cgi_url]', $this->aProperties['ms_cgi_url'], $this->aObjects[$i]->aFields['url']);
+            }
         }
 
         // Reformatte la réponse 
@@ -451,17 +452,18 @@ class Services extends Vmap {
      */
     function DELETE() {
         if (!empty($this->aValues['idList'])) {
-            $aIdList = explode("|", $this->aValues['idList']);
+            $aIdList = $this->aValues['idList'];
         }
         if (!empty($this->aPath['2'])) {
-            $aIdList = array($this->aPath['2']);
+            $aIdList = $this->aPath['2'];
             $this->aValues['idList'] = $this->aPath['2'];
         }
+
         require $this->sRessourcesFile;
         $sSql = $aSql['getTotalServiceLayers'];
         $aSQLParams = array(
             'sSchemaVmap' => array('value' => $this->aProperties['schema_vmap'], 'type' => 'column_name'),
-            'idList' => array('value' => $iGroupId, 'type' => 'group')
+            'idList' => array('value' => $aIdList, 'type' => 'group')
         );
         $resultat = $this->oConnection->oBd->executeWithParams($sSql, $aSQLParams);
         if ($this->oConnection->oBd->enErreur()) {

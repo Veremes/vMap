@@ -1,23 +1,23 @@
 <?php
+
 /**
-* \file DescriptionParcelles.class.inc
-* \class DescriptionParcelles
-*
-* \author Armand Bahi <armand.bahi@veremes.com>.
-*
-* \brief This file contains the DescriptionParcelles php class
-*
-* This class defines Rest Api to Vmap DescriptionParcelles
-* 
-*/
+ * \file DescriptionParcelles.class.inc
+ * \class DescriptionParcelles
+ *
+ * \author Armand Bahi <armand.bahi@veremes.com>.
+ *
+ * \brief This file contains the DescriptionParcelles php class
+ *
+ * This class defines Rest Api to Vmap DescriptionParcelles
+ * 
+ */
 require_once 'Cadastre.class.inc';
 require_once 'DescriptionParcelle.class.inc';
 require_once __DIR__ . '/../../class/vitis_lib/Connection.class.inc';
 require_once __DIR__ . '/../../class/vmlib/BdDataAccess.inc';
 
 class DescriptionParcelles extends Cadastre {
-    
-     /**
+    /**
      * @SWG\Definition(
      *   definition="/descriptionparcelles",
      *   allOf={
@@ -29,20 +29,20 @@ class DescriptionParcelles extends Cadastre {
      *   description="Operations about descriptionparcelles"
      * )
      */
+
     /**
      * construct
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
+     * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = new Connection($this->aValues, $this->aProperties);
-		$this->aSelectedFields = Array(oid, 'ID_COM', 'IDU_', 'ID_PAR', 'CCODEP', 'CCODIR', 'CCOCOM', 'CCOPRE', 'CCOSEC', 'DNUPLA', 'CENR', 'DCNTPA', 'DSRPAR', 'DNUPRO', 'JDATAT', 'DREFLF', 'GPDL', 'CPRSECR', 'CCOSECR', 'DNUPLAR', 'DNUPDL', 'GURBPA', 'DPARPI', 'CCOARP', 'GPARNF', 'GPARBAT', 'CCOVOI', 'CCORIV', 'CCOCIF', 'CODE_INSEE', 'ID_RIVOLI', 'ID_DNUPRO', 'DNVOIRI', 'DINDIC', 'L_NATURE_VOIE', 'DVOILIB');
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
+        $this->aSelectedFields = Array(oid, 'ID_COM', 'IDU_', 'ID_PAR', 'CCODEP', 'CCODIR', 'CCOCOM', 'CCOPRE', 'CCOSEC', 'DNUPLA', 'CENR', 'DCNTPA', 'DSRPAR', 'DNUPRO', 'JDATAT', 'DREFLF', 'GPDL', 'CPRSECR', 'CCOSECR', 'DNUPLAR', 'DNUPDL', 'GURBPA', 'DPARPI', 'CCOARP', 'GPARNF', 'GPARBAT', 'CCOVOI', 'CCORIV', 'CCOCIF', 'CODE_INSEE', 'ID_RIVOLI', 'ID_DNUPRO', 'DNVOIRI', 'DINDIC', 'L_NATURE_VOIE', 'DVOILIB');
     }
-    
+
     /**
      * @SWG\Get(path="/descriptionparcelles",
      *   tags={"Parcelle"},
@@ -77,7 +77,7 @@ class DescriptionParcelles extends Cadastre {
      *     description="number of element",
      *     required=false,
      *     type="integer",
-	 *     default="4",
+     *     default="4",
      *     format="int32"
      *   ),
      * @SWG\Parameter(
@@ -116,15 +116,17 @@ class DescriptionParcelles extends Cadastre {
      *     )
      *  )
      */
+
     /**
      * get DescriptionParcelles
      * @return  DescriptionParcelles
      */
     function GET() {
-		$this->aValues['filter'] = str_replace("id_par", "ID_PAR", $this->aValues['filter']);
+        $this->aValues['filter'] = str_replace("id_par", "ID_PAR", $this->aValues['filter']);
         $aReturn = $this->genericGet('public', $this->aProperties['cadastre']['views']['description_parcelle'], 'ID_PAR');
         return $aReturn['sMessage'];
     }
-    
+
 }
+
 ?>

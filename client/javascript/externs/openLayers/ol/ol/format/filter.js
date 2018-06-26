@@ -2,6 +2,8 @@ goog.provide('ol.format.filter');
 
 goog.require('ol.format.filter.And');
 goog.require('ol.format.filter.Bbox');
+goog.require('ol.format.filter.Contains');
+goog.require('ol.format.filter.During');
 goog.require('ol.format.filter.EqualTo');
 goog.require('ol.format.filter.GreaterThan');
 goog.require('ol.format.filter.GreaterThanOrEqualTo');
@@ -68,6 +70,21 @@ ol.format.filter.not = function(condition) {
  */
 ol.format.filter.bbox = function(geometryName, extent, opt_srsName) {
   return new ol.format.filter.Bbox(geometryName, extent, opt_srsName);
+};
+
+/**
+ * Create a `<Contains>` operator to test whether a geometry-valued property
+ * contains a given geometry.
+ *
+ * @param {!string} geometryName Geometry name to use.
+ * @param {!ol.geom.Geometry} geometry Geometry.
+ * @param {string=} opt_srsName SRS name. No srsName attribute will be
+ *    set on geometries when this is not provided.
+ * @returns {!ol.format.filter.Contains} `<Contains>` operator.
+ * @api
+ */
+ol.format.filter.contains = function(geometryName, geometry, opt_srsName) {
+  return new ol.format.filter.Contains(geometryName, geometry, opt_srsName);
 };
 
 /**
@@ -228,5 +245,19 @@ ol.format.filter.between = function(propertyName, lowerBoundary, upperBoundary) 
 ol.format.filter.like = function(propertyName, pattern,
     opt_wildCard, opt_singleChar, opt_escapeChar, opt_matchCase) {
   return new ol.format.filter.IsLike(propertyName, pattern,
-    opt_wildCard, opt_singleChar, opt_escapeChar, opt_matchCase);
+      opt_wildCard, opt_singleChar, opt_escapeChar, opt_matchCase);
+};
+
+
+/**
+ * Create a `<During>` temporal operator.
+ *
+ * @param {!string} propertyName Name of the context property to compare.
+ * @param {!string} begin The begin date in ISO-8601 format.
+ * @param {!string} end The end date in ISO-8601 format.
+ * @returns {!ol.format.filter.During} `<During>` operator.
+ * @api
+ */
+ol.format.filter.during = function(propertyName, begin, end) {
+  return new ol.format.filter.During(propertyName, begin, end);
 };

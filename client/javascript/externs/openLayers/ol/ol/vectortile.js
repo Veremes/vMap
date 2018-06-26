@@ -3,8 +3,6 @@ goog.provide('ol.VectorTile');
 goog.require('ol');
 goog.require('ol.Tile');
 goog.require('ol.TileState');
-goog.require('ol.dom');
-goog.require('ol.featureloader');
 
 
 /**
@@ -15,16 +13,22 @@ goog.require('ol.featureloader');
  * @param {string} src Data source url.
  * @param {ol.format.Feature} format Feature format.
  * @param {ol.TileLoadFunctionType} tileLoadFunction Tile load function.
+ * @param {olx.TileOptions=} opt_options Tile options.
  */
-ol.VectorTile = function(tileCoord, state, src, format, tileLoadFunction) {
+ol.VectorTile = function(tileCoord, state, src, format, tileLoadFunction, opt_options) {
 
-  ol.Tile.call(this, tileCoord, state);
+  ol.Tile.call(this, tileCoord, state, opt_options);
+
+  /**
+   * @type {number}
+   */
+  this.consumers = 0;
 
   /**
    * @private
-   * @type {CanvasRenderingContext2D}
+   * @type {ol.Extent}
    */
-  this.context_ = null;
+  this.extent_ = null;
 
   /**
    * @private
@@ -53,15 +57,9 @@ ol.VectorTile = function(tileCoord, state, src, format, tileLoadFunction) {
 
   /**
    * @private
-   * @type {ol.TileReplayState}
+   * @type {Object.<string, ol.render.ReplayGroup>}
    */
-  this.replayState_ = {
-    dirty: false,
-    renderedRenderOrder: null,
-    renderedRevision: -1,
-    renderedTileRevision: -1,
-    replayGroup: null
-  };
+  this.replayGroups_ = {};
 
   /**
    * @private
@@ -80,22 +78,24 @@ ol.inherits(ol.VectorTile, ol.Tile);
 
 
 /**
- * @return {CanvasRenderingContext2D} The rendering context.
+ * @inheritDoc
  */
-ol.VectorTile.prototype.getContext = function() {
-  if (!this.context_) {
-    this.context_ = ol.dom.createCanvasContext2D();
-  }
-  return this.context_;
+ol.VectorTile.prototype.disposeInternal = function() {
+  this.features_ = null;
+  this.replayGroups_ = {};
+  this.state = ol.TileState.ABORT;
+  this.changed();
+  ol.Tile.prototype.disposeInternal.call(this);
 };
 
 
 /**
- * @override
+ * Gets the extent of the vector tile.
+ * @return {ol.Extent} The extent.
+ * @api
  */
-ol.VectorTile.prototype.getImage = function() {
-  return this.replayState_.renderedTileRevision == -1 ?
-      null : this.context_.canvas;
+ol.VectorTile.prototype.getExtent = function() {
+  return this.extent_ || ol.VectorTile.DEFAULT_EXTENT;
 };
 
 
@@ -110,18 +110,13 @@ ol.VectorTile.prototype.getFormat = function() {
 
 
 /**
- * @return {Array.<ol.Feature>} Features.
+ * Get the features for this tile. Geometries will be in the projection returned
+ * by {@link ol.VectorTile#getProjection}.
+ * @return {Array.<ol.Feature|ol.render.Feature>} Features.
+ * @api
  */
 ol.VectorTile.prototype.getFeatures = function() {
   return this.features_;
-};
-
-
-/**
- * @return {ol.TileReplayState} The replay state.
- */
-ol.VectorTile.prototype.getReplayState = function() {
-  return this.replayState_;
 };
 
 
@@ -134,10 +129,23 @@ ol.VectorTile.prototype.getKey = function() {
 
 
 /**
+ * Get the feature projection of features returned by
+ * {@link ol.VectorTile#getFeatures}.
  * @return {ol.proj.Projection} Feature projection.
+ * @api
  */
 ol.VectorTile.prototype.getProjection = function() {
   return this.projection_;
+};
+
+
+/**
+ * @param {ol.layer.Layer} layer Layer.
+ * @param {string} key Key.
+ * @return {ol.render.ReplayGroup} Replay group.
+ */
+ol.VectorTile.prototype.getReplayGroup = function(layer, key) {
+  return this.replayGroups_[ol.getUid(layer) + ',' + key];
 };
 
 
@@ -157,22 +165,43 @@ ol.VectorTile.prototype.load = function() {
  * Handler for successful tile load.
  * @param {Array.<ol.Feature>} features The loaded features.
  * @param {ol.proj.Projection} dataProjection Data projection.
+ * @param {ol.Extent} extent Extent.
  */
-ol.VectorTile.prototype.onLoad_ = function(features, dataProjection) {
+ol.VectorTile.prototype.onLoad = function(features, dataProjection, extent) {
   this.setProjection(dataProjection);
   this.setFeatures(features);
+  this.setExtent(extent);
 };
 
 
 /**
  * Handler for tile load errors.
  */
-ol.VectorTile.prototype.onError_ = function() {
+ol.VectorTile.prototype.onError = function() {
   this.setState(ol.TileState.ERROR);
 };
 
 
 /**
+ * Function for use in an {@link ol.source.VectorTile}'s `tileLoadFunction`.
+ * Sets the extent of the vector tile. This is only required for tiles in
+ * projections with `tile-pixels` as units. The extent should be set to
+ * `[0, 0, tilePixelSize, tilePixelSize]`, where `tilePixelSize` is calculated
+ * by multiplying the tile size with the tile pixel ratio. For sources using
+ * {@link ol.format.MVT} as feature format, the
+ * {@link ol.format.MVT#getLastExtent} method will return the correct extent.
+ * The default is `[0, 0, 4096, 4096]`.
+ * @param {ol.Extent} extent The extent.
+ * @api
+ */
+ol.VectorTile.prototype.setExtent = function(extent) {
+  this.extent_ = extent;
+};
+
+
+/**
+ * Function for use in an {@link ol.source.VectorTile}'s `tileLoadFunction`.
+ * Sets the features for the tile.
  * @param {Array.<ol.Feature>} features Features.
  * @api
  */
@@ -183,7 +212,9 @@ ol.VectorTile.prototype.setFeatures = function(features) {
 
 
 /**
- * Set the projection of the features that were added with {@link #setFeatures}.
+ * Function for use in an {@link ol.source.VectorTile}'s `tileLoadFunction`.
+ * Sets the projection of the features that were added with
+ * {@link ol.VectorTile#setFeatures}.
  * @param {ol.proj.Projection} projection Feature projection.
  * @api
  */
@@ -193,11 +224,12 @@ ol.VectorTile.prototype.setProjection = function(projection) {
 
 
 /**
- * @param {ol.TileState} tileState Tile state.
+ * @param {ol.layer.Layer} layer Layer.
+ * @param {string} key Key.
+ * @param {ol.render.ReplayGroup} replayGroup Replay group.
  */
-ol.VectorTile.prototype.setState = function(tileState) {
-  this.state = tileState;
-  this.changed();
+ol.VectorTile.prototype.setReplayGroup = function(layer, key, replayGroup) {
+  this.replayGroups_[ol.getUid(layer) + ',' + key] = replayGroup;
 };
 
 
@@ -212,13 +244,7 @@ ol.VectorTile.prototype.setLoader = function(loader) {
 
 
 /**
- * Sets the loader for a tile.
- * @param {ol.VectorTile} tile Vector tile.
- * @param {string} url URL.
+ * @const
+ * @type {ol.Extent}
  */
-ol.VectorTile.defaultLoadFunction = function(tile, url) {
-  var loader = ol.featureloader.loadFeaturesXhr(
-      url, tile.getFormat(), tile.onLoad_.bind(tile), tile.onError_.bind(tile));
-
-  tile.setLoader(loader);
-};
+ol.VectorTile.DEFAULT_EXTENT = [0, 0, 4096, 4096];

@@ -10,8 +10,8 @@ $aSql['getTableColumn'] = 'SELECT column_name FROM INFORMATION_SCHEMA.COLUMNS wh
 $aSql['getUserPrivileges'] = 'SELECT groname FROM pg_user s LEFT OUTER JOIN pg_group g on (s.usesysid = any(g.grolist) )inner join [sSchemaFramework].v_user on "v_user".login = usename where user_id = [user_id]';
 $aSql['listDomain'] = 'SELECT distinct domain, alias FROM [sSchemaFramework].domain WHERE "type" = \'AD\'';
 $aSql['getAdId'] = 'SELECT domain_id FROM [sSchemaFramework].domain WHERE "domain" = [domain]';
-$aSql['createRolname'] = 'CREATE ROLE "vitis_[sDomain]" NOSUPERUSER INHERIT NOCREATEDB CREATEROLE;';
-$aSql['getInfoRolname'] = 'SELECT * FROM pg_authid WHERE rolname = [sDomain]';
+$aSql['createRolname'] = 'CREATE ROLE [sDomain] NOSUPERUSER INHERIT NOCREATEDB CREATEROLE;';
+$aSql['getInfoRolname'] = 'SELECT * FROM pg_catalog.pg_roles WHERE rolname = [sDomain]';
 // Groups
 $aSql['getGroupUsers'] = "SELECT v_user_group_by_rights.user_id, \"v_user\".login FROM [sSchemaFramework].v_user_group_by_rights LEFT JOIN [sSchemaFramework].v_user ON v_user_group_by_rights.user_id = \"v_user\".user_id WHERE v_user_group_by_rights.group_id = [group_id]";
 $aSql['insertGroupUsers'] = "INSERT INTO [sSchemaFramework].v_user_group_by_rights(user_id, group_id) VALUES([user_id], [group_id])";
@@ -23,9 +23,9 @@ $aSql['getUsers'] = "SELECT login FROM [sSchemaFramework].v_user WHERE user_id I
 // Users
 $aSql['insertUserGroups'] = "INSERT INTO [sSchemaFramework].v_user_group_by_rights(user_id, group_id) VALUES([user_id], [group_id])";
 $aSql['grantPrivilege'] = 'GRANT [sId] TO [sValue]';
-$aSql['grantCREATEROLE'] = 'ALTER USER [sValue] CREATEROLE;"';
+$aSql['grantCREATEROLE'] = 'ALTER USER [sValue] CREATEROLE';
 $aSql['revokePrivilege'] = 'REVOKE [sId] FROM [sValue]';
-$aSql['revokeCREATEROLE'] = 'ALTER USER [sValue] NOCREATEROLE;"';
+$aSql['revokeCREATEROLE'] = 'ALTER USER [sValue] NOCREATEROLE';
 $aSql['deleteUserGroups'] = "DELETE FROM [sSchemaFramework].v_user_group_by_rights WHERE user_id=[user_id]";
 $aSql['userPrivileges'] = "SELECT pg_group.grosysid,pg_group.groname FROM pg_group,pg_user,[sSchemaFramework].v_user,[sSchemaFramework].privileges WHERE pg_user.usesysid = any(pg_group.grolist) AND [sSchemaFramework].v_user.login = pg_user.usename AND pg_group.groname=[sSchemaFramework].privileges.rolname AND [sSchemaFramework].v_user.login = [login] AND pg_group.groname NOT IN([sExcludePrivileges]) ORDER BY groname";
 $aSql['userCreateRole'] = 'ALTER ROLE [login] CREATEROLE';

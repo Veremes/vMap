@@ -65,7 +65,7 @@ nsVmap.nsMapManager.nsMapModal.WMSSuggestions.prototype.wmssuggestionsController
      * @private
      */
     this.$scope_ = $scope;
-    
+
     /**
      * The displayed layers
      * @type {array<ol.Layer>}
@@ -79,19 +79,19 @@ nsVmap.nsMapManager.nsMapModal.WMSSuggestions.prototype.wmssuggestionsController
      * @api stable
      */
     $scope['aServices'] = [];
-    
+
     /**
      * The service url
      * @type string
      */
     this.sServiceUrl_ = '';
-    
+
     /**
      * The service login
      * @type string
      */
     this.sServiceLogin_ = '';
-    
+
     /**
      * The service password
      * @type string
@@ -184,8 +184,10 @@ nsVmap.nsMapManager.nsMapModal.WMSSuggestions.prototype.wmssuggestionsController
     var oHeaders = {
         "charset": "charset=utf-8"
     };
-    if (goog.isDefAndNotNull(this.$scope_['oSelectedService']['login']) && goog.isDefAndNotNull(this.$scope_['oSelectedService']['password'])) {
-        oHeaders['Authorization'] = "Basic " + btoa(this.$scope_['oSelectedService']['login'] + ":" + this.$scope_['oSelectedService']['password']);
+    if (goog.isString(this.$scope_['oSelectedService']['login']) && goog.isString(this.$scope_['oSelectedService']['password'])) {
+        if (this.$scope_['oSelectedService']['login'].length > 0 && this.$scope_['oSelectedService']['password'].length > 0) {
+            oHeaders['Authorization'] = "Basic " + btoa(this.$scope_['oSelectedService']['login'] + ":" + this.$scope_['oSelectedService']['password']);
+        }
     }
 
     // appel ajax

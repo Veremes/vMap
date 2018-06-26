@@ -25,8 +25,8 @@ class FicheDescriptiveParcelle extends Cadastre {
      *   }
      * )
      * * @SWG\Tag(
-     *   name="fichedescriptiveparcelle",
-     *   description="Operations about fichedescriptiveparcelle"
+     *   name="FicheDescriptiveParcelle",
+     *   description="Operations about FicheDescriptiveParcelle"
      * )
      */
 
@@ -35,13 +35,11 @@ class FicheDescriptiveParcelle extends Cadastre {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
      * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = new Connection($this->aValues, $this->aProperties);
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
     }
 
     /**
@@ -79,14 +77,14 @@ class FicheDescriptiveParcelle extends Cadastre {
      */
     function GET() {
 
-        if (!in_array('vmap_cadastre_user', $this->oConnection->aPrivileges)) {
+        $ID_PAR = $this->aPath[2];
+
+        if (!in_array('vmap_cadastre_user', $this->oConnection->aPrivileges) && !in_array('vmap_cadastre_light_user', $this->oConnection->aPrivileges)) {
             $oError = new VitisError(0, 'INSUFFICIENT_PRIVILEGES');
             $aXmlRacineAttribute['status'] = 0;
             $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
             return $sMessage;
         }
-
-        $ID_PAR = $this->aPath[2];
 
         // Vérifie les droits de d'utilisateur sur la commune
         if ($this->haveCommuneRights(substr($ID_PAR, 0, 6)) == false) {
@@ -149,14 +147,12 @@ class FicheDescriptiveParcelle extends Cadastre {
 
 
         // Infos complémentaires (paramétrées par l'administrateur)
-
-        $aIntersectionViews = $this->aProperties['cadastre']['descr_parcel']['intersect']['views'];
         $iTolerance = $this->aProperties["cadastre"]["descr_parcel"]["intersect"]["tolerance"];
+        $aIntersectionViews = $this->aProperties['cadastre']['descr_parcel']['intersect']['views'];
 
         // Récupère la géométrie de la parcelle
         $sSchema = 'public';
         $sTable = $this->aProperties['cadastre']['views']['parcelle'];
-//        $sFilter = "\"id_par\" = '" . $ID_PAR . "'";
         $aFilter = array(
             'column' => 'id_par',
             'compare_operator' => '=',
@@ -170,18 +166,37 @@ class FicheDescriptiveParcelle extends Cadastre {
 
         foreach ($aIntersectionViews as $key => $value) {
 
-            $sTable = $key;
+            if (strpos($key, ".") === false) {
+                $sSchema = "public";
+                $sTable = $key;
+            } else {
+                $aTmp = explode(".", $key);
+                $sSchema = $aTmp[0];
+                $sTable = $aTmp[1];
+            }
             $aAttributs = Array();
 
             foreach ($value as $key2 => $value2) {
-                if ($key2 != 'title' && $key2 != 'type' && $key2 != 'intersect') {
+                if ($key2 != 'title' && $key2 != 'type' && $key2 != 'intersect' && $key2 != 'geom_column') {
                     array_push($aAttributs, $key2);
                 }
             }
 
-            $oIntersect = $this->vmapIntersectGet($sSchema, $sTable, $parcelleGeom, $aAttributs, $iTolerance);
+            if (!empty($value['geom_column'])) {
+                $sGeomColumn = $value['geom_column'];
+            } else {
+                $sGeomColumn = 'geom';
+            }
 
-            $value['data'] = $oIntersect;
+            if (!empty($value['type'])) {
+                $sGeomType = $value['type'];
+            } else {
+                $sGeomType = 'POLYGON';
+            }
+
+            $aIntersect = $this->vmapIntersectGet($sSchema, $sTable, $parcelleGeom, $aAttributs, $iTolerance, $sGeomColumn, $sGeomType);
+
+            $value['data'] = $aIntersect;
             if (isset($value['data'][0]) && !empty($value['data'][0])) {
                 $value['aFields'] = array_keys($value['data'][0]);
             } else {

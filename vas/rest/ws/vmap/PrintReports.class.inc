@@ -35,12 +35,11 @@ class PrintReports extends Vmap {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
+     * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = new Connection($this->aValues, $this->aProperties);
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
         $this->aSelectedFields = Array("printreport_id", "name", "rt_format_id", "rt_orientation_id", "outputformats_id", "business_object_id", "multiobject", "htmldefinition", "jsonobjects", "business_object_title", "business_object_id_field", "business_object_database", "business_object_schema", "business_object_table", "business_object_geom_column");
     }
 

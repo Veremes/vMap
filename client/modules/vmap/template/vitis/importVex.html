@@ -1,0 +1,297 @@
+<div class="modal-body-with-footer">
+    <div class="stepwizard">
+        <div class="stepwizard-row setup-panel">
+            <div ng-repeat="step in steps" class="stepwizard-step" ng-style="{'width': (100 / steps.length) + '%'}">
+                <a href="#"
+                   type="button"
+                   class="btn btn-default btn-circle"
+                   ng-class="{'btn-primary' : displayedStep === step, 'btn-inverse': selectedSteps[step] === false}"
+                   disabled>{{$index + 1}}</a>
+                <p data-translate="CTRL_IMPORT_VEX_STEP_{{step}}"></p>
+            </div>
+        </div>
+    </div>
+    <!--import_vex_file-->
+    <div ng-show="displayedStep === 'import_vex_file'">
+        <div class="col-md-6 col-md-offset-3">
+            <div class="col-md-12">
+                <h3 data-translate="CTRL_IMPORT_VEX_IMPORT_VEX_FILE"></h3>
+                <br>
+                <div class="form-group form-group-sm">
+                    <label class="control-label" data-translate="CTRL_IMPORT_VEX_SELECT_FILE"></label>
+                    <input id="import-vex-file-input" type="file" class="file">
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--config-->
+    <div ng-show="displayedStep === 'config'">
+        <div class="col-md-8 col-md-offset-2">
+            <h3 data-translate="CTRL_IMPORT_VEX_CONFIGURATION"></h3>
+            <br>
+            <form class="form-group form-group-sm">
+                <!--Database-->
+                <label class="control-label" data-translate="CTRL_IMPORT_VEX_SELECT_DB"></label>
+                <select class="form-control"
+                        ng-model="usedDatabase"
+                        ng-options="database as database for database in aDatabases">
+                    <option value=""></option>
+                </select>
+                <br>
+                <!--Schema-->
+                <label class="control-label" data-translate="CTRL_IMPORT_VEX_SELECT_SCHEMA"></label>
+                <div class="row">
+                    <div class="col-xs-5" style="width: 46%;">
+                        <label class="control-label" data-translate="CTRL_IMPORT_VEX_SELECT_EXISTING_SCHEMA"></label>
+                        <select class="form-control"
+                                ng-model="selectedExistingSchema"
+                                ng-change="ctrl.setUsedSchema(false)"
+                                ng-options="schema as schema for schema in aSchemas">
+                            <option value=""></option>
+                        </select>
+                    </div>
+                    <div class="col-xs-2" style="text-align: center;padding-top: 30px;width: 8%;">
+                        <label class="control-label" data-translate="CTRL_IMPORT_VEX_OR"></label>
+                    </div>
+                    <div class="col-xs-5" style="width: 46%;">
+                        <label class="control-label" data-translate="CTRL_IMPORT_VEX_CREATE_SCHEMA"></label>
+                        <input ng-model="createdNewSchema"
+                               ng-change="ctrl.setUsedSchema(true)"
+                               type="text"
+                               class="form-control"/>
+                    </div>
+                </div>
+                <br>
+                <!--Roles-->
+                <label class="control-label" data-translate="CTRL_IMPORT_VEX_SELECT_ROLE"></label>
+                <div class="row">
+                    <div class="col-xs-5" style="width: 46%;">
+                        <label class="control-label" data-translate="CTRL_IMPORT_VEX_SELECT_USER_ROLE"></label>
+                        <select class="form-control"
+                                ng-model="usedUserRole"
+                                ng-options="role as role for role in aRoleGroups">
+                            <option value=""></option>
+                        </select>
+                    </div>
+                    <div class="col-xs-2" style="text-align: center;padding-top: 30px;width: 8%;">
+                        <label class="control-label" data-translate="CTRL_IMPORT_VEX_AND"></label>
+                    </div>
+                    <div class="col-xs-5" style="width: 46%;">
+                        <label class="control-label" data-translate="CTRL_IMPORT_VEX_SELECT_ADMIN_ROLE"></label>
+                        <select class="form-control"
+                                ng-model="usedAdminRole"
+                                ng-options="role as role for role in aRoleGroups">
+                            <option value=""></option>
+                        </select>
+                    </div>
+                </div>
+                <br>
+                <!--Coordsys-->
+                <label class="control-label" data-translate="CTRL_IMPORT_VEX_SELECT_COORDSYS"></label>
+                <select class="form-control"
+                        ng-model="usedSRID"
+                        ng-options="coordsys.coordsys_id as coordsys.label for coordsys in aCoordsys">
+                    <option value=""></option>
+                </select>
+                <br>
+                <!--Objets à importer-->
+                <label class="control-label" data-translate="CTRL_IMPORT_VEX_SELECT_ELEMENTS"></label>
+                <div class="row margin-left-15">
+                    <div class="col-xs-4">
+                        <div class="checkbox checkbox-primary">
+                            <input id="import_bo_select_elem_sql" class="styled" type="checkbox" ng-model="selectedSteps.vmap_objects">
+                            <label for="import_bo_select_elem_sql" data-translate="CTRL_IMPORT_VEX_STEP_vmap_objects"></label>
+                        </div>
+                    </div>
+                    <div class="col-xs-4">
+                        <div class="checkbox checkbox-primary">
+                            <input id="import_bo_select_elem_layers" class="styled" type="checkbox" ng-model="selectedSteps.import_sql">
+                            <label for="import_bo_select_elem_layers" data-translate="CTRL_IMPORT_VEX_STEP_import_sql"></label>
+                        </div>
+                    </div>
+                    <div class="col-xs-4">
+                        <div class="checkbox checkbox-primary">
+                            <input id="import_bo_select_elem_business_object" class="styled" type="checkbox" ng-model="selectedSteps.web_services">
+                            <label for="import_bo_select_elem_business_object" data-translate="CTRL_IMPORT_VEX_STEP_web_services"></label>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!--vmap_objects-->
+    <div ng-show="displayedStep === 'vmap_objects'">
+        <div class="col-md-12">
+            <div class="text-center">
+                <h3 data-translate="CTRL_IMPORT_VEX_SELECT_VMAP_OBJETS"></h3>
+            </div>
+            <br>
+            <div class="">
+                <div class="treeview-container">
+                    <div id="import-vex-vmap-objects-treeview"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--import_sql-->
+    <div ng-show="displayedStep === 'import_sql'">
+        <div class="col-md-12">
+            <ul class="nav nav-tabs">
+                <li class="active"><a data-toggle="tab" href="#import_vex_sql_model" data-translate="CTRL_IMPORT_VEX_SELECT_SQL_MODEL"></a></li>
+                <li ng-if="oSql.export_data_sql" ng-click="refreshCodeMirror()"><a data-toggle="tab" href="#import_vex_sql_data" data-translate="CTRL_IMPORT_VEX_SELECT_SQL_DATA"></a></li>
+            </ul>
+            <div class="tab-content">
+                <div id="import_vex_sql_model" class="tab-pane fade in active">
+                    <ui-codemirror ui-codemirror-opts="codemirrorSQLModelOptions" ui-refresh="sSQLModel" ng-model="sSQLModel"></ui-codemirror>
+                </div>
+                <div id="import_vex_sql_data" class="tab-pane fade" ng-if="oSql.export_data_sql">
+                    <ui-codemirror ui-codemirror-opts="codemirrorSQLDataOptions" ui-refresh="sSQLData" ng-model="sSQLData"></ui-codemirror>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--web_services-->
+    <div ng-show="displayedStep === 'web_services'">
+        <div class="col-md-12">
+            <div class="text-center">
+                <h3 data-translate="CTRL_IMPORT_VEX_WEB_SERVICES"></h3>
+            </div>
+            <br>
+            <div class="">
+                <div class="treeview-container">
+                    <div id="import-vex-web-services-treeview"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--execute_import-->
+    <div ng-show="displayedStep === 'execute_import'">
+        <div class="col-md-12">
+            <div class="text-center">
+                <h3 data-translate="CTRL_IMPORT_VEX_IMPORT_EXECUTION"></h3>
+            </div>
+            <br>
+            <div class="col-xs-6 col-md-offset-4">
+                <ol>
+                    <!--Objets vMap-->
+                    <li class="normal" ng-class="{'bold':oImportSteps.vmap_objects !== null}" ng-show="selectedSteps['vmap_objects'] !== false && oVMapObjects != null">
+                        <span data-translate="CTRL_IMPORT_VEX_IMPORT_VMAP_OBJECTS"></span>
+                        <span class="glyphicon glyphicon-ok color-green" ng-show="oImportSteps.vmap_objects === true"></span>
+                        <span class="glyphicon glyphicon-remove color-red" ng-show="oImportSteps.vmap_objects === false"></span>
+                        <ol>
+                            <!--Carte-->
+                            <li class="normal" ng-class="{'bold':oImportSteps.vmap_objects_maps !== null}">
+                                <span data-translate="CTRL_IMPORT_VEX_IMPORT_VMAP_OBJECTS_MAPS"></span>
+                                <span class="glyphicon glyphicon-ok color-green" ng-show="oImportSteps.vmap_objects_maps === true"></span>
+                                <span class="glyphicon glyphicon-remove color-red" ng-show="oImportSteps.vmap_objects_maps === false"></span>
+                            </li>
+                            <!--Services-->
+                            <li class="normal" ng-class="{'bold':oImportSteps.vmap_objects_services !== null}">
+                                <span data-translate="CTRL_IMPORT_VEX_IMPORT_VMAP_OBJECTS_SERVICES"></span>
+                                <span class="glyphicon glyphicon-ok color-green" ng-show="oImportSteps.vmap_objects_services === true"></span>
+                                <span class="glyphicon glyphicon-remove color-red" ng-show="oImportSteps.vmap_objects_services === false"></span>
+                            </li>
+                            <!--Calques-->
+                            <li class="normal" ng-class="{'bold':oImportSteps.vmap_objects_calques !== null}">
+                                <span data-translate="CTRL_IMPORT_VEX_IMPORT_VMAP_OBJECTS_CALQUES"></span>
+                                <span class="glyphicon glyphicon-ok color-green" ng-show="oImportSteps.vmap_objects_calques === true"></span>
+                                <span class="glyphicon glyphicon-remove color-red" ng-show="oImportSteps.vmap_objects_calques === false"></span>
+                            </li>
+                            <!--Thèmes des calques-->
+                            <li class="normal" ng-class="{'bold':oImportSteps.vmap_objects_calque_themes !== null}">
+                                <span data-translate="CTRL_IMPORT_VEX_IMPORT_VMAP_OBJECTS_CALQUE_THEMES"></span>
+                                <span class="glyphicon glyphicon-ok color-green" ng-show="oImportSteps.vmap_objects_calque_themes === true"></span>
+                                <span class="glyphicon glyphicon-remove color-red" ng-show="oImportSteps.vmap_objects_calque_themes === false"></span>
+                            </li>
+                            <!--Couches Mapser-->
+                            <li class="normal" ng-class="{'bold':oImportSteps.vmap_objects_vm4ms_layers !== null}">
+                                <span data-translate="CTRL_IMPORT_VEX_IMPORT_VMAP_OBJECTS_VM4MS_LAYERS"></span>
+                                <span class="glyphicon glyphicon-ok color-green" ng-show="oImportSteps.vmap_objects_vm4ms_layers === true"></span>
+                                <span class="glyphicon glyphicon-remove color-red" ng-show="oImportSteps.vmap_objects_vm4ms_layers === false"></span>
+                            </li>
+                            <!--Objets métier-->
+                            <li class="normal" ng-class="{'bold':oImportSteps.vmap_objects_business_objects !== null}">
+                                <span data-translate="CTRL_IMPORT_VEX_IMPORT_VMAP_OBJECTS_BUSINESS_OBJECTS"></span>
+                                <span class="glyphicon glyphicon-ok color-green" ng-show="oImportSteps.vmap_objects_business_objects === true"></span>
+                                <span class="glyphicon glyphicon-remove color-red" ng-show="oImportSteps.vmap_objects_business_objects === false"></span>
+                            </li>
+                            <!--Événements-->
+                            <li class="normal" ng-class="{'bold':oImportSteps.vmap_objects_events !== null}">
+                                <span data-translate="CTRL_IMPORT_VEX_IMPORT_VMAP_OBJECTS_EVENTS"></span>
+                                <span class="glyphicon glyphicon-ok color-green" ng-show="oImportSteps.vmap_objects_events === true"></span>
+                                <span class="glyphicon glyphicon-remove color-red" ng-show="oImportSteps.vmap_objects_events === false"></span>
+                            </li>
+                            <!--Rapports-->
+                            <li class="normal" ng-class="{'bold':oImportSteps.vmap_objects_reports !== null}">
+                                <span data-translate="CTRL_IMPORT_VEX_IMPORT_VMAP_OBJECTS_REPORTS"></span>
+                                <span class="glyphicon glyphicon-ok color-green" ng-show="oImportSteps.vmap_objects_reports === true"></span>
+                                <span class="glyphicon glyphicon-remove color-red" ng-show="oImportSteps.vmap_objects_reports === false"></span>
+                            </li>
+                        </ol>
+                    </li>
+
+                    <!--Web Services-->
+                    <li class="normal" ng-class="{'bold':oImportSteps.web_services !== null}" ng-show="selectedSteps['web_services'] !== false && aWebServices != null">
+                        <span data-translate="CTRL_IMPORT_VEX_IMPORT_WEB_SERVICES"></span>
+                        <span class="glyphicon glyphicon-ok color-green" ng-show="oImportSteps.web_services === true"></span>
+                        <span class="glyphicon glyphicon-remove color-red" ng-show="oImportSteps.web_services === false"></span>
+                    </li>
+
+                    <!--SQL-->
+                    <li class="normal" ng-class="{'bold':oImportSteps.sql !== null}" ng-show="selectedSteps['import_sql'] !== false && oSql != null">
+                        <span data-translate="CTRL_IMPORT_VEX_IMPORT_SQL"></span>
+                        <span class="glyphicon glyphicon-ok color-green" ng-show="oImportSteps.sql === true"></span>
+                        <span class="glyphicon glyphicon-remove color-red" ng-show="oImportSteps.sql === false"></span>
+                        <ol>
+                            <!--Modèle de données-->
+                            <li class="normal" ng-class="{'bold':oImportSteps.sql_model !== null}">
+                                <span data-translate="CTRL_IMPORT_VEX_IMPORT_SQL_MODEL"></span>
+                                <span class="glyphicon glyphicon-ok color-green" ng-show="oImportSteps.sql_model === true"></span>
+                                <span class="glyphicon glyphicon-remove color-red" ng-show="oImportSteps.sql_model === false"></span>
+                            </li>
+                            <!--Données-->
+                            <li class="normal" ng-class="{'bold':oImportSteps.sql_data !== null}" ng-show="sSQLData.length > 0">
+                                <span data-translate="CTRL_IMPORT_VEX_IMPORT_SQL_DATA"></span>
+                                <span class="glyphicon glyphicon-ok color-green" ng-show="oImportSteps.sql_data === true"></span>
+                                <span class="glyphicon glyphicon-remove color-red" ng-show="oImportSteps.sql_data === false"></span>
+                            </li>
+                        </ol>
+                    </li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    <!--finalize-->
+    <div ng-show="displayedStep === 'finalize'">
+        <div class="col-md-12">
+            <div class="text-center">
+                <h3 data-translate="CTRL_IMPORT_VEX_TO_DO">: </h3>
+            </div>
+            <br>
+            <div class="col-md-offset-2">
+                <ul>
+                    <li class="bold">
+                        <span data-translate="CTRL_IMPORT_VEX_TO_DO_MAP"></span>
+                    </li>
+                    <li class="bold">
+                        <span data-translate="CTRL_IMPORT_VEX_TO_DO_PGADMIN"></span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+    <a class="btn btn-primary btn pull-right margin-left-10" type="button"
+       ng-click="ctrl.closeImportModal()"
+       ng-show="displayedStep === 'finalize'" data-translate="CTRL_IMPORT_VEX_FINISH"></a>
+    <a class="btn btn-primary btn pull-right margin-left-10" type="button"
+       ng-click="ctrl.submitStep(displayedStep)"
+       ng-show="(displayedStep !== 'execute_import' || bImportDone === true) && displayedStep !== 'finalize'" data-translate="CTRL_IMPORT_VEX_NEXT"></a>
+    <a class="btn btn-primary btn pull-right margin-left-10" type="button"
+       ng-click="ctrl.executeImport()"
+       ng-show="displayedStep === 'execute_import' && bImportDone !== true" data-translate="CTRL_IMPORT_VEX_EXECUTE"></a>
+    <a class="btn btn-default btn pull-right margin-left-10" type="button"
+       ng-click="ctrl.prevStep()"
+       ng-show="displayedStep !== 'import_vex_file' && displayedStep !== 'finalize'" data-translate="CTRL_IMPORT_VEX_PREVIOUS"></a>
+</div>

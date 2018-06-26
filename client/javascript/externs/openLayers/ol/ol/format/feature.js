@@ -47,7 +47,7 @@ ol.format.Feature.prototype.getReadOptions = function(source, opt_options) {
   if (opt_options) {
     options = {
       dataProjection: opt_options.dataProjection ?
-          opt_options.dataProjection : this.readProjection(source),
+        opt_options.dataProjection : this.readProjection(source),
       featureProjection: opt_options.featureProjection
     };
   }
@@ -69,6 +69,15 @@ ol.format.Feature.prototype.adaptOptions = function(options) {
     dataProjection: this.defaultDataProjection,
     featureProjection: this.defaultFeatureProjection
   }, options);
+};
+
+
+/**
+ * Get the extent from the source of the last {@link readFeatures} call.
+ * @return {ol.Extent} Tile extent.
+ */
+ol.format.Feature.prototype.getLastExtent = function() {
+  return null;
 };
 
 
@@ -166,9 +175,9 @@ ol.format.Feature.prototype.writeGeometry = function(geometry, opt_options) {};
 ol.format.Feature.transformWithOptions = function(
     geometry, write, opt_options) {
   var featureProjection = opt_options ?
-      ol.proj.get(opt_options.featureProjection) : null;
+    ol.proj.get(opt_options.featureProjection) : null;
   var dataProjection = opt_options ?
-      ol.proj.get(opt_options.dataProjection) : null;
+    ol.proj.get(opt_options.dataProjection) : null;
   /**
    * @type {ol.geom.Geometry|ol.Extent}
    */
@@ -183,14 +192,14 @@ ol.format.Feature.transformWithOptions = function(
       // FIXME this is necessary because ol.format.GML treats extents
       // as geometries
       transformed = ol.proj.transformExtent(
-          write ? geometry.slice() : geometry,
-          write ? featureProjection : dataProjection,
-          write ? dataProjection : featureProjection);
+          geometry,
+          dataProjection,
+          featureProjection);
     }
   } else {
     transformed = geometry;
   }
-  if (write && opt_options && opt_options.decimals) {
+  if (write && opt_options && opt_options.decimals !== undefined) {
     var power = Math.pow(10, opt_options.decimals);
     // if decimals option on write, round each coordinate appropriately
     /**
@@ -203,11 +212,10 @@ ol.format.Feature.transformWithOptions = function(
       }
       return coordinates;
     };
-    if (Array.isArray(transformed)) {
-      transform(transformed);
-    } else {
-      transformed.applyTransform(transform);
+    if (transformed === geometry) {
+      transformed = transformed.clone();
     }
+    transformed.applyTransform(transform);
   }
   return transformed;
 };

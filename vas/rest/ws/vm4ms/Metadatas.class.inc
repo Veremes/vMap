@@ -1,23 +1,23 @@
 <?php
+
 /**
-* \file Metadatas.class.inc
-* \class Metadatas
-*
-* \author Armand Bahi <armand.bahi@veremes.com>.
-*
-* \brief This file contains the Metadatas php class
-*
-* This class defines Rest Api to Vmap4MapServer Metadatas
-* 
-*/
+ * \file Metadatas.class.inc
+ * \class Metadatas
+ *
+ * \author Armand Bahi <armand.bahi@veremes.com>.
+ *
+ * \brief This file contains the Metadatas php class
+ *
+ * This class defines Rest Api to Vmap4MapServer Metadatas
+ * 
+ */
 require_once 'Vmap4MapServer.class.inc';
 require_once 'Metadata.class.inc';
 require_once __DIR__ . '/../../class/vitis_lib/Connection.class.inc';
 require_once __DIR__ . '/../../class/vmlib/BdDataAccess.inc';
 
 class Metadatas extends Vmap4MapServer {
-    
-     /**
+    /**
      * @SWG\Definition(
      *   definition="/metadatas",
      *   allOf={
@@ -29,19 +29,20 @@ class Metadatas extends Vmap4MapServer {
      *   description=""
      * )
      */
+
     /**
      * construct
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
+     * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = new Connection($this->aValues, $this->aProperties);
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
         $this->aSelectedFields = Array("metadata_id", "name", "definition");
     }
+
     /**
      * @SWG\Get(path="/metadatas",
      *   tags={"Metadatas"},
@@ -114,6 +115,7 @@ class Metadatas extends Vmap4MapServer {
      *     )
      *  )
      */
+
     /**
      * get Metadatas
      * @return  Metadatas
@@ -122,7 +124,7 @@ class Metadatas extends Vmap4MapServer {
         $aReturn = $this->genericGet($this->aProperties['schema_vm4ms'], 'metadata', 'metadata_id');
         return $aReturn['sMessage'];
     }
-    
+
     /**
      * @SWG\Post(path="/metadatas",
      *   tags={"Metadatas"},
@@ -165,18 +167,18 @@ class Metadatas extends Vmap4MapServer {
      * @return array containing the status and the message
      */
     function POST() {
-        $aReturn = $this->genericPost($this->aProperties['schema_vm4ms'], 'metadata', $this->aProperties['schema_vm4ms'].'.seq_common', 'metadata_id');
-        if ($aReturn['sStatus'] == 1){
+        $aReturn = $this->genericPost($this->aProperties['schema_vm4ms'], 'metadata', $this->aProperties['schema_vm4ms'] . '.seq_common', 'metadata_id');
+        if ($aReturn['sStatus'] == 1) {
             $aXmlRacineAttribute['status'] = 1;
             $sMessage = $this->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
             $oMetadata = new Metadata($this->aPath, $this->aValues, $this->aProperties, $this->oConnection);
             $oMetadata->GET();
-        }else{
+        } else {
             $sMessage = $aReturn['sMessage'];
         }
         return $sMessage;
     }
-    
+
     /**
      * @SWG\Put(path="/metadatas/{metadata_id}",
      *   tags={"Metadatas"},
@@ -232,7 +234,6 @@ class Metadatas extends Vmap4MapServer {
         return $aReturn['sMessage'];
     }
 
-    
     /**
      * @SWG\Delete(path="/metadatas/",
      *   tags={"Metadatas"},
@@ -290,7 +291,7 @@ class Metadatas extends Vmap4MapServer {
      *     )
      *  )
      */
-    
+
     /**
      * delete metadata
      * @return id of metadata deleted or error object if a metadata is not deleted
@@ -299,5 +300,7 @@ class Metadatas extends Vmap4MapServer {
         $aReturn = $this->genericDelete($this->aProperties['schema_vm4ms'], 'metadata', 'metadata_id');
         return $aReturn['sMessage'];
     }
+
 }
+
 ?>

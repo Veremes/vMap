@@ -1,5 +1,11 @@
 module.exports = function (grunt) {
 
+    // npm install grunt --save
+    // npm install -g grunt-cli
+    // npm install grunt-closure-tools --save
+    // npm install google-closure-compiler@20160911.0.0 --save
+    // npm install google-closure-library@20160911.0.0 --save
+
     var compilerPackage = require('google-closure-compiler');
     compilerPackage.grunt(grunt);
 

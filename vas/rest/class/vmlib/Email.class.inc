@@ -5,8 +5,13 @@ require_once ("vmlib/logUtil.inc");
 //require_once ("PEAR/Mail/mime.php");
 require_once ("vmlib/EmailTemplate.class.inc");
 require_once("gtf_lib/gtf_object/Order.class.inc");
+require_once("gtf_lib/Imap.php");
 require_once 'vmlib/error.inc';
-require_once ("PHPMailer/PHPMailerAutoload.php");
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+require_once 'PHPMailer/src/Exception.php';
+require_once 'PHPMailer/src/PHPMailer.php';
+require_once 'PHPMailer/src/SMTP.php';
 
 class Email {
 
@@ -26,6 +31,7 @@ class Email {
     protected $aProperties;
     protected $oBd;
     public $oEmailTemplate;
+    public $aValues;
 
     /*     * ****************************************************
 
@@ -39,6 +45,7 @@ class Email {
         //$this->from = $this->aProperties['nickname_sender'] . '<' . $this->aProperties['mail_sender'] . '>';
         //$this->replyTo = '<>';
         //$this->date = date("D, j M Y H:i:s ");
+        $this->aValues = array();
 
         // Sauve les attributs du mail
         $this->oEmailTemplate = new EmailTemplateLib($oBd, $iEmailTemplateId, $aProperties, $aObjects);
@@ -126,7 +133,7 @@ class Email {
         $mail = new PHPMailer;
 
         $mail->isSMTP();                                                // Set mailer to use SMTP
-        $mail->SMTPDebug = 3;                                         // debugger level (3 all with connection)
+        //$mail->SMTPDebug = 3;                                         // debugger level (3 all with connection)
         $mail->Debugoutput = function($str, $level) {error_log("debug level $level; message: $str");};
         $mail->Host = $this->aProperties["smtp_host"];                  // Specify main and backup SMTP servers
         $mail->Port = $this->aProperties["smtp_port"];                  // TCP port to connect to
@@ -180,14 +187,37 @@ class Email {
                     $mail->addAttachment($sAttachment);
             }
         }
-
+        // Depuis PHP 5.6 -> vérification du certificat SSL.
+        if (!$this->aProperties['proxy_check_ssl']) {
+            $mail->SMTPOptions = array(
+                'ssl' => array(
+                    'verify_peer' => false,
+                    'verify_peer_name' => false,
+                    'allow_self_signed' => true
+                )
+            );
+        }
+        //
         if (!$mail->send()) {
             writeToErrorLog(ERROR_0023 . $this->to . '.');
             writeToErrorLog("Error message : " . $mail->ErrorInfo);
-            writeToLog("Failed sending email to the following address : " . $this->to . ' et ' . $this->cc, $this->aProperties['mail_log_file']);
+            writeToLog("|WARN|PHP|Failed sending email to the following address : " . $this->to . ' and copy to : ' . $this->cc, $this->aProperties['mail_log_file']);
                 //$sErrorMessage = $sMail->getMessage();
         } else {
-            writeToLog("|INFORM|PHP| An email has been sent to the following address : $sDestinataire", $this->aProperties['mail_log_file']);
+            writeToLog("|INFORM|PHP| An email has been sent to the following address : " . $this->to . ' and copy to : ' . $this->cc, $this->aProperties['mail_log_file']);
+
+            if($this->aProperties['SaveSentMail'] === true){
+
+                $imap = new Imap($this->aProperties['imapBotSender_host'], $this->aProperties['imapBotSender_port'], $this->aProperties['imapBotSender_login'], $this->aProperties['imapBotSender_pwd'], $this->aProperties['imapBotSender_encrypt']);
+
+                if($imap->isConnected()===false){
+                    writeToLog("|WARN|PHP| can't connect to the IMAP at hostname : " . $this->aProperties['imapBotSender_host'], $this->aProperties['mail_log_file']);
+                }else{
+                    $imap->selectFolder("Sent");
+                    $imap->saveMessageInSent($mail->getSentMIMEMessage(), "");
+                }
+            }
+
         }
 
         return $sErrorMessage;

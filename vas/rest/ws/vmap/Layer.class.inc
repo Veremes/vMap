@@ -24,13 +24,21 @@ class Layer extends Vmap {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
      * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties, $oConnection) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = $oConnection;
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
+        // Obligatoire pour utiliser sur oLayers->aObjects
+        if (empty($this->aValues)) {
+            $this->aValues = $aValues;
+        }
+        if (empty($this->aPath)) {
+            $this->aPath = $aPath;
+        }
+        if (empty($this->aProperties)) {
+            $this->aProperties = $properties;
+        }
     }
 
     /**
@@ -95,6 +103,21 @@ class Layer extends Vmap {
     }
 
     /**
+     * Return (is exists) the embed js for form associate to the layer
+     * @return string JS code
+     */
+    function getFilterFormJs() {
+        $sFilterFormJs = null;
+        if ($this->aFields['is_filtered'] === true) {
+            $sFormsPath = $this->aProperties['ws_data_dir'] . '/vmap/layer/' . $this->aFields['layer_id'] . '/forms/ressources';
+            if (file_exists($sFormsPath . '/published.js')) {
+                $sFilterFormJs = file_get_contents($sFormsPath . '/published.js');
+            }
+        }
+        return $sFilterFormJs;
+    }
+
+    /**
      * Get the infos from the business objects defined in $aBoIds
      * @param array $aBoIds
      * @return array
@@ -105,7 +128,7 @@ class Layer extends Vmap {
             $aPath = array('vmap', 'businessobjects', $aBoIds[$i]);
             $aValues = $this->aValues;
             $aValues['my_vitis_id'] = $aBoIds[$i];
-            $oBo = new BusinessObject($aPath, $aValues, $this->aProperties, $this->oConnection);
+            $oBo = new BusinessObject($aPath, $aValues, $this->aProperties, false, $this->oConnection);
             $oBo->GET();
             array_push($aBoInfos, $oBo->aFields);
         }

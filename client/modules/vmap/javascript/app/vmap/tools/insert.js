@@ -46,7 +46,7 @@ nsVmap.nsToolsManager.Insert.prototype.inserttoolDirective = function () {
         controller: 'AppInsertController',
         controllerAs: 'ctrl',
         bindToController: true,
-        templateUrl: oVmap['properties']['vmap_folder'] + '/' + 'template/tools/insert.html'
+        templateUrl: oVmap['properties']['vmap_folder'] + '/' + 'template/tools/' + (oVmap['properties']['is_mobile'] ? 'insert_mobile.html' : 'insert.html')
     };
 };
 
@@ -59,7 +59,7 @@ nsVmap.nsToolsManager.Insert.prototype.inserttoolDirective = function () {
  * @returns {nsVmap.nsToolsManager.Insert.prototype.inserttoolController}
  * @export
  */
-nsVmap.nsToolsManager.Insert.prototype.inserttoolController = function ($scope, $rootScope, $q) {
+nsVmap.nsToolsManager.Insert.prototype.inserttoolController = function ($scope, $rootScope, $q, $element) {
     oVmap.log("nsVmap.nsToolsManager.Insert.prototype.inserttoolController");
 
     /**
@@ -164,9 +164,83 @@ nsVmap.nsToolsManager.Insert.prototype.inserttoolController = function ($scope, 
     this['token'] = oVmap['properties']['token'];
 
     /**
-     * 
+     *
      */
     this['addPartGeomType'] = '';
+
+    /**
+     * Booléen représentant l'ouverture du SnapMenu
+     */
+    this['isSnapMenuCollapse'] = false;
+
+    /**
+     * Object contenant les diverses options de snapping
+     */
+    this['snapOptions'] = {
+        'mode': 'segment_edge_node',
+        'tolerance': 15,
+        'limit': 2000,
+        'visible': false
+    };
+    if (goog.isDefAndNotNull(oVmap['properties']['snapping'])) {
+        this['snapOptions']['tolerance'] = oVmap['properties']['snapping']['defaut_tolerance'];
+        this['snapOptions']['mode'] = oVmap['properties']['snapping']['defaut_snapp_mode'];
+        this['snapOptions']['limit'] = oVmap['properties']['snapping']['defaut_limit'];
+        this['snapOptions']['visible'] = oVmap['properties']['snapping']['defaut_visibility'];
+    }
+
+    /**
+     * Object temporaire permettant l'édition des diverses options de snapping
+     */
+    this['tmpSnapOptions'] = angular.copy(this['snapOptions']);
+
+    /**
+     * Définit si l'échélle est dans la tranche allouée par l'objet métier
+     */
+    this['isMaxScaleOk'] = true;
+
+    /**
+     * Définit si l'échélle est dans la tranche allouée par l'objet métier
+     */
+    this['isMinScaleOk'] = true;
+
+    /**
+     * @type {ol.layer.Vector}
+     * @private
+     */
+    this.oSnapOverlayLayer_ = new ol.layer.Vector({
+        map: oVmap.getMap().getOLMap(),
+        visible: false,
+        source: new ol.source.Vector({
+            useSpatialIndex: false
+        }),
+        style: new ol.style.Style({
+            fill: new ol.style.Fill({
+                color: 'rgba(255, 255, 255, 0.2)'
+            }),
+            stroke: new ol.style.Stroke({
+                color: '#1000ff',
+                width: 2
+            }),
+            image: new ol.style.Circle({
+                radius: 3,
+                fill: new ol.style.Fill({
+                    color: '#1000ff'
+                })
+            })
+        }),
+    });
+
+    /**
+     * @type {ol.interaction.Snap}
+     * @private
+     */
+    this.snap_ = new ol.interaction.Snap({
+        vertex: true,
+        edge: (this['snapOptions']['mode'] === 'segment_edge_node' ? true : false),
+        pixelTolerance: this['snapOptions']['tolerance'],
+        source: this.oSnapOverlayLayer_.getSource()
+    });
 
     /**
      * The bo selected for insert in
@@ -205,14 +279,10 @@ nsVmap.nsToolsManager.Insert.prototype.inserttoolController = function ($scope, 
 
     // Alimente $scope['aInsertableLayers'] lors des changements de couches
     oVmap['scope'].$on('layersChanged', function () {
-        this_.$scope_.$applyAsync(function () {
-            $scope['aInsertableBOs'] = oVmap.getMapManager().getInsertableBusinessObjects();
-        });
+        this_.loadInsertableBos();
     });
     setTimeout(function () {
-        this_.$scope_.$applyAsync(function () {
-            $scope['aInsertableBOs'] = oVmap.getMapManager().getInsertableBusinessObjects();
-        });
+        this_.loadInsertableBos();
     });
 
     // Supprime la feature lors de la sélection sur l'interaction this.delete_
@@ -236,7 +306,7 @@ nsVmap.nsToolsManager.Insert.prototype.inserttoolController = function ($scope, 
     // Supprime du trou de la feature (si il existe) feature lors de la sélection sur l'interaction this.deleteHole_
     this.deleteHole_.on('select', this.deleteHole, this);
 
-    // Lance updateInsertObjectFeature lors de chaque changement sur this.oOverlayFeatures_ 
+    // Lance updateInsertObjectFeature lors de chaque changement sur this.oOverlayFeatures_
     // si il n'y a pas eut de changements pendant 500ms
     var iTmpChanges = 0;
     this.oOverlayLayer_.getSource().on('change', function () {
@@ -278,6 +348,9 @@ nsVmap.nsToolsManager.Insert.prototype.inserttoolController = function ($scope, 
         $scope['selectedBoId'] = null;
         // Vide les features ayant pu être dessinées
         this_.oOverlayFeatures_.clear();
+        // Supprime le snapping
+        this_.oSnapOverlayLayer_.getSource().clear();
+        oVmap.getMap().getOLMap().removeInteraction(this_.snap_);
     });
 
     this.oOverlayFeatures_.on('change:length', function () {
@@ -285,8 +358,134 @@ nsVmap.nsToolsManager.Insert.prototype.inserttoolController = function ($scope, 
             $scope['featuresLength'] = this_.oOverlayFeatures_.getLength();
         });
     }, this);
+
+    // Au changement d'objet métier en cours d'insertion
+    this.$scope_.$watch('selectedBoId', function () {
+        this_.updateInsertForm();
+        this_.selectCurrentBoForSnapping();
+    });
+
+    // Affiche les modales en plein écran pour la version mobile
+    if (oVmap['properties']['is_mobile']) {
+        $element.find('.modal').on('shown.bs.modal', function () {
+            $('.modal-backdrop.fade.in').hide();
+            $('.modal.fade.in').find('.modal-dialog').addClass('mobile-full-modal');
+        });
+    }
+
+    // Lance la fonction de rechargement à chaque fois qui l'utilisateur finit de bouger la carte
+    oVmap.getMap().getOLMap().on('moveend', function () {
+        this_.checkEditionScale();
+        this_.loadVectorSnappingData();
+    });
 };
 
+/**
+ * Charge la liste des objets métier
+ */
+nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.loadInsertableBos = function () {
+    oVmap.log('nsVmap.nsToolsManager.Insert.inserttoolController.loadInsertableBos');
+    var this_ = this;
+
+    this.$scope_.$applyAsync(function () {
+        setTimeout(function () {
+            this_.$scope_['aInsertableBOs'] = oVmap.getMapManager().getInsertableBusinessObjects();
+
+            // Mobile: cache le bouton "Insertion" si aucun bo est insertable
+            if (goog.isDefAndNotNull(this_.$scope_['aInsertableBOs'])) {
+                if (oVmap['properties']['is_mobile']) {
+                    if (this_.$scope_['aInsertableBOs'].length > 0) {
+                        $('#vmap_menu_mobile_menu_insert_button').show();
+                    } else {
+                        $('#vmap_menu_mobile_menu_insert_button').hide();
+                    }
+                }
+            }
+        });
+    });
+
+    this.checkEditionScale();
+};
+
+/**
+ * Charge la liste des objets métier pour le snapping
+ */
+nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.selectCurrentBoForSnapping = function () {
+    oVmap.log('nsVmap.nsToolsManager.Insert.inserttoolController.selectCurrentBoForSnapping');
+    var this_ = this;
+
+    for (var i = 0; i < this_.$scope_['aInsertableBOs'].length; i++) {
+        this_.$scope_['aInsertableBOs'][i]['loadCanceller'] = this_.$q_.defer();
+        this_.$scope_['aInsertableBOs'][i]['isMouseOverSnaoMenuOb'] = false;
+        this_.$scope_['aInsertableBOs'][i]['bo_snapping_loaded'] = null;
+        if (this_.$scope_['aInsertableBOs'][i]['bo_id'] === this_.$scope_['selectedBoId']) {
+            this_.$scope_['aInsertableBOs'][i]['bo_snapping_enabled'] = true;
+        } else
+            this_.$scope_['aInsertableBOs'][i]['bo_snapping_enabled'] = false;
+    }
+
+    this.checkEditionScale();
+};
+
+/**
+ * Vérifie que l'échelle en cours respecte les spécification de l'objet métier
+ */
+nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.checkEditionScale = function () {
+    oVmap.log('nsVmap.nsToolsManager.Insert.inserttoolController.checkEditionScale');
+
+    var oBo;
+    for (var i = 0; i < this.$scope_['aInsertableBOs'].length; i++) {
+        if (this.$scope_['aInsertableBOs'][i]['bo_id'] === this.$scope_['selectedBoId']) {
+            oBo = this.$scope_['aInsertableBOs'][i];
+            break;
+        }
+    }
+
+    if (!goog.isDefAndNotNull(oBo)) {
+        return;
+    }
+
+    var maxScale = oBo['bo_max_edition_scale'];
+    var minScale = oBo['bo_min_edition_scale'];
+
+    this['isMaxScaleOk'] = true;
+    this['isMinScaleOk'] = true;
+
+    if (this['currentAction'].substr(0, 18) === 'basicTools-insert-') {
+        if (goog.isDefAndNotNull(minScale)) {
+            minScale = parseFloat(minScale);
+            if (oVmap.getMap().getScale() < minScale) {
+                oVmap.getMap().getMapTooltip().displayMessage('Échelle minimale de saisie atteinte, dé-zoomez pour continuer');
+                this['isMinScaleOk'] = false;
+                if (this['addPartGeomType'] === 'Point') {
+                    this.draw_.setActive(false);
+                }
+            } else {
+                this['isMinScaleOk'] = true;
+            }
+        }
+        if (goog.isDefAndNotNull(maxScale)) {
+            maxScale = parseFloat(maxScale);
+            if (oVmap.getMap().getScale() > maxScale) {
+                oVmap.getMap().getMapTooltip().displayMessage('Échelle maximale de saisie atteinte, zoomez pour continuer');
+                this['isMaxScaleOk'] = false;
+                if (this['addPartGeomType'] === 'Point') {
+                    this.draw_.setActive(false);
+                }
+            } else {
+                this['isMaxScaleOk'] = true;
+            }
+        }
+        if (this['isMinScaleOk'] && this['isMaxScaleOk']) {
+            if (!this.draw_.getActive()) {
+                this.draw_.setActive(true);
+            }
+            if (this.draw_.getActive()) {
+                oVmap.getMap().getMapTooltip().displayMessage('Cliquez pour commencer à dessiner');
+            }
+        }
+    }
+};
 
 
 
@@ -399,7 +598,13 @@ nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.validateFo
         setTimeout(function () {
             if ($scope.isFormValid_) {
                 // Récupère les valeurs sous un format propice à l'insertion (sans "selectedOption")
+                if (goog.isDefAndNotNull($scope['oInsertObject']['oResult'][$scope['oInsertObject']['sGeomColumn']])) {
+                    var EWKTGeometry = angular.copy($scope['oInsertObject']['oResult'][$scope['oInsertObject']['sGeomColumn']]);
+                }
                 $scope['oInsertObject']['oResult'] = this_.getBOValuesFromFormValues($scope['oInsertObject']['oFormValues']);
+                if (!goog.isDefAndNotNull($scope['oInsertObject']['oResult'][$scope['oInsertObject']['sGeomColumn']])) {
+                    $scope['oInsertObject']['oResult'][$scope['oInsertObject']['sGeomColumn']] = EWKTGeometry;
+                }
                 $('#basictools-insert-form-reader-modal').modal('hide');
             }
         });
@@ -495,7 +700,7 @@ nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.isResultVa
  * Reload oInsertObject.oFormDefinition and oInsertObject.oFormValues
  * @export
  */
-nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.updateInsertForm = function () {
+nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.updateInsertForm = function (sBoId, callback) {
     oVmap.log('nsVmap.nsToolsManager.Insert.inserttoolController.updateInsertForm');
 
     var this_ = this;
@@ -503,7 +708,11 @@ nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.updateInse
     var $q = this.$q_;
 
     var oFormReaderScope = this.getEditFormReaderScope();
-    var boId = $scope['selectedBoId'];
+    var boId = goog.isDefAndNotNull(sBoId) ? sBoId : $scope['selectedBoId'];
+
+    if (!goog.isDefAndNotNull(boId)) {
+        return null;
+    }
 
     // Vide les variables oInsertObject
     $scope['oInsertObject']['oResult'] = {};
@@ -522,7 +731,6 @@ nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.updateInse
 
     var bRequestOk = false;
     var canceler = $q.defer();
-    showAjaxLoader();
     ajaxRequest({
         'method': 'GET',
         'url': oVmap['properties']['api_url'] + '/vmap/businessobjects/' + boId,
@@ -555,6 +763,9 @@ nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.updateInse
                 $scope['selectedBoId'] = "";
                 return 0;
             }
+
+            // Modifie l'identifiant du formulaire
+            response['data']['data'][0]['json_form'][0]['insert']['name'] = 'basictools-insert-form-reader-form';
 
             // Formulaire
             $scope['oInsertObject']['oFormDefinition'] = response['data']['data'][0]['json_form'][0];
@@ -605,6 +816,10 @@ nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.updateInse
             // Rafraichit le formulaire
             oFormReaderScope['ctrl']['refreshForm']();
 
+            if (goog.isDefAndNotNull(callback)) {
+                callback.call(this_);
+            }
+
         },
         'error': function (response) {
             $scope['selectedBoId'] = "";
@@ -619,7 +834,6 @@ nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.updateInse
                 bootbox.confirm('Annuler la requête ?', function (result) {
                     if (result === true) {
                         canceler.resolve();
-                        hideAjaxLoader();
                         $scope['selectedBoId'] = "";
                     } else {
                         showCancelRequestMessageAfterTimeout();
@@ -653,11 +867,17 @@ nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.getEditFor
 nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.startInsertion = function (type, isActive) {
     oVmap.log('nsVmap.nsToolsManager.Insert.inserttoolControlle.startInsertion');
 
+    var this_ = this;
+
     // Supprime les interractions
     oVmap.getMap().removeActionsOnMap();
 
     // Cache la tooltip
     oVmap.getMap().getMapTooltip().hide();
+
+    // Supprime le snapping
+    this.oSnapOverlayLayer_.getSource().clear();
+    oVmap.getMap().getOLMap().removeInteraction(this.snap_);
 
     if (isActive === true)
         return 0;
@@ -839,17 +1059,80 @@ nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.startDrawi
         features: this.oOverlayFeatures_
     }, 'basicTools-insert-insert' + type);
 
-
+    var this_ = this;
     this.draw_.on('drawend',
             function (evt) {
                 // Si la géométrie est un cercle, alors elle est remplacée par un polygone à 32 côtés
                 var feature = evt.feature;
-                if (feature.getGeometry() instanceof ol.geom.Circle) {
-                    var circleGeom = feature.getGeometry();
-                    var polygonGeom = new ol.geom.Polygon.fromCircle(circleGeom);
-                    feature.setGeometry(polygonGeom);
-                }
+                feature = this_.updateCircleGeoms(feature);
             }, this);
+
+
+    // Empèche la saisie si l'échelle n'est pas bonne
+    this.draw_.on('drawstart', function () {
+
+        if (!this_['isMaxScaleOk']) {
+            this_.draw_.removeLastPoint();
+        }
+        if (!this_['isMinScaleOk']) {
+            this_.draw_.removeLastPoint();
+        }
+
+        var iNbPoints = 0;
+        this_.draw_.sketchFeature_.on('change', function (event) {
+            if (goog.isDefAndNotNull(event.target)) {
+                if (goog.isDefAndNotNull(event.target.getGeometry)) {
+                    var oGeom = event.target.getGeometry();
+                    if (goog.isDefAndNotNull(oGeom.getType)) {
+                        switch (oGeom.getType()) {
+                            case 'LineString':
+                            case 'MultiLineString':
+                            case 'Point':
+                            case 'MultiPoint':
+                            case 'Polygon':
+                            case 'MultiPolygon':
+                                if (oGeom.getCoordinates().length > iNbPoints) {
+                                    if (!this_['isMaxScaleOk']) {
+                                        this_.draw_.removeLastPoint();
+                                    }
+                                    if (!this_['isMinScaleOk']) {
+                                        this_.draw_.removeLastPoint();
+                                    }
+                                }
+                                iNbPoints = oGeom.getCoordinates().length;
+                                break;
+                            default:
+
+                                break;
+                        }
+                    }
+                }
+            }
+        });
+    });
+
+    // Lance le snapping et vérifie l'échelle de saisie
+    setTimeout(function () {
+        this_.checkEditionScale();
+        this_.loadVectorSnappingData();
+    });
+};
+
+/**
+ * Si la géométrie est un cercle, alors elle est remplacée par un polygone à 32 côtés
+ * @param {ol.Feature} feature
+ * @returns {ol.Feature}
+ */
+nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.updateCircleGeoms = function (feature) {
+    oVmap.log('nsVmap.nsToolsManager.Insert.inserttoolController.updateCircleGeoms');
+
+    if (feature.getGeometry() instanceof ol.geom.Circle) {
+        var circleGeom = feature.getGeometry();
+        var polygonGeom = new ol.geom.Polygon.fromCircle(circleGeom);
+        feature.setGeometry(polygonGeom);
+    }
+
+    return feature;
 };
 
 /**
@@ -1012,7 +1295,6 @@ nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.sendInsert
     var this_ = this;
     var data = this.getFormDataFromValues(oResult);
 
-    showAjaxLoader();
     ajaxRequest({
         'method': 'POST',
         'url': oVmap['properties']['api_url'] + '/vmap/querys/' + sBusinessObjectID,
@@ -1052,6 +1334,7 @@ nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.sendInsert
                 this_.reloadImpactedLayer(sBusinessObjectID);
                 // Enlève l'outil en cours (insertion)
                 oVmap.getToolsManager().getBasicTools().toggleOutTools();
+                oVmap.getToolsManager().getBasicTools().hideMobileMenu();
             }
         }
     });
@@ -1069,11 +1352,13 @@ nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.getFormDat
 
     for (var key in oValues) {
         // Fichier ?
-        if (goog.isDefAndNotNull(oValues[key]['aFiles'])) {
-            oFormData_.append(key + '_attached_content', oValues[key]['aFiles'][0]);
-            oFormData_.append(key, oValues[key]['aFiles'][0]['name']);
-        } else {
-            oFormData_.append(key, oValues[key]);
+        if (goog.isDefAndNotNull(oValues[key])) {
+            if (goog.isDefAndNotNull(oValues[key]['aFiles'])) {
+                oFormData_.append(key + '_attached_content', oValues[key]['aFiles'][0]);
+                oFormData_.append(key, oValues[key]['aFiles'][0]['name']);
+            } else {
+                oFormData_.append(key, oValues[key]);
+            }
         }
     }
 
@@ -1081,6 +1366,269 @@ nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.getFormDat
 };
 
 
+
+
+// Mobile
+
+/**
+ * Start the mobile insertion procedure
+ * @param {string} sBoId
+ * @export
+ */
+nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.mobileStartInsertion = function (sBoId) {
+    oVmap.log('nsVmap.nsToolsManager.Insert.inserttoolController.mobileStartInsertion');
+
+    var this_ = this;
+    var $scope = this.$scope_;
+
+    this.updateInsertForm(sBoId, function () {
+
+        // Récupère le type de géométrie à inserrer: affiche une modale en cas de multiple types
+        this_.getMobileBoGeomType_($scope['oInsertObject']).then(function (sGeomType) {
+
+            // Commence la saisie géométrique
+            oVmap.getToolsManager().getBasicTools().hideMobileMenu();
+            oVmap.getMap().startMobileDraw(sGeomType, function (olFeature) {
+
+                // En cas de feature multiples (multipolygon, multilinestring etc...)
+                if (goog.isArray(olFeature)) {
+                    for (var i = 0; i < olFeature.length; i++) {
+                        olFeature[i] = this_.updateCircleGeoms(olFeature[i]);
+                    }
+                    this_.oOverlayLayer_.getSource().addFeatures(olFeature);
+                } else {
+                    olFeature = this_.updateCircleGeoms(olFeature);
+                    this_.oOverlayLayer_.getSource().addFeature(olFeature);
+                }
+
+                setTimeout(function () {
+                    // Affiche l'outil d'insertion (car la modale est dedans)
+                    oVmap.getToolsManager().getBasicTools().displayAdvancedMobileMenu();
+                    $('#vmap_menu_mobile_menu_insert').removeClass('collapse');
+
+                    // Affiche le formulaire dans la modale
+                    this_.displayEditFrom();
+                });
+            });
+        });
+
+    });
+};
+
+/**
+ * Retourne le type de géométrie à inserrer en demandant à l'utilisateur en cas de multiples types supportés
+ * @param {object} oInsertObject
+ * @returns {defer.promise}
+ */
+nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.getMobileBoGeomType_ = function (oInsertObject) {
+    oVmap.log('nsVmap.nsToolsManager.Insert.inserttoolController.getMobileBoGeomType_');
+
+    var deferred = this.$q_.defer();
+    var sGeomType = angular.copy(oInsertObject['sGeomType']);
+
+    if (sGeomType === 'GEOMETRY' || sGeomType === 'GEOMETRYCOLLECTION') {
+        bootbox.prompt({
+            title: "Type de géométrie à insérer",
+            inputType: 'select',
+            inputOptions: [
+                {
+                    text: 'Point',
+                    value: 'POINT'
+                },
+                {
+                    text: 'Ligne',
+                    value: 'LINESTRING'
+                },
+                {
+                    text: 'Polygone',
+                    value: 'POLYGON'
+                },
+                {
+                    text: 'Cercle',
+                    value: 'CIRCLE'
+                }
+            ],
+            callback: function (result) {
+                deferred.resolve(result);
+            }
+        });
+    } else {
+        setTimeout(function () {
+            deferred.resolve(sGeomType);
+        });
+    }
+
+    return deferred.promise;
+};
+
+
+
+// Snapping
+
+/**
+ * Show the snapping options modal
+ * @export
+ */
+nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.showSnappingOptionsModal = function () {
+    oVmap.log('nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.showSnappingOptionsModal');
+
+    this['tmpSnapOptions'] = angular.copy(this['snapOptions']);
+    $('#vmap-insert-snap-options-modal').modal('show');
+};
+
+/**
+ * Validate and hide the snapping options modal
+ * @export
+ */
+nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.submitSnappingOptionsModal = function () {
+    oVmap.log('nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.submitSnappingOptionsModal');
+
+    this['snapOptions'] = angular.copy(this['tmpSnapOptions']);
+
+    oVmap.getMap().getOLMap().removeInteraction(this.snap_);
+    this.snap_ = new ol.interaction.Snap({
+        vertex: true,
+        edge: (this['snapOptions']['mode'] === 'segment_edge_node' ? true : false),
+        pixelTolerance: this['snapOptions']['tolerance'],
+        source: this.oSnapOverlayLayer_.getSource()
+    });
+    oVmap.getMap().getOLMap().addInteraction(this.snap_);
+
+    $('#vmap-insert-snap-options-modal').modal('hide');
+
+    this.checkEditionScale();
+    this.loadVectorSnappingData();
+};
+
+/**
+ * Reset snapping option to default values
+ * @export
+ */
+nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.resetSnapOptions = function () {
+    oVmap.log('nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.resetSnapOptions');
+
+    if (goog.isDefAndNotNull(oVmap['properties']['snapping'])) {
+        this['tmpSnapOptions']['tolerance'] = oVmap['properties']['snapping']['defaut_tolerance'];
+        this['tmpSnapOptions']['mode'] = oVmap['properties']['snapping']['defaut_snapp_mode'];
+        this['tmpSnapOptions']['limit'] = oVmap['properties']['snapping']['defaut_limit'];
+        this['tmpSnapOptions']['visible'] = oVmap['properties']['snapping']['defaut_visibility'];
+    }
+    this.submitSnappingOptionsModal();
+};
+
+/**
+ * Selector function to only reload object when needed
+ */
+nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.loadVectorSnappingData = function () {
+    oVmap.log('nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.loadVectorSnappingData');
+
+    var this_ = this;
+    var oBo = null;
+    this_.oSnapOverlayLayer_.setVisible(this_['snapOptions']['visible']);
+    this_.oSnapOverlayLayer_.getSource().clear();
+    this_.checkEditionScale();
+    oVmap.getMap().getOLMap().removeInteraction(this_.snap_);
+
+    setTimeout(function () {
+        if (goog.isDefAndNotNull(this_['currentAction'])) {
+            if (this_['currentAction'].substr(0, 18) === 'basicTools-insert-') {
+                if (this_['isMaxScaleOk'] && this_['isMinScaleOk']) {
+
+                    for (var i = 0; i < this_.$scope_['aInsertableBOs'].length; i++) {
+                        oBo = this_.$scope_['aInsertableBOs'][i];
+                        this_.stopLoadingBoVectorSnappingData(oBo);
+                        this_.loadBoVectorSnappingData(oBo);
+                    }
+                    for (var i = 0; i < oBo.length; i++) {
+                        if (oBo[i]['bo_snapping_loaded'] === null) {
+                            oBo[i]['bo_snapping_enabled'] = false;
+                        }
+                    }
+                    oVmap.getMap().getOLMap().addInteraction(this_.snap_);
+                }
+            }
+        }
+    });
+};
+
+/**
+ * Retrieve the object given in parameter with ajaxRequest
+ * @param {type} oBo
+ */
+nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.loadBoVectorSnappingData = function (oBo) {
+    oVmap.log('nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.loadBoVectorSnappingData');
+
+    var this_ = this;
+    var bo_id = oBo['bo_id'];
+    var aFeatures = [];
+    var geom = null;
+    var extent = oVmap.getMap().getOLMap().getView().calculateExtent(oVmap.getMap().getOLMap().getSize());
+    var polygonGeom = new ol.geom.Polygon.fromExtent(extent);
+    if (oBo['bo_snapping_enabled'] === true) {
+        oBo['bo_snapping_loaded'] = false;
+        ajaxRequest({
+            'method': 'POST',
+            'url': oVmap['properties']['api_url'] + '/vmap/querys/' + bo_id + '/geometry',
+            'headers': {
+                'X-HTTP-Method-Override': 'GET',
+                'Accept': 'application/x-vm-json'
+            },
+            'data': {
+                'intersect_geom': oVmap.getEWKTFromGeom(polygonGeom),
+                'snapping_limit': this_['snapOptions']['snappingObjectsLimit'],
+                'snapping_mode': this_['snapOptions']['mode']
+            },
+            'ajaxLoader': false,
+            'abord': oBo['loadCanceller'].promise,
+            'scope': this.$scope_,
+            'success': function (response) {
+                if (!goog.isDefAndNotNull(response['data'])) {
+                    oBo['bo_snapping_loaded'] = null;
+                    return 0;
+                }
+                if (goog.isDefAndNotNull(response['data']['errorMessage'])) {
+                    console.error(response['data']['errorMessage']);
+                    oBo['bo_snapping_loaded'] = null;
+                    return 0;
+                }
+                if (response['data'][0]['count'] > this_['snapOptions']['snappingObjectsLimit']) {
+                    oBo['bo_snapping_loaded'] = null;
+                    var text = 'Limit de points atteinte pour object ';
+                    text += oBo['bo_title'];
+                    $.notify(text, "warn");
+                    return 0;
+                }
+                oBo['bo_snapping_loaded'] = true;
+                for (var i = 0; i < response['data'].length; i++) {
+                    if (goog.isDefAndNotNull(response['data'][i]['geom'])) {
+                        geom = response['data'][i]['geom'];
+                        aFeatures.push(new ol.Feature({
+                            geometry: oVmap.getGeomFromEWKT(geom)
+                        }));
+                    }
+                }
+                this_.oSnapOverlayLayer_.getSource().addFeatures(aFeatures);
+            },
+            'error': function (response) {
+                oBo['bo_snapping_loaded'] = null;
+            }
+        });
+    }
+};
+
+/**
+ * Cancel request with a resolve callback
+ * @param {type} oBo
+ */
+nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.stopLoadingBoVectorSnappingData = function (oBo) {
+    oVmap.log('nsVmap.nsToolsManager.Insert.prototype.inserttoolController.prototype.stopLoadingBoVectorSnappingData');
+    var this_ = this;
+    if (goog.isDefAndNotNull(oBo['loadCanceller'])) {
+        oBo['loadCanceller'].resolve();
+        oBo['loadCanceller'] = this_.$q_.defer();
+        oBo['bo_snapping_loaded'] = null;
+    }
+};
 
 // Définit la directive et le controller
 oVmap.module.directive('appInsert', nsVmap.nsToolsManager.Insert.prototype.inserttoolDirective);

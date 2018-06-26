@@ -23,14 +23,12 @@ class WmsService extends Vmap4MapServer {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
      * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties, $oConnection) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = $oConnection;
-		$this->aSelectedFields = Array("wmsservice_id", "description", "definition", "web_id", "web_name");
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
+        $this->aSelectedFields = Array("wmsservice_id", "description", "definition", "web_id", "web_name");
     }
 
     /**
@@ -69,7 +67,7 @@ class WmsService extends Vmap4MapServer {
         require $this->sRessourcesFile;
         $this->aFields = $this->getFields($this->aProperties['schema_vm4ms'], 'v_wms_service', 'wmsservice_id');
     }
-    
+
     /**
      * delete a wms service
      */
@@ -77,11 +75,12 @@ class WmsService extends Vmap4MapServer {
         require $this->sRessourcesFile;
         $this->oConnection->oBd->delete($this->aProperties['schema_vm4ms'], 'wmsservice', 'wmsservice_id', $this->aValues['my_vitis_id'], 'text');
         if ($this->oConnection->oBd->enErreur()) {
-                $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
+            $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
         } else {
-                $this->aFields['wmsservice_id'] = $this->aValues['my_vitis_id'];
+            $this->aFields['wmsservice_id'] = $this->aValues['my_vitis_id'];
         }
     }
+
 }
 
 ?>

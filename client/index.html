@@ -3,9 +3,10 @@
     <head>
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <title>Administration</title>
         <script src="javascript/externs/jquery/jquery-1.11.3.min.js"></script>
+        <script src="javascript/externs/mobile-detect/mobile-detect.min.js"></script>
         <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     </head>
     <body data-app-init="">
@@ -25,6 +26,20 @@
                 else
                     oScriptElement.src = sJsFile + '?_' + attr;
                 document.write(oScriptElement.outerHTML);
+            };
+
+            var isMobile = function () {
+                var propertieEnabled = false;
+                if (typeof window['oClientProperties'] != 'undefined') {
+                    if (window['oClientProperties']['mobile_interface'] == "true") {
+                        propertieEnabled = true;
+                    }
+                }
+                if (new MobileDetect(window.navigator.userAgent).mobile() && propertieEnabled) {
+                    return true;
+                } else {
+                    return false;
+                }
             };
 
             /**
@@ -56,7 +71,9 @@
 
                 // Balises à remplace
                 for (var key in data) {
-                    data[key] = data[key].replace(/\[hostname\]/, window.location.hostname);
+                    if (typeof data[key] === 'string') {
+                        data[key] = data[key].replace(/\[hostname\]/, window.location.hostname);
+                    }
                 }
 
                 // Sauve les properties du client.
@@ -89,8 +106,7 @@
             if (Object.keys(oUrlParams).indexOf("debug") !== -1) {
                 sessionStorage['debug'] = 'true';
                 window['oClientProperties']["debug_mode"] = true;
-            }
-            else {
+            } else {
                 sessionStorage['debug'] = 'false';
                 window['oClientProperties']["debug_mode"] = false;
             }
@@ -102,6 +118,18 @@
                 sessionStorage['appEnv'] = sessionStorage['application'] + "_" + sessionStorage['environment'];
             else
                 sessionStorage['appEnv'] = sessionStorage['application'];
+
+            // Version mobile ?
+            oClientProperties['is_mobile'] = isMobile();
+
+            // Demande confirmation à l'utilisateur quand il clique sur le bouton "Arrière" du navigateur
+            if (oClientProperties['is_mobile']) {
+                setTimeout(function () {
+                    window.onbeforeunload = function () {
+                        return "Your work will be lost.";
+                    };
+                }, 10000);
+            }
 
             /**
              * Fichiers à charger
@@ -121,6 +149,7 @@
                 'javascript/externs/angular/modules/ui-grid/plugins/draggable-rows.js',
                 'javascript/externs/angular/modules/angular-translate/angular-translate.min.js',
                 'javascript/externs/angular/modules/angular-translate/angular-translate-loader-partial.min.js',
+                'javascript/externs/angular/modules/sanitize/angular-sanitize.min.js',
                 'javascript/externs/angular-bind-notifier/bindNotifier.js',
                 'javascript/externs/bootstrap/bootstrap.min.js',
                 'javascript/externs/jquery/plugins/bootstrap-slider/bootstrap-slider.min.js',

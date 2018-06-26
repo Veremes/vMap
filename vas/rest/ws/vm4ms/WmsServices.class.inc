@@ -9,7 +9,7 @@
  * \brief This file contains the WmsServices php class
  *
  * This class defines Rest Api to Vmap4MapServer WmsServices
- * 
+ *
  */
 require_once 'Vmap4MapServer.class.inc';
 require_once 'WmsService.class.inc';
@@ -36,12 +36,11 @@ class WmsServices extends Vmap4MapServer {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
+     * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = new Connection($this->aValues, $this->aProperties);
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
         $this->aSelectedFields = Array("wmsservice_id", "description", "definition", "web_id", "web_name");
     }
 
@@ -244,7 +243,7 @@ class WmsServices extends Vmap4MapServer {
             $sWmsServiceId = htmlentities($sWmsServiceId, ENT_NOQUOTES, 'UTF-8');
             $sWmsServiceId = preg_replace('#&([A-za-z])(?:acute|cedil|caron|circ|grave|orn|ring|slash|th|tilde|uml);#', '\1', $sWmsServiceId);
             $sWmsServiceId = preg_replace('#&([A-za-z]{2})(?:lig);#', '\1', $sWmsServiceId); // pour les ligatures e.g. '&oelig;'
-            $sWmsServiceId = preg_replace('#&[^;]+;#', '', $sWmsServiceId); // supprime les autres caractères        
+            $sWmsServiceId = preg_replace('#&[^;]+;#', '', $sWmsServiceId); // supprime les autres caractères
             // Nom du fichier ".map".
             $sMapFileHash = hash('sha256', $this->aValues['token']);
             $this->aObjects[0]->aFields['map_file_hash'] = $sMapFileHash;
@@ -372,7 +371,7 @@ class WmsServices extends Vmap4MapServer {
      * )
      */
     /**
-     * @SWG\Post(path="/wmsservices/{wmsservice_id}/MapFile",
+     * @SWG\Post(path="/wmsservices/MapFile",
      *   tags={"WmsServices"},
      *   summary="Create wms service map file",
      *   description="Request to create the map file of a wms service by id",
@@ -387,7 +386,7 @@ class WmsServices extends Vmap4MapServer {
      *   ),
      *   @SWG\Parameter(
      *     name="wmsservice_id",
-     *     in="query",
+     *     in="formData",
      *     description="wmsservice_id",
      *     required=true,
      *     type="string",
@@ -493,7 +492,7 @@ class WmsServices extends Vmap4MapServer {
      *         description="Poprerties Response",
      *         @SWG\Schema(ref="#/definitions/wmsservices")
      *     ),
-     * 
+     *
      *  )
      */
 

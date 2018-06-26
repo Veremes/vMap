@@ -1,20 +1,28 @@
 
 <div style="text-align: left">
 
-    <div class="print-form-label" ng-show="!ctrl.properties.models.length > 0">
+    <div class="print-form-label" ng-show="!ctrl.models.length > 0">
         Aucun modèle d'impression associé
     </div>
 
-    <form role="form" ng-submit="ctrl.prepareAndLaunchPrint()" ng-show="ctrl.properties.models.length > 0">
+    <form role="form" ng-submit="ctrl.prepareAndLaunchPrint()" ng-show="ctrl.models.length > 0">
         <div class="print-form-label">Modèle</div>
-        <select id="select-print-format" class="form-control minus" ng-model="modelIndex" ng-change="ctrl.loadModelParmas(modelIndex)">
-            <option ng-repeat="model in ctrl.properties.models"
-                    value="{{$index}}">{{model.name}}</option>
+        <select id="select-print-format" class="form-control minus" 
+                ng-model="modelIndex" 
+                ng-options="index as model.name for (index, model) in ctrl.models" 
+                ng-change="ctrl.loadModelParmas(modelIndex)"></select>
+
+        <div class="print-form-label" ng-if="ctrl.printStyles.length > 0">Styles</div>
+        <select id="select-print-format" class="form-control minus" 
+                ng-if="ctrl.printStyles.length > 0"
+                ng-model="$parent.printstyle_id" 
+                ng-options="printStyle.printstyle_id as printStyle.name for printStyle in ctrl.printStyles">
+            <option value=""></option> 
         </select>
 
-        <div ng-repeat="variable in ctrl.model.variables" ng-if="variable.editable === true">
+        <div ng-repeat="variable in ctrl.selectedModel.variables" ng-if="variable.editable === true">
             <div class="print-form-label">{{variable.label}}</div>
-            <input class="minus" style="width: 100%; border: 0px;" type="text" placeholder="{{variable.description}}" ng-model="variable.value" required>
+            <input class="minus" style="width: 100%; border: 0px;" type="text" placeholder="{{variable.description}}" ng-model="variable.value">
             <br>
         </div>
 

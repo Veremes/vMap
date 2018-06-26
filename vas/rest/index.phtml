@@ -38,7 +38,7 @@ if (!empty($boundary)) {
         $raw_headers = explode("\r\n", $raw_headers);
         $headers = array();
         foreach ($raw_headers as $header) {
-            list($name, $value) = explode(':', $header);
+            list($name, $value) = explode(':', $header, 2);
             $headers[strtolower($name)] = ltrim($value, ' ');
         }
         // Parse the Content-Disposition to get the field name, etc.
@@ -52,6 +52,10 @@ if (!empty($boundary)) {
             // handle your fields here
             // Ce champ est un fichier ()?
             if (!empty($filename)) {
+                // Internet Explorer passe le chemin complet vers le fichier.
+                $aFilenamePathInfo = pathinfo($filename);
+                $filename = $aFilenamePathInfo['filename'] . '.' . $aFilenamePathInfo['extension'];
+                //
                 $_PUTDATA[$name . "_file"] = substr($body, 0, strlen($body) - 2);
                 $_PUTDATA[$name . "_name"] = $filename;
             } else

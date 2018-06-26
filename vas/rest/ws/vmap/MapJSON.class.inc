@@ -26,13 +26,11 @@ class MapJSON extends Vmap {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
      * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties, $oConnection) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = $oConnection;
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
     }
 
     /**
@@ -174,6 +172,7 @@ class MapJSON extends Vmap {
                 $oLayer->aFields[$key] = $value;
             }
             $oLayer->aFields['filter_form'] = $oLayer->getFilterForm();
+            $oLayer->aFields['filter_form_embedjs'] = $oLayer->getFilterFormJs();
             array_push($aLayers, $oLayer);
         }
 
@@ -258,6 +257,11 @@ class MapJSON extends Vmap {
             else
                 $tmp['is_dynamic'] = false;
 
+            if (!empty($oLayer->aFields['is_bo_filtered']))
+                $tmp['is_bo_filtered'] = $oLayer->aFields['is_bo_filtered'];
+            else
+                $tmp['is_bo_filtered'] = false;
+
             if (!empty($oLayer->aFields['is_filtered']) && !empty($oLayer->aFields['filter_form']))
                 $tmp['is_filtered'] = $oLayer->aFields['is_filtered'];
             else
@@ -265,6 +269,9 @@ class MapJSON extends Vmap {
 
             if (!empty($oLayer->aFields['filter_form']))
                 $tmp['filter_form'] = $oLayer->aFields['filter_form'];
+
+            if (!empty($oLayer->aFields['filter_form_embedjs']))
+                $tmp['filter_form_embedjs'] = $oLayer->aFields['filter_form_embedjs'];
 
             if (!empty($oLayer->aFields['matrix_set']))
                 $tmp['matrixSet'] = $oLayer->aFields['matrix_set'];
@@ -285,9 +292,18 @@ class MapJSON extends Vmap {
             if (!empty($oLayer->aFields['service_options']))
                 $tmp['service_options'] = $oLayer->aFields['service_options'];
 
+            if (!empty($oLayer->aFields['service_login']))
+                $tmp['service_login'] = $oLayer->aFields['service_login'];
+
+            if (!empty($oLayer->aFields['service_password']))
+                $tmp['service_password'] = $oLayer->aFields['service_password'];
+
             if (!empty($oLayer->aFields['service_type_version']))
                 $tmp['version'] = $oLayer->aFields['service_type_version'];
 
+            if ($oLayer->aFields['service_type_id'] == 'imagewms') {
+                $tmp['ratio'] = 1;
+            }
 
             if ($oLayer->aFields['service_type_id'] == 'tilewms' || $oLayer->aFields['service_type_id'] == 'imagewms') {
                 if (!empty($oLayer->aFields['layer_list']))

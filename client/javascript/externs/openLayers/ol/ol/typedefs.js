@@ -46,13 +46,23 @@ ol.AtlasManagerInfo;
  * A type that can be used to provide attribution information for data sources.
  *
  * It represents either
- * * a simple string (e.g. `'© Acme Inc.'`),
- * * an array of simple strings (e.g. `['© Acme Inc.', '© Bacme Inc.']`),
- * * an instance of `{@link ol.Attribution}`,
- * * or an array with multiple `{@link ol.Attribution}` instances.
- * @typedef {string|Array.<string>|ol.Attribution|Array.<ol.Attribution>}
+ * * a simple string (e.g. `'© Acme Inc.'`)
+ * * an array of simple strings (e.g. `['© Acme Inc.', '© Bacme Inc.']`)
+ * * a function that returns a string or array of strings (`{@link ol.Attribution2}`)
+ *
+ * Note that the `{@link ol.Attribution}` constructor is deprecated.
+ * @typedef {string|Array.<string>|ol.Attribution2|ol.Attribution|Array.<ol.Attribution>}
  */
 ol.AttributionLike;
+
+
+/**
+ * A function that returns a string or an array of strings representing source
+ * attributions.
+ *
+ * @typedef {function(olx.FrameState): (string|Array.<string>)}
+ */
+ol.Attribution2;
 
 
 /**
@@ -77,8 +87,31 @@ ol.CanvasFunctionType;
 
 
 /**
+ * @typedef {{currentFillStyle: (ol.ColorLike|undefined),
+ *            currentStrokeStyle: (ol.ColorLike|undefined),
+ *            currentLineCap: (string|undefined),
+ *            currentLineDash: Array.<number>,
+ *            currentLineDashOffset: (number|undefined),
+ *            currentLineJoin: (string|undefined),
+ *            currentLineWidth: (number|undefined),
+ *            currentMiterLimit: (number|undefined),
+ *            lastStroke: (number|undefined),
+ *            fillStyle: (ol.ColorLike|undefined),
+ *            strokeStyle: (ol.ColorLike|undefined),
+ *            lineCap: (string|undefined),
+ *            lineDash: Array.<number>,
+ *            lineDashOffset: (number|undefined),
+ *            lineJoin: (string|undefined),
+ *            lineWidth: (number|undefined),
+ *            miterLimit: (number|undefined)}|null}
+ */
+ol.CanvasFillStrokeState;
+
+
+/**
  * @typedef {{lineCap: string,
  *            lineDash: Array.<number>,
+ *            lineDashOffset: number,
  *            lineJoin: string,
  *            lineWidth: number,
  *            miterLimit: number,
@@ -89,7 +122,7 @@ ol.CanvasStrokeState;
 
 /**
  * @typedef {{font: string,
- *            textAlign: string,
+ *            textAlign: (string|undefined),
  *            textBaseline: string}}
  */
 ol.CanvasTextState;
@@ -131,6 +164,16 @@ ol.ColorLike;
 
 
 /**
+ * @typedef {{
+ *   center: ol.CenterConstraintType,
+ *   resolution: ol.ResolutionConstraintType,
+ *   rotation: ol.RotationConstraintType
+ * }}
+ */
+ol.Constraints;
+
+
+/**
  * An array of numbers representing an xy coordinate. Example: `[16, 48]`.
  * @typedef {Array.<number>}
  */
@@ -147,6 +190,20 @@ ol.CoordinateFormatType;
 
 
 /**
+ * Container for decluttered replay instructions that need to be rendered or
+ * omitted together, i.e. when styles render both an image and text, or for the
+ * characters that form text along lines. The basic elements of this array are
+ * `[minX, minY, maxX, maxY, count]`, where the first four entries are the
+ * rendered extent of the group in pixel space. `count` is the number of styles
+ * in the group, i.e. 2 when an image and a text are grouped, or 1 otherwise.
+ * In addition to these four elements, declutter instruction arrays (i.e. the
+ * arguments to @{link ol.render.canvas.drawImage} are appended to the array.
+ * @typedef {Array.<*>}
+ */
+ol.DeclutterGroup;
+
+
+/**
  * A function that takes a {@link ol.MapBrowserEvent} and two
  * {@link ol.Pixel}s and returns a `{boolean}`. If the condition is met,
  * true should be returned.
@@ -156,12 +213,11 @@ ol.DragBoxEndConditionType;
 
 
 /**
- * Function that takes coordinates and an optional existing geometry as
+ * Function that takes an array of coordinates and an optional existing geometry as
  * arguments, and returns a geometry. The optional existing geometry is the
  * geometry that is returned when the function is called without a second
  * argument.
- * @typedef {function(!(ol.Coordinate|Array.<ol.Coordinate>|
- *     Array.<Array.<ol.Coordinate>>), ol.geom.SimpleGeometry=):
+ * @typedef {function(!Array.<ol.Coordinate>, ol.geom.SimpleGeometry=):
  *     ol.geom.SimpleGeometry}
  */
 ol.DrawGeometryFunctionType;
@@ -254,6 +310,15 @@ ol.FeatureUrlFunction;
 
 
 /**
+ * @typedef {{
+ *     geom: ol.geom.Point,
+ *     text: string
+ * }}
+ */
+ol.GraticuleLabelDataType;
+
+
+/**
  * A function that is called to trigger asynchronous canvas drawing.  It is
  * called with a "done" callback that should be called when drawing is done.
  * If any error occurs during drawing, the "done" callback should be called with
@@ -285,7 +350,8 @@ ol.ImageLoadFunctionType;
 
 /**
  * @typedef {{x: number, xunits: (ol.style.IconAnchorUnits|undefined),
- *            y: number, yunits: (ol.style.IconAnchorUnits|undefined)}}
+ *            y: number, yunits: (ol.style.IconAnchorUnits|undefined),
+ *            origin: (ol.style.IconOrigin|undefined)}}
  */
 ol.KMLVec2_;
 
@@ -345,13 +411,12 @@ ol.LRUCacheEntry;
 
 
 /**
- * @typedef {{controls: ol.Collection.<ol.control.Control>,
- *            interactions: ol.Collection.<ol.interaction.Interaction>,
+ * @typedef {{controls: (ol.Collection.<ol.control.Control>|undefined),
+ *            interactions: (ol.Collection.<ol.interaction.Interaction>|undefined),
  *            keyboardEventTarget: (Element|Document),
  *            logos: (Object.<string, (string|Element)>),
  *            overlays: ol.Collection.<ol.Overlay>,
- *            rendererConstructor:
- *                function(new: ol.renderer.Map, Element, ol.Map),
+ *            mapRendererPlugin: olx.MapRendererPlugin,
  *            values: Object.<string, *>}}
  */
 ol.MapOptionsInternal;
@@ -385,7 +450,7 @@ ol.Pixel;
 
 
 /**
- * @typedef {function(ol.Map, ?olx.FrameState): boolean}
+ * @typedef {function(ol.PluggableMap, ?olx.FrameState): boolean}
  */
 ol.PostRenderFunction;
 
@@ -395,7 +460,7 @@ ol.PostRenderFunction;
  * with the {@link ol.Map} as first and an optional {@link olx.FrameState} as
  * second argument. Return `true` to keep this function for the next frame,
  * `false` to remove it.
- * @typedef {function(ol.Map, ?olx.FrameState): boolean}
+ * @typedef {function(ol.PluggableMap, ?olx.FrameState): boolean}
  */
 ol.PreRenderFunction;
 
@@ -444,9 +509,11 @@ ol.RegularShapeRenderOptions;
 
 /**
  * A function to be used when sorting features before rendering.
- * It takes two instances of {@link ol.Feature} and returns a `{number}`.
+ * It takes two instances of {@link ol.Feature} or {@link ol.render.Feature} and
+ * returns a `{number}`.
  *
- * @typedef {function(ol.Feature, ol.Feature):number}
+ * @typedef {function((ol.Feature|ol.render.Feature), (ol.Feature|ol.render.Feature)):
+ *     number}
  */
 ol.RenderOrderFunction;
 
@@ -559,7 +626,8 @@ ol.SourceSourceOptions;
  *            projection: ol.ProjectionLike,
  *            state: (ol.source.State|undefined),
  *            tileGrid: (ol.tilegrid.TileGrid|undefined),
- *            wrapX: (boolean|undefined)}}
+ *            wrapX: (boolean|undefined),
+ *            transition: (number|undefined)}}
  */
 ol.SourceTileOptions;
 
@@ -578,7 +646,8 @@ ol.SourceTileOptions;
  *            tileUrlFunction: (ol.TileUrlFunctionType|undefined),
  *            url: (string|undefined),
  *            urls: (Array.<string>|undefined),
- *            wrapX: (boolean|undefined)}}
+ *            wrapX: (boolean|undefined),
+ *            transition: (number|undefined)}}
  */
 ol.SourceUrlTileOptions;
 
@@ -602,6 +671,17 @@ ol.StyleFunction;
  *     (ol.geom.Geometry|ol.render.Feature|undefined)}
  */
 ol.StyleGeometryFunction;
+
+
+/**
+ * Custom renderer function. Takes two arguments:
+ *
+ * 1. The pixel coordinates of the geometry in GeoJSON notation.
+ * 2. The {@link olx.render.State} of the layer renderer.
+ *
+ * @typedef {function((ol.Coordinate|Array<ol.Coordinate>|Array.<Array.<ol.Coordinate>>),olx.render.State)}
+ */
+ol.StyleRenderFunction;
 
 
 /**
@@ -642,8 +722,7 @@ ol.TilePriorityFunction;
  *     dirty: boolean,
  *     renderedRenderOrder: (null|ol.RenderOrderFunction),
  *     renderedTileRevision: number,
- *     renderedRevision: number,
- *     replayGroup: ol.render.ReplayGroup}}
+ *     renderedRevision: number}}
  */
 ol.TileReplayState;
 
@@ -701,6 +780,14 @@ ol.ViewAnimation;
  *            buffer: WebGLBuffer}}
  */
 ol.WebglBufferCacheEntry;
+
+
+/**
+ * @typedef {{atlas: ol.style.AtlasManager,
+ *            width: Object.<string, number>,
+ *            height: number}}
+ */
+ol.WebglGlyphAtlas;
 
 
 /**

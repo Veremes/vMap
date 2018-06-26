@@ -1,23 +1,23 @@
 <?php
+
 /**
-* \file Voies.class.inc
-* \class Voies
-*
-* \author Armand Bahi <armand.bahi@veremes.com>.
-*
-* \brief This file contains the Voies php class
-*
-* This class defines Rest Api to Vmap Voies
-* 
-*/
+ * \file Voies.class.inc
+ * \class Voies
+ *
+ * \author Armand Bahi <armand.bahi@veremes.com>.
+ *
+ * \brief This file contains the Voies php class
+ *
+ * This class defines Rest Api to Vmap Voies
+ * 
+ */
 require_once 'Cadastre.class.inc';
 require_once 'Voie.class.inc';
 require_once __DIR__ . '/../../class/vitis_lib/Connection.class.inc';
 require_once __DIR__ . '/../../class/vmlib/BdDataAccess.inc';
 
 class Voies extends Cadastre {
-    
-     /**
+    /**
      * @SWG\Definition(
      *   definition="/voies",
      *   allOf={
@@ -29,20 +29,20 @@ class Voies extends Cadastre {
      *   description="Operations about voies"
      * )
      */
+
     /**
      * construct
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
+     * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = new Connection($this->aValues, $this->aProperties);
-		$this->aSelectedFields = Array('ID_RIVOLI', 'L_NATURE_VOIE', 'DVOILIB');
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
+        $this->aSelectedFields = Array('ID_RIVOLI', 'L_NATURE_VOIE', 'DVOILIB');
     }
-    
+
     /**
      * @SWG\Get(path="/voies",
      *   tags={"Voie"},
@@ -77,7 +77,7 @@ class Voies extends Cadastre {
      *     description="number of element",
      *     required=false,
      *     type="integer",
-	 *     default="4",
+     *     default="4",
      *     format="int32"
      *   ),
      * @SWG\Parameter(
@@ -116,6 +116,7 @@ class Voies extends Cadastre {
      *     )
      *  )
      */
+
     /**
      * get Voies
      * @return  Voies
@@ -124,6 +125,7 @@ class Voies extends Cadastre {
         $aReturn = $this->genericGet('public', $this->aProperties['cadastre']['views']['voie'], 'ID_RIVOLI');
         return $aReturn['sMessage'];
     }
-    
+
 }
+
 ?>

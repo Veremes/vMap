@@ -449,7 +449,7 @@
                     {
                         "type":"label",
                         "name":"cl_avis",
-                        "label":"Conformité du dernier controle",
+                        "label":"Conformité du dernier contrôle",
                         "nb_cols":4,
                         "id":"Element_13_22_1"
                     },
@@ -532,7 +532,7 @@
                         "Element_11",
                         "Element_12",
                         "cl_avis",
-                        "next_controle"
+                        "next_control"
                     ]
                 }
             ]
@@ -549,10 +549,16 @@
                 "fields":[
                     {
                         "type":"integer",
-                        "name":"id_anc_installation",
+                        "name":"id_installation",
                         "label":"ID",
-                        "nb_cols":12,
+                        "nb_cols":6,
                         "id":"Element_0_1_1"
+                    }, {
+                        "type":"text",
+                        "name":"num_dossier",
+                        "label":"nº installation",
+                        "nb_cols":6,
+                        "id":"Element_0_1_1111"
                     }
                 ]
             },
@@ -770,7 +776,8 @@
                     "label":"Tab 0",
                     "elements":[
                         "search_button",
-                        "id_anc_installation",
+                        "id_installation",
+                        "num_dossier",
                         "id_com",
                         "section",
                         "id_parc",
@@ -1401,14 +1408,14 @@
                     {
                         "type":"label",
                         "name":"cl_avis",
-                        "label":"Conformité du dernier controle",
+                        "label":"Conformité du dernier contrôle",
                         "nb_cols":4,
                         "id":"Element_6_22_2"
                     },
                     {
                         "type":"label",
                         "name":"next_control",
-                        "label":"Date du prochain controle",
+                        "label":"Date du prochain contrôle",
                         "nb_cols":4,
                         "id":"Element_7_22_3"
                     }
@@ -1484,13 +1491,13 @@
                         "parcelle",
                         "nb_controle",
                         "insert_button",
-                        "id_anc_installation",
+                        "id_installation",
                         "prop_code_postal",
                         "prop_commune",
                         "prop_mail",
                         "prop_tel",
                         "cl_avis",
-                        "next_controle",
+                        "next_control",
                         "Element_0",
                         "Element_1",
                         "Element_2",
@@ -2133,7 +2140,7 @@
                     },
                     {
                         "type":"label",
-                        "name":"next_controle",
+                        "name":"next_control",
                         "label":"Date de prochain contrôle",
                         "nb_cols":4,
                         "id":"Element_21_22_3"
@@ -2218,7 +2225,7 @@
                         "Element_18",
                         "Element_19",
                         "cl_avis",
-                        "next_controle"
+                        "next_control"
                     ]
                 }
             ]

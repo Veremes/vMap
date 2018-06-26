@@ -35,12 +35,11 @@ class Privileges extends Vitis {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
+     * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = new Connection($this->aValues, $this->aProperties);
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
         $this->aSelectedFields = Array("rolname", "description", "type", "users");
     }
 
@@ -215,11 +214,11 @@ class Privileges extends Vitis {
                             $aXmlRacineAttribute['status'] = 0;
                             $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
                             return $sMessage;
-                        } else{
-                            if ( $iId == 'vitis_admin'){
+                        } else {
+                            if ($iId == 'vitis_admin') {
                                 $aParams = array();
-                                $aParams['sValue'] = array('value' => $aUsers[$i]["usename"], 'type' => 'column_name');
-                                $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['revokeCREATEROLE'], $aParams); 
+                                $aParams['sValue'] = array('value' => $aUsers[$i]["usename"], 'type' => 'double_quote');
+                                $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['revokeCREATEROLE'], $aParams);
                                 if ($this->oConnection->oBd->enErreur()) {
                                     $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                                     $aXmlRacineAttribute['status'] = 0;
@@ -241,9 +240,10 @@ class Privileges extends Vitis {
                             return $sMessage;
                         } else {
                             // Grant sur tous les utilisateurs sélectionnés.
-                            while ($oUser = $this->oConnection->oBd->objetSuivant($oPDOresult)) {
+                            $aUsers = $this->oConnection->oBd->getResultTableAssoc($oPDOresult);
+                            for ($i = 0; $i < count($aUsers); $i++) {
                                 $aParams = array();
-                                $aParams['sValue'] = array('value' => $oUser->login, 'type' => 'double_quote');
+                                $aParams['sValue'] = array('value' => $aUsers[$i]["login"], 'type' => 'double_quote');
                                 $aParams['sId'] = array('value' => $iId, 'type' => 'double_quote');
                                 $this->oConnection->oBd->executeWithParams($aSql['grantPrivilege'], $aParams);
                                 if ($this->oConnection->oBd->enErreur()) {
@@ -251,11 +251,11 @@ class Privileges extends Vitis {
                                     $aXmlRacineAttribute['status'] = 0;
                                     $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
                                     return $sMessage;
-                                } else{
-                                    if ( $iId == 'vitis_admin'){
+                                } else {
+                                    if ($iId == 'vitis_admin') {
                                         $aParams = array();
-                                        $aParams['sValue'] = array('value' => $aUsers[$i]["usename"], 'type' => 'column_name');
-                                        $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['grantCREATEROLE'], $aParams); 
+                                        $aParams['sValue'] = array('value' => $aUsers[$i]["login"], 'type' => 'double_quote');
+                                        $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['grantCREATEROLE'], $aParams);
                                         if ($this->oConnection->oBd->enErreur()) {
                                             $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                                             $aXmlRacineAttribute['status'] = 0;
@@ -263,7 +263,7 @@ class Privileges extends Vitis {
                                             return $sMessage;
                                         }
                                     }
-                                } 
+                                }
                             }
                         }
                     }

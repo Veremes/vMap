@@ -148,6 +148,7 @@ nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController = function ($s
 
     var setQueryableBos = function () {
         this_.$scope_.$applyAsync(function () {
+
             // rempli this.oQueryableBOs et aQueryableBOs
             this_['oQueryableBOs'] = oVmap.getMapManager().getQueryableBusinessObjects(true);
             this_['aQueryableBOs'] = oVmap.getMapManager().getQueryableBusinessObjectsAsArray(true);
@@ -209,6 +210,20 @@ nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController = function ($s
     oVmap['scope'].$on('mapChanged', function () {
         this_.removePopups();
     });
+
+    // Événement pour dire à l'appli que this_['sSelectedBo'] a changé
+    $scope.$watch('ctrl.sSelectedBo', function (oldVal, newVal) {
+        if (!goog.isString(oldVal) || !goog.isString(newVal)) {
+            return;
+        }
+        if (!oldVal.length > 0 || !newVal.length > 0) {
+            return;
+        }
+        if (oldVal === newVal) {
+            return;
+        }
+        oVmap['scope'].$broadcast('selectedBoChanged');
+    });
 };
 
 
@@ -243,8 +258,13 @@ nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController.prototype.quer
 
     // Interroge l'objet métier sélectionné
     if (goog.isDefAndNotNull(this['oQueryableBOs'][sQueryBo])) {
+
+        // Ajoute les filtres des couches associées
+        var sLayersFilter = this.getBOLayersFilters_(this['oQueryableBOs'][sQueryBo]);
+
         this.oSelect.queryByEWKTGeom({
             bo_id: sQueryBo,
+            sFilter: sLayersFilter,
             EWKTGeometry: EWKTGeometry,
             canceler: this.canceler_,
             useTableFormat: false,
@@ -257,6 +277,50 @@ nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController.prototype.quer
     } else {
         $('body').css({"cursor": ""});
     }
+};
+
+/**
+ * Get the business object associated layers filter as a API usable string
+ * @param {object} oQueryBo
+ * @returns {String}
+ */
+nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController.prototype.getBOLayersFilters_ = function (oQueryBo) {
+    oVmap.log('nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController.prototypeBO.getLayersFilters_');
+
+    var oFilterValues = {};
+    var sFilter = "";
+    var filter = {
+        'relation': 'AND',
+        'operators': []
+    };
+
+    var oLayerFilter_;
+    if (goog.isArray(oQueryBo['layers'])) {
+        for (var i = 0; i < oQueryBo['layers'].length; i++) {
+            if (oQueryBo['layers'][i].get('is_bo_filtered')) {
+                oLayerFilter_ = oQueryBo['layers'][i].get('filter_values_cleared');
+                if (goog.isObject(oLayerFilter_)) {
+                    goog.object.extend(oFilterValues, oLayerFilter_);
+                }
+            }
+        }
+    }
+
+    for (var key in oFilterValues) {
+
+        if (oFilterValues[key] === '')
+            continue;
+
+        filter['operators'].push({
+            'column': key,
+            'compare_operator': '=',
+            'value': oFilterValues[key]
+        });
+        i++;
+    }
+    sFilter = JSON.stringify(filter);
+
+    return sFilter;
 };
 
 // Ajout de la sélection
@@ -303,7 +367,7 @@ nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController.prototype.repl
 
     var this_ = this;
 
-    // Vérifie que la feature soit bien présente    
+    // Vérifie que la feature soit bien présente
     for (var i = aSelection.length - 1; i >= 0; i--) {
 
         var error = false;
@@ -413,7 +477,7 @@ nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController.prototype.disp
         }
 
         // Ajout du contennu
-        aSelection[i]['mapPopup'].displayMessage('<b>' + aSelection[i]['bo_title'] + ':</b>');
+        aSelection[i]['mapPopup'].displayMessage('<span class="vmap-popup-title">' + this.oSelect.parseFormTile(aSelection[i]['bo_summarytitle'], aSelection[i]['bo_summary']) + '</span>');
         aSelection[i]['mapPopup'].addMessageTable(aSelection[i]['bo_summary']);
         if (goog.isDef(aSelection[i]['bo_image_path']))
             aSelection[i]['mapPopup'].addPhoto(aSelection[i]['bo_image_path']);
@@ -423,11 +487,12 @@ nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController.prototype.disp
         if (aSelection[i]['have_update_rights'] === "true" || aSelection[i]['have_update_rights'] === true) {
             aSelection[i]['mapPopup'].addAction({
                 'content': '<span class="icon-polygon"></span> Modifier la géométrie',
-                'event': function () {
+                'event': angular.bind(this, function(i){
+                    console.log("i: ", angular.copy(i));
                     scope.$apply(function () {
-                        scope['ctrl'].editFeature(scope['ctrl']['aSelections'][0]);
+                        scope['ctrl'].editFeature(scope['ctrl']['aSelections'][i]);
                     });
-                }
+                }, i)
             });
         }
 
@@ -435,23 +500,27 @@ nsVmap.nsToolsManager.BasicSelect.prototype.basicSelectController.prototype.disp
         if (aSelection[i]['have_delete_rights'] === "true" || aSelection[i]['have_delete_rights'] === true) {
             aSelection[i]['mapPopup'].addAction({
                 'content': '<span class="icon-trash"></span> Supprimer l\'objet',
-                'event': function () {
+                'event': angular.bind(this, function(i){
+                    console.log("i: ", angular.copy(i));
                     scope.$apply(function () {
-                        scope['ctrl'].deleteObject(scope['ctrl']['aSelections'][0]);
+                        scope['ctrl'].deleteObject(scope['ctrl']['aSelections'][i]);
                     });
-                }
+                }, i)
             });
         }
 
         // Ajoute le bouton "Ajouter au panier"
-        aSelection[i]['mapPopup'].addAction({
-            'content': '<span class="icon-shopping_basket"></span> Ajouter au panier',
-            'event': function () {
-                scope.$apply(function () {
-                    scope['ctrl'].addToCard(scope['ctrl']['aSelections'][0]);
-                });
-            }
-        });
+        if (!oVmap['properties']['is_mobile']) {
+            aSelection[i]['mapPopup'].addAction({
+                'content': '<span class="icon-shopping_basket"></span> Ajouter au panier',
+                'event': angular.bind(this, function(i){
+                    console.log("i: ", angular.copy(i));
+                    scope.$apply(function () {
+                        scope['ctrl'].addToCard(scope['ctrl']['aSelections'][i]);
+                    });
+                }, i)
+            });
+        }
 
         // Google street view
         if (oVmap['properties']['selection']['street_view'] !== false) {

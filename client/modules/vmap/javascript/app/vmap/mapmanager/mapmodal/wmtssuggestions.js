@@ -292,8 +292,6 @@ nsVmap.nsMapManager.nsMapModal.WMTSSuggestions.prototype.wmtssuggestionsControll
  */
 nsVmap.nsMapManager.nsMapModal.WMTSSuggestions.prototype.wmtssuggestionsController.prototype.addLayerToAdd = function () {
     oVmap.log('nsVmap.nsMapManager.nsMapModal.WMTSSuggestions.prototype.wmtssuggestionsController.prototype.addLayerToAdd');
-    
-    console.log("this['sLayerToAdd_style_name']: ", this['sLayerToAdd_style_name']);
 
     if (!goog.isDefAndNotNull(this['sLayerToAdd_name']) || this['sLayerToAdd_name'] === '') {
         $.notify('Informations insuffisantes: Nom de la couche', 'error');

@@ -27,9 +27,10 @@ class MapCatalog extends Vmap {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
      * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
         $this->aValues = $aValues;
         $this->aPath = $aPath;
         $this->aProperties = $properties;
@@ -102,7 +103,7 @@ class MapCatalog extends Vmap {
                 // 2- Génère le flux privé qui aura pour nom de mapFile le token de vitis 2016
                 $params = array(
                     "token" => $veremapToken,
-                    "fileName" => $aValues['token']
+                    "fileName" => hash('sha256', $aValues['token'])
                 );
                 $this->httpPost($properties["api_veremap"] . "/veremap/WMS", $params);
             }

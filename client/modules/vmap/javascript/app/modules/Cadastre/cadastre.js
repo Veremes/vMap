@@ -618,7 +618,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
 
     var cadastreController = this;
 
-    showAjaxLoader();
     ajaxRequest({
         'method': 'GET',
         'url': oVmap['properties']['api_url'] + '/' + oVmap['properties']['cadastre']['api'] + '/parcelles',
@@ -686,7 +685,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
             }
 
             // Récupère d'IDDNUPRO
-            showAjaxLoader();
             ajaxRequest({
                 'method': 'GET',
                 'url': oVmap['properties']['api_url'] + '/' + oVmap['properties']['cadastre']['api'] + '/descriptionparcelles',
@@ -1000,7 +998,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
     // Ajoute la description de la parcelle
     var cadastreController = this;
 
-    showAjaxLoader();
     ajaxRequest({
         'method': 'POST',
         'url': oVmap['properties']['api_url'] + '/' + oVmap['properties']['cadastre']['api'] + '/fichedescriptiveparcelle/' + id_par,
@@ -1164,7 +1161,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
 
     var this_ = this;
 
-    showAjaxLoader();
     ajaxRequest({
         'method': 'POST',
         'url': oVmap['properties']['api_url'] + '/' + oVmap['properties']['cadastre']['api'] + '/ficheurbanisme/' + id_par,
@@ -1311,7 +1307,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
     // Ajoute la description de la parcelle
     var cadastreController = this;
 
-    showAjaxLoader();
     ajaxRequest({
         'method': 'POST',
         'url': oVmap['properties']['api_url'] + '/' + oVmap['properties']['cadastre']['api'] + '/fichedescriptiveinvariant/' + id_bat,
@@ -1455,8 +1450,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
                     }
                     // Others
                     else {
-//                        var url = window.URL.createObjectURL(response['data']);
-//                        cadastreController.releveWindow.location.href = url;
                         oVmap.downloadBlob(response['data'], 'releve_de_propriete_' + id_par + '.pdf');
                         cadastreController.releveWindow.close();
                     }
@@ -1640,7 +1633,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
         bootbox.alert(message);
     }
 
-    showAjaxLoader();
     ajaxRequest({
         'method': 'POST',
         'url': oVmap['properties']['api_url'] + '/' + oVmap['properties']['cadastre']['api'] + '/rapportscadastreparcelle',
@@ -1670,7 +1662,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
             var data = response['data']['data'];
             var rapportLink = data['rapport'] + '&';
 
-            showAjaxLoader();
             ajaxRequest({
                 'method': 'GET',
                 'url': rapportLink,
@@ -1683,7 +1674,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
 
                     // Ouvre la nouvelle fenêtre ou lance le téléchargement du fichier
                     if (bOpenWindow) {
-                        this_.releveWindow.location.href = rapportLink;
 
                         // IE
                         if (window.navigator['msSaveOrOpenBlob']) {
@@ -1692,15 +1682,20 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
                         }
                         // Others
                         else {
-                            var url = window.URL.createObjectURL(response['data']);
-                            this_.releveWindow.location.href = url;
+                            oVmap.downloadBlob(response['data'], 'vmap_cadastre_' + rapportType + '.pdf');
+                            this_.releveWindow.close();
                         }
                     } else {
-                        var url = window.URL.createObjectURL(response['data']);
-                        $('#cadastre-download-file').attr('href', url);
-                        $('#cadastre-download-file').attr('download', rapportType + "." + data['format']);
-                        oVmap.simuleClick('cadastre-download-file');
-                        $('.bootbox-alert').modal('hide');
+                        // IE
+                        if (window.navigator['msSaveOrOpenBlob']) {
+                            window.navigator['msSaveOrOpenBlob'](response['data'], rapportType + "." + data['format']);
+                            $('.bootbox-alert').modal('hide');
+                        }
+                        // Others
+                        else {
+                            oVmap.downloadBlob(response['data'], rapportType + "." + data['format']);
+                            $('.bootbox-alert').modal('hide');
+                        }
                     }
                 }
             });
@@ -1881,7 +1876,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
         return 0;
     };
 
-    showAjaxLoader();
     ajaxRequest({
         'method': 'POST',
         'url': url,
@@ -1930,12 +1924,27 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
  */
 nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.addSelectionFromValue = function (path, param, value, tabCode, callBack) {
     oVmap.log('nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.addSelectionFromValue');
-    if (this['cadastreAPI_'] == "cadastre") {
-        var paramField = param;
-    } else {
-        var paramField = param.toLowerCase();
+
+    // Vérifications value
+    if (!goog.isDefAndNotNull(value)) {
+        console.error('value undefined');
+        return null;
     }
-//    var filter = '"' + paramField + '"' + '=' + '\'' + value + '\'';
+    if (!goog.isString(value) && !goog.isNumber(value)) {
+        console.error('value not string or number');
+        return null;
+    }
+    if (!String(value).length > 0) {
+        console.error('value empty');
+        return null;
+    }
+
+    var paramField;
+    if (this['cadastreAPI_'] === "cadastre") {
+        paramField = param;
+    } else {
+        paramField = param.toLowerCase();
+    }
     var filter = {
         "column": paramField,
         "compare_operator": "=",
@@ -2154,7 +2163,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
     var cadastreController = this;
 
     if (value !== "") {
-        showAjaxLoader();
         ajaxRequest({
             'method': 'POST',
             'url': url,
@@ -2164,7 +2172,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
             },
             'data': {
                 'attributs': 'geom|proj',
-//                'filter': '"' + param + '"' + '=\'' + value + '\'',
                 'filter': {
                     "column": param,
                     "compare_operator": "=",
@@ -2226,7 +2233,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
         });
     }
 
-    showAjaxLoader();
     ajaxRequest({
         'method': 'POST',
         'url': url,
@@ -2293,7 +2299,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
             });
         }
 
-        showAjaxLoader();
         ajaxRequest({
             'method': 'POST',
             'url': url,
@@ -2367,7 +2372,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
 
     this[variableName].length = 0;
 
-    showAjaxLoader();
     ajaxRequest({
         'method': 'POST',
         'url': url,
@@ -2408,9 +2412,24 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
     var cadastreController = this;
     var url = oVmap['properties']['api_url'] + '/' + path;
     var value = $(selector).val();
+
+    // Vérifications value
+    if (!goog.isDefAndNotNull(value)) {
+        console.error('$(' + selector + ') undefined');
+        return null;
+    }
+    if (!goog.isString(value) && !goog.isNumber(value)) {
+        console.error('$(' + selector + ') not string or number');
+        return null;
+    }
+    if (!String(value).length > 0) {
+        console.error('$(' + selector + ') empty');
+        cadastreController[variableName] = [];
+        return null;
+    }
+
     var params = {
         'attributs': '-geom|proj',
-//        'filter': '"' + param + '"' + '=' + '\'' + value + '\'',
         'filter': {
             "column": param,
             "compare_operator": "=",
@@ -2423,7 +2442,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
     if (order_by !== '')
         params['order_by'] = order_by;
 
-    showAjaxLoader();
     ajaxRequest({
         'method': 'POST',
         'url': url,
@@ -2473,7 +2491,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
         params['order_by'] = order_by;
     }
 
-    showAjaxLoader();
     ajaxRequest({
         'method': 'POST',
         'url': oVmap['properties']['api_url'] + '/' + path,
@@ -2528,7 +2545,22 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
     order_by = goog.isDef(order_by) ? order_by : '';
 
     var value = $(selectorId).val();
-//    var filter = '"' + param + '"' + '=' + '\'' + value + '\'';
+
+    // Vérifications value
+    if (!goog.isDefAndNotNull(value)) {
+        console.error('$(' + selectorId + ') undefined');
+        return null;
+    }
+    if (!goog.isString(value) && !goog.isNumber(value)) {
+        console.error('$(' + selectorId + ') not string or number');
+        return null;
+    }
+    if (!String(value).length > 0) {
+        console.error('$(' + selectorId + ') empty');
+        $(table).bootstrapTable('removeAll');
+        return null;
+    }
+
     var filter = {
         "column": param,
         "compare_operator": "=",
@@ -2590,6 +2622,21 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
     var url = oVmap['properties']['api_url'] + '/' + path;
     var cadastreController = this;
 
+    // Vérifications value
+    if (!goog.isDefAndNotNull(value)) {
+        console.error('$(' + selectorId + ') undefined');
+        return null;
+    }
+    if (!goog.isString(value) && !goog.isNumber(value)) {
+        console.error('$(' + selectorId + ') not string or number');
+        return null;
+    }
+    if (!String(value).length > 0) {
+        console.error('$(' + selectorId + ') empty');
+        $(tableId).bootstrapTable('load', []);
+        return null;
+    }
+
     $(tableId).bootstrapTable({
         data: {}
     });
@@ -2600,7 +2647,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
     }
     $(tableId).bootstrapTable('showLoading');
 
-    showAjaxLoader();
     ajaxRequest({
         'method': 'POST',
         'url': url,
@@ -2610,7 +2656,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
         },
         'data': {
             'order_by': order,
-//            'filter': '"' + param + '"' + '=' + '\'' + value + '\'',
             'filter': {
                 "column": param,
                 "compare_operator": "=",
@@ -2693,7 +2738,20 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
 
     this[variableName].length = 0;
 
-    showAjaxLoader();
+    // Vérifications value
+    if (!goog.isDefAndNotNull(value)) {
+        console.error('value undefined');
+        return null;
+    }
+    if (!goog.isString(value) && !goog.isNumber(value)) {
+        console.error('value not string or number');
+        return null;
+    }
+    if (!String(value).length > 0) {
+        console.error('value empty');
+        return null;
+    }
+
     ajaxRequest({
         'method': 'POST',
         'url': url,
@@ -2703,7 +2761,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
         },
         'data': {
             'attributs': '-geom|proj',
-//            'filter': '"' + param + '"' + '=' + '\'' + value + '\'',
             'filter': {
                 "column": param,
                 "compare_operator": "=",
@@ -2762,9 +2819,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
                 var ddenom = 'ddenom';
             }
 
-            proprietaire = proprietaire.replace(/'/g, "''");
-
-            showAjaxLoader();
             ajaxRequest({
                 'method': 'POST',
                 'url': url,
@@ -2866,7 +2920,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
         var dnupro = 'dnupro';
     }
 
-    showAjaxLoader();
     ajaxRequest({
         'method': 'POST',
         'url': url,
@@ -2875,7 +2928,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
             'X-HTTP-Method-Override': 'GET'
         },
         'data': {
-//            'filter': '"' + id_com + '" = \'' + row['ID_COM'] + '\' AND "' + ddenom + '" = \'' + row['DDENOM'].replace(/'/g, "''") + '\'',
             'filter': {
                 "relation": "AND",
                 "operators": [{
@@ -2885,7 +2937,7 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
                     }, {
                         "column": ddenom,
                         "compare_operator": "=",
-                        "value": row['DDENOM'].replace(/'/g, "''")
+                        "value": row['DDENOM']
                     }]
             },
             'attributs': id_com + '|' + dnupro,
@@ -2975,7 +3027,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
             });
         }
 
-        showAjaxLoader();
         ajaxRequest({
             'method': 'POST',
             'url': url,
@@ -3043,7 +3094,7 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
 
     var cadastreController = this;
     var commune = $(communeSelectorId).val();
-    var proprietaire = $(proprietaireSearchId).val().toUpperCase().replace(/'/g, "''");
+    var proprietaire = $(proprietaireSearchId).val().toUpperCase();
     var url = oVmap['properties']['api_url'] + '/' + oVmap['properties']['cadastre']['api'] + '/proprietaires';
 
     if (commune != "") {
@@ -3061,7 +3112,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
                 var ddenom = 'ddenom';
             }
 
-            showAjaxLoader();
             ajaxRequest({
                 'method': 'POST',
                 'url': url,
@@ -3162,7 +3212,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
         var dnupro = 'dnupro';
     }
 
-    showAjaxLoader();
     ajaxRequest({
         'method': 'POST',
         'url': url,
@@ -3171,7 +3220,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
             'X-HTTP-Method-Override': 'GET'
         },
         'data': {
-//            'filter': '"' + id_com + '" = \'' + row['ID_COM'] + '\' AND "' + ddenom + '" = \'' + row['DDENOM'].replace(/'/g, "''") + '\'',
             'filter': {
                 "relation": "AND",
                 "operators": [{
@@ -3181,7 +3229,7 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
                     }, {
                         "column": ddenom,
                         "compare_operator": "=",
-                        "value": row['DDENOM'].replace(/'/g, "''")
+                        "value": row['DDENOM']
                     }]
             },
             'attributs': dnupro + '|' + id_com,
@@ -3276,7 +3324,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
 
         $(tableId).bootstrapTable('showLoading');
 
-        showAjaxLoader();
         ajaxRequest({
             'method': 'POST',
             'url': url,
@@ -3363,7 +3410,6 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
             });
         }
 
-        showAjaxLoader();
         ajaxRequest({
             'method': 'POST',
             'url': url,
@@ -3799,7 +3845,7 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
 
         // Ajoute les infos
         var proprietaire = $(tableProprietaires).bootstrapTable('getAllSelections')[0];
-        this.addSelectionFrom2Values(oVmap["properties"]["cadastre"]["api"] + '/proprietaires', 'DDENOM', proprietaire['DDENOM'].replace(/'/g, "''"), 'ID_COM', proprietaire['ID_COM'], 'veremes_cadastre_proprietaire');
+        this.addSelectionFrom2Values(oVmap["properties"]["cadastre"]["api"] + '/proprietaires', 'DDENOM', proprietaire['DDENOM'], 'ID_COM', proprietaire['ID_COM'], 'veremes_cadastre_proprietaire');
 
     }
 
@@ -3928,7 +3974,7 @@ nsVmap.nsToolsManager.nsModules.Cadastre.prototype.cadastreController.prototype.
 
         // Ajoute les infos
         var proprietaire = $(tableProprietaires).bootstrapTable('getAllSelections')[0];
-        this.addSelectionFrom2Values(oVmap["properties"]["cadastre"]["api"] + '/proprietaires', ddenomF, proprietaire['DDENOM'].replace(/'/g, "''"), id_comF, proprietaire['ID_COM'], 'veremes_cadastre_proprietaire');
+        this.addSelectionFrom2Values(oVmap["properties"]["cadastre"]["api"] + '/proprietaires', ddenomF, proprietaire['DDENOM'], id_comF, proprietaire['ID_COM'], 'veremes_cadastre_proprietaire');
     }
 
     // Ajoute les infos du compte

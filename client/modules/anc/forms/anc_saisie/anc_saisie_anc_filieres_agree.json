@@ -104,7 +104,7 @@
                     {
                         "type":"label",
                         "name":"fag_cap_eh",
-                        "label":"Capcité EH",
+                        "label":"Capacité EH",
                         "disabled":false,
                         "required":false,
                         "nb_cols":4,
@@ -949,7 +949,7 @@
             {
                 "fields":[
                     {
-                        "type":"label",
+                        "type":"tinymce",
                         "name":"fag_commentaires",
                         "label":"Commentaires",
                         "nb_cols":12,
@@ -1392,12 +1392,22 @@
             {
                 "fields":[
                     {
-                        "type":"text",
+                        "type":"select",
                         "name":"fag_denom",
                         "label":"Dénomination de  la filière",
                         "required":false,
                         "nb_cols":4,
-                        "id":"fag_denom_7_1"
+                        "id":"fag_denom_7_1",
+                        "datasource":{
+                            "datasource_id":"datasource_63",
+                            "sort_order":"ASC",
+                            "distinct":"true",
+                            "label_key":"alias",
+                            "order_by":"alias",
+                            "id_key":"valeur",
+                            "attributs":"valeur|alias"
+                        },
+                        "id_from":"fag_denom_7_1_from"
                     },
                     {
                         "type":"select",
@@ -1434,7 +1444,7 @@
                     {
                         "type":"text",
                         "name":"fag_cap_eh",
-                        "label":"Capcité EH",
+                        "label":"Capacité EH",
                         "nb_cols":4,
                         "id":"fag_cap_eh_10_1"
                     },
@@ -3030,12 +3040,22 @@
             {
                 "fields":[
                     {
-                        "type":"text",
+                        "type":"select",
                         "name":"fag_denom",
                         "label":"Dénomination de  la filière",
                         "required":false,
                         "nb_cols":4,
-                        "id":"fag_denom_7_1"
+                        "id":"fag_denom_7_1",
+                        "datasource":{
+                            "datasource_id":"datasource_63",
+                            "sort_order":"ASC",
+                            "distinct":"true",
+                            "label_key":"alias",
+                            "order_by":"alias",
+                            "id_key":"valeur",
+                            "attributs":"valeur|alias"
+                        },
+                        "id_from":"fag_denom_7_1_from"
                     },
                     {
                         "type":"select",
@@ -3072,7 +3092,7 @@
                     {
                         "type":"text",
                         "name":"fag_cap_eh",
-                        "label":"Capcité EH",
+                        "label":"Capacité EH",
                         "nb_cols":4,
                         "id":"fag_cap_eh_10_1"
                     },
@@ -5382,6 +5402,19 @@
                 "filter": {"constructeur": true}
             },
             "ressource_id":"vitis/genericquerys"
+        },
+        "datasource_63":{
+            "type":"web_service",
+            "dataType":"tableValue",
+            "name":"fag_denom",
+            "description":"",
+            "parameters":{
+                "filter": {"id_nom_table": "filieres_agrees", "nom_liste": "fag_denom"},
+                "schema":"s_anc",
+                "table":"param_liste"
+            },
+            "ressource_id":"vitis/genericquerys",
+            "id":"datasource_63"
         }
     }
 }

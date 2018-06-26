@@ -6,6 +6,7 @@ goog.require('ol.TileState');
 goog.require('ol.dom');
 goog.require('ol.size');
 goog.require('ol.source.Tile');
+goog.require('ol.tilecoord');
 
 
 /**
@@ -38,7 +39,7 @@ ol.inherits(ol.source.TileDebug, ol.source.Tile);
  * @inheritDoc
  */
 ol.source.TileDebug.prototype.getTile = function(z, x, y) {
-  var tileCoordKey = this.getKeyZXY(z, x, y);
+  var tileCoordKey = ol.tilecoord.getKeyZXY(z, x, y);
   if (this.tileCache.containsKey(tileCoordKey)) {
     return /** @type {!ol.source.TileDebug.Tile_} */ (this.tileCache.get(tileCoordKey));
   } else {
@@ -46,7 +47,7 @@ ol.source.TileDebug.prototype.getTile = function(z, x, y) {
     var tileCoord = [z, x, y];
     var textTileCoord = this.getTileCoordForTileUrlFunction(tileCoord);
     var text = !textTileCoord ? '' :
-        this.getTileCoordForTileUrlFunction(textTileCoord).toString();
+      this.getTileCoordForTileUrlFunction(textTileCoord).toString();
     var tile = new ol.source.TileDebug.Tile_(tileCoord, tileSize, text);
     this.tileCache.set(tileCoordKey, tile);
     return tile;
@@ -91,7 +92,6 @@ ol.inherits(ol.source.TileDebug.Tile_, ol.Tile);
 /**
  * Get the image element for this tile.
  * @return {HTMLCanvasElement} Image.
- * @override
  */
 ol.source.TileDebug.Tile_.prototype.getImage = function() {
   if (this.canvas_) {

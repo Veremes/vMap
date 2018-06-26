@@ -3,6 +3,7 @@ goog.provide('ol.ImageTile');
 goog.require('ol');
 goog.require('ol.Tile');
 goog.require('ol.TileState');
+goog.require('ol.dom');
 goog.require('ol.events');
 goog.require('ol.events.EventType');
 
@@ -15,10 +16,17 @@ goog.require('ol.events.EventType');
  * @param {string} src Image source URI.
  * @param {?string} crossOrigin Cross origin.
  * @param {ol.TileLoadFunctionType} tileLoadFunction Tile load function.
+ * @param {olx.TileOptions=} opt_options Tile options.
  */
-ol.ImageTile = function(tileCoord, state, src, crossOrigin, tileLoadFunction) {
+ol.ImageTile = function(tileCoord, state, src, crossOrigin, tileLoadFunction, opt_options) {
 
-  ol.Tile.call(this, tileCoord, state);
+  ol.Tile.call(this, tileCoord, state, opt_options);
+
+  /**
+   * @private
+   * @type {?string}
+   */
+  this.crossOrigin_ = crossOrigin;
 
   /**
    * Image URI
@@ -30,7 +38,7 @@ ol.ImageTile = function(tileCoord, state, src, crossOrigin, tileLoadFunction) {
 
   /**
    * @private
-   * @type {Image}
+   * @type {Image|HTMLCanvasElement}
    */
   this.image_ = new Image();
   if (crossOrigin !== null) {
@@ -59,6 +67,7 @@ ol.inherits(ol.ImageTile, ol.Tile);
 ol.ImageTile.prototype.disposeInternal = function() {
   if (this.state == ol.TileState.LOADING) {
     this.unlistenImage_();
+    this.image_ = ol.ImageTile.getBlankImage();
   }
   if (this.interimTile) {
     this.interimTile.dispose();
@@ -70,8 +79,8 @@ ol.ImageTile.prototype.disposeInternal = function() {
 
 
 /**
- * Get the image element for this tile.
- * @inheritDoc
+ * Get the HTML image element for this tile (may be a Canvas, Image, or Video).
+ * @return {HTMLCanvasElement|HTMLImageElement|HTMLVideoElement} Image.
  * @api
  */
 ol.ImageTile.prototype.getImage = function() {
@@ -95,6 +104,7 @@ ol.ImageTile.prototype.getKey = function() {
 ol.ImageTile.prototype.handleImageError_ = function() {
   this.state = ol.TileState.ERROR;
   this.unlistenImage_();
+  this.image_ = ol.ImageTile.getBlankImage();
   this.changed();
 };
 
@@ -120,7 +130,14 @@ ol.ImageTile.prototype.handleImageLoad_ = function() {
  * @api
  */
 ol.ImageTile.prototype.load = function() {
-  if (this.state == ol.TileState.IDLE || this.state == ol.TileState.ERROR) {
+  if (this.state == ol.TileState.ERROR) {
+    this.state = ol.TileState.IDLE;
+    this.image_ = new Image();
+    if (this.crossOrigin_ !== null) {
+      this.image_.crossOrigin = this.crossOrigin_;
+    }
+  }
+  if (this.state == ol.TileState.IDLE) {
     this.state = ol.TileState.LOADING;
     this.changed();
     this.imageListenerKeys_ = [
@@ -142,4 +159,16 @@ ol.ImageTile.prototype.load = function() {
 ol.ImageTile.prototype.unlistenImage_ = function() {
   this.imageListenerKeys_.forEach(ol.events.unlistenByKey);
   this.imageListenerKeys_ = null;
+};
+
+
+/**
+ * Get a 1-pixel blank image.
+ * @return {HTMLCanvasElement} Blank image.
+ */
+ol.ImageTile.getBlankImage = function() {
+  var ctx = ol.dom.createCanvasContext2D(1, 1);
+  ctx.fillStyle = 'rgba(0,0,0,0)';
+  ctx.fillRect(0, 0, 1, 1);
+  return ctx.canvas;
 };

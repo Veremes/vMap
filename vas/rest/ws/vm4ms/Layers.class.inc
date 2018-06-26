@@ -37,12 +37,11 @@ class Layers extends Vmap4MapServer {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
+     * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = new Connection($this->aValues, $this->aProperties);
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
         $this->aSelectedFields = Array("ms_layer_id", "name", "title", "coordsys_id", "coordsys_label", "source_id", "connection_id", "tableschema", "tablename", "tableidfield", "definition", "opacity", "active", "ms_layertype_id", "private_connection", "connection_label", "source_label", "definitiontmp", "metadata_id");
     }
 
@@ -183,8 +182,14 @@ class Layers extends Vmap4MapServer {
      */
     function GET() {
         if (in_array('vm4ms_admin', $this->oConnection->aPrivileges)) {
+            // Obligatoire pour le test des couches
+            $this->preTestLayers();
             $aReturn = $this->genericGet($this->aProperties['schema_vm4ms'], 'v_ms_layer', 'ms_layer_id');
-            $sMessage = $aReturn['sMessage'];
+            if ($aReturn['sStatus'] == 1) {
+                $sMessage = $this->testLayers();
+            } else {
+                $sMessage = $aReturn['sMessage'];
+            }
         }
         if (!empty($this->aPath[3])) {
             if ($this->aPath[3] == "MapFile")
@@ -271,6 +276,56 @@ class Layers extends Vmap4MapServer {
         $sMsLogFile = $this->aProperties['ms_log_dir'] . '/test/' . hash('sha256', session_id()) . '_' . $this->aObjects[0]->aFields['name'] . '.log';
         if (file_exists($sMsLogFile))
             $this->aObjects[0]->aFields['log_file_content'] = utf8_encode(file_get_contents($sMsLogFile));
+        $aXmlRacineAttribute['status'] = 1;
+        $sMessage = $this->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+        return $sMessage;
+    }
+
+    /**
+     * Fonction à lancer avant les tests de couches
+     * Ajoute l'attribut definition au cas où definition_structure_valid soit demandé mais definition non
+     */
+    function preTestLayers() {
+        // Obligatoire pour le test des couches
+        if (!empty($this->aValues['attributs'])) {
+            $aAttributs = explode('|', $this->aValues['attributs']);
+            $this->aPreTestOriginialAttributes = $aAttributs;
+            // Cas où definition_structure_valid soit demandé mais definition non
+            if (!in_array('definition', $aAttributs) && in_array('definition_structure_valid', $aAttributs)) {
+                array_push($aAttributs, 'definition');
+                $this->aValues['attributs'] = implode('|', $aAttributs);
+            }
+        }
+    }
+
+    /**
+     * Fonction à lancer après le test de couche
+     * Supprime l'attribut "definition" si il n'était pas dans les attributs demandés
+     */
+    function postTestLayers() {
+        // Supprime l'attribut "definition" si il n'était pas dans les attributs demandés
+        if (isset($this->aPreTestOriginialAttributes)) {
+            if (!in_array('definition', $this->aPreTestOriginialAttributes)) {
+                foreach ($this->aObjects as $oLayer) {
+                    if (!empty($oLayer->aFields['definition'])) {
+                        unset($oLayer->aFields['definition']);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Test l'ensemble des couches
+     * @return string
+     */
+    function testLayers() {
+        foreach ($this->aObjects as $oObj) {
+            if (!empty($oObj->aFields['definition'])) {
+                $oObj->testDefinitionIndent();
+            }
+        }
+        $this->postTestLayers();
         $aXmlRacineAttribute['status'] = 1;
         $sMessage = $this->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
         return $sMessage;
@@ -451,9 +506,8 @@ class Layers extends Vmap4MapServer {
                     $sMessage = $this->getMapFile();
                 }
             }
-        }
-        else {
-            $sWmsServices = $this->aValues['wmsservices'];
+        } else {
+            require $this->sRessourcesFile;
             // Vide le schéma, la table et la colonne si aucune connexion est sélectionnée.
             if (empty($this->aValues['connection_id'])) {
                 $this->aValues['tableschema'] = null;
@@ -461,34 +515,51 @@ class Layers extends Vmap4MapServer {
                 $this->aValues['tableidfield'] = null;
                 $this->aValues['connection_id'] = null;
             }
-            // 
-            $aReturn = $this->genericPost($this->aProperties['schema_vm4ms'], 'ms_layer', false, 'ms_layer_id');
-            if ($aReturn['sStatus'] == 1) {
-                $aXmlRacineAttribute['status'] = 1;
-                $sMessage = $this->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
-                // Association des flux WMS à la couche.
-                if (!empty($sWmsServices)) {
-                    require $this->sRessourcesFile;
-                    $aWmsServices = explode('|', $sWmsServices);
-                    foreach ($aWmsServices as $sWmsService) {
-                        $aParams['sSchemaVm4ms'] = array('value' => $this->aProperties['schema_vm4ms'], 'type' => 'schema_name');
-                        $aParams['ms_layer_id'] = array('value' => $this->aValues['my_vitis_id'], 'type' => 'number');
-                        $aParams['wmsservice_id'] = array('value' => $sWmsService, 'type' => 'string');
-                        $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['insertLayerWmsServices'], $aParams);
-                        if ($this->oConnection->oBd->enErreur()) {
-                            $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
-                            $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
-                            $aXmlRacineAttribute['status'] = 0;
-                            $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
-                        }
-                    }
-                    // Création du fichier .map de tous les flux WMS associés à la couche.
-                    $oLayer = new Layer($this->aPath, $this->aValues, $this->aProperties, $this->oConnection);
-                    $oLayer->GET();
-                    $oLayer->createLayerWmsServicesMapFile($oLayer->aFields['private_connection']);
+            // Vérification du nom de la couche (unique).
+            $aParams = array();
+            $aParams['sSchemaVm4ms'] = array('value' => $this->aProperties['schema_vm4ms'], 'type' => 'schema_name');
+            $aParams['name'] = array('value' => $this->aValues['name'], 'type' => 'string');
+            $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['getLayerId'], $aParams);
+            if ($this->oConnection->oBd->enErreur()) {
+                $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
+                $aXmlRacineAttribute['status'] = 0;
+                $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+            }
+            else {
+                if ($this->oConnection->oBd->nombreLigne($oPDOresult) > 0) {
+                    $oError = new VitisError(1, 'Une couche avec ce nom existe déja.');
+                    $aXmlRacineAttribute['status'] = 0;
+                    $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
                 }
-            } else
-                $sMessage = $aReturn['sMessage'];
+                else {
+                    $aReturn = $this->genericPost($this->aProperties['schema_vm4ms'], 'ms_layer', false, 'ms_layer_id');
+                    if ($aReturn['sStatus'] == 1) {
+                        $aXmlRacineAttribute['status'] = 1;
+                        $sMessage = $this->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+                        // Association des flux WMS à la couche.
+                        if (!empty($this->aValues['wmsservices'])) {
+                            $aWmsServices = explode('|', $this->aValues['wmsservices']);
+                            foreach ($aWmsServices as $sWmsService) {
+                                $aParams['sSchemaVm4ms'] = array('value' => $this->aProperties['schema_vm4ms'], 'type' => 'schema_name');
+                                $aParams['ms_layer_id'] = array('value' => $this->aValues['my_vitis_id'], 'type' => 'number');
+                                $aParams['wmsservice_id'] = array('value' => $sWmsService, 'type' => 'string');
+                                $oPDOresult = $this->oConnection->oBd->executeWithParams($aSql['insertLayerWmsServices'], $aParams);
+                                if ($this->oConnection->oBd->enErreur()) {
+                                    $this->oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
+                                    $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
+                                    $aXmlRacineAttribute['status'] = 0;
+                                    $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
+                                }
+                            }
+                            // Création du fichier .map de tous les flux WMS associés à la couche.
+                            $oLayer = new Layer($this->aPath, $this->aValues, $this->aProperties, $this->oConnection);
+                            $oLayer->GET();
+                            $oLayer->createLayerWmsServicesMapFile($oLayer->aFields['private_connection']);
+                        }
+                    } else
+                        $sMessage = $aReturn['sMessage'];
+                }
+            }
         }
         return $sMessage;
     }
@@ -615,7 +686,6 @@ class Layers extends Vmap4MapServer {
      * 
      *  )
      */
-
     /**
      * @SWG\Put(path="/layers/activate",
      *   tags={"Layers"},
@@ -644,7 +714,6 @@ class Layers extends Vmap4MapServer {
      *     )
      *  )
      */
-
     /**
      * @SWG\Put(path="/layers/desactivate",
      *   tags={"Layers"},
@@ -673,7 +742,7 @@ class Layers extends Vmap4MapServer {
      *     )
      *  )
      */
-    
+
     /**
      * modify layer
      * @return array containing the status and the message
@@ -694,8 +763,7 @@ class Layers extends Vmap4MapServer {
             if ($this->aValues['test_layer'] == 'true') {
                 $this->aValues['definitiontmp'] = $this->aValues['definition'];
                 unset($this->aValues['definition']);
-            }
-            else
+            } else
                 $this->aValues['definitiontmp'] = '';
             // Vide le schéma, la table et la colonne si aucune connexion est sélectionnée.
             if (empty($this->aValues['connection_id'])) {
@@ -771,7 +839,7 @@ class Layers extends Vmap4MapServer {
         }
         return $sMessage;
     }
-    
+
     /**
      * @SWG\Delete(path="/layers/",
      *   tags={"Layers"},
@@ -838,5 +906,7 @@ class Layers extends Vmap4MapServer {
         $aReturn = $this->genericDelete($this->aProperties['schema_vm4ms'], 'ms_layer', 'ms_layer_id');
         return $aReturn['sMessage'];
     }
+
 }
+
 ?>

@@ -90,11 +90,13 @@ vitisApp.formSrvc = function (envSrvc, propertiesSrvc, sessionSrvc, formReaderSe
                                 if (typeof (aSelectOptions) != "undefined") {
                                     iOptionIndex = 0;
                                     aSelectedOptions = [];
-                                    while (iOptionIndex < aSelectOptions["options"].length) {
-                                        aSelectedOptions.push(aSelectOptions["options"][iOptionIndex]["value"]);
-                                        iOptionIndex++;
+                                    if (typeof(aSelectOptions["options"]) != "undefined") {
+                                        while (iOptionIndex < aSelectOptions["options"].length) {
+                                            aSelectedOptions.push(aSelectOptions["options"][iOptionIndex]["value"]);
+                                            iOptionIndex++;
+                                        }
+                                        oFormKeysValues[aFormRowElementsList[ifieldIndex]["name"]] = aSelectedOptions.join("|");
                                     }
-                                    oFormKeysValues[aFormRowElementsList[ifieldIndex]["name"]] = aSelectedOptions.join("|");
                                 }
                                 break;
                                 // Si liste : suppression du champ si aucune option est sélectionnée.

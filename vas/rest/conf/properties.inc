@@ -30,6 +30,8 @@ $properties['public_password'] = '';
 $properties['public_token'] = '';
 $properties["sign_up"] = "disabled";
 $properties["password_forgotten"] = "disabled";
+$properties["unsubscribe"] = false;
+$properties['geolocation_enabled'] = false;
 
 // Require tous les fichiers de tous les dossiers contenus sans properties
 $aDir = scandir(__DIR__);

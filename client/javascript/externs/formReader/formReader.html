@@ -55,11 +55,11 @@
                                     </div>
                                     <!-- Captcha -->
                                     <div ng-switch-when="captcha" class="center">
-                                        <div data-app-form-field-specific-params="" id="{{:refresh:field.id}}" class="g-recaptcha" data-sitekey="{{:refresh:field.key}}"></div>
+                                        <div data-app-form-field-specific-params="" id="{{:refresh:field.id}}" class="g-recaptcha"></div>
                                     </div>
                                     <!-- Checkbox -->
-                                    <div ng-switch-when="checkbox" class="checkbox checkbox-margin" style="padding-left: 20px">
-                                        <input data-app-form-field-specific-params="" ng-model="oFormValues[sFormDefinitionName][field.name]" ng-change="ctrl.toTest(oFormValues[sFormDefinitionName])" type="checkbox" name="{{:refresh:field.name}}" id="{{:refresh:field.id}}">
+                                    <div ng-switch-when="checkbox" class="checkbox checkbox-margin" style="padding-left: 20px" ng-class="field.class">
+                                        <input ng-disabled="field.disabled"  data-app-form-field-specific-params="" ng-model="oFormValues[sFormDefinitionName][field.name]" ng-change="ctrl.toTest(oFormValues[sFormDefinitionName])" type="checkbox" name="{{:refresh:field.name}}" id="{{:refresh:field.id}}">
                                         <label for="{{:refresh:field.id}}" id="{{:refresh:field.id}}_label" class="control-label" data-translate="{{:refresh:field.label}}"></label>
                                     </div>
                                     <!-- Radio -->
@@ -79,6 +79,7 @@
                                         <textarea ng-model="oFormValues[sFormDefinitionName][field.name]" 
                                                   name="{{:refresh:field.name}}" id="{{:refresh:field.id}}" class="form-control" rows="{{:refresh:field.nb_rows}}" 
                                                   ng-attr-rows="{{:refresh:field.size}}"
+                                                  ng-class="field.class"
                                                   ng-required="field.required" 
                                                   ng-pattern="field.pattern" 
                                                   ng-disabled="field.disabled"></textarea>
@@ -332,6 +333,12 @@
                                     <div ng-switch-when="codemirror">
                                         <div>
                                             <label for="{{:refresh:field.id}}" id="{{:refresh:field.id}}_label" class="control-label" data-translate="{{:refresh:field.label}}"></label>
+                                            <!--Permet de vérifier si le champ a été rempli-->
+                                            <input type="text" name="{{:refresh:field.name}}" id="{{:refresh:field.id}}" 
+                                               style="position: absolute;opacity: 0;bottom: 0px;"
+                                               ng-value="oFormValues[sFormDefinitionName][field.name]"
+                                               ng-required="field.required">
+                                            <!--Champ codemirror-->
                                             <ui-codemirror ui-codemirror-opts="field.cm_options" ui-refresh='refresh' ng-model="oFormValues[sFormDefinitionName][field.name]" id="{{:refresh:field.id}}"></ui-codemirror>
                                         </div>
                                     </div>
@@ -401,7 +408,7 @@
                                             <a ng-if="button.glyphicon && button.type === 'button_download'" 
                                                ng-click="button.event ? executeButtonEvent($event, button.event) : noop" 
                                                ng-disabled="button.disabled" 
-                                               data-app-button="" type="{{button.type}}" 
+                                               data-app-button="" ng-attr-type="{{button.type}}" 
                                                name="{{button.name}}" 
                                                id="{{button.id ? button.id : sFormDefinitionName + '_' + button.name}}" 
                                                class="btn" ng-class="button.class" 
@@ -413,7 +420,7 @@
                                                     ng-click="button.type === 'submit' ? testElementsValidityTab(executeButtonEvent($event, button.event)) : button.event ? executeButtonEvent($event, button.event) : noop" 
                                                     ng-class="button.class" 
                                                     data-app-button="" 
-                                                    type="{{button.type}}" 
+                                                    ng-attr-type="{{button.type}}" 
                                                     data-translate="{{button.label}}" 
                                                     name="{{button.name}}" 
                                                     id="{{button.id ? button.id : sFormDefinitionName + '_' + button.name}}" 
@@ -424,7 +431,7 @@
                                                     ng-click="button.type === 'submit' ? testElementsValidityTab(executeButtonEvent($event, button.event)) : button.event ? executeButtonEvent($event, button.event) : noop" 
                                                     ng-class="button.class" 
                                                     data-app-button="" 
-                                                    type="{{button.type}}" 
+                                                    ng-attr-type="{{button.type}}" 
                                                     name="{{button.name}}" 
                                                     id="{{button.id ? button.id : sFormDefinitionName + '_' + button.name}}" 
                                                     class="btn" 
@@ -458,7 +465,7 @@
                                         <a id="{{:refresh:field.id}}" name="{{:refresh:field.name}}" ng-href="{{oProperties.web_server_name}}/{{oProperties[field.alias]}}/{{:refresh:field.folder}}/{{oFormValues[sFormDefinitionName][field.name]}}" target="{{field.target}}" class="row no-bs-row-margin form-control-static form-label-field formreader-link">{{oFormValues[sFormDefinitionName][field.name]}}</a>
                                     </div>
                                     <div ng-switch-when="linklabel">
-                                        <a id="{{:refresh:field.id}}" name="{{:refresh:field.name}}" ng-href="{{oFormValues[sFormDefinitionName][field.name]}}" target="{{field.target}}" class="row no-bs-row-margin form-control-static form-label-field formreader-link" data-translate="{{:refresh:field.label}}"></a>
+                                        <a id="{{:refresh:field.id}}" name="{{:refresh:field.name}}" ng-href="{{oFormValues[sFormDefinitionName][field.name]}}" target="{{field.target}}" class="row no-bs-row-margin form-control-static form-label-field formreader-link" data-translate="{{:refresh:field.label}}" ng-class="field.class"></a>
                                     </div>
                                     <!-- Link URL -->
                                     <div ng-switch-when="linkurl">
@@ -634,11 +641,25 @@
                                             <div data-app-form-field-specific-params id="{{:refresh:field.id}}_treeview"></div>
                                         </div>
                                     </div>
+                                    <!-- Folder Manager -->
+                                    <div ng-switch-when="foldermanager">
+                                        <label ng-if=":refresh:field.label" for="{{:refresh:field.id}}_treeview" id="{{:refresh:field.id}}_label" class="control-label" data-translate="{{:refresh:field.label}}"></label>
+                                        <div class="treeview-container">
+                                            <div data-app-form-field-specific-params id="{{:refresh:field.id}}_treeview"></div>
+                                        </div>
+                                    </div>
+                                    <!-- iframe -->
+                                    <div ng-switch-when="iframe">
+                                        <label ng-if=":refresh:field.label" for="{{:refresh:field.id}}" id="{{:refresh:field.id}}_label" class="control-label" data-translate="{{:refresh:field.label}}"></label>
+                                        <div class="iframe-container">
+                                            <iframe ng-src="{{field.src}}" width="{{:refresh:field.width}}" height="{{:refresh:field.height}}" name="{{:refresh:field.name}}"></iframe>                                     
+                                        </div>
+                                    </div>
                                     <!-- Default -->
                                     <span ng-switch-default>
                                         <!-- Text -->
                                         <span ng-if="isFormTextElement(field.type)">
-                                            <label for="{{:refresh:field.id}}" id="{{:refresh:field.id}}_label" class="control-label" data-translate="{{:refresh:field.label}}"></label>
+                                            <label for="{{:refresh:field.id}}" id="{{:refresh:field.id}}_label" class="control-label" data-translate="{{:refresh:field.label}}" ng-class="field.class_label"></label>
                                             <!--Others-->
                                             <input ng-if="(field.type !== 'integer' && field.type !== 'float' && field.type !== 'number' && field.type !== 'url' && field.type !== 'email')" 
                                                    data-app-form-field-specific-params="" ng-model="oFormValues[sFormDefinitionName][field.name]" 
@@ -697,7 +718,7 @@
 </form>
 
 <!--Sous Formulaire pour les éléments de type grille -->
-<div id="formreader_{{sFormUniqueName}}_grid_subform_modal" class="modal fade" tabindex="-1" role="dialog">
+<div id="formreader_{{sFormUniqueName}}_grid_subform_modal" class="modal fade formreader_subform_modal" tabindex="-1" role="dialog">
     <div class="modal-dialog" 
          role="document"
          ng-class="{'modal-60':grid_subform_size == 2, 'modal-90':grid_subform_size == 3}">

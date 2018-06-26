@@ -16,11 +16,7 @@ function Progress(oPrintMap, bDisplayProgress) {
 
     callLog('this.equalityTimeout: ' + this.equalityTimeout);
 
-    this.updateCounter = 0;
-
     this.map = oPrintMap.map;
-
-    callLog("this.totalTiles: " + this.totalTiles);
 
     this.followLayersProgress();
 }
@@ -30,11 +26,35 @@ function Progress(oPrintMap, bDisplayProgress) {
  */
 Progress.prototype.followLayersProgress = function () {
     var this_ = this;
+    var iLastPostRender = 0;
+
     this.map.on('postrender', function () {
-        setTimeout(function () {
-            if (this_.map.tileQueue_.tilesLoading_ === 0) {
-                tryCallPhantom({'cmd': 'tilesLoadEnd'});
-            }
-        }, this_.equalityTimeout);
+
+        // Vérification dernier postrender
+        var iCurrentPostRender = Number(iLastPostRender + 1);
+
+        // Vérification tuiles
+        callLog("this_.map.tileQueue_.tilesLoading_: " + this_.map.tileQueue_.tilesLoading_);
+        if (this_.map.tileQueue_.tilesLoading_ === 0) {
+            setTimeout(function () {
+                if (this_.map.tileQueue_.tilesLoading_ === 0) {
+                    callLog("tiles loaded: " + this_.map.tileQueue_.tilesLoading_);
+
+                    // Vérification dernier postrender
+                    if (iLastPostRender === iCurrentPostRender) {
+                        callLog("postrender END");
+                        tryCallPhantom({'cmd': 'tilesLoadEnd'});
+                    }
+
+                    // Prévient les cas de non retour
+                    setTimeout(function () {
+                        tryCallPhantom({'cmd': 'tilesLoadEnd'});
+                    }, this_.equalityTimeout * 5);
+                }
+            }, this_.equalityTimeout);
+        }
+
+        // Vérification dernier postrender
+        iLastPostRender++;
     });
 };

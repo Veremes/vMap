@@ -34,8 +34,7 @@ goog.require('ol.reproj.Triangulation');
 ol.reproj.Tile = function(sourceProj, sourceTileGrid,
     targetProj, targetTileGrid, tileCoord, wrappedTileCoord,
     pixelRatio, gutter, getTileFunction,
-    opt_errorThreshold,
-    opt_renderEdges) {
+    opt_errorThreshold, opt_renderEdges) {
   ol.Tile.call(this, tileCoord, ol.TileState.IDLE);
 
   /**
@@ -103,7 +102,7 @@ ol.reproj.Tile = function(sourceProj, sourceTileGrid,
   var maxSourceExtent = this.sourceTileGrid_.getExtent();
 
   var limitedTargetExtent = maxTargetExtent ?
-      ol.extent.getIntersection(targetExtent, maxTargetExtent) : targetExtent;
+    ol.extent.getIntersection(targetExtent, maxTargetExtent) : targetExtent;
 
   if (ol.extent.getArea(limitedTargetExtent) === 0) {
     // Tile is completely outside range -> EMPTY
@@ -137,7 +136,7 @@ ol.reproj.Tile = function(sourceProj, sourceTileGrid,
   }
 
   var errorThresholdInPixels = opt_errorThreshold !== undefined ?
-      opt_errorThreshold : ol.DEFAULT_RASTER_REPROJECTION_ERROR_THRESHOLD;
+    opt_errorThreshold : ol.DEFAULT_RASTER_REPROJECTION_ERROR_THRESHOLD;
 
   /**
    * @private
@@ -202,7 +201,8 @@ ol.reproj.Tile.prototype.disposeInternal = function() {
 
 
 /**
- * @inheritDoc
+ * Get the HTML Canvas element for this tile.
+ * @return {HTMLCanvasElement} Canvas.
  */
 ol.reproj.Tile.prototype.getImage = function() {
   return this.canvas_;

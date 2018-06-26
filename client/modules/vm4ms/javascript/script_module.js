@@ -556,21 +556,15 @@ vitisApp.on('appMainDrtvLoaded', function () {
                                 scope["oLayerConnection"] = angular.copy(oLayerConnection);
                                 // Charge la liste des schémas de la base de données de la connexion.
                                 var oUrlParams = {
-                                    "order_by": "schemaname",
                                     "server": oLayerConnection["server"],
                                     "port": oLayerConnection["port"],
-                                    "database": oLayerConnection["database"],
-                                    "schema": "pg_catalog",
-                                    "table": "pg_tables",
-                                    "sort_order": "ASC",
-                                    "attributs": "schemaname",
-                                    "distinct": true
+                                    "database": oLayerConnection["database"]
                                 };
                                 if (goog.isDefAndNotNull(oLayerConnection["user"]))
                                     oUrlParams["login"] = oLayerConnection["user"];
                                 if (goog.isDefAndNotNull(oLayerConnection["password"]))
                                     oUrlParams["password"] = oLayerConnection["password"];
-                                $rootScope["setOptionsFromWebService"]('tableschema', "vitis/genericquerys", oUrlParams);
+                                $rootScope["setOptionsFromWebService"]('tableschema', "vitis/genericquerys/" + oLayerConnection["database"] + "/schemas", oUrlParams);
                             }
                         }
                     });
@@ -654,6 +648,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
                 }
                 // Rafraîchit le formulaire.
                 var formScope = angular.element("form[name='" + envSrvc["oFormDefinition"][envSrvc["sFormDefinitionName"]]["name"]).scope();
+                if (typeof(envSrvc["oFormDefinition"][envSrvc["sFormDefinitionName"]]["tabs"]) == "undefined")
+                    formScope["ctrl"]["initFormTabs"]();
                 formScope.$broadcast('$$rebind::refresh');
                 formScope.$apply();
             }
@@ -1013,16 +1009,16 @@ vitisApp.on('appMainDrtvLoaded', function () {
 
         var scope = this;
 
-        if (typeof(scope['oVM4MSLayerLoadingErrorLayers']) == "undefined" || scope['oVM4MSLayerLoadingErrorLayers'] == null)
+        if (typeof (scope['oVM4MSLayerLoadingErrorLayers']) == "undefined" || scope['oVM4MSLayerLoadingErrorLayers'] == null)
             scope['oVM4MSLayerLoadingErrorLayers'] = {};
-            
+
         // liste des couches en erreur
         if (goog.isObject(scope['oVM4MSLayerLoadingErrorLayers'])) {
             // Nom générique si la couche n'a pas de nom.
             var oLayerParams = event.target.getParams();
             var sLayerName = oLayerParams['LAYERS'];
             var sLayerIndex = sLayerName;
-            if (typeof(sLayerName) == "undefined") {
+            if (typeof (sLayerName) == "undefined") {
                 if (propertiesSrvc["language"] == "fr")
                     sLayerName = "Couche sans nom";
                 else
@@ -1356,7 +1352,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
             oFormValues['test_wms_service_default_content'] = sTestWmsServiceDefaultContent;
         });
     };
-    
+
     /**
      * activateVm4msLayers function.
      * Active / désactive une couche.
@@ -1402,7 +1398,7 @@ vitisApp.on('appMainDrtvLoaded', function () {
                 "url": propertiesSrvc["web_server_name"] + "/" + propertiesSrvc["services_alias"] + "/vm4ms/layers/" + sOperationId,
                 "data": oParams,
                 "scope": scope,
-                "success": function(response) {
+                "success": function (response) {
                     if (response["data"]["status"] == 0) {
                         var oOptions = {
                             "className": "modal-danger",
@@ -1413,7 +1409,8 @@ vitisApp.on('appMainDrtvLoaded', function () {
                         // Ferme la fenêtre modale.
                         bootbox["hideAll"]();
                         // Recharge la liste des couches.
-                        scope.$root["gridApi"][scope["sSelectedObjectName"]]["pagination"]["raise"]["paginationChanged"](1, scope["gridOptions"]["paginationPageSize"]);
+                        var iPageNumber = goog.isDefAndNotNull(envSrvc["oSelectedObject"]["iPageNumber"]) ? envSrvc["oSelectedObject"]["iPageNumber"] : 1;
+                        scope.$root["gridApi"][scope["sSelectedObjectName"]]["pagination"]["raise"]["paginationChanged"](iPageNumber, scope["gridOptions"]["paginationPageSize"]);
                     }
                 }
             });

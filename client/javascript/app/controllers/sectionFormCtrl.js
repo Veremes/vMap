@@ -14,9 +14,10 @@ goog.require("vitis.modules.main");
  * @param {service} envSrvc Paramètres d'environnement.
  * @param {angular.$timeout} $timeout Angular timeout
  * @param {service} modesSrvc Liste des modes et objets de l'utilisateur.
+ * @param {service} externFunctionSrvc Fonctions externes à Angular.
  * @ngInject
  **/
-vitisApp.sectionFormCtrl = function ($scope, $compile, $templateRequest, $log, $rootScope, $timeout, $translate, envSrvc, sessionSrvc, propertiesSrvc, modesSrvc) {
+vitisApp.sectionFormCtrl = function ($scope, $compile, $templateRequest, $log, $rootScope, $timeout, $translate, envSrvc, sessionSrvc, propertiesSrvc, modesSrvc, externFunctionSrvc) {
     $log.info("initSectionForm");
     // Sauve le nouveau scope crée dans la définition de l'onglet. 
     modesSrvc["addScopeToObject"](envSrvc["oSelectedObject"]["name"], envSrvc["oSelectedMode"]["mode_id"], $scope);
@@ -70,6 +71,7 @@ vitisApp.sectionFormCtrl = function ($scope, $compile, $templateRequest, $log, $
             // Chargement du template de la section.
             $scope["loadObjectSectionTemplate"]();
             $scope.$root.$broadcast("updateStudio_" + envSrvc["oSelectedObject"]["name"], {"index": iSectionIndex, "oSectionForm": oObjectSectionForm});
+            externFunctionSrvc["resizeWin"]();
         }
     };
 
@@ -109,7 +111,7 @@ vitisApp.sectionFormCtrl = function ($scope, $compile, $templateRequest, $log, $
         // Affichage de la carte en cas de resize
         $('.form-map').each(function (key, value) {
             try {
-                angular.element(value).scope()['oMap']['MapObject'].updateSize();
+                angular.element(value).scope()['oMap'].MapObject.updateSize();
             } catch (e) {
             }
         });

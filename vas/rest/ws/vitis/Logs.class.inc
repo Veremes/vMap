@@ -35,12 +35,11 @@ class Logs extends Vitis {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
+     * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = new Connection($this->aValues, $this->aProperties);
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
         $this->aSelectedFields = Array();
     }
 
@@ -476,18 +475,18 @@ class Logs extends Vitis {
      * Get the content of a log file.
      */
     function getLogFileContent($sDirectoryName, $sFileName, $sFilePath) {
-		
-		// Charge toutes les properties.
-		$oProperties = new Properties($this->aPath, $this->aValues, $this->aProperties);
-		$oProperties->GET();
-		$properties = $oProperties->aFields;
+
+        // Charge toutes les properties.
+        $oProperties = new Properties($this->aPath, $this->aValues, $this->aProperties);
+        $oProperties->GET();
+        $properties = $oProperties->aFields;
         $aLogDirectories = $properties['log_directories'];
         if (!isset($aLogDirectories[$sDirectoryName]) || empty($aLogDirectories[$sDirectoryName])) {
             $aReturn = array('status' => 0, 'message' => "FILE_NOT_FOUND_LOGS", 'error_code' => 1);
             return $aReturn;
         }
 
-        $sPath = realpath($aLogDirectories[$sDirectoryName] . '/' . $sFilePath);		
+        $sPath = realpath($aLogDirectories[$sDirectoryName] . '/' . $sFilePath);
         $aReturn = array('status' => 1, 'message' => '');
         if (file_exists($sPath) && $this->isLogFile($sPath)) {
             $sFileContent = iconv("UTF-8", "UTF-8//IGNORE", file_get_contents($sPath));
@@ -524,7 +523,7 @@ class Logs extends Vitis {
             }
             // Fichier de log sans backslashes et plusieurs slashes.
             $sFilePath = realpath($sFilePath);
-            
+
             // Le fichier est dans un des répertoires de logs ?
             foreach ($aLogDirectories as $sLogDirectorie) {
                 if (stripos($sFilePath, $sLogDirectorie) !== false) {

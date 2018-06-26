@@ -7,7 +7,7 @@
        style="margin-top: -2px"
        title="Sélection simple"
        onclick="oVmap.getMap().removeActionsAndTooltips();oVmap.getToolsManager().getBasicTools().toggleOutTools();">
-        <select id="location-search-api-select"
+        <select id="select-bo-select"
                 ng-model="ctrl.sSelectedBo"
                 ng-options="value.bo_id as value.bo_title for value in ctrl.aQueryableBOs | orderBy:'bo_title'">
         </select>

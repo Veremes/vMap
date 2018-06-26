@@ -49,10 +49,11 @@
                     {
                         "type": "checkbox",
                         "name": "remember_me",
-                        "id": "remember_me",
+                        "id": "login_form_remember_me",
                         "value": true,
                         "label": "FORM_LOGIN_REMEMBER_ME",
-                        "default_value": true,
+                        "default_value": false,
+                        "class": "hidden",
                         "nb_cols": 8
                     },
                     {

@@ -1,15 +1,16 @@
 <?php
+
 /**
-* \file LayerWmsServices.class.inc
-* \class LayerWmsServices
-*
-* \author Armand Bahi <armand.bahi@veremes.com>.
-*
-* \brief This file contains the LayerWmsServices php class
-*
-* This class defines Rest Api to Vmap LayerWmsServices
-* 
-*/
+ * \file LayerWmsServices.class.inc
+ * \class LayerWmsServices
+ *
+ * \author Armand Bahi <armand.bahi@veremes.com>.
+ *
+ * \brief This file contains the LayerWmsServices php class
+ *
+ * This class defines Rest Api to Vmap LayerWmsServices
+ * 
+ */
 require_once 'Vmap4MapServer.class.inc';
 require_once 'LayerWmsService.class.inc';
 require_once 'WmsServices.class.inc';
@@ -17,8 +18,7 @@ require_once __DIR__ . '/../../class/vitis_lib/Connection.class.inc';
 require_once __DIR__ . '/../../class/vmlib/BdDataAccess.inc';
 
 class LayerWmsServices extends Vmap4MapServer {
-    
-     /**
+    /**
      * @SWG\Definition(
      *   definition="/layerwmsservices",
      *   allOf={
@@ -30,20 +30,20 @@ class LayerWmsServices extends Vmap4MapServer {
      *   description=""
      * )
      */
+
     /**
      * construct
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
+     * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = new Connection($this->aValues, $this->aProperties);
-		$this->aSelectedFields = Array("ms_layer_id", "name", "title", "coordsys_id", "source_id", "connection_id", "tableschema", "tablename", "tableidfield", "definition", "opacity", "active", "ms_layertype_id", "private_connection", "connection_label", "source_label", "definitiontmp");
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
+        $this->aSelectedFields = Array("ms_layer_id", "name", "title", "coordsys_id", "source_id", "connection_id", "tableschema", "tablename", "tableidfield", "definition", "opacity", "active", "ms_layertype_id", "private_connection", "connection_label", "source_label", "definitiontmp");
     }
-    
+
     /**
      * get  wms service layers
      * @return LayerWmsServices
@@ -52,7 +52,7 @@ class LayerWmsServices extends Vmap4MapServer {
         $aReturn = $this->genericGet($this->aProperties['schema_vm4ms'], 'v_ms_layer', 'ms_layer_id');
         return $aReturn['sMessage'];
     }
-    
+
     /**
      * @SWG\Put(path="/layerwmsservices/{ms_layer_id}",
      *   tags={"LayerWmsServices"},
@@ -111,8 +111,7 @@ class LayerWmsServices extends Vmap4MapServer {
                     $oError = new VitisError(1, $this->oConnection->oBd->getBDMessage());
                     $aXmlRacineAttribute['status'] = 0;
                     $sMessage = $oError->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
-                }
-                else {
+                } else {
                     $aXmlRacineAttribute['status'] = 1;
                     $sMessage = $this->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
                     // Création du fichier .map du flux WMS.
@@ -126,12 +125,15 @@ class LayerWmsServices extends Vmap4MapServer {
         }
         return $sMessage;
     }
-    
+
     /**
      * delete wms service layers
      * @return id of wms service layer deleted or error object if a wms service layer is not deleted
      */
     function DELETE() {
+        
     }
+
 }
+
 ?>

@@ -8,7 +8,7 @@ $aSql['getTableColumn'] = 'SELECT column_name FROM INFORMATION_SCHEMA.COLUMNS WH
 $aSql['getUserPrivileges'] = 'SELECT groname FROM pg_user s LEFT OUTER JOIN pg_group g on (s.usesysid = any(g.grolist) )inner join [sSchemaFramework].v_user on "v_user".login = usename WHERE user_id = [user_id]';
 $aSql['listDomain'] = 'SELECT distinct domain, alias FROM [sSchemaFramework].domain WHERE "type" = \'AD\'';
 $aSql['createRolname'] = 'CREATE ROLE "vitis_[sDomain]" NOSUPERUSER INHERIT NOCREATEDB CREATEROLE;';
-$aSql['getInfoRolname'] = 'SELECT * FROM pg_authid WHERE rolname = \'vitis_[sDomain]\'';
+$aSql['getInfoRolname'] = 'SELECT * FROM pg_catalog.pg_roles WHERE rolname = \'vitis_[sDomain]\'';
 // Maps
 $aSql['getMapGroups'] = "SELECT map_group.group_id, \"group\".name FROM [sSchemaVmap].map_group LEFT JOIN [sSchemaFramework].\"group\" ON \"group\".group_id = map_group.group_id WHERE map_group.map_id = [map_id]";
 $aSql['insertMapGroups'] = "INSERT INTO [sSchemaVmap].map_group(group_id, map_id) VALUES([group_id], [map_id])";

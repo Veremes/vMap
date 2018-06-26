@@ -6,8 +6,8 @@ $properties["cadastre"]["rp"]["rp_dir"] = $properties['vas_home'] . '/public/cad
 $properties["cadastre"]["rp"]["rp_url"] = $properties['public_alias'] . '/cadastreV2';
 
 // Login Mp qui a le droit de lecture sur le schéma Majic
-$properties["cadastre"]["rp"]["login"] = "u_vitis";
-$properties["cadastre"]["rp"]["pass"] = "";
+$properties["cadastre"]["rp"]["login"] = $properties["vitis_owner_login"];
+$properties["cadastre"]["rp"]["pass"] = $properties["vitis_owner_pass"];
 
 $properties["cadastre"]["selection_buffer"] = 5;
 $properties["cadastre"]["database_projection"] = "EPSG:2154";

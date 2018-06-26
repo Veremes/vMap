@@ -4,8 +4,13 @@ require_once __DIR__ . "/../../rest/conf/properties.inc";
 require_once __DIR__ . "/../../rest/class/vmlib/logUtil.inc";
 
 // Temps max file_get_contents (900 = 15min)
-ini_set('default_socket_timeout', 900); 
+ini_set('default_socket_timeout', 900);
 
+/**
+ * Return true if the result is an XML
+ * @param string $xml_string
+ * @return boolean
+ */
 function isXML($xml_string) {
     $aXmlArray = simplexml_load_string($xml_string);
     if (!$aXmlArray) {
@@ -20,6 +25,11 @@ function isXML($xml_string) {
     }
 }
 
+/**
+ * Return true if the result is an image
+ * @param string $image_string
+ * @return boolean
+ */
 function isImage($image_string) {
     if (@is_array(getimagesizefromstring($image_string))) {
         return true;
@@ -43,12 +53,25 @@ foreach ($_GET as $key => $value) {
     }
 }
 
+/**
+ * Restrictions SSL
+ */
 $arrContextOptions = array(
     "ssl" => array(
         "verify_peer" => $properties['proxy_check_ssl'],
         "verify_peer_name" => $properties['proxy_check_ssl'],
-    ),
+    )
 );
+
+/**
+ * Authentification basic
+ */
+$aApacheHeaders = apache_request_headers();
+if (!empty($aApacheHeaders['Authorization'])) {
+    $arrContextOptions['http'] = array(
+        'header' => "Authorization: " . $aApacheHeaders['Authorization']
+    );
+}
 stream_context_set_default($arrContextOptions);
 
 if (filter_var($url, FILTER_VALIDATE_URL) != false && (strpos($url, "http://") === 0 || strpos($url, "https://") === 0)) {

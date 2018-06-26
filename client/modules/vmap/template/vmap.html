@@ -1,7 +1,7 @@
 <div id="container">
 
     <!-- Bandeau de gauche -->
-    <div id="left-sidebar" ng-class="vmapCtrl.left_open ? 'open' : ''">
+    <div ng-if="!$root.is_mobile" id="left-sidebar" ng-class="vmapCtrl.left_open ? 'open' : ''">
         <div id="maplistlitle-container" class="dropdown">
             <!--voir dans maplistlitle.js pour l'evenement de fermeture de la dropdown-->
             <button id="maplistlitle-button" class="btn btn-success dropdown-toggle btn-map-manager" 
@@ -45,7 +45,7 @@
     <app-vmaptools id="vmap-tools" app-lang="vmapCtrl.lang" app-map="vmapCtrl.map" app-proj="vmapCtrl.proj" app-infos="vmapCtrl.infos" app-action="vmapCtrl.currentAction"></app-vmaptools>
 
     <!-- Ouvre le bandeau de gauche -->
-    <div id="opener-sidebar" ng-click="vmapCtrl.left_open = !vmapCtrl.left_open" onclick="oVmap.resizeLayerTools(false); oVmap.getToolsManager().getBasicTools().toggleOutTools();">
+    <div ng-if="!$root.is_mobile" id="opener-sidebar" ng-click="vmapCtrl.left_open = !vmapCtrl.left_open" onclick="oVmap.resizeLayerTools(false); oVmap.getToolsManager().getBasicTools().toggleOutTools();">
         <div class="layer-tools-btn shadow-hover icon-tree" ng-class="vmapCtrl.left_open ? 'open' : ''" data-original-title="Couches et cartes"></div>
     </div>
     

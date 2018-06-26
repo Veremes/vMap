@@ -1114,8 +1114,14 @@
                             <option ng-repeat="projection in $root.proj.projections" ng-selected="model.map_options.proj === projection.code" value="{{projection.code}}" ng-show="projection.osm">{{projection.name}}</option>
                         </select>
                     </div>
-                    <label for="Element_Form_Proj_Select" id="Element_Form_proj_label" class="control-label">{{::ctrl.text.Component.Map.Select_center}}</label>
-                    <select ng-disabled="locker" ng-model="centerSelect" ng-init="centerSelect = 'C&Z'" id="Element_Form_Proj_Select" type="text" class="form-control" aria-describedby="Element_Form_proj_label">
+                    <label for="Element_Form_geom_output_Select" id="Element_Form_geom_output_label" class="control-label">{{::ctrl.text.Component.Map.Output_format}}</label>
+                    <select ng-disabled="locker" ng-model="model.map_options.output_format" id="Element_Form_geom_output_Select" type="text" class="form-control" aria-describedby="Element_Form_geom_output_label">
+                        <option value="ewkt">EWKT</option>
+                        <option value="wkt">WKT</option>
+                        <option value="geojson">GeoJSON</option>
+                    </select>
+                    <label for="Element_Form_Extentsys_Select" id="Element_Form_Extentsys_label" class="control-label">{{::ctrl.text.Component.Map.Select_center}}</label>
+                    <select ng-disabled="locker" ng-model="centerSelect" ng-init="centerSelect = 'C&Z'" id="Element_Form_Extentsys_Select" type="text" class="form-control" aria-describedby="Element_Form_Extentsys_label">
                         <option value="Extent">{{::ctrl.text.Component.Map.Extent}}</option>
                         <option value="C&Z">{{::ctrl.text.Component.Map.CZ}}</option>
                     </select>
@@ -1946,6 +1952,215 @@
                         <label id="label_slider_Element_size" for="slider_Element_size">{{::ctrl.text.Component.General.Width}}</label>
                         <input ng-disabled="locker" data-app-param-element id="slider_Element_size" data-slider-id='slider_Element_size' type="text" data-slider-min="0" data-slider-max="12" data-slider-step="1" data-slider-value="12" required>
                     </div>
+                </div>
+                <!-- ui_grid -->
+                <div ng-switch-when="ui_grid">
+                    <!-- Libellé de la grille -->
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_label_label">{{::ctrl.text.Component.General.Label}}</span>
+                        <input ng-disabled="locker" ng-model="model.label" id="Element_Form_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Number.Label_PH}}" aria-describedby="Element_Form_label_label">
+                    </div>
+                    <!-- Nom de la grille -->
+                    <div class="input-group element-margin input-group-xs">
+                        <span ng-if="ctrl.applicationName !== 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name}}</span>
+                        <span ng-if="ctrl.applicationName === 'gtf'" class="input-group-addon" id="Element_Form_name_label">{{::ctrl.text.Component.General.Name_GTF}}</span>
+                        <input ng-disabled="locker" ng-model="model.name" id="Element_Form_name_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Number.Name_PH}}" aria-describedby="Element_Form_name_label" required>
+                    </div>
+                    <!-- Titre de la grille -->
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_label_label">{{::ctrl.text.Component.ui_grid.GridTitle}}</span>
+                        <input ng-disabled="locker" ng-model="model.options.appGridTitle" id="Element_Form_grid_title_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Number.Label_PH}}" aria-describedby="Element_Form_label_label" required>
+                    </div>
+                    <!-- Affichage de l'entête de la grille -->
+                    <div class="checkbox checkbox_margin">
+                        <input ng-disabled="locker" type="checkbox" name="Element_Form_required_input" id="Element_Form_required_input" ng-model="model.options.appHeader">
+                        <label for="Element_Form_required_input" id="Element_Form_required_label" class="control-label">{{::ctrl.text.Component.ui_grid.Header}}</label>
+                    </div>
+                    <hr>
+                    <!-- Liste des colonnes -->
+                    <label for="Element_Form_ui_grid_column_Select" id="Element_Form_ui_grid_column_Select" class="control-label">{{::ctrl.text.Component.ui_grid.ColumnsListLabel}}</label>
+                    <div class="row">
+                        <div class="col-xs-10" style="width: calc(100% - 30px)">
+                            <select class="form-control element-margin"
+                                    ng-disabled="locker" 
+                                    ng-model="$parent.sSelectedColumn"
+                                    ng-options="columnDef.field as columnDef.displayName for columnDef in model.options.columnDefs | orderBy:'name'"
+                                    ng-change="$parent.bEditColumn = true; bShowColumnParameters = true; model.bCallWatch = true;">
+                            </select>
+                        </div>
+                        <div class="col-xs-2" style="width: 30px; right: 25px;">
+                            <button type="button" ng-click="$parent.sSelectedColumn = ''; bShowColumnParameters = true; $parent.bAddColumn = true; model.bCallWatch = true;" style="" class="btn btn-primary btn-xs" title="{{::ctrl.text.Component.ui_grid.AddColumn}}"><!-- $parent.$parent.ctrl.showUiGridColumnsModal(); -->
+                                <span class="glyphicon glyphicon-plus"></span>
+                            </button>
+                        </div>
+                    </div>
+                    <div ng-show="bShowColumnParameters">
+                        <!-- Libellé de la colonne -->
+                        <div class="input-group element-margin input-group-xs">
+                            <span class="input-group-addon" id="Element_Form_ui_grid_column_DisplayName">{{::ctrl.text.Component.ui_grid.ColumnDefDisplayName}}</span>
+                            <input ng-disabled="locker" ng-model="columnDef.displayName" id="Element_Form_columnDef_displayName_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.ui_grid.ColumnDefDisplayName_PH}}" aria-describedby="Element_Form_label_label" required>
+                        </div>
+                        <!-- Paramètre de la source de données -->
+                        <div class="input-group element-margin input-group-xs">
+                            <span class="input-group-addon" id="Element_Form_ui_grid_column_Field">{{::ctrl.text.Component.ui_grid.ColumnDefField}}</span>
+                            <input ng-disabled="locker" ng-model="columnDef.field" id="Element_Form_columnDef_field_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.ui_grid.ColumnDefField_PH}}" aria-describedby="Element_Form_label_label" required>
+                        </div>
+                        <!-- Largeur de la colonne -->
+                        <div class="input-group element-margin input-group-xs">
+                            <span class="input-group-addon" id="Element_Form_ui_grid_column_Width">{{::ctrl.text.Component.ui_grid.ColumnDefWidth}}</span>
+                            <input ng-disabled="locker" ng-model="columnDef.width" id="Element_Form_columnDef_width_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.ui_grid.ColumnDefWidth_PH}}" aria-describedby="Element_Form_label_label">
+                        </div>
+                        <!-- Template de la colonne -->
+                        <div class="input-group element-margin input-group-xs">
+                            <span class="input-group-addon" id="Element_Form_ui_grid_column_CellTemplate">{{::ctrl.text.Component.ui_grid.ColumnDefCellTemplate}}</span>
+                            <input ng-disabled="locker" ng-model="columnDef.cellTemplate" id="Element_Form_columnDef_cellTemplate_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.ui_grid.ColumnDefCellTemplate_PH}}" aria-describedby="Element_Form_label_label">
+                        </div>
+                        <!-- Boutons de gestion des colonnes -->
+                        <div class="row" style="text-align: right;">
+                            <div class="col-xs-12">
+                                <button type="button" ng-click="$parent.bSaveColumn = true; model.bCallWatch = true;" class="btn btn-primary btn-xs" title="{{::ctrl.text.Component.ui_grid.SaveColumn}}">
+                                    <span class="glyphicon glyphicon-floppy-disk"></span>
+                                </button>
+                                <button type="button" ng-click="$parent.bDeleteColumn = true; bShowColumnParameters = false; model.bCallWatch = true;" class="btn btn-primary btn-xs" title="{{::ctrl.text.Component.ui_grid.DeleteColumn}}">
+                                    <span class="glyphicon glyphicon-trash"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Liste des boutons -->
+                    <label for="Element_Form_ui_grid_button_Select" id="Element_Form_ui_grid_button_Select" class="control-label">{{::ctrl.text.Component.ui_grid.ButtonsListLabel}}</label>
+                    <div class="row">
+                        <div class="col-xs-10" style="width: calc(100% - 30px)">
+                            <select class="form-control element-margin"
+                                    ng-disabled="locker" 
+                                    ng-model="$parent.sSelectedButton"
+                                    ng-options="appAction.name as appAction.label for appAction in model.options.appActions | orderBy:'label'"
+                                    ng-change="$parent.bEditButton = true; bShowButtonParameters = true; model.bCallWatch = true;">
+                            </select>
+                        </div>
+                        <div class="col-xs-2" style="width: 30px; right: 25px;">
+                            <button type="button" ng-click="$parent.sSelectedButton = ''; bShowButtonParameters = true; $parent.bAddButton = true; model.bCallWatch = true;" style="" class="btn btn-primary btn-xs" title="{{::ctrl.text.Component.ui_grid.AddButton}}">
+                                <span class="glyphicon glyphicon-plus"></span>
+                            </button>
+                        </div>
+                    </div>
+                    <div ng-show="bShowButtonParameters">
+                        <!-- Libellé -->
+                        <div class="input-group element-margin input-group-xs">
+                            <span class="input-group-addon" id="Element_Form_ui_grid_button_label">{{::ctrl.text.Component.ui_grid.ButtonLabel}}</span>
+                            <input ng-disabled="locker" ng-model="appAction.label" id="Element_Form_appAction_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.ui_grid.ButtonLabel_PH}}" aria-describedby="Element_Form_label_label" required>
+                        </div>
+                        <!-- Nom -->
+                        <div class="input-group element-margin input-group-xs">
+                            <span class="input-group-addon" id="Element_Form_ui_grid_button_name">{{::ctrl.text.Component.ui_grid.ButtonName}}</span>
+                            <input ng-disabled="locker" ng-model="appAction.name" id="Element_Form_name_field_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.ui_grid.ButtonName_PH}}" aria-describedby="Element_Form_label_label" required>
+                        </div>
+                        <!-- Evènement -->
+                        <div class="input-group element-margin input-group-xs">
+                            <span class="input-group-addon" id="Element_Form_ui_grid_button_event">{{::ctrl.text.Component.ui_grid.ButtonEvent}}</span>
+                            <input ng-disabled="locker" ng-model="appAction.event" id="Element_Form_appAction_event_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.ui_grid.ButtonEvent_PH}}" aria-describedby="Element_Form_label_label">
+                        </div>
+                        <!-- Boutons de gestion des boutons -->
+                        <div class="row" style="text-align: right;">
+                            <div class="col-xs-12">
+                                <button type="button" ng-click="$parent.bSaveButton = true; model.bCallWatch = true;" class="btn btn-primary btn-xs" title="{{::ctrl.text.Component.ui_grid.SaveButton}}">
+                                    <span class="glyphicon glyphicon-floppy-disk"></span>
+                                </button>
+                                <button type="button" ng-click="$parent.bDeleteButton = true; bShowButtonParameters = false; model.bCallWatch = true;" class="btn btn-primary btn-xs" title="{{::ctrl.text.Component.ui_grid.DeleteButton}}">
+                                    <span class="glyphicon glyphicon-trash"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <!--Source de donnees-->
+                    <label for="Element_Form_ui_grid_Datasource_select" id="Element_Form_ui_grid_Datasource_label" class="control-label">{{::ctrl.text.Component.ui_grid.Datasource}}</label>
+                    <div class="row">
+                        <div class="col-sm-8">
+                            <select class="form-control element-margin"
+                                    ng-disabled="locker" 
+                                    ng-model="model.datasource.datasource_id"
+                                    ng-options="node.id as node.name for node in datasourcesArray | orderBy:'name'">
+                            </select>
+                        </div>
+                        <div class="col-sm-4">
+                            <i data-app-helper-icon class="icon icon-info" data-text="{{::ctrl.text.Component.Select.DatasourceManagementTitle}}"></i>
+                        </div>
+                    </div>
+                </div>
+                <!-- Treeview -->
+                <div ng-switch-when="treeview">
+                    <!-- Libellé -->
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_treeview_label">{{::ctrl.text.Component.General.Label}}</span>
+                        <input ng-disabled="locker" ng-model="model.label" id="Element_Form_treeview_label" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Treeview.Label_PH}}" aria-describedby="Element_Form_treeview_label" required>
+                    </div>
+                    <!-- Nom -->
+                    <div class="input-group element-margin input-group-xs">
+                        <span ng-if="ctrl.applicationName !== 'gtf'" class="input-group-addon" id="Element_Form_name_treeview">{{::ctrl.text.Component.General.Name}}</span>
+                        <span ng-if="ctrl.applicationName === 'gtf'" class="input-group-addon" id="Element_Form_name_treeview">{{::ctrl.text.Component.General.Name_GTF}}</span>
+                        <input ng-disabled="locker" ng-model="model.name" id="Element_Form_treeview_name" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Treeview.Name_PH}}" aria-describedby="Element_Form_name_name" required>
+                    </div>
+                    <!-- Données -->
+                    <div id="Element_Form_treeview_data_selection" class="studio-form-element-def-tab">
+                        <!-- Nav tabs -->
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active"><a href="#treeview_data_creation" aria-controls="treeview_data_creation" role="tab" data-toggle="tab">Création</a></li>
+                            <li role="presentation"><a href="#treeview_data_event" aria-controls="treeview_data_event" role="tab" data-toggle="tab">Evènement</a></li>
+                        </ul>
+                        <!-- Tab panes -->
+                        <div class="tab-content">
+                            <div role="tabpanel" class="tab-pane fade in active" id="treeview_data_creation">
+                                <button ng-click="$parent.bShowNodeParameters = true; $parent.bAddNode = true; $parent.bEditNode = false; model.bCallWatch = true;" style="float: right; margin-bottom: 10px;" class="btn btn-primary btn-sm pull-right">
+                                    <span class="glyphicon glyphicon-plus"></span> {{::ctrl.text.Component.Treeview.AddNode}}
+                                </button>
+                                <div ng-show="$parent.bShowNodeParameters" style="clear: both">
+                                    <!-- Libellé -->
+                                    <div class="input-group element-margin input-group-xs">
+                                        <span class="input-group-addon" id="Element_Form_treeview_node_label">{{::ctrl.text.Component.Treeview.NodeLabel}}</span>
+                                        <input ng-disabled="locker" ng-model="node.text" id="Element_Form_node_label_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Treeview.NodeLabel_PH}}" aria-describedby="Element_Form_label_label" required>
+                                    </div>
+                                    <!-- Valeur -->
+                                    <div class="input-group element-margin input-group-xs">
+                                        <span class="input-group-addon" id="Element_Form_treeview_node_value">{{::ctrl.text.Component.Treeview.NodeValue}}</span>
+                                        <input ng-disabled="locker" ng-model="node.value" id="Element_Form_node_value_input" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Treeview.NodeValue_PH}}" aria-describedby="Element_Form_label_label" required>
+                                    </div>
+                                    <!-- Noeud parent -->
+                                    <div class="input-group element-margin input-group-xs">
+                                        <span class="input-group-addon" id="Element_Form_treeview_node_parent">{{::ctrl.text.Component.Treeview.NodeParent}}</span>
+                                        <input ng-disabled="locker" ng-model="$parent.sSelectedNodeParent" id="Element_Form_node_parent_input" type="text" class="form-control" placeholder="" aria-describedby="Element_Form_label_label" readonly>
+                                    </div>
+                                    <!-- Boutons de gestion des noeuds -->
+                                    <div class="row" style="text-align: right;">
+                                        <div class="col-xs-12">
+                                            <button type="button" ng-click="$parent.bSaveNode = true; model.bCallWatch = true;" class="btn btn-primary btn-xs" title="{{::ctrl.text.Component.Treeview.SaveNode}}">
+                                                <span class="glyphicon glyphicon-floppy-disk"></span>
+                                            </button>
+                                            <button type="button" ng-click="$parent.bDeleteNode = true; $parent.bShowNodeParameters = false; model.bCallWatch = true;" class="btn btn-primary btn-xs" title="{{::ctrl.text.Component.Treeview.DeleteNode}}">
+                                                <span class="glyphicon glyphicon-trash"></span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div role="tabpanel" class="tab-pane fade" id="treeview_data_event">
+                                <div class="input-group element-margin input-group-xs">
+                                    <span class="input-group-addon" id="Element_Form_treeview_dataLoadingEvent">{{::ctrl.text.Component.Treeview.DataLoadingEvent}}</span>
+                                    <input ng-disabled="locker" ng-model="model.options.dataLoadingEvent" id="Element_Form_treeview_dataLoadingEvent" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Treeview.DataLoadingEvent_PH}}" aria-describedby="Element_Form_treeview_dataLoadingEvent" required>
+                                    <i data-app-helper-icon class="icon icon-info input-group-addon input-group-addon-helper" data-text="{{::ctrl.text.Component.Treeview.DataEventHelper}}"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>                    
+                    <!--
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_treeview_data">{{::ctrl.text.Component.Treeview.Data}}</span>
+                        <input ng-disabled="locker" ng-model="model.options.data" id="Element_Form_treeview_data" type="text" class="form-control" placeholder="{{::ctrl.text.Component.Treeview.Data_PH}}" aria-describedby="Element_Form_treeview_data">
+                    </div>
+                    <div class="input-group element-margin input-group-xs">
+                        <span class="input-group-addon" id="Element_Form_value_treeview">{{::ctrl.text.Component.General.Value}}</span>
+                        <textarea ng-disabled="locker" ng-model="model.default_value" id="Element_Form_value_input" type="text" class="form-control" aria-describedby="Element_Form_value_treeview" rows="3"></textarea>
+                    </div>
+                    -->
                 </div>
                 <!-- Default -->
                 <span ng-switch-default>

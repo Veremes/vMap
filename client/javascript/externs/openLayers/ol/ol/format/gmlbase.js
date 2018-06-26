@@ -167,12 +167,12 @@ ol.format.GMLBase.prototype.readFeaturesInternal = function(node, objectStack) {
       var parsers = {};
       for (i = 0, ii = featureTypes.length; i < ii; ++i) {
         var featurePrefix = featureTypes[i].indexOf(':') === -1 ?
-            defaultPrefix : featureTypes[i].split(':')[0];
+          defaultPrefix : featureTypes[i].split(':')[0];
         if (featurePrefix === p) {
           parsers[featureTypes[i].split(':').pop()] =
               (localName == 'featureMembers') ?
-              ol.xml.makeArrayPusher(this.readFeatureElement, this) :
-              ol.xml.makeReplacer(this.readFeatureElement, this);
+                ol.xml.makeArrayPusher(this.readFeatureElement, this) :
+                ol.xml.makeReplacer(this.readFeatureElement, this);
         }
       }
       parsersNS[featureNS[p]] = parsers;
@@ -198,12 +198,13 @@ ol.format.GMLBase.prototype.readFeaturesInternal = function(node, objectStack) {
 ol.format.GMLBase.prototype.readGeometryElement = function(node, objectStack) {
   var context = /** @type {Object} */ (objectStack[0]);
   context['srsName'] = node.firstElementChild.getAttribute('srsName');
+  context['srsDimension'] = node.firstElementChild.getAttribute('srsDimension');
   /** @type {ol.geom.Geometry} */
   var geometry = ol.xml.pushParseAndPop(null,
       this.GEOMETRY_PARSERS_, node, objectStack, this);
   if (geometry) {
     return /** @type {ol.geom.Geometry} */ (
-        ol.format.Feature.transformWithOptions(geometry, false, context));
+      ol.format.Feature.transformWithOptions(geometry, false, context));
   } else {
     return undefined;
   }
@@ -590,5 +591,5 @@ ol.format.GMLBase.prototype.readFeaturesFromNode = function(node, opt_options) {
  */
 ol.format.GMLBase.prototype.readProjectionFromNode = function(node) {
   return ol.proj.get(this.srsName ? this.srsName :
-      node.firstElementChild.getAttribute('srsName'));
+    node.firstElementChild.getAttribute('srsName'));
 };

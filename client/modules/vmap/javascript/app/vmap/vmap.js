@@ -244,7 +244,7 @@ oVmap.vmapDirective = function () {
  * @ngInject
  * @export
  */
-oVmap.vmapController = function () {
+oVmap.vmapController = function ($sanitize) {
     oVmap.log("oVmap.vmapController");
 
     var this_ = this;
@@ -314,6 +314,8 @@ oVmap.vmapController = function () {
      * Root controller
      */
     oVmap['ctrl'] = oVmap['scope']['vmapCtrl'];
+
+    oVmap['$sanitize'] = $sanitize;
 
     // Usefull Functions
 
@@ -711,6 +713,10 @@ oVmap.displayTooltipError = function (opt_options, message) {
 oVmap.resizeLayerTools = function (animate) {
     oVmap.log("oVmap.resizeLayerTools: " + animate);
 
+    if (oVmap['properties']['is_mobile']) {
+        return null;
+    }
+
     if (goog.isDef(angular.element($('#olMap')).scope()))
         angular.element($('#olMap')).scope()['ctrl'].startAnimation();
 
@@ -882,31 +888,102 @@ oVmap.resizeAll = function () {
 };
 
 /**
+ * Get a multiple geom feature from an array of features
+ * @param {array} aFeatures
+ * @param {string} sType
+ * @returns {null|ol.Feature}
+ */
+oVmap.getMultiGeomFromSingleFeatures = function (aFeatures, sType) {
+    oVmap.log('getMultiGeomFromSingleFeatures');
+
+    var oOutputGeom, oInputGeom, aInputMultipleGeoms;
+    if (sType === 'MultiPoint') {
+        oOutputGeom = new ol.geom.MultiPoint();
+    } else if (sType === 'MultiLineString') {
+        oOutputGeom = new ol.geom.MultiLineString();
+    } else if (sType === 'MultiPolygon') {
+        oOutputGeom = new ol.geom.MultiPolygon();
+    } else {
+        console.error('startSelection: type (' + sType + ') not allowed');
+        return null;
+    }
+
+    for (var i = 0; i < aFeatures.length; i++) {
+        oInputGeom = aFeatures[i].getGeometry();
+
+        // oInputGeom est de type multi
+        if (oInputGeom.getType() === sType) {
+
+            if (sType === 'MultiPoint') {
+                aInputMultipleGeoms = oInputGeom.getPoints();
+            } else if (sType === 'MultiLineString') {
+                aInputMultipleGeoms = oInputGeom.getLineStrings();
+            } else if (sType === 'MultiPolygon') {
+                aInputMultipleGeoms = oInputGeom.getPolygons();
+            } else {
+                console.error('startSelection: type (' + sType + ') not allowed');
+                return null;
+            }
+
+            for (var ii = 0; ii < aInputMultipleGeoms.length; ii++) {
+
+                if (sType === 'MultiPoint') {
+                    oOutputGeom.appendPoint(aInputMultipleGeoms[ii]);
+                } else if (sType === 'MultiLineString') {
+                    oOutputGeom.appendLineString(aInputMultipleGeoms[ii]);
+                } else if (sType === 'MultiPolygon') {
+                    oOutputGeom.appendPolygon(aInputMultipleGeoms[ii]);
+                } else {
+                    console.error('startSelection: type (' + sType + ') not allowed');
+                    return null;
+                }
+            }
+        }
+
+        // oInputGeom est de type simple
+        if (oInputGeom.getType() === sType.substr(5)) {
+
+            if (sType === 'MultiPoint') {
+                oOutputGeom.appendPoint(oInputGeom);
+            } else if (sType === 'MultiLineString') {
+                oOutputGeom.appendLineString(oInputGeom);
+            } else if (sType === 'MultiPolygon') {
+                oOutputGeom.appendPolygon(oInputGeom);
+            } else {
+                console.error('startSelection: type (' + sType + ') not allowed');
+                return null;
+            }
+        }
+    }
+
+    var feature = new ol.Feature({
+        geometry: oOutputGeom
+    });
+
+    return feature;
+};
+
+/**
  * Parse a WKT geom and a EPSG projection code to return an EWKT geometry
  * @param {string} WKTGeom WKT Geom
  * @param {string} EPSGProj EPSG Code
  * @returns {string} EWKT Geom
+ * @export
  */
 oVmap.getEWKTFromWKT = function (WKTGeom, EPSGProj) {
     oVmap.log('getEWKTFromWKT');
+    return ol.getEWKTFromWKT(WKTGeom, EPSGProj);
+};
 
-    if (!goog.isString(WKTGeom)) {
-        console.error('WKTGeom is not a string');
-        return null;
-    }
-    if (!goog.isString(EPSGProj)) {
-        console.error('EPSGProj is not a string');
-        return null;
-    }
-    if (!EPSGProj.indexOf('EPSG:') === 0) {
-        console.error('EPSGProj is not an EPSG code');
-        return null;
-    }
-
-    var SRID = EPSGProj.substr(5);
-    var EWKTGeom = 'SRID=' + SRID + ';' + WKTGeom;
-
-    return EWKTGeom;
+/**
+ * Get a WKT with proj from an EWKT geom
+ * @param {string} EWKTGeom
+ * @returns {object}
+ * @export
+ */
+oVmap.getWKTFromEWKT = function (EWKTGeom) {
+    oVmap.log('getWKTFromEWKT');
+    return ol.getWKTFromEWKT(EWKTGeom);
 };
 
 /**
@@ -914,60 +991,23 @@ oVmap.getEWKTFromWKT = function (WKTGeom, EPSGProj) {
  * @param {ol.geom.Geometry} geom
  * @param {String|undefined} proj
  * @returns {String} EWKT Geom
+ * @export
  */
 oVmap.getEWKTFromGeom = function (geom, proj) {
-    oVmap.log('getEWKTFromWKT');
-
-    if (!goog.isDefAndNotNull(geom)) {
-        console.error('geom is not defined');
-        return null;
-    }
-
+    oVmap.log('getEWKTFromGeom', geom);
     proj = goog.isDefAndNotNull(proj) ? proj : oVmap.getMap().getOLMap().getView().getProjection().getCode();
-
-    if (!goog.isString(proj)) {
-        console.error('proj is not a string');
-        return null;
-    }
-    if (!proj.indexOf('EPSG:') === 0) {
-        console.error('proj is not an EPSG code');
-        return null;
-    }
-
-    var WKT = new ol.format.WKT();
-    var WKTGeom = WKT.writeGeometry(geom, {
-        dataProjection: proj,
-        featureProjection: proj
-    });
-
-    var SRID = proj.substr(5);
-    var EWKTGeom = 'SRID=' + SRID + ';' + WKTGeom;
-
-    return EWKTGeom;
+    return ol.getEWKTFromGeom(geom, proj);
 };
 
 /**
  * Return true if EWKTGeom is an EWKT geometry 
  * @param {string} EWKTGeom
  * @returns {boolean}
+ * @export
  */
 oVmap.isEWKTGeom = function (EWKTGeom) {
     oVmap.log('isEWKTGeom');
-
-    if (EWKTGeom.substr(0, 5).toUpperCase() !== 'SRID=')
-        return false;
-
-    var WKTFormat = new ol.format.WKT();
-    var WKTGeom = EWKTGeom.substr(EWKTGeom.indexOf(';') + 1);
-
-    try {
-        WKTFormat.readGeometry(WKTGeom);
-    } catch (e) {
-        console.error('readGeometry failed: ', EWKTGeom);
-        return false;
-    }
-
-    return true;
+    return ol.isEWKTGeom(EWKTGeom);
 };
 
 /**
@@ -975,35 +1015,12 @@ oVmap.isEWKTGeom = function (EWKTGeom) {
  * @param {string} EWKTGeom
  * @param {string|undefined} proj
  * @returns {ol.geom.Geometry}
+ * @export
  */
 oVmap.getGeomFromEWKT = function (EWKTGeom, proj) {
     oVmap.log('getGeomFromEWKT');
-
-    if (!goog.isString(EWKTGeom)) {
-        console.error('EWKTGeom is not a string: ', EWKTGeom);
-        return null;
-    }
-
     proj = goog.isDefAndNotNull(proj) ? proj : oVmap.getMap().getOLMap().getView().getProjection().getCode();
-
-    if (this.isEWKTGeom(EWKTGeom)) {
-
-        var WKTFormat = new ol.format.WKT();
-        var WKTGeom = EWKTGeom.substr(EWKTGeom.indexOf(';') + 1);
-        var EWKTGeomProj = 'EPSG:' + EWKTGeom.slice(5, EWKTGeom.indexOf(';'));
-
-        var oGeom = WKTFormat.readGeometry(WKTGeom, {
-            dataProjection: EWKTGeomProj,
-            featureProjection: proj
-        });
-
-        return oGeom;
-
-    } else {
-        console.error('Geom is not an EWKT Geometry: ', EWKTGeom);
-        return null;
-    }
-
+    return ol.getGeomFromEWKT(EWKTGeom, proj);
 };
 
 /**
@@ -1095,7 +1112,7 @@ oVmap.generatePrintReport = function (opt_options) {
             'printreport_id': printReportId,
             'ids': sIds
         },
-        'timeout': 120000,
+        'timeout': 5 * 60 * 1000,
         'success': function (response) {
 
             var bError = false;
@@ -1147,6 +1164,9 @@ oVmap.generatePrintReport = function (opt_options) {
  * @export
  */
 oVmap.isLink = function (item, tagIdentifier) {
+    if (!goog.isDefAndNotNull(item)) {
+        return false;
+    }
     if (!goog.isString(item)) {
         return false;
     }
@@ -1165,6 +1185,12 @@ oVmap.isLink = function (item, tagIdentifier) {
  * @export
  */
 oVmap.parseLink = function (sString, tagIdentifier) {
+    if (!goog.isDefAndNotNull(sString)) {
+        return '';
+    }
+    if (!goog.isString(sString)) {
+        return '';
+    }
     tagIdentifier = goog.isDefAndNotNull(tagIdentifier) ? tagIdentifier : 'link';
     var sLink = sString.substr(sString.indexOf('[' + tagIdentifier), sString.indexOf('[/' + tagIdentifier + ']') - sString.indexOf('[' + tagIdentifier) + 10);
     var sLinkFirstTag = oVmap.getFirstLinkTag_(sLink);

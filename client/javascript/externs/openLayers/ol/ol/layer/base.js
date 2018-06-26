@@ -51,17 +51,24 @@ ol.layer.Base = function(options) {
     managed: true
   });
 
+  /**
+   * The layer type.
+   * @type {ol.LayerType}
+   * @protected;
+   */
+  this.type;
+
 };
 ol.inherits(ol.layer.Base, ol.Object);
 
 
 /**
- * Create a renderer for this layer.
- * @abstract
- * @param {ol.renderer.Map} mapRenderer The map renderer.
- * @return {ol.renderer.Layer} A layer renderer.
+ * Get the layer type (used when creating a layer renderer).
+ * @return {ol.LayerType} The layer type.
  */
-ol.layer.Base.prototype.createRenderer = function(mapRenderer) {};
+ol.layer.Base.prototype.getType = function() {
+  return this.type;
+};
 
 
 /**
@@ -107,7 +114,7 @@ ol.layer.Base.prototype.getLayerStatesArray = function(opt_states) {};
  */
 ol.layer.Base.prototype.getExtent = function() {
   return /** @type {ol.Extent|undefined} */ (
-      this.get(ol.layer.Property.EXTENT));
+    this.get(ol.layer.Property.EXTENT));
 };
 
 
@@ -119,7 +126,7 @@ ol.layer.Base.prototype.getExtent = function() {
  */
 ol.layer.Base.prototype.getMaxResolution = function() {
   return /** @type {number} */ (
-      this.get(ol.layer.Property.MAX_RESOLUTION));
+    this.get(ol.layer.Property.MAX_RESOLUTION));
 };
 
 
@@ -131,7 +138,7 @@ ol.layer.Base.prototype.getMaxResolution = function() {
  */
 ol.layer.Base.prototype.getMinResolution = function() {
   return /** @type {number} */ (
-      this.get(ol.layer.Property.MIN_RESOLUTION));
+    this.get(ol.layer.Property.MIN_RESOLUTION));
 };
 
 

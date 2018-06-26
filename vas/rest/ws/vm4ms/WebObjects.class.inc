@@ -1,23 +1,23 @@
 <?php
+
 /**
-* \file WebObjects.class.inc
-* \class WebObjects
-*
-* \author Armand Bahi <armand.bahi@veremes.com>.
-*
-* \brief This file contains the WebObjects php class
-*
-* This class defines Rest Api to Vmap4MapServer WebObjects
-* 
-*/
+ * \file WebObjects.class.inc
+ * \class WebObjects
+ *
+ * \author Armand Bahi <armand.bahi@veremes.com>.
+ *
+ * \brief This file contains the WebObjects php class
+ *
+ * This class defines Rest Api to Vmap4MapServer WebObjects
+ * 
+ */
 require_once 'Vmap4MapServer.class.inc';
 require_once 'WebObject.class.inc';
 require_once __DIR__ . '/../../class/vitis_lib/Connection.class.inc';
 require_once __DIR__ . '/../../class/vmlib/BdDataAccess.inc';
 
 class WebObjects extends Vmap4MapServer {
-    
-     /**
+    /**
      * @SWG\Definition(
      *   definition="/webobjects",
      *   allOf={
@@ -29,19 +29,20 @@ class WebObjects extends Vmap4MapServer {
      *   description=""
      * )
      */
+
     /**
      * construct
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
+     * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = new Connection($this->aValues, $this->aProperties);
-		$this->aSelectedFields = Array("web_id", "name", "definition");
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
+        $this->aSelectedFields = Array("web_id", "name", "definition");
     }
+
     /**
      * @SWG\Get(path="/webobjects",
      *   tags={"WebObjects"},
@@ -114,6 +115,7 @@ class WebObjects extends Vmap4MapServer {
      *     )
      *  )
      */
+
     /**
      * get WebObjects
      * @return  WebObjects
@@ -122,7 +124,7 @@ class WebObjects extends Vmap4MapServer {
         $aReturn = $this->genericGet($this->aProperties['schema_vm4ms'], 'web', 'web_id');
         return $aReturn['sMessage'];
     }
-    
+
     /**
      * @SWG\Post(path="/webobjects",
      *   tags={"WebObjects"},
@@ -165,18 +167,18 @@ class WebObjects extends Vmap4MapServer {
      * @return array containing the status and the message
      */
     function POST() {
-        $aReturn = $this->genericPost($this->aProperties['schema_vm4ms'], 'web', $this->aProperties['schema_vm4ms'].'.seq_common', 'web_id');
-        if ($aReturn['sStatus'] == 1){
+        $aReturn = $this->genericPost($this->aProperties['schema_vm4ms'], 'web', $this->aProperties['schema_vm4ms'] . '.seq_common', 'web_id');
+        if ($aReturn['sStatus'] == 1) {
             $aXmlRacineAttribute['status'] = 1;
             $sMessage = $this->asDocument('', 'vitis', $this->aValues['sEncoding'], True, $aXmlRacineAttribute, $this->aValues['sSourceEncoding'], $this->aValues['output']);
             $oWebObject = new WebObject($this->aPath, $this->aValues, $this->aProperties, $this->oConnection);
             $oWebObject->GET();
-        }else{
+        } else {
             $sMessage = $aReturn['sMessage'];
         }
         return $sMessage;
     }
-    
+
     /**
      * @SWG\Put(path="/webobjects/{web_id}",
      *   tags={"WebObjects"},
@@ -232,7 +234,6 @@ class WebObjects extends Vmap4MapServer {
         return $aReturn['sMessage'];
     }
 
-    
     /**
      * @SWG\Delete(path="/webobjects/",
      *   tags={"WebObjects"},
@@ -290,7 +291,7 @@ class WebObjects extends Vmap4MapServer {
      *     )
      *  )
      */
-    
+
     /**
      * delete web object
      * @return id of web object deleted or error object if a web object is not deleted
@@ -299,5 +300,7 @@ class WebObjects extends Vmap4MapServer {
         $aReturn = $this->genericDelete($this->aProperties['schema_vm4ms'], 'web', 'web_id');
         return $aReturn['sMessage'];
     }
+
 }
+
 ?>

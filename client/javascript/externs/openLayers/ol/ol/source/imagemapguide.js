@@ -39,7 +39,7 @@ ol.source.ImageMapGuide = function(options) {
    * @type {number}
    */
   this.displayDpi_ = options.displayDpi !== undefined ?
-      options.displayDpi : 96;
+    options.displayDpi : 96;
 
   /**
    * @private
@@ -58,7 +58,7 @@ ol.source.ImageMapGuide = function(options) {
    * @type {ol.ImageLoadFunctionType}
    */
   this.imageLoadFunction_ = options.imageLoadFunction !== undefined ?
-      options.imageLoadFunction : ol.source.Image.defaultImageLoadFunction;
+    options.imageLoadFunction : ol.source.Image.defaultImageLoadFunction;
 
   /**
    * @private
@@ -71,7 +71,7 @@ ol.source.ImageMapGuide = function(options) {
    * @type {number}
    */
   this.metersPerUnit_ = options.metersPerUnit !== undefined ?
-      options.metersPerUnit : 1;
+    options.metersPerUnit : 1;
 
   /**
    * @private
@@ -84,7 +84,7 @@ ol.source.ImageMapGuide = function(options) {
    * @type {boolean}
    */
   this.useOverlay_ = options.useOverlay !== undefined ?
-      options.useOverlay : false;
+    options.useOverlay : false;
 
   /**
    * @private
@@ -141,7 +141,7 @@ ol.source.ImageMapGuide.prototype.getImageInternal = function(extent, resolution
     var imageUrl = this.getUrl(this.url_, this.params_, extent, size,
         projection);
     image = new ol.Image(extent, resolution, pixelRatio,
-        this.getAttributions(), imageUrl, this.crossOrigin_,
+        imageUrl, this.crossOrigin_,
         this.imageLoadFunction_);
     ol.events.listen(image, ol.events.EventType.CHANGE,
         this.handleImageChange, this);

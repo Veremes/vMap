@@ -199,7 +199,7 @@
             {
                 "fields":[
                     {
-                        "type":"label",
+                        "type":"tinymce",
                         "name":"observations",
                         "label":"Obsevations",
                         "disabled":false,
@@ -268,6 +268,7 @@
                         "map_options":{
                             "proj":"EPSG:2154",
                             "type":"OSM",
+                            "output_format": "ewkt",
                             "center":{
                                 "extent":[
                                     106035.20950928,
@@ -748,6 +749,7 @@
                         "map_options":{
                             "proj":"EPSG:2154",
                             "type":"OSM",
+                            "output_format": "ewkt",
                             "center":{
                                 "extent":[
                                     147983.20447998,
@@ -1199,6 +1201,7 @@
                         "map_options":{
                             "proj":"EPSG:2154",
                             "type":"OSM",
+                            "output_format": "ewkt",
                             "center":{
                                 "extent":[
                                     97101.84020996303,

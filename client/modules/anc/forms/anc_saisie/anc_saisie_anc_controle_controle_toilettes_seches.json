@@ -154,7 +154,7 @@
             {
                 "fields":[
                     {
-                        "type":"label",
+                        "type":"tinymce",
                         "name":"ts_commentaires",
                         "label":"Commentaires",
                         "disabled":false,
@@ -310,7 +310,7 @@
                         }
                     },
                     {
-                        "type":"text",
+                        "type":"number",
                         "name":"ts_capacite_bac",
                         "label":"Capacité des bacs extérieurs (en m3)",
                         "required":false,

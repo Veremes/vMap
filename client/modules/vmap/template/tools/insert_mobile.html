@@ -1,0 +1,38 @@
+
+<div id="vmap-insert-tool"></div>
+
+<a ng-repeat="bo in aInsertableBOs" class="list-group-item sublist-group-item" ng-click="ctrl.mobileStartInsertion(bo.bo_id)"><span class="icon-info insert_menu_logo"></span> {{::bo['bo_title']}}</a>
+
+<div class="modal fade" id="basictools-insert-form-reader-modal" role="dialog">
+    <div class="modal-dialog">
+        <!--Modal content-->
+        <div class="modal-content" style="">
+            <div class="modal-header">
+                <!-- Bouton retour -->
+                <div class="btn btn-default vmap_mobile_return_modal right" data-dismiss="modal" onclick="oVmap.getToolsManager().getBasicTools().toggleOutTools()">
+                    <span class="icon-caret-left"></span> Retour
+                </div>
+                <h4 class="modal-title">Attributs</h4>
+            </div>
+            <div class="modal-body modal-body-big-with-footer-3 font-12 width-100">
+
+                <!--Form reader-->
+                <div id="basictools-insert-form-reader"
+                     app-form-reader 
+                     app-form-definition-name="oInsertObject.sFormDefinitionName" 
+                     app-form-definition="oInsertObject.oFormDefinition"
+                     app-form-values="oInsertObject.oFormValues" 
+                     app-properties="ctrl.properties"
+                     app-token="ctrl.token"></div>
+
+            </div>
+            <div class="modal-footer modal-footer-sm text-left">
+                <button type="submit" class="btn btn-primary" form="basictools-insert-form-reader-form"
+                        ng-click="ctrl.trySubmitInsertion()">
+                    <span class="glyphicon glyphicon-share-alt margin-2"></span>
+                    Sauvegarder
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

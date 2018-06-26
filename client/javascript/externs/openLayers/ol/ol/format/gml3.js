@@ -52,20 +52,27 @@ ol.format.GML3 = function(opt_options) {
    * @type {boolean}
    */
   this.multiCurve_ = options.multiCurve !== undefined ?
-      options.multiCurve : true;
+    options.multiCurve : true;
 
   /**
    * @private
    * @type {boolean}
    */
   this.multiSurface_ = options.multiSurface !== undefined ?
-      options.multiSurface : true;
+    options.multiSurface : true;
 
   /**
    * @inheritDoc
    */
   this.schemaLocation = options.schemaLocation ?
-      options.schemaLocation : ol.format.GML3.schemaLocation_;
+    options.schemaLocation : ol.format.GML3.schemaLocation_;
+
+  /**
+   * @private
+   * @type {boolean}
+   */
+  this.hasZ = options.hasZ !== undefined ?
+    options.hasZ : false;
 
 };
 ol.inherits(ol.format.GML3, ol.format.GMLBase);
@@ -345,7 +352,7 @@ ol.format.GML3.prototype.readFlatPosList_ = function(node, objectStack) {
   var s = ol.xml.getAllTextContent(node, false).replace(/^\s*|\s*$/g, '');
   var context = objectStack[0];
   var containerSrs = context['srsName'];
-  var containerDimension = node.parentNode.getAttribute('srsDimension');
+  var contextDimension = context['srsDimension'];
   var axisOrientation = 'enu';
   if (containerSrs) {
     var proj = ol.proj.get(containerSrs);
@@ -360,8 +367,11 @@ ol.format.GML3.prototype.readFlatPosList_ = function(node, objectStack) {
   } else if (node.getAttribute('dimension')) {
     dim = ol.format.XSD.readNonNegativeIntegerString(
         node.getAttribute('dimension'));
-  } else if (containerDimension) {
-    dim = ol.format.XSD.readNonNegativeIntegerString(containerDimension);
+  } else if (node.parentNode.getAttribute('srsDimension')) {
+    dim = ol.format.XSD.readNonNegativeIntegerString(
+        node.parentNode.getAttribute('srsDimension'));
+  } else if (contextDimension) {
+    dim = ol.format.XSD.readNonNegativeIntegerString(contextDimension);
   }
   var x, y, z;
   var flatCoordinates = [];
@@ -565,6 +575,9 @@ ol.format.GML3.prototype.SEGMENTS_PARSERS_ = {
  */
 ol.format.GML3.prototype.writePos_ = function(node, value, objectStack) {
   var context = objectStack[objectStack.length - 1];
+  var hasZ = context['hasZ'];
+  var srsDimension = hasZ ? 3 : 2;
+  node.setAttribute('srsDimension', srsDimension);
   var srsName = context['srsName'];
   var axisOrientation = 'enu';
   if (srsName) {
@@ -578,6 +591,11 @@ ol.format.GML3.prototype.writePos_ = function(node, value, objectStack) {
   } else {
     coords = (point[1] + ' ' + point[0]);
   }
+  if (hasZ) {
+    // For newly created points, Z can be undefined.
+    var z = point[2] || 0;
+    coords += ' ' + z;
+  }
   ol.format.XSD.writeStringTextNode(node, coords);
 };
 
@@ -585,17 +603,25 @@ ol.format.GML3.prototype.writePos_ = function(node, value, objectStack) {
 /**
  * @param {Array.<number>} point Point geometry.
  * @param {string=} opt_srsName Optional srsName
+ * @param {boolean=} opt_hasZ whether the geometry has a Z coordinate (is 3D) or not.
  * @return {string} The coords string.
  * @private
  */
-ol.format.GML3.prototype.getCoords_ = function(point, opt_srsName) {
+ol.format.GML3.prototype.getCoords_ = function(point, opt_srsName, opt_hasZ) {
   var axisOrientation = 'enu';
   if (opt_srsName) {
     axisOrientation = ol.proj.get(opt_srsName).getAxisOrientation();
   }
-  return ((axisOrientation.substr(0, 2) === 'en') ?
-      point[0] + ' ' + point[1] :
-      point[1] + ' ' + point[0]);
+  var coords = ((axisOrientation.substr(0, 2) === 'en') ?
+    point[0] + ' ' + point[1] :
+    point[1] + ' ' + point[0]);
+  if (opt_hasZ) {
+    // For newly created points, Z can be undefined.
+    var z = point[2] || 0;
+    coords += ' ' + z;
+  }
+
+  return coords;
 };
 
 
@@ -607,6 +633,9 @@ ol.format.GML3.prototype.getCoords_ = function(point, opt_srsName) {
  */
 ol.format.GML3.prototype.writePosList_ = function(node, value, objectStack) {
   var context = objectStack[objectStack.length - 1];
+  var hasZ = context['hasZ'];
+  var srsDimension = hasZ ? 3 : 2;
+  node.setAttribute('srsDimension', srsDimension);
   var srsName = context['srsName'];
   // only 2d for simple features profile
   var points = value.getCoordinates();
@@ -615,7 +644,7 @@ ol.format.GML3.prototype.writePosList_ = function(node, value, objectStack) {
   var point;
   for (var i = 0; i < len; ++i) {
     point = points[i];
-    parts[i] = this.getCoords_(point, srsName);
+    parts[i] = this.getCoords_(point, srsName, hasZ);
   }
   ol.format.XSD.writeStringTextNode(node, parts.join(' '));
 };
@@ -717,6 +746,7 @@ ol.format.GML3.prototype.RING_NODE_FACTORY_ = function(value, objectStack, opt_n
  */
 ol.format.GML3.prototype.writeSurfaceOrPolygon_ = function(node, geometry, objectStack) {
   var context = objectStack[objectStack.length - 1];
+  var hasZ = context['hasZ'];
   var srsName = context['srsName'];
   if (node.nodeName !== 'PolygonPatch' && srsName) {
     node.setAttribute('srsName', srsName);
@@ -724,7 +754,7 @@ ol.format.GML3.prototype.writeSurfaceOrPolygon_ = function(node, geometry, objec
   if (node.nodeName === 'Polygon' || node.nodeName === 'PolygonPatch') {
     var rings = geometry.getLinearRings();
     ol.xml.pushSerializeAndPop(
-        {node: node, srsName: srsName},
+        {node: node, hasZ: hasZ, srsName: srsName},
         ol.format.GML3.RING_SERIALIZERS_,
         this.RING_NODE_FACTORY_,
         rings, objectStack, undefined, this);
@@ -771,13 +801,14 @@ ol.format.GML3.prototype.writeCurveOrLineString_ = function(node, geometry, obje
  */
 ol.format.GML3.prototype.writeMultiSurfaceOrPolygon_ = function(node, geometry, objectStack) {
   var context = objectStack[objectStack.length - 1];
+  var hasZ = context['hasZ'];
   var srsName = context['srsName'];
   var surface = context['surface'];
   if (srsName) {
     node.setAttribute('srsName', srsName);
   }
   var polygons = geometry.getPolygons();
-  ol.xml.pushSerializeAndPop({node: node, srsName: srsName, surface: surface},
+  ol.xml.pushSerializeAndPop({node: node, hasZ: hasZ, srsName: srsName, surface: surface},
       ol.format.GML3.SURFACEORPOLYGONMEMBER_SERIALIZERS_,
       this.MULTIGEOMETRY_MEMBER_NODE_FACTORY_, polygons,
       objectStack, undefined, this);
@@ -794,11 +825,12 @@ ol.format.GML3.prototype.writeMultiPoint_ = function(node, geometry,
     objectStack) {
   var context = objectStack[objectStack.length - 1];
   var srsName = context['srsName'];
+  var hasZ = context['hasZ'];
   if (srsName) {
     node.setAttribute('srsName', srsName);
   }
   var points = geometry.getPoints();
-  ol.xml.pushSerializeAndPop({node: node, srsName: srsName},
+  ol.xml.pushSerializeAndPop({node: node, hasZ: hasZ, srsName: srsName},
       ol.format.GML3.POINTMEMBER_SERIALIZERS_,
       ol.xml.makeSimpleNodeFactory('pointMember'), points,
       objectStack, undefined, this);
@@ -813,13 +845,14 @@ ol.format.GML3.prototype.writeMultiPoint_ = function(node, geometry,
  */
 ol.format.GML3.prototype.writeMultiCurveOrLineString_ = function(node, geometry, objectStack) {
   var context = objectStack[objectStack.length - 1];
+  var hasZ = context['hasZ'];
   var srsName = context['srsName'];
   var curve = context['curve'];
   if (srsName) {
     node.setAttribute('srsName', srsName);
   }
   var lines = geometry.getLineStrings();
-  ol.xml.pushSerializeAndPop({node: node, srsName: srsName, curve: curve},
+  ol.xml.pushSerializeAndPop({node: node, hasZ: hasZ, srsName: srsName, curve: curve},
       ol.format.GML3.LINESTRINGORCURVEMEMBER_SERIALIZERS_,
       this.MULTIGEOMETRY_MEMBER_NODE_FACTORY_, lines,
       objectStack, undefined, this);
@@ -1168,7 +1201,7 @@ ol.format.GML3.prototype.GEOMETRY_NODE_FACTORY_ = function(value, objectStack, o
 ol.format.GML3.prototype.writeGeometryNode = function(geometry, opt_options) {
   opt_options = this.adaptOptions(opt_options);
   var geom = ol.xml.createElementNS('http://www.opengis.net/gml', 'geom');
-  var context = {node: geom, srsName: this.srsName,
+  var context = {node: geom, hasZ: this.hasZ, srsName: this.srsName,
     curve: this.curve_, surface: this.surface_,
     multiSurface: this.multiSurface_, multiCurve: this.multiCurve_};
   if (opt_options) {
@@ -1208,6 +1241,7 @@ ol.format.GML3.prototype.writeFeaturesNode = function(features, opt_options) {
       'xsi:schemaLocation', this.schemaLocation);
   var context = {
     srsName: this.srsName,
+    hasZ: this.hasZ,
     curve: this.curve_,
     surface: this.surface_,
     multiSurface: this.multiSurface_,

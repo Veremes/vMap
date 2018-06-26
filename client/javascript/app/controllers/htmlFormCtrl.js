@@ -26,6 +26,9 @@ vitisApp.htmlFormCtrl = function ($scope, $log, $q, $timeout, envSrvc, propertie
     if (typeof destructor_form === "function") {
         destructor_form();
     }
+    // Suppression de la fonction "constructor_form" (sinon s'éxècute à chaque ouverture de formulaire).
+    if (typeof constructor_form === "function")
+        constructor_form = undefined;
 
     // Nom du formulaire.
     if (typeof ($scope["sFormDefinitionName"]) == "undefined")
@@ -171,6 +174,7 @@ vitisApp.htmlFormCtrl = function ($scope, $log, $q, $timeout, envSrvc, propertie
 
                             // Emission d'un évènement de chargement des données et de la définition du formulaire.
                             $scope.$root.$emit("formDefinitionLoaded", $scope["sFormDefinitionName"]);
+                            envSrvc["oFormDefinition"][$scope["sFormDefinitionName"]]["formDefinitionLoaded"] = true;
                             if (response["data"]["javascript"] === true) {
                                 var sUrl = "";
                                 if (oFormRequestParams["sUrl"].indexOf(".json") === -1) {
@@ -186,6 +190,10 @@ vitisApp.htmlFormCtrl = function ($scope, $log, $q, $timeout, envSrvc, propertie
                                         angular.element(vitisApp.appHtmlFormDrtv).ready();
                                         if (typeof(constructor_form) == "function")
                                             constructor_form($scope, sUrl);
+                                        // Supprime l'élément <script> du fichier subform.js (sinon pas de rechargement du fichier).
+                                        var oScriptElem = document.querySelector("script[src='" + sUrl + "?version=" + sessionStorage["build"] + "']");
+                                        if (oScriptElem !== null)
+                                            oScriptElem.parentNode.removeChild(oScriptElem);
                                     },
                                     "async": true,
                                     "scriptInBody": true

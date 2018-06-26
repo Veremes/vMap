@@ -1,4 +1,4 @@
-/* global goog, ol, nsVitisComponent, vitisApp, URL */
+/* global goog, ol, nsVitisComponent, vitisApp, URL, oVmap */
 
 /**
  * @author: Armand Bahi
@@ -97,7 +97,7 @@ MapJSON.prototype.getViewFromDef = function (oMapDefinition, opt_options) {
     oViewOptions.center = goog.isDefAndNotNull(oViewDef['center']) ? oViewDef['center'] : [0, 0];
     oViewOptions.zoom = goog.isDefAndNotNull(oViewDef['zoom']) ? oViewDef['zoom'] : 0;
     oViewOptions.constrainRotation = oViewDef['constrainRotation'];
-    oViewOptions.enableRotation = oViewDef['enableRotation'];
+    oViewOptions.enableRotation = goog.isDefAndNotNull(oViewDef['enableRotation']) ? oViewDef['enableRotation'] : false;
     oViewOptions.extent = oViewDef['maxExtent'];
     oViewOptions.maxResolution = oViewDef['maxResolution'];
     oViewOptions.minResolution = oViewDef['minResolution'];
@@ -161,6 +161,14 @@ MapJSON.prototype.getLayersFromDef = function (oMapDefinition, opt_options) {
     var aLayers = [];
 
     for (var i = 0; i < aLayersDef.length; i++) {
+        if (goog.isDefAndNotNull(aLayersDef[i]["url"])) {
+            if (aLayersDef[i]["url"].indexOf("[token]") > -1) {
+                aLayersDef[i]["url"] = aLayersDef[i]["url"].replace(/\[token\]/, sha256(sessionStorage["session_token"]));
+            }
+            if (aLayersDef[i]["url"].indexOf("[localhost]") > -1) {
+                aLayersDef[i]["url"] = aLayersDef[i]["url"].replace(/\[localhost\]/, this['properties']["web_server_name"]);
+            }
+        }
         oSource = this.getSourceFromLayerDef_(oMapDefinition, aLayersDef[i], opt_options);
         if (goog.isDefAndNotNull(oSource)) {
             oLayer = this.getLayerFromLayerDef_(oMapDefinition, aLayersDef[i], oSource);
@@ -311,7 +319,7 @@ MapJSON.prototype.getSourceFromLayerDef_ = function (oMapDefinition, oLayerDef, 
     } else if (typeof (oLayerDef['service_options']) !== "object") {
         oServiceOptions = oLayerDef['service_options'];
     }
-    
+
     // Options de la couche
     var oLayerOptions = {};
     if (typeof (oLayerDef['layer_options']) === "string") {
@@ -329,16 +337,18 @@ MapJSON.prototype.getSourceFromLayerDef_ = function (oMapDefinition, oLayerDef, 
         // Styles des couches
         if (goog.isDefAndNotNull(oLayerOptions)) {
             if (goog.isDefAndNotNull(oLayerOptions['layer_style'])) {
-                var aLayers = oLayerDef['params']['LAYERS'].split(',');
-                var aStyles = [];
-                for (var i = 0; i < aLayers.length; i++) {
-                    if (goog.isDefAndNotNull(oLayerOptions['layer_style'][aLayers[i]])) {
-                        aStyles.push(oLayerOptions['layer_style'][aLayers[i]]['Name']);
-                    } else {
-                        aStyles.push('');
+                if (goog.isDefAndNotNull(oLayerDef['params']['LAYERS'])) {
+                    var aLayers = oLayerDef['params']['LAYERS'].split(',');
+                    var aStyles = [];
+                    for (var i = 0; i < aLayers.length; i++) {
+                        if (goog.isDefAndNotNull(oLayerOptions['layer_style'][aLayers[i]])) {
+                            aStyles.push(oLayerOptions['layer_style'][aLayers[i]]['Name']);
+                        } else {
+                            aStyles.push('');
+                        }
                     }
+                    oLayerDef['params']['STYLES'] = aStyles.join(',');
                 }
-                oLayerDef['params']['STYLES'] = aStyles.join(',');
             }
         }
         if (!goog.isDefAndNotNull(oLayerDef['params']['STYLES']) &&
@@ -352,29 +362,37 @@ MapJSON.prototype.getSourceFromLayerDef_ = function (oMapDefinition, oLayerDef, 
             };
         }
 
-        // Authentification des couches
+        // Retrocompatibilité: authentification des couches
         if (goog.isDefAndNotNull(oServiceOptions)) {
-
-            // Si login et password sont renseignés, alors effectue une requête "fantome" pour logguer l'ip client
             if (goog.isDefAndNotNull(oServiceOptions['login'])) {
-                if (goog.isDefAndNotNull(oServiceOptions['password'])) {
-                    var newLoadFunction = function (image, src) {
-                        var xhr = new XMLHttpRequest();
-                        xhr.responseType = 'blob';
-                        xhr.onreadystatechange = function () {
-                            if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-                                image.getImage().src = URL.createObjectURL(xhr.response);
-                            }
-                        };
-                        xhr.open('GET', src, true);
-                        xhr.setRequestHeader("Authorization", "Basic " + btoa(oServiceOptions['login'] + ":" + oServiceOptions['password']));
-                        xhr.send();
-                    };
-                    oLayerDef['tileLoadFunction'] = newLoadFunction;
-                    oLayerDef['imageLoadFunction'] = newLoadFunction;
-                }
+                oLayerDef['service_login'] = oServiceOptions['login'];
+            }
+            if (goog.isDefAndNotNull(oServiceOptions['password'])) {
+                oLayerDef['service_password'] = oServiceOptions['password'];
             }
         }
+    }
+
+    // Login / MP
+    if (goog.isDefAndNotNull(oLayerDef['service_login']) && goog.isDefAndNotNull(oLayerDef['service_password'])) {
+        // Si login et password sont renseignés, alors effectue une requête "fantome" pour logguer l'ip client
+        var newLoadFunction = function (image, src) {
+            // Styles pour le WMS
+            src = src.replace('STYLES&', 'STYLES=&');
+            // Authentification
+            var xhr = new XMLHttpRequest();
+            xhr.responseType = 'blob';
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+                    image.getImage().src = URL.createObjectURL(xhr.response);
+                }
+            };
+            xhr.open('GET', src, true);
+            xhr.setRequestHeader("Authorization", "Basic " + btoa(oLayerDef['service_login'] + ":" + oLayerDef['service_password']));
+            xhr.send();
+        };
+        oLayerDef['tileLoadFunction'] = newLoadFunction;
+        oLayerDef['imageLoadFunction'] = newLoadFunction;
     }
 
     if (type === 'bing') {
@@ -391,8 +409,8 @@ MapJSON.prototype.getSourceFromLayerDef_ = function (oMapDefinition, oLayerDef, 
     } else if (type === 'tilewms') {
 
         source = new ol.source.TileWMS({
-            url: (this['properties']['use_proxy_for_tiles'] && goog.isDefAndNotNull(oVmap)) ? oVmap.getMapManager().parseProxyUrl(oLayerDef['url']) : oLayerDef['url'],
-            urls: (this['properties']['use_proxy_for_tiles'] && goog.isDefAndNotNull(oVmap)) ? oVmap.getMapManager().parseProxyUrl(oLayerDef['urls']) : oLayerDef['urls'],
+            url: (this['properties']['use_proxy_for_tiles']) ? this.parseProxyUrl(oLayerDef['url']) : oLayerDef['url'],
+            urls: (this['properties']['use_proxy_for_tiles']) ? this.parseProxyUrls(oLayerDef['urls']) : oLayerDef['urls'],
             logo: oLayerDef['logo'],
             hidpi: oLayerDef['hidpi'],
             wrapX: oLayerDef['wrapX'],
@@ -409,7 +427,7 @@ MapJSON.prototype.getSourceFromLayerDef_ = function (oMapDefinition, oLayerDef, 
     } else if (type === 'imagewms') {
 
         source = new ol.source.ImageWMS({
-            url: (this['properties']['use_proxy_for_tiles'] && goog.isDefAndNotNull(oVmap)) ? oVmap.getMapManager().parseProxyUrl(oLayerDef['url']) : oLayerDef['url'],
+            url: (this['properties']['use_proxy_for_tiles']) ? this.parseProxyUrl(oLayerDef['url']) : oLayerDef['url'],
             logo: oLayerDef['logo'],
             hidpi: oLayerDef['hidpi'],
             ratio: oLayerDef['ratio'],
@@ -424,34 +442,19 @@ MapJSON.prototype.getSourceFromLayerDef_ = function (oMapDefinition, oLayerDef, 
 
     } else if (type === 'imagevector') {
 
-        var vectorSource;
-
         if (oLayerDef["features"]) {
-            vectorSource = new ol.source.Vector({
+            source = new ol.source.Vector({
                 features: oLayerDef["features"]
             });
         } else if (oLayerDef["url"]) {
-            vectorSource = new ol.source.Vector({
+            source = new ol.source.Vector({
                 format: new ol.format.GeoJSON(),
-                url: (this['properties']['use_proxy_for_tiles'] && goog.isDefAndNotNull(oVmap)) ? oVmap.getMapManager().parseProxyUrl(oLayerDef["url"]) : oLayerDef["url"]
+                url: (this['properties']['use_proxy_for_tiles']) ? this.parseProxyUrl(oLayerDef["url"]) : oLayerDef["url"]
             });
         } else {
             console.error("Error: veuillez renseinger une url ou une feature");
             return;
         }
-
-        source = new ol.source.ImageVector({
-            style: goog.isDefAndNotNull(oLayerDef["style"]) ? oLayerDef["style"] : new ol.style.Style({
-                fill: new ol.style.Fill({
-                    color: 'rgba(255, 255, 255, 0.6)'
-                }),
-                stroke: new ol.style.Stroke({
-                    color: '#319FD3',
-                    width: 1
-                })
-            }),
-            source: vectorSource
-        });
 
     } else if (type === 'wmts') {
 
@@ -475,15 +478,20 @@ MapJSON.prototype.getSourceFromLayerDef_ = function (oMapDefinition, oLayerDef, 
             if (goog.isDefAndNotNull(oLayerDef['style'])) {
                 oOptions.style = oLayerDef['style'];
             }
+            if (goog.isDefAndNotNull(oLayerDef['tileLoadFunction'])) {
+                oOptions.tileLoadFunction = oLayerDef['tileLoadFunction'];
+            }
         } catch (e) {
             console.error('error while parsing options');
         }
+
         var source = new ol.source.WMTS(oOptions);
 
     } else if (type === 'xyz') {
 
         source = new ol.source.XYZ({
-            url: oLayerDef["url"]
+            url: oLayerDef["url"],
+            tileLoadFunction: oLayerDef['tileLoadFunction']
         });
 
     } else if (type === 'osm') {
@@ -515,8 +523,14 @@ MapJSON.prototype.getLayerFromLayerDef_ = function (oMapDefinition, oLayerDef, o
     var this_ = this;
     var type = oLayerDef['layerType'];
 
-    if (type === 'imagewms' || type === 'imagevector') {
+    if (type === 'imagewms') {
         layer = new ol.layer.Image({
+            source: oSource
+        });
+    } else if (type === 'imagevector') {
+        layer = new ol.layer.Vector({
+            renderMode: 'image',
+            style: oLayerDef["style"],
             source: oSource
         });
     } else {
@@ -578,9 +592,23 @@ MapJSON.prototype.getLayerFromLayerDef_ = function (oMapDefinition, oLayerDef, o
 //    if (goog.isDefAndNotNull(oLayerDef['bo_index']))
 //        layer.set('bo_index', oLayerDef['bo_index']);
 
+    if (goog.isDefAndNotNull(oLayerDef['service_login'])) {
+        layer.set('service_login', oLayerDef['service_login']);
+    }
+    if (goog.isDefAndNotNull(oLayerDef['service_password'])) {
+        layer.set('service_password', oLayerDef['service_password']);
+    }
 
     if (goog.isDefAndNotNull(oLayerDef['events'])) {
         layer.set('events', oLayerDef['events']);
+    }
+    if (goog.isDefAndNotNull(oLayerDef['params'])) {
+        if (goog.isDefAndNotNull(oLayerDef['params']['LAYERS'])) {
+            var aLayers = oLayerDef['params']['LAYERS'].split(',');
+            if (goog.isArray(aLayers)) {
+                layer.set('sublayers', aLayers);
+            }
+        }
     }
     if (goog.isDefAndNotNull(oLayerDef['is_dynamic']))
         layer.set('is_dynamic', oLayerDef['is_dynamic']);
@@ -591,6 +619,7 @@ MapJSON.prototype.getLayerFromLayerDef_ = function (oMapDefinition, oLayerDef, o
                 oLayerDef['filter_values'] = this.getFilterFormValues_(oLayerDef['filter_form']);
                 layer.set('filter_form', oLayerDef['filter_form']);
                 layer.set('is_filtered', oLayerDef['is_filtered']);
+                layer.set('is_bo_filtered', oLayerDef['is_bo_filtered']);
                 layer.set('filter_values', oLayerDef['filter_values']);
                 layer['applyFilter'] = function () {
                     this_.setFilterOnLayer_(this);
@@ -635,6 +664,15 @@ MapJSON.prototype.setFilterOnLayer_ = function (olLayer) {
     }
 
     var oValues = this.getBOValuesFromFormValues_(olLayer.get('filter_values')['search']);
+    olLayer.set('filter_values_cleared', oValues);
+
+    if (typeof oVmap !== "undefined") { // Obligatoire lors d'une impression
+        if (goog.isDefAndNotNull(oVmap)) {
+            if (goog.isDefAndNotNull(oVmap['scope'])) {
+                oVmap['scope'].$broadcast('layersChanged');
+            }
+        }
+    }
 
     if (
             olLayer.getSource() instanceof ol.source.ImageWMS ||
@@ -750,4 +788,48 @@ MapJSON.prototype.getBOValuesFromFormValues_ = function (oFormValues) {
     }
 
     return oFormValuesValues;
+};
+
+/**
+ * Add the proxy to the wms/wmts... url
+ * @param {string} url
+ * @returns {String}
+ */
+MapJSON.prototype.parseProxyUrl = function (url) {
+
+    var parsedProxyUrl = url;
+
+    if (typeof oVmap !== "undefined") { // Obligatoire lors d'une impression
+        if (goog.isDefAndNotNull(oVmap)) {
+            if (goog.isDefAndNotNull(oVmap.getMapManager)) {
+                if (goog.isDefAndNotNull(oVmap.getMapManager().parseProxyUrl)) {
+                    parsedProxyUrl = oVmap.getMapManager().parseProxyUrl(url);
+                }
+            }
+        }
+    }
+
+    return parsedProxyUrl;
+};
+
+/**
+ * Add the proxy to the wms/wmts... urls
+ * @param {array<string>} aUrls
+ * @returns {Array<string>}
+ */
+MapJSON.prototype.parseProxyUrls = function (aUrls) {
+
+    var parsedProxyUrls = aUrls;
+
+    if (typeof oVmap !== "undefined") { // Obligatoire lors d'une impression
+        if (goog.isDefAndNotNull(oVmap)) {
+            if (goog.isDefAndNotNull(oVmap.getMapManager)) {
+                if (goog.isDefAndNotNull(oVmap.getMapManager().parseProxyUrls)) {
+                    parsedProxyUrls = oVmap.getMapManager().parseProxyUrls(aUrls);
+                }
+            }
+        }
+    }
+
+    return parsedProxyUrls;
 };

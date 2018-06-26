@@ -122,7 +122,7 @@ PrintReport.prototype.addReportIncludes = function (aIncludes) {
 /**
  * Print report App
  */
-ngPrintReport = angular.module("ngPrintReport", []);
+ngPrintReport = angular.module("ngPrintReport", ["ngSanitize"]);
 
 /**
  * Print report controller

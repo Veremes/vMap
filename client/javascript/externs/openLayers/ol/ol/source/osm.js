@@ -1,7 +1,6 @@
 goog.provide('ol.source.OSM');
 
 goog.require('ol');
-goog.require('ol.Attribution');
 goog.require('ol.source.XYZ');
 
 
@@ -26,10 +25,10 @@ ol.source.OSM = function(opt_options) {
   }
 
   var crossOrigin = options.crossOrigin !== undefined ?
-      options.crossOrigin : 'anonymous';
+    options.crossOrigin : 'anonymous';
 
   var url = options.url !== undefined ?
-      options.url : 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+    options.url : 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 
   ol.source.XYZ.call(this, {
     attributions: attributions,
@@ -51,11 +50,9 @@ ol.inherits(ol.source.OSM, ol.source.XYZ);
  * The attribution containing a link to the OpenStreetMap Copyright and License
  * page.
  * @const
- * @type {ol.Attribution}
+ * @type {string}
  * @api
  */
-ol.source.OSM.ATTRIBUTION = new ol.Attribution({
-  html: '&copy; ' +
+ol.source.OSM.ATTRIBUTION = '&copy; ' +
       '<a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> ' +
-      'contributors.'
-});
+      'contributors.';

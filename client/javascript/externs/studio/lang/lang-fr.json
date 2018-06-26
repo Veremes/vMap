@@ -3,7 +3,8 @@
         "File": "Fichier",
         "Edit": "Édition",
         "ManageTabs": "Gestion des onglets",
-        "ManageWab": "Gestion Wab",
+        "ManageWab": "Gestion des états (Wab)",
+        "ManageWabMethod": "Génération des boutons des méthodes (Wab)",
         "Tab": "Onglet",
         "WabGroup": "Groupe",
         "WabState": "État wab",
@@ -138,7 +139,9 @@
             "multistring": "Texte en lecture seule - Multiligne (NI)",
             "treeview": "Fichier sur le serveur (NI)",
             "bo_grid": "Grille - Objet métier",
-            "section_grid": "Grille - Section Vitis"
+            "section_grid": "Grille - Section Vitis",
+            "ui_grid": "Grille de données",
+            "treeview": "Arborescence"
         },
         "Component": {
             "General": {
@@ -352,6 +355,7 @@
                 "Name_PH": "Nom du champ",
                 "Projection": "Proj.",
                 "Select_center": "Mode de centrage de la carte :",
+                "Output_format": "Format de sortie :",
                 "Extent": "Étendue",
                 "CZ": "Centre et zoom",
                 "Center_Label": "Coordonnées du centre de la carte :",
@@ -421,9 +425,58 @@
                 "TargetOptions" : {
                     "NewTab" : "Dans un nouvel onglet"
                 }
+            },
+            "ui_grid":{
+                "Header" : "Entête",
+                "GridTitle" : "Titre",
+                "ColumnsListLabel" : "Colonnes",
+                "ColumnDefDisplayName" : "Libellé",
+                "ColumnDefField" : "Paramètre",
+                "ColumnDefWidth" : "Largeur",
+                "ColumnDefCellTemplate" : "Template",
+                "ColumnDefDisplayName_PH" : "Titre de la colonne",
+                "ColumnDefField_PH" : "Paramètre de la source de données",
+                "ColumnDefWidth_PH" : "Nombre ou pourcentage",
+                "ColumnDefCellTemplate_PH" : "Template personnalisé",
+                "AddColumn" : "Ajouter une colonne",
+                "SaveColumn" : "Enregistrer",
+                "DeleteColumn" : "Supprimer la colonne",
+                "ButtonsListLabel" : "Boutons",
+                "ButtonLabel" : "Libellé",
+                "ButtonName" : "Nom",
+                "ButtonEvent" : "Evènement",
+                "ButtonLabel_PH" : "Libellé du bouton",
+                "ButtonName_PH" : "Nom du bouton",
+                "ButtonEvent_PH" : "Nom de la fonction à exécuter",
+                "AddButton" : "Ajouter un bouton",
+                "SaveButton" : "Enregistrer",
+                "DeleteButton" : "Supprimer le bouton",
+                "Datasource" : "Source de données"
+            },
+            "Treeview":{
+                "Label": "Libellé",
+                "Name": "Paramètre",
+                "Value": "Valeur",
+                "Label_PH": "Étiquette du champ",
+                "Name_PH": "Nom du champ",
+                "DataLoadingEvent": "Evènement",
+                "DataLoadingEvent_PH": "Evènement à écouter pour les données",
+                "Data": "Fonction",
+                "Data_PH": "Fonction à appeler pour les données",
+                "DataSelection": "Données",
+                "DataEventHelper": "Les données seront fournies par l'émission d'un évènement AngularJS\r\n dans le scope racine. Ex: $rootScope.$emit(\"nom de l'évènement\", Tableau des données).",
+                "AddNode": "Noeud",
+                "NodeLabel": "Libellé",
+                "NodeLabel_PH": "Étiquette du noeud",
+                "NodeValue": "Valeur",
+                "NodeValue_PH": "Valeur du noeud",
+                "NodeParent": "Noeud parent",
+                "SaveNode" : "Enregistrer",
+                "DeleteNode" : "Supprimer le noeud"
             }
         },
-        "SameNameWarning": "Deux éléments ne peuvent avoir le même nom"
+        "SameNameWarning": "Deux éléments ne peuvent avoir le même nom",
+        "EmptyNameWarning": "Le nom ne peut être vide"
     },
     "Visualizer": {
         "FormMode": "Prévisualisation",
@@ -442,7 +495,7 @@
             }
         },
         "Confirmation":{
-          "LoseJs": "Vous allez écraser le Javascript éxistant. Voulez-vous continuer ?"  
+          "LoseJs": "Vous allez écraser le Javascript éxistant. Voulez-vous continuer ?"
         },
         "JsonMode": "Formulaire JSON",
         "JsMode": "Édition Javascript",
@@ -468,10 +521,14 @@
             "AddElement": "Ajoute un attribut au formulaire",
             "AddElement_gtf": "Ajoute un paramètre publié",
             "Delete": "Supprime un élément ou une ligne vide",
-            "Copy": "Copie L'arborescence",
-            "Paste" : "Colle l'arborescence en écrasant l'éxistante",
+            "Copy": "Copie L'arborescence sélectionné",
+            "CopyClipboard": "Copier le JSON dans le presse-papier",
+            "PasteClipboard": "Colle le JSON depuis le presse-papier",
+            "MethodCreator": "Créer les boutons méthode depuis la base",
+            "Paste" : "Colle l'arborescence copié en écrasant l'éxistante",
             "Labelize": "Transforme tous les champs en label",
-            "Row": "Active/Désactive les lignes"
+            "Row": "Active/Désactive les lignes",
+            "IdName" : "field_id <- field_name"
         },
         "Buttons": {
             "Show_Lines": "Voir / modifier les lignes",

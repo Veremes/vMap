@@ -24,11 +24,11 @@ ol.source.ImageStatic = function(options) {
   var imageExtent = options.imageExtent;
 
   var crossOrigin = options.crossOrigin !== undefined ?
-      options.crossOrigin : null;
+    options.crossOrigin : null;
 
   var /** @type {ol.ImageLoadFunctionType} */ imageLoadFunction =
       options.imageLoadFunction !== undefined ?
-      options.imageLoadFunction : ol.source.Image.defaultImageLoadFunction;
+        options.imageLoadFunction : ol.source.Image.defaultImageLoadFunction;
 
   ol.source.Image.call(this, {
     attributions: options.attributions,
@@ -40,8 +40,7 @@ ol.source.ImageStatic = function(options) {
    * @private
    * @type {ol.Image}
    */
-  this.image_ = new ol.Image(imageExtent, undefined, 1, this.getAttributions(),
-      options.url, crossOrigin, imageLoadFunction);
+  this.image_ = new ol.Image(imageExtent, undefined, 1, options.url, crossOrigin, imageLoadFunction);
 
   /**
    * @private

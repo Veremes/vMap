@@ -1,13 +1,14 @@
 <?php
 
 require_once 'Vmap.class.inc';
+require_once 'UserPrintTemplates.class.inc';
 require_once __DIR__ . '/../../class/vitis_lib/Connection.class.inc';
 
 /**
  * \file UserPrintTemplate.class.inc
  * \class UserPrintTemplate
  *
- * \author Yoann Perollet <yoann.perollet@veremes.com>.
+ * \author Armand Bahi <armand.bahi@veremes.com>.
  *
  * 	\brief This file contains the UserPrintTemplate php class
  *
@@ -23,14 +24,12 @@ class UserPrintTemplate extends Vmap {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
      * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties, $oConnection) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = $oConnection;
-        $this->aSelectedFields = Array("printtemplate_id", "name", "rt_format_id", "rt_orientation_id", "definition", "outputformats_id", "sql", "ressource_id", "business_object_id");
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
+        $this->aSelectedFields = Array("printtemplate_id", "name", "rt_format_id", "rt_orientation_id", "definition", "outputformats_id", "sql", "ressource_id", "business_object_id", "printstyles");
     }
 
     /**
@@ -67,6 +66,52 @@ class UserPrintTemplate extends Vmap {
      */
     function GET() {
         $this->aFields = $this->getFields($this->aProperties['schema_vmap'], 'v_template', 'printtemplate_id');
+//        $this->aFields['definition'] = $this->getPrintTemplateWithStyles();
+        
+        $this->aFields['printstyles'] = $this->getPrintStylesFromUser();
     }
+
+    /**
+     * Get the printstyles associated to current user
+     * @return array
+     */
+//    function getPrintTemplateWithStyles() {
+//        $aPrintStyles = $this->getPrintStylesFromUser();        
+//        $sPrintStyle = $this->concatPrintStyles($aPrintStyles);        
+//        $sTemplateDefinition = $sPrintStyle . $this->aFields['definition'];
+//        
+//        return $sTemplateDefinition;
+//    }
+
+    /**
+     * Get the printstyles associated to current user
+     * @return array
+     */
+    function getPrintStylesFromUser() {
+        $oUserPrintStyles = new UserPrintStyles($this->aPath, $this->aValues, $this->aProperties);
+        $oUserPrintStyles->aValues['my_vitis_id'] = null;
+        $oUserPrintStyles->aValues['filter'] = '';
+        $oUserPrintStyles->GET();
+
+        $aPrintStyles = $oUserPrintStyles->aFields->userprintstyles;
+
+        return $aPrintStyles;
+    }
+
+    /**
+     * Concat the definitions of the given print styles
+     * @param array $aPrintStyles
+     * @return string
+     */
+//    function concatPrintStyles($aPrintStyles) {
+//        $sPrintStyle = "";
+//        for ($i = 0; $i < count($aPrintStyles); $i++) {
+//            $sPrintStyle .= $aPrintStyles[$i]->definition;
+//        }
+//
+//        return $sPrintStyle;
+//    }
+
 }
+
 ?>

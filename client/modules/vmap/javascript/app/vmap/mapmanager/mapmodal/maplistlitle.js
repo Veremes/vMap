@@ -42,7 +42,7 @@ nsVmap.nsMapManager.nsMapModal.MapListLitle.prototype.maplistlitleDirective = fu
         controller: 'AppMaplistlitleController',
         controllerAs: 'ctrl',
         bindToController: true,
-        templateUrl: oVmap['properties']['vmap_folder'] + '/' + 'template/layers/mapmodal/maplistlitle.html'
+        templateUrl: oVmap['properties']['vmap_folder'] + '/' + 'template/layers/mapmodal/' + (oVmap['properties']['is_mobile'] ? 'maplistlitle_mobile.html' : 'maplistlitle.html')
     };
 };
 
@@ -64,7 +64,7 @@ nsVmap.nsMapManager.nsMapModal.MapListLitle.prototype.maplistlitleController = f
      * @type {object}
      */
     this['catalog'] = oVmap.getMapManager().getMapModalTool().getMapCatalog();
-    
+
     /**
      * Filter string
      * @type string
@@ -117,8 +117,11 @@ nsVmap.nsMapManager.nsMapModal.MapListLitle.prototype.maplistlitleController = f
     });
 
     $('body').click(function (e) {
-        if (!$.contains($('#maplistlitle-container')[0], $(e.target)[0])) {
-            $('#maplistlitle-container').removeClass('open');
+        try {
+            if (!$.contains($('#maplistlitle-container')[0], $(e.target)[0])) {
+                $('#maplistlitle-container').removeClass('open');
+            }
+        } catch (e) {
         }
     });
 

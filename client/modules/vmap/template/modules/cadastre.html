@@ -39,7 +39,7 @@
                 </div>
                 <div id="cadastre-map-search-collapse-one-click" class="panel-collapse collapse in">
                     <div class="panel-body">
-                        <i>Choisissez le type de rapport et cliquez sue une parcelle pour voir le rapport</i>
+                        <i>Choisissez le type de rapport et cliquez sur une parcelle pour voir le rapport</i>
                         <div class="row" style="padding: 10px 5px 0px 5px;">
                             <div class="col-md-4 padding-sides-2 height-md-4" style="height: 85px">
                                 <div class="squared-btn" ng-class="{'active': ctrl.currentAction === 'cadastre-FicheDescriptive'}" ng-click="ctrl.selectCadastreOnMap('FicheDescriptive', ctrl.currentAction === 'cadastre-FicheDescriptive')">
@@ -752,7 +752,7 @@
                 <br>
 
                 <!-- Propriétaires -->
-                <div ng-if="ctrl.oParcelleInfos.aProprietaires.length !== 0">
+                <div ng-if="ctrl.oParcelleInfos.aProprietaires.length && ctrl.oParcelleInfos.aProprietaires.length !== 0">
                     <h4 ng-if="ctrl.oParcelleInfos.aProprietaires.length === 1">Propriétaire</h4>
                     <h4 ng-if="ctrl.oParcelleInfos.aProprietaires.length !== 1">Propriétaires</h4>
                     <table class="table font-12">
@@ -781,7 +781,7 @@
                 </div>
 
                 <!-- Subdivision Fiscale -->
-                <div ng-if="ctrl.oParcelleInfos.aSubdivisionFiscale.length !== 0">
+                <div ng-if="ctrl.oParcelleInfos.aSubdivisionFiscale.length && trl.oParcelleInfos.aSubdivisionFiscale.length !== 0">
                     <h4 ng-if="ctrl.oParcelleInfos.aSubdivisionFiscale.length === 1">Subdivision Fiscale</h4>
                     <h4 ng-if="ctrl.oParcelleInfos.aSubdivisionFiscale.length !== 1">Subdivision Fiscales</h4>
                     <table class="table font-12">
@@ -823,7 +823,7 @@
                 </div>
 
                 <!-- Elément Bâti -->
-                <div ng-if="ctrl.oParcelleInfos.aBatis.length !== 0">
+                <div ng-if="ctrl.oParcelleInfos.aBatis.length && ctrl.oParcelleInfos.aBatis.length !== 0">
                     <h4 ng-if="ctrl.oParcelleInfos.aBatis.length === 1">Elément Bâti</h4>
                     <h4 ng-if="ctrl.oParcelleInfos.aBatis.length !== 1">Eléments Bâti</h4>
                     <table class="table font-12">
@@ -872,7 +872,7 @@
                             <tbody>
                                 <!-- Valeurs des champs -->
                                 <tr ng-repeat="row in node.data">
-                                    <td ng-if="row[value]" ng-repeat="(key, value) in node.aFields">
+                                    <td ng-if="node[value]" ng-repeat="(key, value) in node.aFields">
                                         <span ng-if="isLink(row[value])" ng-bind-html="getRenderedParsedLink(row[value])"></span>
                                         <span ng-if="!isLink(row[value])">{{row[value]}}</span>
                                     </td>
@@ -947,7 +947,7 @@
                         </tr>
                         <tr>
                             <td class="padding-0 bold">Mutation propriétaire: </td>
-                            <td class="padding-0"> {{ctrl.oInvariant.CCHPR = "*" ? 'Oui' : 'Non'}}</td>
+                            <td class="padding-0"> {{ctrl.oInvariant.CCHPR === "*" ? 'Oui' : 'Non'}}</td>
                         </tr>
                         <tr>
                             <td class="padding-0 bold">Année de construction: </td>

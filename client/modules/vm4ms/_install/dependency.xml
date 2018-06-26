@@ -4,17 +4,17 @@
 	<dependenciesCollection>
 		<dependency>
 			<nature>core</nature>
-			<version>2017.02.00</version>
+			<version>2018.03.00</version>
 		</dependency>
 		<dependency>
 			<nature>web_services</nature>
 			<name>vmap</name>
-			<version>2017.03.00</version>
+			<version>2018.02.00</version>
 		</dependency>
 		<dependency>
 			<nature>web_services</nature>
 			<name>vm4ms</name>
-			<version>2017.02.00</version>
+			<version>2018.02.00</version>
 		</dependency>
 	</dependenciesCollection>
 </installer>

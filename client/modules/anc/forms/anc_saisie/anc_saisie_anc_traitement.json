@@ -18,7 +18,7 @@
                     {
                         "type":"label",
                         "name":"id_anc_controle",
-                        "label":"Identifiant de controle",
+                        "label":"Identifiant de contrôle",
                         "nb_cols":4,
                         "id":"Element_0_1_1"
                     },
@@ -517,7 +517,7 @@
                     {
                         "type":"file_wsdata",
                         "name":"schema_f",
-                        "label":"Schema de principe",
+                        "label":"Schéma de principe",
                         "nb_cols":12,
                         "id":"Element_0_4_1",
                         "displayOnly":true
@@ -671,7 +671,7 @@
                     {
                         "type":"select",
                         "name":"id_controle",
-                        "label":"Identifiant de controle",
+                        "label":"Identifiant de contrôle",
                         "nb_cols":4,
                         "id":"Element_0_1_2",
                         "datasource":{
@@ -861,7 +861,7 @@
                         }
                     },
                     {
-                        "type":"text",
+                        "type":"number",
                         "name":"tra_long",
                         "label":"Longueur (en m)",
                         "required":false,
@@ -870,7 +870,7 @@
                         "id":"Element_1_3_2"
                     },
                     {
-                        "type":"text",
+                        "type":"number",
                         "name":"tra_longueur",
                         "label":"Longueur de chaque tranchée (en m)",
                         "required":false,
@@ -879,7 +879,7 @@
                         "id":"Element_1_3_4"
                     },
                     {
-                        "type":"text",
+                        "type":"number",
                         "name":"tra_larg",
                         "label":"Largeur (en m)",
                         "required":false,
@@ -888,7 +888,7 @@
                         "id":"Element_1_3_3"
                     },
                     {
-                        "type":"text",
+                        "type":"number",
                         "name":"tra_surf",
                         "label":"Surface (en m²)",
                         "required":false,
@@ -897,7 +897,7 @@
                         "id":"Element_1_4_2"
                     },
                     {
-                        "type":"text",
+                        "type":"number",
                         "name":"tra_tot_lin",
                         "label":"Linéaire total (en m)",
                         "required":false,
@@ -928,7 +928,7 @@
                         }
                     },
                     {
-                        "type":"text",
+                        "type":"number",
                         "name":"tra_profond",
                         "label":"Profondeur des tranchées (en cm)",
                         "required":false,
@@ -937,7 +937,7 @@
                         "id":"Element_1_5_3"
                     },
                     {
-                        "type":"text",
+                        "type":"number",
                         "name":"tra_profondeur",
                         "label":"Profondeur (en cm)",
                         "required":false,
@@ -1844,7 +1844,7 @@
                     {
                         "type":"file_wsdata",
                         "name":"schema_f",
-                        "label":"Schema de principe",
+                        "label":"Schéma de principe",
                         "nb_cols":12,
                         "id":"Element_0_4_1",
                         "displayOnly":false
@@ -2004,7 +2004,7 @@
                     {
                         "type":"select",
                         "name":"id_controle",
-                        "label":"Identifiant de controle",
+                        "label":"Identifiant de contrôle",
                         "nb_cols":3,
                         "id":"Element_0_1_1",
                         "required":true,
@@ -2079,7 +2079,7 @@
                         }
                     },
                     {
-                        "type":"text",
+                        "type":"number",
                         "name":"tra_long",
                         "label":"Longueur (en m)",
                         "required":false,
@@ -2088,7 +2088,7 @@
                         "id":"Element_1_3_2"
                     },
                     {
-                        "type":"text",
+                        "type":"number",
                         "name":"tra_longueur",
                         "label":"Longueur de chaque tranchée (en m)",
                         "required":false,
@@ -2097,7 +2097,7 @@
                         "id":"Element_1_3_4"
                     },
                     {
-                        "type":"text",
+                        "type":"number",
                         "name":"tra_larg",
                         "label":"Largeur (en m)",
                         "required":false,
@@ -2106,7 +2106,7 @@
                         "id":"Element_1_3_3"
                     },
                     {
-                        "type":"text",
+                        "type":"number",
                         "name":"tra_surf",
                         "label":"Surface (en m²)",
                         "required":false,
@@ -2115,7 +2115,7 @@
                         "id":"Element_1_4_2"
                     },
                     {
-                        "type":"text",
+                        "type":"number",
                         "name":"tra_tot_lin",
                         "label":"Linéaire total (en m)",
                         "required":false,
@@ -2146,7 +2146,7 @@
                         }
                     },
                     {
-                        "type":"text",
+                        "type":"number",
                         "name":"tra_profond",
                         "label":"Profondeur des tranchées (en cm)",
                         "required":false,
@@ -2155,7 +2155,7 @@
                         "id":"Element_1_5_3"
                     },
                     {
-                        "type":"text",
+                        "type":"number",
                         "name":"tra_profondeur",
                         "label":"Profondeur (en cm)",
                         "required":false,
@@ -3109,7 +3109,7 @@
                     {
                         "type":"file_wsdata",
                         "name":"schema_f",
-                        "label":"Schema de principe",
+                        "label":"Schéma de principe",
                         "nb_cols":12,
                         "id":"Element_0_4_1",
                         "displayOnly":false

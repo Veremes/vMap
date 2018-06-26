@@ -23,14 +23,12 @@ class PrivateWmsServiceLayer extends Vmap4MapServer {
      * @param type $aPath url of the request
      * @param type $aValues parameters of the request
      * @param type $properties properties
+     * @param type $bShortcut false to reinit variables
      * @param type $oConnection connection object
      */
-    function __construct($aPath, $aValues, $properties, $oConnection) {
-        $this->aValues = $aValues;
-        $this->aPath = $aPath;
-        $this->aProperties = $properties;
-        $this->oConnection = $oConnection;
-		$this->aSelectedFields = Array("ms_layer_id", "name", "title", "active", "opacity");
+    function __construct($aPath, $aValues, $properties, $bShortcut = false, $oConnection = false) {
+        parent::__construct($aPath, $aValues, $properties, $bShortcut, $oConnection);
+        $this->aSelectedFields = Array("ms_layer_id", "name", "title", "active", "opacity");
     }
 
     /**
@@ -44,8 +42,10 @@ class PrivateWmsServiceLayer extends Vmap4MapServer {
     /**
      * delete a wms service layer
      */
-    function DELETE(){
+    function DELETE() {
+        
     }
+
 }
 
 ?>
